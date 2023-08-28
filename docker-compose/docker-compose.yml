@@ -1,0 +1,35 @@
+version: "3.0"
+
+volumes:
+  portainer_data:
+
+services:
+  example-pipeline-1:
+      restart: always
+      image: public.registry.bitswan.space/bitswan/example-pipeline:latest
+      volumes:
+        - $PWD/conf-1.conf:/conf/pipeline.conf:rw
+        - /tmp/example-pipeline-data/:/data:rw
+
+  example-pipeline-2:
+      restart: always
+      image: public.registry.bitswan.space/bitswan/example-pipeline:latest
+      volumes:
+        - $PWD/conf-2.conf:/conf/pipeline.conf:rw
+        - /tmp/example-pipeline-data/:/data:rw
+
+  example-pipeline-3:
+      restart: always
+      image: public.registry.bitswan.space/bitswan/example-pipeline:latest
+      volumes:
+        - $PWD/conf-3.conf:/conf/pipeline.conf:rw
+        - /tmp/example-pipeline-data/:/data:rw
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    volumes:
+      - portainer_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+    restart: always
+    network_mode: host
