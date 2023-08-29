@@ -7,7 +7,7 @@ interface LayoutProps {
 function DashboardLayout({ children }: LayoutProps) {
   return (
     <>
-      <div className="font-strawford flex h-full min-h-screen flex-col bg-slate-100">
+      <div className="font-strawford flex h-full min-h-screen flex-col bg-stone-100">
         <div className="flex flex-grow">
           <div className="fixed h-screen bg-stone-200">
             <SideNavBar />
