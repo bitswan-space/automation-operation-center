@@ -9,8 +9,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BellDot, LogOut } from "lucide-react";
 import { PipelineDataTable } from "@/components/pipeline/PipelineDataITable";
 import { PipelineDataCard } from "@/components/pipeline/PipelineDataCard";
+import { usePipelines } from "@/components/pipeline/hooks";
 
 const DashboardPage: NextPageWithLayout = () => {
+  const pipelines = usePipelines();
+  console.log("data", pipelines);
+
   return (
     <>
       <div className="p-4 lg:p-8">
@@ -47,7 +51,7 @@ const DashboardPage: NextPageWithLayout = () => {
             }
           >
             <CardContent className="p-3">
-              <PipelineDataTable />
+              <PipelineDataTable pipelines={pipelines} />
             </CardContent>
           </Card>
         </div>

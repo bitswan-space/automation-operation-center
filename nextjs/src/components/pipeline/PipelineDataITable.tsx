@@ -27,42 +27,7 @@ import { Checkbox } from "@radix-ui/react-checkbox";
 import { Input } from "../ui/input";
 import React from "react";
 import { Badge } from "../ui/badge";
-
-const data: Pipeline[] = [
-  {
-    id: "1",
-    name: "TEST-PIPELINE-1",
-    machineName: "test_vm",
-    dateCreated: "2021-08-01",
-    upTime: "1h 30m",
-    status: "running",
-  },
-  {
-    id: "2",
-    name: "TEST-PIPELINE-3",
-    machineName: "test_vm",
-    dateCreated: "2021-08-01",
-    upTime: "1h 30m",
-    status: "stopped",
-  },
-  {
-    id: "3",
-    name: "TEST-PIPELINE-2",
-    machineName: "test_vm",
-    dateCreated: "2021-08-01",
-    upTime: "1h 30m",
-    status: "running",
-  },
-];
-
-interface Pipeline {
-  id: string;
-  name: string;
-  machineName: string;
-  dateCreated: string;
-  upTime: string;
-  status: "running" | "stopped";
-}
+import { type Pipeline } from "@/types";
 
 export const columns: ColumnDef<Pipeline>[] = [
   {
@@ -87,8 +52,14 @@ export const columns: ColumnDef<Pipeline>[] = [
   {
     accessorKey: "name",
     header: "Name",
-    cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
+    cell: ({ row }) => {
+      const name = row.original.name;
+      const correctedName = name.startsWith("/") ? name.slice(1) : name;
+
+      return <div className="text-blue-700 underline">{correctedName}</div>;
+    },
   },
+
   {
     accessorKey: "machineName",
     header: "Machine Name",
@@ -147,7 +118,13 @@ export const columns: ColumnDef<Pipeline>[] = [
   },
 ];
 
-export function PipelineDataTable() {
+type PipelineDataTableProps = {
+  pipelines: Pipeline[];
+};
+
+export function PipelineDataTable(props: PipelineDataTableProps) {
+  const data = React.useMemo(() => props.pipelines, [props.pipelines]);
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
