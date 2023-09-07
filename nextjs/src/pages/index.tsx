@@ -9,11 +9,18 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BellDot, LogOut } from "lucide-react";
 import { PipelineDataTable } from "@/components/pipeline/PipelineDataITable";
 import { PipelineDataCard } from "@/components/pipeline/PipelineDataCard";
-import { usePipelines } from "@/components/pipeline/hooks";
+import {
+  usePipelineStats,
+  usePipelines,
+  usePipelinesWithStats,
+} from "@/components/pipeline/hooks";
 
 const DashboardPage: NextPageWithLayout = () => {
-  const pipelines = usePipelines();
-  console.log("data", pipelines);
+  const pipelines = usePipelinesWithStats();
+  console.log("pipelines", pipelines);
+
+  const _ = usePipelineStats();
+  // console.log("stats", stats);
 
   return (
     <>

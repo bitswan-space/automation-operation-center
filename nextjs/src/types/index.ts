@@ -120,3 +120,21 @@ export interface Pipeline {
   upTime: string;
   status: string;
 }
+
+export interface PipelineStat {
+  result: string;
+  table: number;
+  _start: string;
+  _stop: string;
+  _time: string;
+  _value: number;
+  _field: string;
+  _measurement: string;
+  appclass: string;
+  host: string;
+  pipeline: string;
+}
+
+export type PipelineWithStats = Pipeline & {
+  pipelineStat: PipelineStat[];
+};

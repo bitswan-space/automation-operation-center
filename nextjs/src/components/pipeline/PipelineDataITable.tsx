@@ -27,9 +27,11 @@ import { Checkbox } from "@radix-ui/react-checkbox";
 import { Input } from "../ui/input";
 import React from "react";
 import { Badge } from "../ui/badge";
-import { type Pipeline } from "@/types";
+import { type PipelineStat, type PipelineWithStats } from "@/types";
 
-export const columns: ColumnDef<Pipeline>[] = [
+import { ResponsiveContainer, Area, AreaChart, XAxis } from "recharts";
+
+export const columns: ColumnDef<PipelineWithStats>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -59,7 +61,6 @@ export const columns: ColumnDef<Pipeline>[] = [
       return <div className="text-blue-700 underline">{correctedName}</div>;
     },
   },
-
   {
     accessorKey: "machineName",
     header: "Machine Name",
@@ -93,6 +94,26 @@ export const columns: ColumnDef<Pipeline>[] = [
     ),
   },
   {
+    header: "eps.in",
+    cell: ({ row }) => {
+      return (
+        <div className="text-start">
+          <EpsTinyLineChart data={row.original.pipelineStat} type="in" />
+        </div>
+      );
+    },
+  },
+  {
+    header: "eps.out",
+    cell: ({ row }) => {
+      return (
+        <div className="flex justify-start">
+          <EpsTinyLineChart data={row.original.pipelineStat} type="out" />
+        </div>
+      );
+    },
+  },
+  {
     accessorKey: "upTime",
     header: "Uptime",
     cell: ({ row }) => (
@@ -119,7 +140,7 @@ export const columns: ColumnDef<Pipeline>[] = [
 ];
 
 type PipelineDataTableProps = {
-  pipelines: Pipeline[];
+  pipelines: PipelineWithStats[];
 };
 
 export function PipelineDataTable(props: PipelineDataTableProps) {
@@ -269,3 +290,60 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
     </div>
   );
 }
+
+interface EpsTinyLineChartProps {
+  data: PipelineStat[];
+  type: "in" | "out";
+}
+
+export const EpsTinyLineChart = (props: EpsTinyLineChartProps) => {
+  const { data, type } = props;
+
+  const getDataKey = (type: "in" | "out") => {
+    switch (type) {
+      case "in":
+        return "eps.in";
+      case "out":
+        return "eps.out";
+    }
+  };
+
+  const processedData = (data: PipelineStat[]) => {
+    return data.map((stat) => {
+      return {
+        time: stat._time,
+        [stat._field]: stat._value,
+      };
+    });
+  };
+
+  return (
+    <ResponsiveContainer width={100} height={50}>
+      <AreaChart
+        data={processedData(data)}
+        margin={{
+          top: 2,
+          right: 5,
+          left: 0,
+          bottom: 2,
+        }}
+        className="flex justify-start text-left"
+      >
+        <defs>
+          <linearGradient id="colorEps" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#1d4ed8" stopOpacity={0.8} />
+            <stop offset="90%" stopColor="#1d4ed8" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <XAxis dataKey="time" hide />
+        <Area
+          type="monotone"
+          dataKey={getDataKey(type)}
+          stroke="#1d4ed8"
+          fill="url(#colorEps)"
+          fillOpacity={0.6}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
+  );
+};

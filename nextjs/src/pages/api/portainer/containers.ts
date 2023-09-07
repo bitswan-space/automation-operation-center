@@ -3,14 +3,12 @@ import { type PortainerError, type DockerContainer } from "@/types";
 import axios, { type AxiosError } from "axios";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import https from "https";
-import NextCors from "nextjs-cors";
 
 const PORTAINER_BASE_URL = "https://127.0.0.1:9443/api";
 
 const ENDPOINTS_URL = `${PORTAINER_BASE_URL}/endpoints`;
 
 const httpsAgent = new https.Agent({
-
   rejectUnauthorized: false, // TODO: Hacky, not ideal for production
 });
 
@@ -20,13 +18,6 @@ export default async function handler(
 ) {
   const accessToken = env.PORTAINER_ACCESS_TOKEN;
   const endpointId = req.query.endpointId as string;
-
-  await NextCors(req, res, {
-    // Options
-    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
-    origin: "*",
-    optionsSuccessStatus: 200,
-  });
 
   try {
     const response = await axios.get<DockerContainer>(

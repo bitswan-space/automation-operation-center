@@ -23,6 +23,14 @@ export const env = createEnv({
     DISCORD_CLIENT_ID: z.string(),
     DISCORD_CLIENT_SECRET: z.string(),
     PORTAINER_ACCESS_TOKEN: z.string().min(1),
+
+    // INFLUX
+    INFLUXDB_URL: z.string().url(),
+    INFLUXDB_TOKEN: z.string().min(1),
+    INFLUXDB_ORG: z.string().min(1),
+    INFLUXDB_BUCKET: z.string().min(1),
+    INFLUXDB_USERNAME: z.string().min(1),
+    INFLUXDB_PASSWORD: z.string().min(1),
   },
 
   /**
@@ -32,7 +40,6 @@ export const env = createEnv({
    */
   client: {
     // NEXT_PUBLIC_CLIENTVAR: z.string().min(1),
-    NEXT_PUBLIC_PORTAINER_ACCESS_TOKEN: z.string().min(1),
   },
 
   /**
@@ -47,8 +54,14 @@ export const env = createEnv({
     DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
     PORTAINER_ACCESS_TOKEN: process.env.PORTAINER_ACCESS_TOKEN,
-    NEXT_PUBLIC_PORTAINER_ACCESS_TOKEN:
-      process.env.NEXT_PUBLIC_PORTAINER_ACCESS_TOKEN,
+
+    // INFLUX
+    INFLUXDB_URL: process.env.INFLUXDB_URL,
+    INFLUXDB_TOKEN: process.env.INFLUXDB_TOKEN,
+    INFLUXDB_ORG: process.env.INFLUXDB_ORG,
+    INFLUXDB_BUCKET: process.env.INFLUXDB_BUCKET,
+    INFLUXDB_USERNAME: process.env.INFLUXDB_USERNAME,
+    INFLUXDB_PASSWORD: process.env.INFLUXDB_PASSWORD,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.

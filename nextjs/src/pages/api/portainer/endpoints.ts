@@ -2,7 +2,6 @@ import { env } from "@/env.mjs";
 import { type PortainerError, type Endpoint } from "@/types";
 import axios, { type AxiosError } from "axios";
 import { type NextApiRequest, type NextApiResponse } from "next";
-import NextCors from "nextjs-cors";
 import https from "https";
 
 const PORTAINER_BASE_URL = "https://127.0.0.1:9443/api";
@@ -18,13 +17,6 @@ export default async function handler(
   res: NextApiResponse<Endpoint | PortainerError>,
 ) {
   const accessToken = env.PORTAINER_ACCESS_TOKEN;
-
-  await NextCors(req, res, {
-    // Options
-    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
-    origin: "*",
-    optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
-  });
 
   try {
     const response = await axios.get<Endpoint>(ENDPOINTS_URL, {

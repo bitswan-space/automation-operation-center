@@ -102,7 +102,7 @@ const SideNavBar = (props: SideNavBarProps) => {
             />
           </div>
         </div>
-        <div className="px-2 pb-20">
+        <div className="p-6 pb-16 md:hidden">
           <Button
             variant={"ghost"}
             size={"lg"}
