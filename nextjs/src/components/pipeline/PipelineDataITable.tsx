@@ -30,6 +30,7 @@ import { Badge } from "../ui/badge";
 import { type PipelineStat, type PipelineWithStats } from "@/types";
 
 import { ResponsiveContainer, Area, AreaChart, XAxis } from "recharts";
+import Link from "next/link";
 
 export const columns: ColumnDef<PipelineWithStats>[] = [
   {
@@ -55,10 +56,14 @@ export const columns: ColumnDef<PipelineWithStats>[] = [
     accessorKey: "name",
     header: "Name",
     cell: ({ row }) => {
-      const name = row.original.name;
+      const { name, id } = row.original;
       const correctedName = name.startsWith("/") ? name.slice(1) : name;
 
-      return <div className="text-blue-700 underline">{correctedName}</div>;
+      return (
+        <Link href={`/pipelines/${id}`} className="text-blue-700 underline">
+          {correctedName}
+        </Link>
+      );
     },
   },
   {

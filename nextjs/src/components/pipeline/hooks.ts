@@ -3,6 +3,7 @@ import {
   type DockerContainer,
   type Endpoint,
   type PipelineStat,
+  type PipelineWithStats,
 } from "@/types";
 import axios from "axios";
 import { useQueries, useQuery } from "@tanstack/react-query";
@@ -126,7 +127,7 @@ export const usePipelineStats = () => {
   return data;
 };
 
-export const usePipelinesWithStats = () => {
+export const usePipelinesWithStats = (): PipelineWithStats[] => {
   const pipelines = usePipelines();
   const pipelineStats = usePipelineStats();
 

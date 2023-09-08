@@ -2,6 +2,7 @@ import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import { type AppInitialProps } from "next/app";
 import "@/styles/globals.css";
+import "reactflow/dist/base.css";
 import { type ReactElement, type ReactNode } from "react";
 import { type NextComponentType, type NextPage } from "next";
 import { type AppContextType } from "next/dist/shared/lib/utils";
