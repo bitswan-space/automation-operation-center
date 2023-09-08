@@ -368,7 +368,7 @@ const initialNodes: Node[] = [
   {
     id: "node-2",
     type: "processor",
-    position: { x: 0, y: 400 },
+    position: { x: 0, y: 800 },
     data: { value: 123 },
   },
 ];

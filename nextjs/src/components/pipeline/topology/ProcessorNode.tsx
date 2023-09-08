@@ -1,9 +1,11 @@
 import {
   AreaChart,
   BarChartBig,
+  Braces,
   ChevronRight,
   Layers,
   SlidersHorizontal,
+  Terminal,
 } from "lucide-react";
 import {
   Card,
@@ -25,7 +27,7 @@ import { memo } from "react";
 
 export function ProcessorNode({}) {
   return (
-    <Card className="w-[600px] rounded-sm border border-neutral-200 shadow-none">
+    <Card className="w-[600px] rounded-sm border border-neutral-200 shadow-md">
       <CardHeader className="rounded-t-sm bg-neutral-950 text-neutral-200">
         <div className="flex">
           <Layers />
@@ -97,10 +99,37 @@ export function ProcessorNode({}) {
             <SlidersHorizontal size={18} className="text-neutral-600" />
           </div>
 
-          <CollapsibleContent>
-            Yes. Free to use for personal and commercial projects. No
-            attribution required.
-          </CollapsibleContent>
+          <CollapsibleContent>Collapsible Section</CollapsibleContent>
+        </Collapsible>
+        <Collapsible className="p-4">
+          <div className="flex w-full justify-between">
+            <div className="flex gap-3">
+              <CollapsibleTrigger className="rounded border text-neutral-500 data-[state=open]:rotate-90">
+                <ChevronRight className="" size={18} />
+              </CollapsibleTrigger>
+              <span className=" text-sm font-bold uppercase text-neutral-600">
+                data
+              </span>
+            </div>
+            <Braces size={18} className="text-neutral-600" />
+          </div>
+
+          <CollapsibleContent>Collapsible Section</CollapsibleContent>
+        </Collapsible>
+        <Collapsible className="p-4">
+          <div className="flex w-full justify-between">
+            <div className="flex gap-3">
+              <CollapsibleTrigger className="rounded border text-neutral-500 data-[state=open]:rotate-90">
+                <ChevronRight className="" size={18} />
+              </CollapsibleTrigger>
+              <span className=" text-sm font-bold uppercase text-neutral-600">
+                logs
+              </span>
+            </div>
+            <Terminal size={18} className="text-neutral-600" />
+          </div>
+
+          <CollapsibleContent>Collapsible Section</CollapsibleContent>
         </Collapsible>
       </CardContent>
       <Handle
