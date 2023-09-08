@@ -34,8 +34,6 @@ import {
 import ReactFlow, {
   Controls,
   Background,
-  Handle,
-  Position,
   type Node,
   addEdge,
   applyEdgeChanges,

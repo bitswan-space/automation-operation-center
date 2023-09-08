@@ -7,18 +7,12 @@ import { Button } from "@/components/ui/button";
 import React from "react";
 import { PipelineDataTable } from "@/components/pipeline/PipelineDataITable";
 import { PipelineDataCard } from "@/components/pipeline/PipelineDataCard";
-import {
-  usePipelineStats,
-  usePipelinesWithStats,
-} from "@/components/pipeline/hooks";
+import { usePipelinesWithStats } from "@/components/pipeline/hooks";
 import { TitleBar } from "../components/layout/TitleBar";
 
 const DashboardPage: NextPageWithLayout = () => {
   const pipelines = usePipelinesWithStats();
   console.log("pipelines", pipelines);
-
-  const _ = usePipelineStats();
-  // console.log("stats", stats);
 
   return (
     <>
