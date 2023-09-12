@@ -33,3 +33,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:rw
     restart: always
     network_mode: host
+
+  mosquitto:
+    image: eclipse-mosquitto
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - /mosquitto/data
+      - /mosquitto/log
