@@ -7,9 +7,13 @@ services:
   example-pipeline-1:
       restart: always
       image: public.registry.bitswan.space/bitswan/example-pipeline:latest
+      # change entrypoint to sleep forever
+      entrypoint: ["sleep", "infinity"]
+
       volumes:
         - $PWD/conf-1.conf:/conf/pipeline.conf:rw
         - /tmp/example-pipeline-data/:/data:rw
+        - /home/timothy/pr/libertyaces/product/BitSwanPump/bspump:/usr/local/lib/python3.10/site-packages/bspump/:rw
 
   example-pipeline-2:
       restart: always
