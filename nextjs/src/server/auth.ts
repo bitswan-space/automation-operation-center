@@ -4,9 +4,12 @@ import {
   type DefaultSession,
   type NextAuthOptions,
 } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
+import KeycloakProvider from "next-auth/providers/keycloak";
 
 import { env } from "@/env.mjs";
+import { type DefaultJWT, type JWT } from "next-auth/jwt";
+import jwt_decode from "jwt-decode";
+import { encrypt } from "@/utils/encryption";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -16,6 +19,9 @@ import { env } from "@/env.mjs";
  */
 declare module "next-auth" {
   interface Session extends DefaultSession {
+    access_token: string;
+    id_token: string;
+    roles?: string[];
     user: DefaultSession["user"] & {
       id: string;
       // ...other properties
@@ -29,6 +35,48 @@ declare module "next-auth" {
   // }
 }
 
+declare module "next-auth/jwt" {
+  interface JWT extends DefaultJWT {
+    decoded?: {
+      realm_access?: {
+        roles?: string[];
+      };
+    };
+    access_token: string;
+    id_token: string;
+    expires_in: number;
+    expires_at: number;
+    refresh_token: string;
+  }
+}
+
+// this will refresh an expired access token, when needed
+async function refreshAccessToken(token: JWT): Promise<JWT> {
+  const resp = await fetch(`${env.KEYCLOAK_REFRESH_URL}`, {
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: env.KEYCLOAK_CLIENT_ID,
+      client_secret: env.KEYCLOAK_CLIENT_SECRET,
+      grant_type: "refresh_token",
+      refresh_token: token.refresh_token ?? "",
+    }),
+    method: "POST",
+  });
+
+  const refreshToken = (await resp.json()) as JWT;
+
+  if (!resp.ok) throw refreshToken;
+
+  return {
+    ...token,
+    access_token: refreshToken.access_token,
+    decoded: jwt_decode(refreshToken.access_token ?? ""),
+    id_token: refreshToken.id_token,
+    expires_at: Math.floor(Date.now() / 1000) + (refreshToken.expires_in ?? 0),
+    refresh_token: refreshToken.refresh_token,
+  };
+}
+
 /**
  * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
  *
@@ -36,8 +84,37 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
+    jwt: async ({ token, account }) => {
+      const nowTimeStamp = Math.floor(Date.now() / 1000);
+      if (account) {
+        token.decoded = jwt_decode(account.access_token ?? "");
+        token.access_token = account.access_token ?? "";
+        token.id_token = account.id_token ?? "";
+        token.expires_at = account.expires_at ?? 0;
+        token.refresh_token = account.refresh_token ?? "";
+        return token;
+      } else if (nowTimeStamp < (token.expires_at ?? 0)) {
+        // token has not expired yet, return it
+        return token;
+      } else {
+        // token is expired, try to refresh it
+        console.log("Token has expired. Will refresh...");
+        try {
+          const refreshedToken: JWT = await refreshAccessToken(token);
+          console.log("Token is refreshed.");
+          return refreshedToken;
+        } catch (error) {
+          console.error("Error refreshing access token", error);
+          return { ...token, error: "RefreshAccessTokenError" };
+        }
+      }
+    },
+
     session: ({ session, token }) => ({
       ...session,
+      access_token: encrypt(token.access_token),
+      id_token: encrypt(token.id_token),
+      roles: token.decoded?.realm_access?.roles ?? [],
       user: {
         ...session.user,
         id: token.sub,
@@ -45,20 +122,17 @@ export const authOptions: NextAuthOptions = {
     }),
   },
   providers: [
-    DiscordProvider({
-      clientId: env.DISCORD_CLIENT_ID,
-      clientSecret: env.DISCORD_CLIENT_SECRET,
+    KeycloakProvider({
+      clientId: env.KEYCLOAK_CLIENT_ID,
+      clientSecret: env.KEYCLOAK_CLIENT_SECRET,
+      issuer: env.KEYCLOAK_ISSUER,
     }),
-    /**
-     * ...add more providers here.
-     *
-     * Most other providers require a bit more work than the Discord provider. For example, the
-     * GitHub provider requires you to add the `refresh_token_expires_in` field to the Account
-     * model. Refer to the NextAuth.js docs for the provider you want to use. Example:
-     *
-     * @see https://next-auth.js.org/providers/github
-     */
   ],
+};
+
+export type ServerAuthSessionCtx = {
+  req: GetServerSidePropsContext["req"];
+  res: GetServerSidePropsContext["res"];
 };
 
 /**
@@ -66,9 +140,6 @@ export const authOptions: NextAuthOptions = {
  *
  * @see https://next-auth.js.org/configuration/nextjs
  */
-export const getServerAuthSession = (ctx: {
-  req: GetServerSidePropsContext["req"];
-  res: GetServerSidePropsContext["res"];
-}) => {
+export const getServerAuthSession = (ctx: ServerAuthSessionCtx) => {
   return getServerSession(ctx.req, ctx.res, authOptions);
 };

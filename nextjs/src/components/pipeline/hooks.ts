@@ -102,7 +102,7 @@ export const usePipelineStats = () => {
 
     eventSource.onmessage = (event) => {
       try {
-        console.log("Event Data", event.data);
+        // console.log("Event Data", event.data);
         const parsedData = JSON.parse(event.data as string) as PipelineStat;
 
         // Make sure the parsed data is actually of the correct type.

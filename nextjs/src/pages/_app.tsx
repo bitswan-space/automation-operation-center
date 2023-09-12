@@ -9,6 +9,7 @@ import { type AppContextType } from "next/dist/shared/lib/utils";
 
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactFlowProvider } from "reactflow";
 
 const queryClient = new QueryClient();
 
@@ -36,8 +37,10 @@ const MyApp: AppTypeWithLayout<{ session: Session | null }> = ({
   return (
     <SessionProvider session={session}>
       <QueryClientProvider client={queryClient}>
-        {layout}
-        <ReactQueryDevtools initialIsOpen={false} />
+        <ReactFlowProvider>
+          {layout}
+          <ReactQueryDevtools initialIsOpen={false} />
+        </ReactFlowProvider>
       </QueryClientProvider>
     </SessionProvider>
   );

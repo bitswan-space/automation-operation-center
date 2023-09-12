@@ -1,7 +1,7 @@
 import { ProcessorNode } from "./../../components/pipeline/topology/ProcessorNode";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { type NextPageWithLayout } from "../_app";
-import { useCallback, type ReactElement, useState } from "react";
+import { useCallback, type ReactElement } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import React from "react";
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Clipboard, Workflow } from "lucide-react";
-import { formatPipelineName } from "@/shared/utils";
+import { formatPipelineName } from "@/utils/pipelineUtils";
 import Link from "next/link";
 import { type PipelineWithStats } from "@/types";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,24 +36,22 @@ import ReactFlow, {
   Background,
   type Node,
   addEdge,
-  applyEdgeChanges,
-  applyNodeChanges,
   type Edge,
-  type OnNodesChange,
-  type OnEdgesChange,
   type OnConnect,
+  useNodesState,
+  useEdgesState,
 } from "reactflow";
 
 const PipelineDetailPage: NextPageWithLayout = () => {
   const pipelines = usePipelinesWithStats();
-  console.log("pipelines", pipelines);
+  // console.log("pipelines", pipelines);
 
   // get id from url
   const router = useRouter();
   const { id } = router.query;
 
   const pipeline = pipelines.find((p) => p.id === id);
-  console.log("pipeline", pipeline);
+  // console.log("pipeline", pipeline);
 
   return (
     <>
@@ -166,7 +164,7 @@ export function TabsDemo(props: TabsProps) {
           </Card>
         </div>
       </TabsContent>
-      <TabsContent value="password" className="h-3/4">
+      <TabsContent value="password" className="h-5/6">
         <Card className="h-full rounded-md">
           <CardHeader>
             <CardTitle className="text-xl">Pipeline Topology</CardTitle>
@@ -366,35 +364,31 @@ const initialNodes: Node[] = [
   {
     id: "node-2",
     type: "processor",
-    position: { x: 0, y: 800 },
+    position: { x: 0, y: 600 },
     data: { value: 123 },
   },
 ];
 
-const initialEdges = [
+const initialEdges: Edge[] = [
   {
     id: "e1-2",
     source: "node-1",
     target: "node-2",
+    animated: true,
   },
 ];
 
 // we define the nodeTypes outside of the component to prevent re-renderings
 // you could also use useMemo inside the component
 const nodeTypes = { processor: ProcessorNode };
+const fitViewOptions = {
+  padding: 3,
+};
 
 const Flow = () => {
-  const [nodes, setNodes] = useState<Node[]>(initialNodes);
-  const [edges, setEdges] = useState<Edge[]>(initialEdges);
+  const [nodes, , onNodesChange] = useNodesState<Node[]>(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>(initialEdges);
 
-  const onNodesChange: OnNodesChange = useCallback(
-    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    [setNodes],
-  );
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    [setEdges],
-  );
   const onConnect: OnConnect = useCallback(
     (connection) => setEdges((eds) => addEdge(connection, eds)),
     [setEdges],
@@ -409,7 +403,8 @@ const Flow = () => {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
-        fitView
+        fitView={true}
+        fitViewOptions={fitViewOptions}
       >
         <Background />
         <Controls />
