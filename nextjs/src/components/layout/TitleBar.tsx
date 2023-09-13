@@ -91,8 +91,12 @@ export function TitleBar(props: TitleBarProps) {
               </div>
               <div className="flex gap-1">
                 <BellDot size={25} className="my-auto" />
-                <Button variant={"ghost"} onClick={handleSignOut}>
-                  <LogOut size={25} />
+                <Button
+                  variant={"ghost"}
+                  onClick={handleSignOut}
+                  className="hover:bg-transparent"
+                >
+                  <LogOut size={25} className="my-auto" />
                 </Button>
               </div>
             </div>

@@ -13,7 +13,7 @@ export default function Signin() {
       console.log(status);
       void signIn("keycloak");
     } else if (status === "authenticated") {
-      void router.push(router.query.callbackUrl as string);
+      void router.push((router.query.callbackUrl as string) ?? "/");
     }
   }, [router, status]);
 
