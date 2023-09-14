@@ -2,7 +2,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import React from "react";
 import { usePipelineTopology } from "@/components/pipeline/hooks";
-import { useRouter } from "next/router";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -17,11 +16,10 @@ import { formatPipelineName } from "@/utils/pipelineUtils";
 import { type PipelineWithStats, type PipelineNode } from "@/types";
 import { Textarea } from "@/components/ui/textarea";
 import { type Node, type Edge } from "reactflow";
-import {
-  SyncAreaChart,
-  SimpleAreaChart,
-  FlowSchemeDisplay,
-} from "../../pages/pipelines/[id]";
+
+import { SimpleAreaChart } from "@/components/metrics/charts/SimpleAreaChart";
+import { PipelineSchemeDisplay } from "./topology/PipelineSchemeDisplay";
+import { SyncAreaChart } from "../metrics/charts/SyncAreaChart";
 
 export interface PipelineDetailTabsProps {
   pipeline?: PipelineWithStats;
@@ -32,10 +30,7 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
 
   const pipelineName = formatPipelineName(pipeline?.name ?? "N/A");
 
-  const router = useRouter();
-  const { id } = router.query;
-
-  const { data: pipelineTopology } = usePipelineTopology(id as string);
+  const { data: pipelineTopology } = usePipelineTopology(pipeline?.id ?? "");
 
   const transformTopologyToFlowNodes = (topology: PipelineNode[]): Node[] => {
     // Define the initial Y position and the spacing between nodes
@@ -92,7 +87,7 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
             <CardTitle className="text-xl">Pipeline Topology</CardTitle>
           </CardHeader>
           <CardContent className="h-5/6 w-full space-y-2">
-            <FlowSchemeDisplay
+            <PipelineSchemeDisplay
               initialNodes={transformTopologyToFlowNodes(
                 pipelineTopology ?? [],
               )}
