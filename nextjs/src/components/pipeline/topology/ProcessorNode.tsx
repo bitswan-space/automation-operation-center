@@ -17,7 +17,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Handle, Position } from "reactflow";
+import { Handle, type NodeProps, Position } from "reactflow";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ import { JSONTree } from "react-json-tree";
 import React from "react";
 import clsx from "clsx";
 import { memo } from "react";
+import { SiApachekafka, SiJavascript } from "react-icons/si";
 
 type Section = "stats" | "configure" | "data" | "logs";
 type ProcessorNodeActionType =
@@ -75,7 +76,20 @@ const reducer = (
   }
 };
 
-export function ProcessorNode() {
+const typeIconMap: Record<string, React.ReactElement> = {
+  Kafka: <SiApachekafka size={28} />,
+  JSONParser: <SiJavascript size={28} />,
+};
+
+type NodeData = {
+  type: string;
+  name: string;
+  kind: string;
+};
+
+export function ProcessorNode({ data }: NodeProps<NodeData>) {
+  console.log("data", data);
+
   const initialState: ProcessorNodeState = {
     expandedSections: [],
     pinnedSections: [],
@@ -88,14 +102,22 @@ export function ProcessorNode() {
     ) => ProcessorNodeState
   >(reducer, initialState);
 
+  const getIconFromType = (type: string): React.ReactElement => {
+    return typeIconMap[type] ?? <Layers size={28} />;
+  };
+
   return (
     <Card className="w-[800px] rounded-sm border border-neutral-200 shadow-md">
-      <CardHeader className="rounded-t-sm bg-neutral-950 text-neutral-200">
+      <CardHeader
+        className={clsx("rounded-t-sm bg-neutral-950 text-neutral-200")}
+      >
         <div className="flex">
-          <Layers />
+          {getIconFromType(data.type)}
           <div>
-            <CardTitle className="ml-2">Custom Processor</CardTitle>
-            <CardDescription className="ml-2">Processor</CardDescription>
+            <CardTitle className="ml-2">{data.name}</CardTitle>
+            <CardDescription className={clsx("ml-2 capitalize")}>
+              {data.kind}
+            </CardDescription>
           </div>
         </div>
       </CardHeader>

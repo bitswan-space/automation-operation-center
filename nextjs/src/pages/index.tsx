@@ -12,7 +12,6 @@ import { TitleBar } from "../components/layout/TitleBar";
 
 const DashboardPage: NextPageWithLayout = () => {
   const pipelines = usePipelinesWithStats();
-  console.log("pipelines", pipelines);
 
   return (
     <>

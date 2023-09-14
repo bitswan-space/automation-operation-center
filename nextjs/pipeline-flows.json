@@ -1,0 +1,62 @@
+[
+    {
+        "id": "19688b154ccb45c717032187318bd4b91aca6046a82aa70780064fff6ea13e43",
+        "type": "pipeline",
+        "label": "low-setup-example-install-example-pipeline-1-1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "de1361aa7aa10107",
+        "type": "Kafka",
+        "kind": "source",
+        "pipelineID": "19688b154ccb45c717032187318bd4b91aca6046a82aa70780064fff6ea13e43",
+        "name": "Kafka sync",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "wires": [
+            [
+                "3b9eba7483480f50"
+            ]
+        ]
+    },
+    {
+        "id": "3b9eba7483480f50",
+        "type": "JSONParser",
+        "kind": "processor",
+        "pipelineID": "19688b154ccb45c717032187318bd4b91aca6046a82aa70780064fff6ea13e43",
+        "name": "JSON Parser",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "wires": [
+            [
+                "f7e0a737a4ec38d2"
+            ]
+        ]
+    },
+    {
+        "id": "f7e0a737a4ec38d2",
+        "type": "FileCSVSink",
+        "kind": "sink",
+        "pipelineID": "19688b154ccb45c717032187318bd4b91aca6046a82aa70780064fff6ea13e43",
+        "name": "Example File CSV Sink",
+        "property": "payload",
+        "outproperty": "payload",
+        "tag": "",
+        "ret": "html",
+        "as": "single",
+        "wires": [
+            []
+        ]
+    }
+]

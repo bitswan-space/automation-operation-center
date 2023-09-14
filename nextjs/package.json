@@ -61,6 +61,7 @@
     "react-day-picker": "^8.8.1",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.45.4",
+    "react-icons": "^4.11.0",
     "react-json-tree": "^0.18.0",
     "reactflow": "^11.8.3",
     "recharts": "^2.8.0",

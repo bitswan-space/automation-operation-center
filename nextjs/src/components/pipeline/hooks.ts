@@ -4,6 +4,7 @@ import {
   type Endpoint,
   type PipelineStat,
   type PipelineWithStats,
+  type PipelineNode,
 } from "@/types";
 import axios from "axios";
 import { useQueries, useQuery } from "@tanstack/react-query";
@@ -11,7 +12,7 @@ import React from "react";
 
 const API_BASE_URL = "/api";
 
-const ENDPOINTS_URL = `${API_BASE_URL}/portainer/endpoints`;
+const ENDPOINTS_URL = `${API_BASE_URL}/pipelines/portainer/endpoints`;
 
 export const fetchEndpoints = (): Promise<Endpoint[]> => {
   return axios.get<Endpoint[]>(ENDPOINTS_URL).then((response) => response.data);
@@ -30,7 +31,7 @@ export const fetchDockerContainers = (
 ): Promise<DockerContainer[] & { endpointName?: string }> => {
   return axios
     .get<DockerContainer[]>(
-      `${API_BASE_URL}/portainer/containers?endpointId=${endpointId}`,
+      `${API_BASE_URL}/pipelines/portainer/containers?endpointId=${endpointId}`,
     )
     .then((response) =>
       response.data.map((container) => ({
@@ -98,15 +99,12 @@ export const usePipelineStats = () => {
   const [data, setData] = React.useState<PipelineStat[]>([]);
 
   React.useEffect(() => {
-    const eventSource = new EventSource("/api/influxdb");
+    const eventSource = new EventSource(`${API_BASE_URL}/pipelines/influxdb`);
 
     eventSource.onmessage = (event) => {
       try {
         // console.log("Event Data", event.data);
         const parsedData = JSON.parse(event.data as string) as PipelineStat;
-
-        // Make sure the parsed data is actually of the correct type.
-        // This is more of a runtime check rather than TypeScript's compile-time check.
 
         setData((prevData) => [...prevData, parsedData]);
       } catch (error) {
@@ -140,5 +138,20 @@ export const usePipelinesWithStats = (): PipelineWithStats[] => {
       ...pipeline,
       pipelineStat,
     };
+  });
+};
+
+export const fetchPipelineTopology = (
+  pipelineId: string,
+): Promise<PipelineNode[]> => {
+  return axios
+    .get<PipelineNode[]>(`${API_BASE_URL}/pipelines/${pipelineId}/topology`)
+    .then((response) => response.data);
+};
+
+export const usePipelineTopology = (pipelineId: string) => {
+  return useQuery({
+    queryKey: ["pipeline-topology", pipelineId],
+    queryFn: () => fetchPipelineTopology(pipelineId),
   });
 };

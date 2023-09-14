@@ -138,3 +138,38 @@ export interface PipelineStat {
 export type PipelineWithStats = Pipeline & {
   pipelineStat: PipelineStat[];
 };
+export interface PipelineNode {
+  id: string;
+  type: string;
+  kind?: string;
+  label?: string;
+  disabled?: boolean;
+  info?: string;
+  pipelineID?: string;
+  name?: string;
+  props?: Prop[];
+  repeat?: string;
+  crontab?: string;
+  once?: boolean;
+  onceDelay?: number;
+  topic?: string;
+  payload?: string;
+  payloadType?: string;
+  wires?: Array<string[]>;
+  func?: string;
+  outputs?: number;
+  timeout?: number;
+  noerr?: number;
+  initialize?: string;
+  finalize?: string;
+  property?: string;
+  outproperty?: string;
+  tag?: string;
+  ret?: string;
+  as?: string;
+}
+
+export interface Prop {
+  p: string;
+  vt?: string;
+}

@@ -19,8 +19,6 @@ export function TitleBar(props: TitleBarProps) {
 
   const { data: session, status } = useSession();
 
-  console.log("session", session);
-
   const handleSignOut = () => {
     keyCloakSessionLogOut()
       .then(async (res) => {
