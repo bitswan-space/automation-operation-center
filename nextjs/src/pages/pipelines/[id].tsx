@@ -1,4 +1,4 @@
-import {} from "../../components/metrics/charts/SyncAreaChart";
+import {} from "../../components/metrics/charts/EPSSyncAreaChart";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { type NextPageWithLayout } from "../_app";
 import { type ReactElement } from "react";
@@ -11,11 +11,10 @@ import Link from "next/link";
 import { PipelineDetailTabs } from "../../components/pipeline/PipelineDetailTabs";
 
 const PipelineDetailPage: NextPageWithLayout = () => {
-  const pipelines = usePipelinesWithStats();
-
   const router = useRouter();
   const { id } = router.query;
 
+  const pipelines = usePipelinesWithStats();
   const pipeline = pipelines.find((p) => p.id === id);
 
   return (

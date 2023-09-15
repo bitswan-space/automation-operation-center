@@ -10,21 +10,23 @@ import ReactFlow, {
 } from "reactflow";
 
 import { useCallback } from "react";
-import ProcessorNode from "./ProcessorNode";
+import PipelineNode from "./ProcessorNode";
 
 // we define the nodeTypes outside of the component to prevent re-renderings
 // you could also use useMemo inside the component
-const nodeTypes = { processor: ProcessorNode };
+const nodeTypes = { processor: PipelineNode };
 const fitViewOptions = {
   padding: 3,
 };
 
-interface PipelineSchemeDisplayProps {
+interface PipelineTopologyDisplayProps {
   initialNodes: Node[];
   initialEdges: Edge[];
 }
 
-export const PipelineSchemeDisplay = (props: PipelineSchemeDisplayProps) => {
+export const PipelineTopologyDisplay = (
+  props: PipelineTopologyDisplayProps,
+) => {
   const { initialNodes, initialEdges } = props;
   const [nodes, , onNodesChange] = useNodesState<Node[]>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>(initialEdges);

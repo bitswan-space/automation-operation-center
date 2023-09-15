@@ -18,8 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { type Node, type Edge } from "reactflow";
 
 import { SimpleAreaChart } from "@/components/metrics/charts/SimpleAreaChart";
-import { PipelineSchemeDisplay } from "./topology/PipelineSchemeDisplay";
-import { SyncAreaChart } from "../metrics/charts/SyncAreaChart";
+import { PipelineTopologyDisplay } from "./topology/PipelineTopologyDisplay";
+import { EPSSyncAreaChart } from "../metrics/charts/EPSSyncAreaChart";
 
 export interface PipelineDetailTabsProps {
   pipeline?: PipelineWithStats;
@@ -28,12 +28,12 @@ export interface PipelineDetailTabsProps {
 export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
   const { pipeline } = props;
 
-  const pipelineName = formatPipelineName(pipeline?.name ?? "N/A");
-
   const { data: pipelineTopology } = usePipelineTopology(pipeline?.id ?? "");
 
   const transformTopologyToFlowNodes = (topology: PipelineNode[]): Node[] => {
     // Define the initial Y position and the spacing between nodes
+    // Assumption here is that the nodes are always ordered by their index
+    // The second assumption is that they're alwats in a single column
     const initialY = 0;
     const spacingY = 600;
 
@@ -79,7 +79,7 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
         </TabsTrigger>
       </TabsList>
       <TabsContent value="summary">
-        <PipelineSummary pipelineName={pipelineName} />
+        <PipelineSummary pipeline={pipeline} />
       </TabsContent>
       <TabsContent value="scheme" className="h-5/6">
         <Card className="h-full rounded-md">
@@ -87,7 +87,7 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
             <CardTitle className="text-xl">Pipeline Topology</CardTitle>
           </CardHeader>
           <CardContent className="h-5/6 w-full space-y-2">
-            <PipelineSchemeDisplay
+            <PipelineTopologyDisplay
               initialNodes={transformTopologyToFlowNodes(
                 pipelineTopology ?? [],
               )}
@@ -103,12 +103,13 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
 }
 
 interface PipelineSummaryProps {
-  pipelineName: string;
+  pipeline?: PipelineWithStats;
 }
 
 function PipelineSummary(props: PipelineSummaryProps) {
-  const { pipelineName } = props;
+  const { pipeline } = props;
 
+  const pipelineName = formatPipelineName(pipeline?.name ?? "N/A");
   return (
     <div className="space-y-6">
       <Card className="rounded-md">
@@ -146,7 +147,7 @@ function PipelineSummary(props: PipelineSummaryProps) {
             <div className="flex-auto">
               <Card className="h-full rounded-md border border-neutral-300 p-4 shadow-sm">
                 <CardContent className="pl-4">
-                  <SyncAreaChart />
+                  <EPSSyncAreaChart data={pipeline?.pipelineStat ?? []} />
                 </CardContent>
               </Card>
             </div>

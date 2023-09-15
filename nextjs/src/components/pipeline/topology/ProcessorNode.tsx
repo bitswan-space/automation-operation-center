@@ -26,9 +26,14 @@ import React from "react";
 import clsx from "clsx";
 import { memo } from "react";
 import { SiApachekafka, SiJavascript } from "react-icons/si";
+import {
+  inputSampleJSON,
+  jsonTreeTheme,
+  outputSampleJSON,
+} from "@/utils/jsonTree";
 
 type Section = "stats" | "configure" | "data" | "logs";
-type ProcessorNodeActionType =
+type PipelineNodeActionType =
   | "toggleExpandStats"
   | "toggleExpandConfigure"
   | "toggleExpandData"
@@ -37,19 +42,19 @@ type ProcessorNodeActionType =
   | "togglePinConfigure"
   | "togglePinData"
   | "togglePinLogs";
-interface ProcessorNodeState {
+interface PipelineNodeState {
   expandedSections: Section[];
   pinnedSections: Section[];
 }
 
-interface ProcessorNodeAction {
-  type: ProcessorNodeActionType;
+interface PipelineNodeAction {
+  type: PipelineNodeActionType;
 }
 
 const toggleExpandedSection = (
-  state: ProcessorNodeState,
+  state: PipelineNodeState,
   section: Section,
-): ProcessorNodeState => {
+): PipelineNodeState => {
   return {
     ...state,
     expandedSections: state.expandedSections.includes(section)
@@ -59,9 +64,9 @@ const toggleExpandedSection = (
 };
 
 const reducer = (
-  state: ProcessorNodeState,
-  action: ProcessorNodeAction,
-): ProcessorNodeState => {
+  state: PipelineNodeState,
+  action: PipelineNodeAction,
+): PipelineNodeState => {
   switch (action.type) {
     case "toggleExpandStats":
       return toggleExpandedSection(state, "stats");
@@ -87,19 +92,16 @@ type NodeData = {
   kind: string;
 };
 
-export function ProcessorNode({ data }: NodeProps<NodeData>) {
+export function PipelineNode({ data }: NodeProps<NodeData>) {
   console.log("data", data);
 
-  const initialState: ProcessorNodeState = {
+  const initialState: PipelineNodeState = {
     expandedSections: [],
     pinnedSections: [],
   };
 
   const [state, dispatch] = React.useReducer<
-    (
-      state: ProcessorNodeState,
-      action: ProcessorNodeAction,
-    ) => ProcessorNodeState
+    (state: PipelineNodeState, action: PipelineNodeAction) => PipelineNodeState
   >(reducer, initialState);
 
   const getIconFromType = (type: string): React.ReactElement => {
@@ -167,7 +169,7 @@ export function ProcessorNode({ data }: NodeProps<NodeData>) {
   );
 }
 
-export default memo(ProcessorNode);
+export default memo(PipelineNode);
 
 interface CollapsibleSectionProps {
   expanded: boolean;
@@ -226,56 +228,10 @@ enum DataSectionTabOptions {
   Logs,
 }
 
-function DataSectionBody({}) {
+function DataSectionBody() {
   const [activeTab, setActiveTab] = React.useState<DataSectionTabOptions>(
     DataSectionTabOptions.Input,
   );
-
-  const jsonTreeTheme = {
-    scheme: "custom",
-    base00: "#ffffff", // background
-    base03: "#0a0a0a", // number of keys or items
-    base05: "#fafafa", // keys
-    base09: "#ea580c", // numbers and bools
-    base0B: "#dc2626", // values
-    base0D: "#0a0a0a", // keys ->true
-  };
-
-  const inputSampleJSON = {
-    _id: "64fccd06edfbc0facbf81b0a",
-    index: 2,
-    guid: "18df1723-9165-4af4-ae54-67a076c16c57",
-    isActive: true,
-    balance: "$2,019.26",
-    picture: "http://placehold.it/32x32",
-    age: 26,
-    eyeColor: "blue",
-    name: "Welch Phelps",
-    phone: "+1 (881) 408-2102",
-    address: "371 Langham Street, Soham, Federated States Of Micronesia, 6360",
-    friends: [
-      {
-        id: 0,
-        name: "Debbie Pena",
-      },
-      {
-        id: 1,
-        name: "Sue Brock",
-      },
-      {
-        id: 2,
-        name: "Osborne England",
-      },
-    ],
-    greeting: "Hello, Welch Phelps! You have 5 unread messages.",
-    favoriteFruit: "apple",
-  };
-
-  const outputSampleJSON = {
-    _id: "64fccd06edfbc0facbf81b0a",
-    index: 2,
-    guid: "18df1723-9165-4af4-ae54-67a076c16c57",
-  };
 
   return (
     <div className="w-full pb-8">

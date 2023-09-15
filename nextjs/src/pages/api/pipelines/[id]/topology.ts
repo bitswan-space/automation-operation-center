@@ -31,6 +31,8 @@ function handler(req: NextApiRequest, res: NextApiResponse) {
       return node.pipelineID === req.query.id;
     });
 
+    // const data = pipelineTopologyData;
+
     res.status(200).json([...data]);
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });

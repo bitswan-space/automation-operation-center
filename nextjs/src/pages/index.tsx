@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import React from "react";
-import { PipelineDataTable } from "@/components/pipeline/PipelineDataITable";
+import { PipelineDataTable } from "@/components/pipeline/PipelineDataTable";
 import { PipelineDataCard } from "@/components/pipeline/PipelineDataCard";
 import { usePipelinesWithStats } from "@/components/pipeline/hooks";
 import { TitleBar } from "../components/layout/TitleBar";

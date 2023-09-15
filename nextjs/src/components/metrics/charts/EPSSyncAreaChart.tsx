@@ -8,52 +8,24 @@ import {
   YAxis,
 } from "recharts";
 
-const data = [
-  {
-    name: "Page A",
-    in: 4000,
-    out: 2400,
-    amt: 2400,
-  },
-  {
-    name: "Page B",
-    in: 3000,
-    out: 1398,
-    amt: 2210,
-  },
-  {
-    name: "Page C",
-    in: 2000,
-    out: 9800,
-    amt: 2290,
-  },
-  {
-    name: "Page D",
-    in: 2780,
-    out: 3908,
-    amt: 2000,
-  },
-  {
-    name: "Page E",
-    in: 1890,
-    out: 4800,
-    amt: 2181,
-  },
-  {
-    name: "Page F",
-    in: 2390,
-    out: 3800,
-    amt: 2500,
-  },
-  {
-    name: "Page G",
-    in: 3490,
-    out: 4300,
-    amt: 2100,
-  },
-];
+import { type PipelineStat } from "@/types";
 
-export const SyncAreaChart = () => {
+interface EpsSyncAreaChartProps {
+  data: PipelineStat[];
+}
+
+export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
+  const { data } = props;
+
+  const processData = (data: PipelineStat[]) => {
+    return data.map((stat) => {
+      return {
+        // time: stat._time,
+        [stat._field]: stat._value,
+      };
+    });
+  };
+
   return (
     <div
       style={{
@@ -69,7 +41,7 @@ export const SyncAreaChart = () => {
           <AreaChart
             width={400}
             height={200}
-            data={data}
+            data={processData(data)}
             syncId="anyId"
             margin={{
               top: 10,
@@ -84,7 +56,7 @@ export const SyncAreaChart = () => {
             <Tooltip />
             <Area
               type="monotone"
-              dataKey="in"
+              dataKey="eps.in"
               stroke="#8884d8"
               fill="#8884d8"
             />
@@ -100,7 +72,7 @@ export const SyncAreaChart = () => {
           <AreaChart
             width={400}
             height={200}
-            data={data}
+            data={processData(data)}
             syncId="anyId"
             margin={{
               top: 10,
@@ -115,7 +87,7 @@ export const SyncAreaChart = () => {
             <Tooltip />
             <Area
               type="monotone"
-              dataKey="out"
+              dataKey="eps.out"
               stroke="#82ca9d"
               fill="#82ca9d"
             />
