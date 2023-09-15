@@ -33,9 +33,9 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
   const transformTopologyToFlowNodes = (topology: PipelineNode[]): Node[] => {
     // Define the initial Y position and the spacing between nodes
     // Assumption here is that the nodes are always ordered by their index
-    // The second assumption is that they're alwats in a single column
+    // The second assumption is that they're always in a single column
     const initialY = 0;
-    const spacingY = 600;
+    const spacingY = 400;
 
     console.log("topology", topology);
 

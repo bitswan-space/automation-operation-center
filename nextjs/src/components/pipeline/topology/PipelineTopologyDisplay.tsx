@@ -10,7 +10,7 @@ import ReactFlow, {
 } from "reactflow";
 
 import { useCallback } from "react";
-import PipelineNode from "./ProcessorNode";
+import PipelineNode from "./PipelineNode";
 
 // we define the nodeTypes outside of the component to prevent re-renderings
 // you could also use useMemo inside the component

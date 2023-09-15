@@ -81,9 +81,32 @@ const reducer = (
   }
 };
 
-const typeIconMap: Record<string, React.ReactElement> = {
-  Kafka: <SiApachekafka size={28} />,
-  JSONParser: <SiJavascript size={28} />,
+type ProcessorNodeAttributes = {
+  titleColor: string;
+  subtitleColor: string;
+  bgColor: string;
+  icon: React.ReactElement;
+};
+
+const typeIconMap: Record<string, ProcessorNodeAttributes> = {
+  Kafka: {
+    icon: <SiApachekafka size={28} />,
+    bgColor: "",
+    titleColor: "",
+    subtitleColor: "",
+  },
+  JSONParser: {
+    icon: <SiJavascript size={28} />,
+    bgColor: "bg-[#F6BA00]",
+    titleColor: "text-white",
+    subtitleColor: "text-white",
+  },
+  FileCSVSink: {
+    icon: <Layers size={28} />,
+    bgColor: "bg-[#5D32BF]",
+    titleColor: "text-white",
+    subtitleColor: "text-white",
+  },
 };
 
 type NodeData = {
@@ -93,7 +116,7 @@ type NodeData = {
 };
 
 export function PipelineNode({ data }: NodeProps<NodeData>) {
-  console.log("data", data);
+  const { type: nodeType, name: nodeName, kind: nodeKind } = data;
 
   const initialState: PipelineNodeState = {
     expandedSections: [],
@@ -105,20 +128,44 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
   >(reducer, initialState);
 
   const getIconFromType = (type: string): React.ReactElement => {
-    return typeIconMap[type] ?? <Layers size={28} />;
+    return typeIconMap[type]?.icon ?? <Layers size={28} />;
+  };
+
+  const getTitleColorFromType = (type: string): string => {
+    const titleColor = typeIconMap[type]?.titleColor;
+    return titleColor ? titleColor : "text-neutral-200";
+  };
+
+  const getSubtitleColorFromType = (type: string): string => {
+    const subtitleColor = typeIconMap[type]?.subtitleColor;
+    return subtitleColor ? subtitleColor : "text-neutral-500";
+  };
+
+  const getBgColorFromType = (type: string): string => {
+    const bgColor = typeIconMap[type]?.bgColor;
+    return bgColor ? bgColor : "bg-neutral-950";
   };
 
   return (
     <Card className="w-[800px] rounded-sm border border-neutral-200 shadow-md">
       <CardHeader
-        className={clsx("rounded-t-sm bg-neutral-950 text-neutral-200")}
+        className={clsx(
+          "rounded-t-sm",
+          getBgColorFromType(nodeType),
+          getTitleColorFromType(nodeType),
+        )}
       >
         <div className="flex">
-          {getIconFromType(data.type)}
+          {getIconFromType(nodeType)}
           <div>
-            <CardTitle className="ml-2">{data.name}</CardTitle>
-            <CardDescription className={clsx("ml-2 capitalize")}>
-              {data.kind}
+            <CardTitle className="ml-2">{nodeName}</CardTitle>
+            <CardDescription
+              className={clsx(
+                "ml-2 capitalize",
+                getSubtitleColorFromType(nodeType),
+              )}
+            >
+              {nodeKind}
             </CardDescription>
           </div>
         </div>
