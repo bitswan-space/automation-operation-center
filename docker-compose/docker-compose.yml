@@ -4,20 +4,28 @@ volumes:
   portainer_data:
 
 services:
+  container-config-service:
+    restart: always
+    image: public.registry.bitswan.space/bitswan/container-configuration-service:latest
+    ports:
+      - "8080:8080"
+    env_file:
+      - ${PWD}/.env
+    volumes:
+      - ${PWD}/container_config_service.conf:/conf/container_config_service.conf:r
+
   example-pipeline-1:
       restart: always
       image: public.registry.bitswan.space/bitswan/example-pipeline:latest
-      # change entrypoint to sleep forever
-      entrypoint: ["sleep", "infinity"]
-
+      network_mode: host
       volumes:
         - $PWD/conf-1.conf:/conf/pipeline.conf:rw
         - /tmp/example-pipeline-data/:/data:rw
-        - /home/timothy/pr/libertyaces/product/BitSwanPump/bspump:/usr/local/lib/python3.10/site-packages/bspump/:rw
 
   example-pipeline-2:
       restart: always
       image: public.registry.bitswan.space/bitswan/example-pipeline:latest
+      network_mode: host
       volumes:
         - $PWD/conf-2.conf:/conf/pipeline.conf:rw
         - /tmp/example-pipeline-data/:/data:rw
@@ -25,6 +33,7 @@ services:
   example-pipeline-3:
       restart: always
       image: public.registry.bitswan.space/bitswan/example-pipeline:latest
+      network_mode: host
       volumes:
         - $PWD/conf-3.conf:/conf/pipeline.conf:rw
         - /tmp/example-pipeline-data/:/data:rw
@@ -36,10 +45,14 @@ services:
       - portainer_data:/data
       - /var/run/docker.sock:/var/run/docker.sock:rw
     restart: always
-    network_mode: host
+    ports:
+        - "9000:9000"
+        - "9443:9443"
 
   mosquitto:
     image: eclipse-mosquitto
+    container_name: mosquitto
+    network_mode: host
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - /mosquitto/data
