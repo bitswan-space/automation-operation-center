@@ -33,7 +33,7 @@ docker exec -it mosquitto /bin/sh
 ```
 2. Subscribe to topic
 ```shell script
-mosquitto_sub -h mosquitto -t "{container_id_of_pump}/Metrics"
+mosquitto_sub -h localhost -t "{container_id_of_pump}/Metrics"
 ```
 
 ### Publish get message to generate topology
@@ -43,6 +43,6 @@ docker exec -it mosquitto /bin/sh
 ```
 2. Publish get message
 ```shell script
-mosquitto_pub -h mosquitto -t "{container_id_of_pump}/Metrics/get" -m "get"
+mosquitto_pub -h localhost -t "{container_id_of_pump}/Metrics/get" -m "get"
 ```
 
