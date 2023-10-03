@@ -8,35 +8,49 @@ services:
     restart: always
     image: public.registry.bitswan.space/bitswan/container-configuration-service:latest
     ports:
-      - "8090:8090"
+      - "8080:8080"
     env_file:
       - ${PWD}/.env
     volumes:
       - ${PWD}/container_config_service.conf:/conf/container_config_service.conf:r
 
   example-pipeline-1:
-      restart: always
-      image: public.registry.bitswan.space/bitswan/example-pipeline:latest
-      network_mode: host
-      volumes:
-        - $PWD/conf-1.conf:/conf/pipeline.conf:rw
-        - /tmp/example-pipeline-data/:/data:rw
+    restart: always
+    image: public.registry.bitswan.space/bitswan/example-pipeline:latest
+    # network_mode: host
+    volumes:
+      - $PWD/conf-1.conf:/conf/pipeline.conf:rw
+      - /tmp/example-pipeline-data/:/data:rw
 
   example-pipeline-2:
-      restart: always
-      image: public.registry.bitswan.space/bitswan/example-pipeline:latest
-      network_mode: host
-      volumes:
-        - $PWD/conf-2.conf:/conf/pipeline.conf:rw
-        - /tmp/example-pipeline-data/:/data:rw
+    restart: always
+    image: public.registry.bitswan.space/bitswan/example-pipeline:latest
+    # network_mode: host
+    volumes:
+      - $PWD/conf-2.conf:/conf/pipeline.conf:rw
+      - /tmp/example-pipeline-data/:/data:rw
 
   example-pipeline-3:
-      restart: always
-      image: public.registry.bitswan.space/bitswan/example-pipeline:latest
-      network_mode: host
-      volumes:
-        - $PWD/conf-3.conf:/conf/pipeline.conf:rw
-        - /tmp/example-pipeline-data/:/data:rw
+    restart: always
+    image: public.registry.bitswan.space/bitswan/example-pipeline:latest
+    # network_mode: host
+    volumes:
+      - $PWD/conf-3.conf:/conf/pipeline.conf:rw
+      - /tmp/example-pipeline-data/:/data:rw
+
+  influxdb:
+    image: influxdb:2.0
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./data:/var/lib/influxdb2
+      - ./config:/etc/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=my-user
+      - DOCKER_INFLUXDB_INIT_PASSWORD=my-password
+      - DOCKER_INFLUXDB_INIT_ORG=my-org
+      - DOCKER_INFLUXDB_INIT_BUCKET=my-bucket
 
   portainer:
     image: portainer/portainer-ce:latest
@@ -46,14 +60,40 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:rw
     restart: always
     ports:
-        - "9000:9000"
-        - "9443:9443"
+      - "9000:9000"
+      - "9443:9443"
 
   mosquitto:
     image: eclipse-mosquitto
     container_name: mosquitto
-    network_mode: host
+    # network_mode: host
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - /mosquitto/data
       - /mosquitto/log
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.2
+    ports:
+      - "9090:8080"
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    command: start-dev
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "8025:8025" # Web UI
+      - "1025:1025" # SMTP server
+
+  mynodered:
+    image: nodered/node-red
+    ports:
+      - "1880:1880"
+    volumes:
+      - ./node_red_data:/data
+    container_name: mynodered

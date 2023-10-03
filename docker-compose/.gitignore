@@ -1,1 +1,6 @@
 .env
+
+config/
+data/
+grafana_data/
+node_red_data/
