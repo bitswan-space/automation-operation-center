@@ -37,7 +37,7 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
     const initialY = 0;
     const spacingY = 400;
 
-    console.log("topology", topology);
+    // console.log("topology", topology);
 
     return topology.map((node, index) => {
       return {

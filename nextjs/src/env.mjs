@@ -38,6 +38,11 @@ export const env = createEnv({
     KEYCLOAK_REFRESH_URL: z.string().url(),
     KEYCLOAK_END_SESSION_URL: z.string().url(),
     KEYCLOAK_POST_LOGOUT_REDIRECT_URI: z.string().url(),
+
+    // MQTT
+    MQTT_URL: z.string().url(),
+    CCS_CONFIG_KEY: z.string().min(1),
+    PREPARE_MQTT_SERVICE_URL: z.string().url(),
   },
 
   /**
@@ -77,6 +82,11 @@ export const env = createEnv({
     KEYCLOAK_END_SESSION_URL: process.env.KEYCLOAK_END_SESSION_URL,
     KEYCLOAK_POST_LOGOUT_REDIRECT_URI:
       process.env.KEYCLOAK_POST_LOGOUT_REDIRECT_URI,
+
+    // MQTT
+    MQTT_URL: process.env.MQTT_URL,
+    CCS_CONFIG_KEY: process.env.CCS_CONFIG_KEY,
+    PREPARE_MQTT_SERVICE_URL: process.env.PREPARE_MQTT_SERVICE_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.

@@ -173,3 +173,7 @@ export interface Prop {
   p: string;
   vt?: string;
 }
+
+export interface ServicePreparationResponse {
+  result: "OK" | "ERROR";
+}

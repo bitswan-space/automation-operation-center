@@ -6,9 +6,8 @@ import path from "path";
 
 function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // Ensure it's a GET request
     if (req.method !== "GET") {
-      res.status(405).end(); // Method Not Allowed
+      res.status(405).end(); // Any Method that is not a GET is Not Allowed
       return;
     }
 
@@ -30,8 +29,6 @@ function handler(req: NextApiRequest, res: NextApiResponse) {
     const data = pipelineTopologyData.filter((node) => {
       return node.pipelineID === req.query.id;
     });
-
-    // const data = pipelineTopologyData;
 
     res.status(200).json([...data]);
   } catch (error) {

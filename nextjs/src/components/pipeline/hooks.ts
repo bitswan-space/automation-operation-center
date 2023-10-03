@@ -5,6 +5,7 @@ import {
   type PipelineStat,
   type PipelineWithStats,
   type PipelineNode,
+  type ServicePreparationResponse,
 } from "@/types";
 import axios from "axios";
 import { useQueries, useQuery } from "@tanstack/react-query";
@@ -69,15 +70,30 @@ export const usePipelineDockerContainers = () => {
 
   const dockerContainers = results?.map((result) => result?.data).flat();
 
-  return dockerContainers?.filter((dockerContainer) => {
-    return dockerContainer?.Labels?.["space.bitswan.pipeline.protocol-version"];
-  });
+  const pipelineDockerContainers = dockerContainers?.filter(
+    (dockerContainer) => {
+      return dockerContainer?.Labels?.[
+        "space.bitswan.pipeline.protocol-version"
+      ];
+    },
+  );
+
+  return {
+    pipelineDockerContainers,
+    isLoading: results.some((result) => result.isLoading),
+    isError: results.some((result) => result.isError),
+  };
 };
 
-export const usePipelines = (): Pipeline[] => {
-  const dockerContainers = usePipelineDockerContainers();
+export const usePipelines = (): {
+  pipelines: Pipeline[];
+  isError: boolean;
+  isLoading: boolean;
+} => {
+  const { pipelineDockerContainers, isError, isLoading } =
+    usePipelineDockerContainers();
 
-  return dockerContainers?.map((dockerContainer) => {
+  const pipelines = pipelineDockerContainers?.map((dockerContainer) => {
     return {
       id: dockerContainer?.Id ?? "",
       name: dockerContainer?.Names?.[0] ?? "",
@@ -89,6 +105,8 @@ export const usePipelines = (): Pipeline[] => {
       upTime: dockerContainer?.Status ?? "",
     };
   });
+
+  return { pipelines, isError, isLoading };
 };
 
 const convertUnixTimestampToDate = (unixTimestamp: number) => {
@@ -125,11 +143,15 @@ export const usePipelineStats = () => {
   return data;
 };
 
-export const usePipelinesWithStats = (): PipelineWithStats[] => {
-  const pipelines = usePipelines();
+export const usePipelinesWithStats = (): {
+  pipelinesWithStats: PipelineWithStats[];
+  isError: boolean;
+  isLoading: boolean;
+} => {
+  const { pipelines, isLoading, isError } = usePipelines();
   const pipelineStats = usePipelineStats();
 
-  return pipelines?.map((pipeline) => {
+  const pipelinesWithStats = pipelines?.map((pipeline) => {
     const pipelineStat = pipelineStats?.filter((pipelineStat) =>
       pipeline.id.startsWith(pipelineStat.host),
     );
@@ -139,6 +161,8 @@ export const usePipelinesWithStats = (): PipelineWithStats[] => {
       pipelineStat,
     };
   });
+
+  return { pipelinesWithStats, isLoading, isError };
 };
 
 export const fetchPipelineTopology = (
@@ -153,5 +177,18 @@ export const usePipelineTopology = (pipelineId: string) => {
   return useQuery({
     queryKey: ["pipeline-topology", pipelineId],
     queryFn: () => fetchPipelineTopology(pipelineId),
+  });
+};
+
+export const preparePiplelineMQTT = (): Promise<ServicePreparationResponse> => {
+  return axios
+    .get<ServicePreparationResponse>(`${API_BASE_URL}/pipelines/prepare-mqtt`)
+    .then((response) => response.data);
+};
+
+export const usePreparePipelineMQTTService = () => {
+  return useQuery({
+    queryKey: ["prepare-pipeline-service-topology"],
+    queryFn: () => preparePiplelineMQTT(),
   });
 };
