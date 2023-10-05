@@ -4,40 +4,6 @@ volumes:
   portainer_data:
 
 services:
-  container-config-service:
-    restart: always
-    image: public.registry.bitswan.space/bitswan/container-configuration-service:latest
-    ports:
-      - "8080:8080"
-    env_file:
-      - ${PWD}/.env
-    volumes:
-      - ${PWD}/container_config_service.conf:/conf/container_config_service.conf:r
-
-  example-pipeline-1:
-    restart: always
-    image: public.registry.bitswan.space/bitswan/example-pipeline:latest
-    # network_mode: host
-    volumes:
-      - $PWD/conf-1.conf:/conf/pipeline.conf:rw
-      - /tmp/example-pipeline-data/:/data:rw
-
-  example-pipeline-2:
-    restart: always
-    image: public.registry.bitswan.space/bitswan/example-pipeline:latest
-    # network_mode: host
-    volumes:
-      - $PWD/conf-2.conf:/conf/pipeline.conf:rw
-      - /tmp/example-pipeline-data/:/data:rw
-
-  example-pipeline-3:
-    restart: always
-    image: public.registry.bitswan.space/bitswan/example-pipeline:latest
-    # network_mode: host
-    volumes:
-      - $PWD/conf-3.conf:/conf/pipeline.conf:rw
-      - /tmp/example-pipeline-data/:/data:rw
-
   influxdb:
     image: influxdb:2.0
     ports:
@@ -79,10 +45,15 @@ services:
     image: quay.io/keycloak/keycloak:22.0.2
     ports:
       - "9090:8080"
-    environment:
-      - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=admin
+    env_file:
+      - .env
     command: start-dev
+
+  postgres:
+    image: postgres:12-bullseye
+    volumes:
+    - ./keycloak-postgres:/var/lib/postgresql/data
+    env_file: .env
 
   mailhog:
     image: mailhog/mailhog
@@ -90,10 +61,20 @@ services:
       - "8025:8025" # Web UI
       - "1025:1025" # SMTP server
 
-  mynodered:
-    image: nodered/node-red
+  pipeline-operations-centre:
+    restart: always
+    image: public.registry.bitswan.space/bitswan/pipeline-operations-centre:latest
+    env_file:
+      - .env
     ports:
-      - "1880:1880"
+      - "3000:3000"
+
+  container-config-service:
+    restart: always
+    image: public.registry.bitswan.space/bitswan/container-configuration-service:latest
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
     volumes:
-      - ./node_red_data:/data
-    container_name: mynodered
+      - ./container_config_service.conf:/conf/container_config_service.conf:r

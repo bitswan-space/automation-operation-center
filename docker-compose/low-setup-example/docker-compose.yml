@@ -1,0 +1,37 @@
+version: "3.3"
+
+include:
+  - ../docker-compose.yml
+
+services:
+  example-pipeline-1:
+    restart: always
+    image: public.registry.bitswan.space/bitswan/example-pipeline:latest
+    # network_mode: host
+    volumes:
+      - $PWD/conf-1.conf:/conf/pipeline.conf:rw
+      - /tmp/example-pipeline-data/:/data:rw
+
+  example-pipeline-2:
+    restart: always
+    image: public.registry.bitswan.space/bitswan/example-pipeline:latest
+    # network_mode: host
+    volumes:
+      - $PWD/conf-2.conf:/conf/pipeline.conf:rw
+      - /tmp/example-pipeline-data/:/data:rw
+
+  example-pipeline-3:
+    restart: always
+    image: public.registry.bitswan.space/bitswan/example-pipeline:latest
+    # network_mode: host
+    volumes:
+      - $PWD/conf-3.conf:/conf/pipeline.conf:rw
+      - /tmp/example-pipeline-data/:/data:rw
+
+  mynodered:
+    image: nodered/node-red
+    ports:
+      - "1880:1880"
+    volumes:
+      - ./node_red_data:/data
+    container_name: mynodered

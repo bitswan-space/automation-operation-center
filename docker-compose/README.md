@@ -17,6 +17,10 @@ CCS_CONFIG_KEY=<your_ccs_config_key>
 PORTAINER_ACCESS_TOKEN=<your_portainer_access_token>
 ```
 
+### Getting the KEYCLOAK secrets:
+
+https://stackoverflow.com/questions/75647456/post-call-to-keycloak-to-fetch-access-token-works-in-postman-but-not-from-axios
+
 ### Distribution of Container IDs
 
 Send POST request to container configuration service to distribute container ids to pumps
