@@ -1,3 +1,5 @@
+variables:
+  DOCKER_IMAGE: pipeline-operations-centre
 
 stages:
 - test
@@ -5,10 +7,5 @@ sast:
   stage: test
 include:
 - template: Security/SAST.gitlab-ci.yml
-
-variables:
-  DOCKER_IMAGE: pipeline-operations-centre
-
-include:
-  - project: 'LibertyAces/Product/bitswanmonorepo'
-    file: 'cicd/docker-build-public.yml'
+- project: 'LibertyAces/Product/bitswanmonorepo'
+  file: 'cicd/docker-build-public.yml'
