@@ -64,7 +64,7 @@ export function useMqttRequestResponse({
         mqttClient.current.publish(requestTopic, message, (err) => {
           if (err) {
             console.error(
-              `Failed to publish message to topic: ${requestTopic}: ${err}`,
+              `Failed to publish message to topic: ${requestTopic}: ${err.message}`,
             );
           }
         });
