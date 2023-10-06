@@ -65,6 +65,7 @@ export const env = createEnv({
 
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
     PORTAINER_ACCESS_TOKEN: process.env.PORTAINER_ACCESS_TOKEN,
+    PORTAINER_BASE_URL: process.env.PORTAINER_BASE_URL,
 
     // INFLUX
     INFLUXDB_URL: process.env.INFLUXDB_URL,
