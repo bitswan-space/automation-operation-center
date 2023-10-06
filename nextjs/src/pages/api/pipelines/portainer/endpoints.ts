@@ -4,7 +4,7 @@ import axios, { type AxiosError } from "axios";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import https from "https";
 
-const PORTAINER_BASE_URL = "https://127.0.0.1:9443/api";
+const PORTAINER_BASE_URL = env.PORTAINER_BASE_URL + "api";
 
 const ENDPOINTS_URL = `${PORTAINER_BASE_URL}/endpoints`;
 
