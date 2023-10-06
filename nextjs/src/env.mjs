@@ -22,6 +22,7 @@ export const env = createEnv({
 
     // PORTAINER
     PORTAINER_ACCESS_TOKEN: z.string().min(1),
+    PORTAINER_BASE_URL: z.string().min(1),
 
     // INFLUX
     INFLUXDB_URL: z.string().url(),
