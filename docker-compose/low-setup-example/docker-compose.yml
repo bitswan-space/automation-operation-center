@@ -9,7 +9,7 @@ services:
     image: public.registry.bitswan.space/bitswan/example-pipeline:latest
     # network_mode: host
     volumes:
-      - $PWD/conf-1.conf:/conf/pipeline.conf:rw
+      - ./conf-1.conf:/conf/pipeline.conf:rw
       - /tmp/example-pipeline-data/:/data:rw
 
   example-pipeline-2:
@@ -17,7 +17,7 @@ services:
     image: public.registry.bitswan.space/bitswan/example-pipeline:latest
     # network_mode: host
     volumes:
-      - $PWD/conf-2.conf:/conf/pipeline.conf:rw
+      - ./conf-2.conf:/conf/pipeline.conf:rw
       - /tmp/example-pipeline-data/:/data:rw
 
   example-pipeline-3:
@@ -25,7 +25,7 @@ services:
     image: public.registry.bitswan.space/bitswan/example-pipeline:latest
     # network_mode: host
     volumes:
-      - $PWD/conf-3.conf:/conf/pipeline.conf:rw
+      - ./conf-3.conf:/conf/pipeline.conf:rw
       - /tmp/example-pipeline-data/:/data:rw
 
   mynodered:
