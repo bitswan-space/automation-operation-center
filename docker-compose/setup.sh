@@ -11,6 +11,7 @@ if [ ! -f .env ]; then
     echo DOCKER_INFLUXDB_INIT_PASSWORD=$INFLUXDB_PASSWORD >> .env
     echo NEXTAUTH_SECRET=$(mcookie) >> .env
     echo KEYCLOAK_ADMIN_PASSWORD=$(mcookie) >> .env
+    echo CCS_CONFIG_KEY=$(mcookie) >> .env
 
 fi
 
