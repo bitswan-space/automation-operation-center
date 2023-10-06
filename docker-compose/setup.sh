@@ -10,7 +10,7 @@ if [ ! -f .env ]; then
     echo INFLUXDB_PASSWORD=$INFLUXDB_PASSWORD >> .env
     echo DOCKER_INFLUXDB_INIT_PASSWORD=$INFLUXDB_PASSWORD >> .env
     echo NEXTAUTH_SECRET=$(mcookie) >> .env
-    echo POSTGRES_PASSWORD=$(mcookie) >> .env
+    echo KEYCLOAK_ADMIN_PASSWORD=$(mcookie) >> .env
 
 fi
 
