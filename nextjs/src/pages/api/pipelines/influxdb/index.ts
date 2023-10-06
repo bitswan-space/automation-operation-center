@@ -6,9 +6,10 @@ import { env } from "@/env.mjs";
 const url = env.INFLUXDB_URL;
 const token = env.INFLUXDB_TOKEN;
 const org = env.INFLUXDB_ORG;
+const bucket = env.INFLUXDB_BUCKET;
 
 const queryApi = new InfluxDB({ url, token }).getQueryApi(org);
-const fluxQuery = `from(bucket: "my-bucket")
+const fluxQuery = `from(bucket: "${bucket}")
   |> range(start: -6h)
   |> filter(fn: (r) => r["_measurement"] == "bspump.pipeline.eps")
   |> filter(fn: (r) => r["_field"] == "eps.in" or r["_field"] == "eps.out")
