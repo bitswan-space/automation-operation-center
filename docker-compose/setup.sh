@@ -1,8 +1,17 @@
 #!/bin/sh
 
+read -p "Enter the platform domain (e.g., http://localhost:3000): " PLATFORM_DOMAIN
+read -p "Enter the keycloak domain (e.g., http://localhost:9090): " KEYCLOAK_DOMAIN
+
 # if docker.env does not exist create it from the template
 if [ ! -f .env ]; then
-    cp .env.template .env
+    cp .env.template .env.temp
+
+    # Replace the domains in the copied file
+    sed -i "s|https://keycloak.bitswan.space|$KEYCLOAK_DOMAIN|g" .env.temp
+    sed -i "s|https://poc.bitswan.space|$PLATFORM_DOMAIN|g" .env.temp
+
+    mv .env.temp .env
     POSTGRES_PASSWORD=$(mcookie)
     echo POSTGRES_PASSWORD=$POSTGRES_PASSWORD >> .env
     echo KC_DB_PASSWORD=$POSTGRES_PASSWORD >> .env
