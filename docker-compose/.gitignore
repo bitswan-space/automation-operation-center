@@ -1,4 +1,9 @@
-.env
+.pipeline.env
+.keycloak.env
+.operations_centre.env
+.influxdb.env
+.postgres.env
+.config_service.env
 
 config/
 data/
