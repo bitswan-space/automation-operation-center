@@ -13,58 +13,24 @@ import {
 import { Label } from "@/components/ui/label";
 import { Clipboard, Workflow } from "lucide-react";
 import { formatPipelineName } from "@/utils/pipelineUtils";
-import { type PipelineWithStats, type PipelineNode } from "@/types";
+import { type PipelineNode, type PipelineWithStats } from "@/types";
 import { Textarea } from "@/components/ui/textarea";
-import { type Node, type Edge } from "reactflow";
 
 import { SimpleAreaChart } from "@/components/metrics/charts/SimpleAreaChart";
 import { PipelineTopologyDisplay } from "./topology/PipelineTopologyDisplay";
 import { EPSSyncAreaChart } from "../metrics/charts/EPSSyncAreaChart";
+import {
+  transformTopologyToFlowNodes,
+  transformTopologyToFlowEdges,
+} from "@/utils/reactflow";
 
 export interface PipelineDetailTabsProps {
   pipeline?: PipelineWithStats;
+  pipelineTopology?: PipelineNode[];
 }
 
 export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
-  const { pipeline } = props;
-
-  const { data: pipelineTopology } = usePipelineTopology(pipeline?.id ?? "");
-
-  const transformTopologyToFlowNodes = (topology: PipelineNode[]): Node[] => {
-    // Define the initial Y position and the spacing between nodes
-    // Assumption here is that the nodes are always ordered by their index
-    // The second assumption is that they're always in a single column
-    const initialY = 0;
-    const spacingY = 400;
-
-    // console.log("topology", topology);
-
-    return topology.map((node, index) => {
-      return {
-        id: node.id,
-        type: "processor",
-        position: { x: 200, y: initialY + index * spacingY },
-        data: { type: node.type, name: node.name, kind: node.kind },
-      };
-    });
-  };
-
-  const transformTopologyToFlowEdges = (topology: PipelineNode[]): Edge[] => {
-    return topology
-      .map((node) => {
-        return (
-          node.wires?.flat().map((wire) => {
-            return {
-              id: `${node.id}-${wire}`,
-              source: node.id,
-              target: wire,
-              animated: true,
-            } as Edge;
-          }) ?? []
-        );
-      })
-      .flat();
-  };
+  const { pipeline, pipelineTopology } = props;
 
   return (
     <Tabs defaultValue="summary" className="h-full w-full">

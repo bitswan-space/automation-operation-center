@@ -152,6 +152,9 @@ dependencies:
   nextjs-cors:
     specifier: ^2.1.2
     version: 2.1.2(next@13.4.19)
+  paho-mqtt:
+    specifier: ^1.1.0
+    version: 1.1.0
   react:
     specifier: 18.2.0
     version: 18.2.0
@@ -182,6 +185,9 @@ dependencies:
   tailwindcss-animate:
     specifier: ^1.0.7
     version: 1.0.7(tailwindcss@3.3.3)
+  uuid:
+    specifier: ^9.0.1
+    version: 9.0.1
   zod:
     specifier: ^3.22.2
     version: 3.22.2
@@ -193,12 +199,18 @@ devDependencies:
   '@types/node':
     specifier: ^18.16.0
     version: 18.17.12
+  '@types/paho-mqtt':
+    specifier: ^1.0.8
+    version: 1.0.8
   '@types/react':
     specifier: ^18.2.20
     version: 18.2.21
   '@types/react-dom':
     specifier: ^18.2.7
     version: 18.2.7
+  '@types/uuid':
+    specifier: ^9.0.5
+    version: 9.0.5
   '@typescript-eslint/eslint-plugin':
     specifier: ^6.3.0
     version: 6.5.0(@typescript-eslint/parser@6.5.0)(eslint@8.48.0)(typescript@5.2.2)
@@ -2295,6 +2307,10 @@ packages:
   /@types/node@18.17.12:
     resolution: {integrity: sha512-d6xjC9fJ/nSnfDeU0AMDsaJyb1iHsqCSOdi84w4u+SlN/UgQdY5tRhpMzaFYsI4mnpvgTivEaQd0yOUhAtOnEQ==}
 
+  /@types/paho-mqtt@1.0.8:
+    resolution: {integrity: sha512-zVGEv61gh2hUGJiP+IR3ihllw380zsKlMrNkED3nRzg/avXXbiBzcEC5BQx5ZmoCe5PUIwzdrt4ct64ff9n1uA==}
+    dev: true
+
   /@types/prop-types@15.7.5:
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
 
@@ -2322,6 +2338,10 @@ packages:
 
   /@types/semver@7.5.1:
     resolution: {integrity: sha512-cJRQXpObxfNKkFAZbJl2yjWtJCqELQIdShsogr1d2MilP8dKD9TE/nEKHkJgUNHdGKCQaf9HbIynuV2csLGVLg==}
+    dev: true
+
+  /@types/uuid@9.0.5:
+    resolution: {integrity: sha512-xfHdwa1FMJ082prjSJpoEI57GZITiQz10r3vEJCHa2khEFQjKy91aWKz6+zybzssCvXUwE1LQWgWVwZ4nYUvHQ==}
     dev: true
 
   /@types/ws@8.5.6:
@@ -4655,6 +4675,10 @@ packages:
       p-limit: 3.1.0
     dev: true
 
+  /paho-mqtt@1.1.0:
+    resolution: {integrity: sha512-KPbL9KAB0ASvhSDbOrZBaccXS+/s7/LIofbPyERww8hM5Ko71GUJQ6Nmg0BWqj8phAIT8zdf/Sd/RftHU9i2HA==}
+    dev: false
+
   /parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
     engines: {node: '>=6'}
@@ -5679,6 +5703,11 @@ packages:
 
   /uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    hasBin: true
+    dev: false
+
+  /uuid@9.0.1:
+    resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
     dev: false
 
