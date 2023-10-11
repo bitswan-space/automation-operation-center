@@ -5,18 +5,22 @@ import { type ReactElement } from "react";
 import React from "react";
 import { usePipelinesWithStats } from "@/components/pipeline/hooks";
 import { TitleBar } from "@/components/layout/TitleBar";
-import { useRouter } from "next/router";
 import { formatPipelineName } from "@/utils/pipelineUtils";
 import Link from "next/link";
 import { PipelineDetailTabs } from "../../components/pipeline/PipelineDetailTabs";
 import * as mqtt from "mqtt/dist/mqtt.min";
 import { v4 as uuidv4 } from "uuid";
 import { type PipelineNode } from "@/types";
+import { env } from "@/env.mjs";
+import type * as next from "next";
 
-const PipelineDetailPage: NextPageWithLayout = () => {
-  const router = useRouter();
-  const { id } = router.query;
+interface PipelineDetailPageProps {
+  id: string;
+}
 
+const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
+  id,
+}) => {
   const { pipelinesWithStats: pipelines } = usePipelinesWithStats();
   const pipeline = pipelines.find((p) => p.id === id);
 
@@ -25,8 +29,8 @@ const PipelineDetailPage: NextPageWithLayout = () => {
   const [pipelineTopology, setPipelineTopology] =
     React.useState<PipelineNode[]>();
 
-  const requestTopic = `${id as string}/Metrics/get`;
-  const responseTopic = `${id as string}/Metrics`;
+  const requestTopic = `${id}/Metrics/get`;
+  const responseTopic = `${id}/Metrics`;
 
   type PipelineTopologyResponse = {
     topology: PipelineNode[];
@@ -34,7 +38,7 @@ const PipelineDetailPage: NextPageWithLayout = () => {
 
   React.useEffect(() => {
     if (!mqttClientRef.current) {
-      mqttClientRef.current = mqtt.connect("mqtt://127.0.0.1:9001", {
+      mqttClientRef.current = mqtt.connect(env.NEXT_PUBLIC_MQTT_URL, {
         keepalive: 10,
         reschedulePings: true,
         protocolId: "MQTT",
@@ -106,5 +110,17 @@ const PipelineDetailPage: NextPageWithLayout = () => {
 PipelineDetailPage.getLayout = function getLayout(page: ReactElement) {
   return <DashboardLayout>{page}</DashboardLayout>;
 };
+
+export function getServerSideProps(context: next.GetServerSidePropsContext) {
+  const { id } = context.query;
+
+  const pipelineId = id as string;
+
+  return {
+    props: {
+      id: pipelineId,
+    },
+  };
+}
 
 export default PipelineDetailPage;

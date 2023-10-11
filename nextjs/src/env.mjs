@@ -52,7 +52,7 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
-    // NEXT_PUBLIC_CLIENTVAR: z.string().min(1),
+    NEXT_PUBLIC_MQTT_URL: z.string().min(1),
   },
 
   /**
@@ -89,6 +89,7 @@ export const env = createEnv({
     MQTT_URL: process.env.MQTT_URL,
     CCS_CONFIG_KEY: process.env.CCS_CONFIG_KEY,
     PREPARE_MQTT_SERVICE_URL: process.env.PREPARE_MQTT_SERVICE_URL,
+    NEXT_PUBLIC_MQTT_URL: process.env.NEXT_PUBLIC_MQTT_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.
