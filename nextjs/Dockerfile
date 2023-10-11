@@ -4,6 +4,8 @@ FROM --platform=linux/amd64 node:16-alpine3.17 AS deps
 RUN apk add --no-cache libc6-compat openssl1.1-compat
 WORKDIR /app
 
+ENV NEXT_PUBLIC_MQTT_URL wss://mqtt.bitswan.space
+
 # Install dependencies based on the preferred package manager
 
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml\* ./
@@ -41,8 +43,6 @@ WORKDIR /app
 ENV NODE_ENV production
 
 # ENV NEXT_TELEMETRY_DISABLED 1
-
-ENV NEXT_PUBLIC_MQTT_URL wss://mqtt.bitswan.space
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
