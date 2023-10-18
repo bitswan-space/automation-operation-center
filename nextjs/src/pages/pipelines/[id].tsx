@@ -5,14 +5,13 @@ import { type ReactElement } from "react";
 import React from "react";
 import { usePipelinesWithStats } from "@/components/pipeline/hooks";
 import { TitleBar } from "@/components/layout/TitleBar";
-import { formatPipelineName } from "@/utils/pipelineUtils";
+import { flattenTopology, formatPipelineName } from "@/utils/pipelineUtils";
 import Link from "next/link";
 import { PipelineDetailTabs } from "../../components/pipeline/PipelineDetailTabs";
-import * as mqtt from "mqtt/dist/mqtt.min";
-import { v4 as uuidv4 } from "uuid";
-import { type PipelineNode } from "@/types";
-import { env } from "@/env.mjs";
+import type * as mqtt from "mqtt/dist/mqtt.min";
+import { type PumpTopologyResponse, type PipelineNode } from "@/types";
 import type * as next from "next";
+import { useMQTT } from "@/shared/hooks/mqtt";
 
 interface PipelineDetailPageProps {
   id: string;
@@ -24,60 +23,36 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
   const { pipelinesWithStats: pipelines } = usePipelinesWithStats();
   const pipeline = pipelines.find((p) => p.id === id);
 
-  const mqttClientRef = React.useRef<null | mqtt.MqttClient>(null);
-
   const [pipelineTopology, setPipelineTopology] =
     React.useState<PipelineNode[]>();
 
-  const requestTopic = `${id}/Metrics/get`;
-  const responseTopic = `${id}/Metrics`;
+  const pumpTopologyRequestTopic = `c/${id}/topology/get`;
+  const pumpTopologyResponseTopic = `c/${id}/topology`;
 
-  type PipelineTopologyResponse = {
-    topology: PipelineNode[];
-  };
+  const pipelineTopologyOnMessageHandler =
+    React.useCallback<mqtt.OnMessageCallback>(
+      (_topic, payload) => {
+        const res: PumpTopologyResponse = JSON.parse(
+          payload.toString(),
+        ) as PumpTopologyResponse;
 
-  React.useEffect(() => {
-    if (!mqttClientRef.current) {
-      mqttClientRef.current = mqtt.connect(env.NEXT_PUBLIC_MQTT_URL, {
-        keepalive: 10,
-        reschedulePings: true,
-        protocolId: "MQTT",
-        reconnectPeriod: 1000,
-        connectTimeout: 3 * 1000,
-        clean: true,
-        queueQoSZero: true,
-        clientId: uuidv4(),
-        // log: console.log,
-      });
-    }
+        console.log("Received topology response: ", res);
 
-    mqttClientRef.current?.on("connect", () => {
-      console.log("Connected to MQTT Broker");
-      mqttClientRef.current?.subscribe(responseTopic, (err) => {
-        if (!err) {
-          console.log("Subscribed to ", responseTopic);
-          mqttClientRef.current?.publish(requestTopic, "get");
-        } else {
-          console.log("Error subscribing: ", err);
-        }
-      });
-    });
+        const topology = flattenTopology(res);
+        setPipelineTopology(topology);
+      },
+      [setPipelineTopology],
+    );
 
-    mqttClientRef.current?.on("error", (err) => {
-      console.error("MQTT Error:", err);
-      mqttClientRef.current?.end();
-    });
-
-    mqttClientRef.current?.on("message", (topic, message) => {
-      const res: PipelineTopologyResponse = JSON.parse(
-        message.toString(),
-      ) as PipelineTopologyResponse;
-
-      setPipelineTopology(res.topology);
-
-      mqttClientRef.current?.end();
-    });
-  }, [requestTopic, responseTopic]);
+  useMQTT({
+    requestResponseTopicHandlers: [
+      {
+        requestTopic: pumpTopologyRequestTopic,
+        responseTopic: pumpTopologyResponseTopic,
+        handler: pipelineTopologyOnMessageHandler,
+      },
+    ],
+  });
 
   return (
     <>

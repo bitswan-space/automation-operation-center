@@ -4,6 +4,7 @@ import {
   ChevronRight,
   Layers,
   SlidersHorizontal,
+  View,
 } from "lucide-react";
 import {
   Card,
@@ -155,22 +156,29 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
           getTitleColorFromType(nodeType),
         )}
       >
-        <div className="flex">
-          {getIconFromType(nodeType)}
-          <div>
-            <CardTitle className="ml-2">{nodeName}</CardTitle>
-            <CardDescription
-              className={clsx(
-                "ml-2 capitalize",
-                getSubtitleColorFromType(nodeType),
-              )}
-            >
-              {nodeKind}
-            </CardDescription>
+        <div className="flex justify-between">
+          <div className="flex">
+            {getIconFromType(nodeType)}
+            <div>
+              <CardTitle className="ml-2">{nodeName}</CardTitle>
+              <CardDescription
+                className={clsx(
+                  "ml-2 capitalize",
+                  getSubtitleColorFromType(nodeType),
+                )}
+              >
+                {nodeKind}
+              </CardDescription>
+            </div>
+          </div>
+          <div className="flex">
+            <div title="Inspect Pipeline" className="hover:cursor-pointer">
+              <View size={24} className="" />
+            </div>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="divide-y p-0">
+      <CardContent className="divide-y p-0 pr-2">
         <CollapsibleSection
           title="Stats"
           icon={<BarChartBig size={18} className="text-neutral-600" />}

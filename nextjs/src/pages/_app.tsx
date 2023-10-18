@@ -10,6 +10,9 @@ import { type AppContextType } from "next/dist/shared/lib/utils";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactFlowProvider } from "reactflow";
+import { MqttProvider } from "@/context/mqtt";
+import { useMQTTStore } from "@/store/mqtt";
+import React from "react";
 
 const queryClient = new QueryClient();
 

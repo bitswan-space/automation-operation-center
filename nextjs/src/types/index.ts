@@ -140,7 +140,7 @@ export type PipelineWithStats = Pipeline & {
 };
 export interface PipelineNode {
   id: string;
-  type: string;
+  type?: string;
   kind?: string;
   label?: string;
   disabled?: boolean;
@@ -155,14 +155,15 @@ export interface PipelineNode {
   topic?: string;
   payload?: string;
   payloadType?: string;
-  wires?: Array<string[]>;
+  wires?: string[];
   func?: string;
   outputs?: number;
   timeout?: number;
   noerr?: number;
   initialize?: string;
   finalize?: string;
-  property?: string;
+  properties?: string;
+  metrics?: unknown[];
   outproperty?: string;
   tag?: string;
   ret?: string;
@@ -176,4 +177,15 @@ export interface Prop {
 
 export interface ServicePreparationResponse {
   result: "OK" | "ERROR";
+}
+
+export interface PumpTopologyResponse {
+  topology: Record<
+    string,
+    {
+      wires: string[];
+      properties: string;
+      metrics: unknown[];
+    }
+  >;
 }

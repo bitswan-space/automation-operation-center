@@ -50,7 +50,7 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
       <TabsContent value="scheme" className="h-5/6">
         <Card className="h-full rounded-md">
           <CardHeader>
-            <CardTitle className="text-xl">Pipeline Topology</CardTitle>
+            <CardTitle className="text-xl">Pump Topology</CardTitle>
           </CardHeader>
           <CardContent className="h-5/6 w-full space-y-2">
             <PipelineTopologyDisplay
