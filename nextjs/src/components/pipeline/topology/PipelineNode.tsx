@@ -32,6 +32,8 @@ import {
   jsonTreeTheme,
   outputSampleJSON,
 } from "@/utils/jsonTree";
+import Link from "next/link";
+import { useRouter } from "next/router";
 
 type Section = "stats" | "configure" | "data" | "logs";
 type PipelineNodeActionType =
@@ -114,10 +116,14 @@ type NodeData = {
   type: string;
   name: string;
   kind: string;
+  id: string;
 };
 
 export function PipelineNode({ data }: NodeProps<NodeData>) {
-  const { type: nodeType, name: nodeName, kind: nodeKind } = data;
+  const { type: nodeType, name: nodeName, kind: nodeKind, id: nodeID } = data;
+
+  const router = useRouter();
+  const currentPath = router.asPath;
 
   const initialState: PipelineNodeState = {
     expandedSections: [],
@@ -172,9 +178,20 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
             </div>
           </div>
           <div className="flex">
-            <div title="Inspect Pipeline" className="hover:cursor-pointer">
-              <View size={24} className="" />
-            </div>
+            {
+              <div
+                title="Inspect Pipeline"
+                className="hover:cursor-pointer"
+                onClick={() => {
+                  router
+                    .push(`${currentPath}/${nodeID}`)
+                    .then(() => window.location.reload())
+                    .catch((err) => console.log(err));
+                }}
+              >
+                <View size={24} className="" />
+              </div>
+            }
           </div>
         </div>
       </CardHeader>

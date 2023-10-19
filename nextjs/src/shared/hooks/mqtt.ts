@@ -45,8 +45,6 @@ export function useMQTT(props: UseMQTTProps) {
       requestResponseTopicHandlers?.forEach((handler) => {
         mqttClient?.subscribe(handler.responseTopic, (err) => {
           if (!err) {
-            console.log("Subscribed to: ", handler.responseTopic);
-            console.log("Publishing request to: ", handler.requestTopic);
             mqttClient?.publish(handler.requestTopic, "get");
           } else {
             console.log("Error subscribing: ", err);

@@ -1,33 +1,65 @@
-import {} from "../../components/metrics/charts/EPSSyncAreaChart";
+import {} from "../../../components/metrics/charts/EPSSyncAreaChart";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { type NextPageWithLayout } from "../_app";
+import { type NextPageWithLayout } from "../../_app";
 import { type ReactElement } from "react";
 import React from "react";
 import { usePipelinesWithStats } from "@/components/pipeline/hooks";
 import { TitleBar } from "@/components/layout/TitleBar";
 import { flattenTopology, formatPipelineName } from "@/utils/pipelineUtils";
 import Link from "next/link";
-import { PipelineDetailTabs } from "../../components/pipeline/PipelineDetailTabs";
+import { PipelineDetailTabs } from "../../../components/pipeline/PipelineDetailTabs";
 import type * as mqtt from "mqtt/dist/mqtt.min";
 import { type PumpTopologyResponse, type PipelineNode } from "@/types";
 import type * as next from "next";
 import { useMQTT } from "@/shared/hooks/mqtt";
 
 interface PipelineDetailPageProps {
-  id: string;
+  id: string | string[];
 }
 
 const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
   id,
 }) => {
+  function joinIDsWithDelimiter(ids: string[], delimiter: string): string {
+    const joinedIDs = ids
+      .map((id, index) => {
+        if (index === 0) return `c/${id}`;
+
+        return `c/${id}`;
+      })
+      .join(delimiter);
+    return joinedIDs;
+  }
+
   const { pipelinesWithStats: pipelines } = usePipelinesWithStats();
-  const pipeline = pipelines.find((p) => p.id === id);
+  const pipeline = pipelines.find((p) => p.id === id?.[0]);
 
   const [pipelineTopology, setPipelineTopology] =
     React.useState<PipelineNode[]>();
 
-  const pumpTopologyRequestTopic = `c/${id}/topology/get`;
-  const pumpTopologyResponseTopic = `c/${id}/topology`;
+  const [pipelineTopologyRequestTopic, setPipelineTopologyRequestTopic] =
+    React.useState<string>(
+      `${joinIDsWithDelimiter(id as string[], "/")}/topology/get`,
+    );
+  const [pipelineTopologyResponseTopic, setPipelineTopologyResponseTopic] =
+    React.useState<string>(
+      `${joinIDsWithDelimiter(id as string[], "/")}/topology`,
+    );
+
+  React.useEffect(() => {
+    const pumpTopologyRequestTopic = `${joinIDsWithDelimiter(
+      id as string[],
+      "/",
+    )}/topology/get`;
+
+    const pumpTopologyResponseTopic = `${joinIDsWithDelimiter(
+      id as string[],
+      "/",
+    )}/topology`;
+
+    setPipelineTopologyRequestTopic(pumpTopologyRequestTopic);
+    setPipelineTopologyResponseTopic(pumpTopologyResponseTopic);
+  }, [id]);
 
   const pipelineTopologyOnMessageHandler =
     React.useCallback<mqtt.OnMessageCallback>(
@@ -35,8 +67,6 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
         const res: PumpTopologyResponse = JSON.parse(
           payload.toString(),
         ) as PumpTopologyResponse;
-
-        console.log("Received topology response: ", res);
 
         const topology = flattenTopology(res);
         setPipelineTopology(topology);
@@ -47,12 +77,36 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
   useMQTT({
     requestResponseTopicHandlers: [
       {
-        requestTopic: pumpTopologyRequestTopic,
-        responseTopic: pumpTopologyResponseTopic,
+        requestTopic: pipelineTopologyRequestTopic,
+        responseTopic: pipelineTopologyResponseTopic,
         handler: pipelineTopologyOnMessageHandler,
       },
     ],
   });
+
+  const getBreadcrumbs = (pipelineIDs: string[]) => {
+    return pipelineIDs.map((id, index) => {
+      if (index === 0) {
+        return (
+          <React.Fragment key={id}>
+            <Link href={"/"} className="underline">
+              Running Pipelines
+            </Link>
+            <span className="text-lg">&#x25B8;</span>
+            <span className="underline">
+              {formatPipelineName(pipeline?.name ?? "N/A")}
+            </span>
+          </React.Fragment>
+        );
+      }
+      return (
+        <React.Fragment key={id}>
+          <span className="text-lg">&#x25B8;</span>
+          <span className="underline">{id}</span>
+        </React.Fragment>
+      );
+    });
+  };
 
   return (
     <>
@@ -63,13 +117,7 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
         <TitleBar title={"Running Pipelines"} />
 
         <div className="space-x-4 py-2 text-sm font-semibold text-neutral-600">
-          <Link href={"/"} className="underline">
-            Running Pipelines
-          </Link>
-          <span className="text-lg">&#x25B8;</span>
-          <span className="underline">
-            {formatPipelineName(pipeline?.name ?? "N/A")}
-          </span>
+          {getBreadcrumbs(id as string[])}
         </div>
         <div className="h-full py-2">
           <PipelineDetailTabs
@@ -89,7 +137,7 @@ PipelineDetailPage.getLayout = function getLayout(page: ReactElement) {
 export function getServerSideProps(context: next.GetServerSidePropsContext) {
   const { id } = context.query;
 
-  const pipelineId = id as string;
+  const pipelineId = id as string[];
 
   return {
     props: {
