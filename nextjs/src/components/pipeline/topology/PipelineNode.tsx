@@ -32,7 +32,6 @@ import {
   jsonTreeTheme,
   outputSampleJSON,
 } from "@/utils/jsonTree";
-import Link from "next/link";
 import { useRouter } from "next/router";
 
 type Section = "stats" | "configure" | "data" | "logs";
