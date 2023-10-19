@@ -3,8 +3,6 @@ import type * as mqtt from "mqtt/dist/mqtt.min";
 import React from "react";
 import { useMQTTStore } from "@/store/mqtt";
 
-type OnMessageCallbackHandler = (topic: string, message: Buffer) => void;
-
 export interface UseMQTTProps {
   onConnect?: () => void;
   requestResponseTopicHandlers?: {
