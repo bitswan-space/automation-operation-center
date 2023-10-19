@@ -12,14 +12,6 @@ export interface UseMQTTProps {
     responseTopic: string;
     handler: mqtt.OnMessageCallback;
   }[];
-  subscriptionTopicHandlers?: {
-    topic: string;
-    handler: mqtt.ClientSubscribeCallback;
-  }[];
-  publishTopicHandlers?: {
-    topic: string;
-    handler: OnMessageCallbackHandler;
-  }[];
 }
 
 export function useMQTT(props: UseMQTTProps) {
