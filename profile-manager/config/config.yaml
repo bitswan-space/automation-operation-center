@@ -1,0 +1,3 @@
+portainer-url: http://portainer:9000
+mqtt-broker-host: mosquitto
+mqtt-broker-port: 1883
