@@ -3,6 +3,7 @@ package main
 import (
 	"bitswan.space/container-discovery-service/internal/config"
 	"bitswan.space/container-discovery-service/internal/logger"
+	"bitswan.space/container-discovery-service/internal/mqtt"
 )
 
 func main() {
@@ -14,4 +15,17 @@ func main() {
     }
 
     logger.Info.Printf("Loaded configuration: %+v", cfg)
+
+	mqtt.NewClient(cfg)
+
+	client:=mqtt.GetClient()
+
+	if (client!=nil){
+		client.Subscribe("c/topology/get", 0, mqtt.HandleTopologyRequest)
+		client.Subscribe("c/trigger/get", 0, mqtt.HandleTriggerRequest)
+	} else {
+		logger.Error.Println("MQTT client is nil")
+	}
+
+	select {}
 }
