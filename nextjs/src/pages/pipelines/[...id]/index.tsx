@@ -8,10 +8,9 @@ import { TitleBar } from "@/components/layout/TitleBar";
 import { flattenTopology, formatPipelineName } from "@/utils/pipelineUtils";
 import Link from "next/link";
 import { PipelineDetailTabs } from "../../../components/pipeline/PipelineDetailTabs";
-import type * as mqtt from "mqtt/dist/mqtt.min";
 import { type PumpTopologyResponse, type PipelineNode } from "@/types";
 import type * as next from "next";
-import { useMQTT } from "@/shared/hooks/mqtt";
+import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
 
 interface PipelineDetailPageProps {
   id: string | string[];
@@ -37,51 +36,27 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
   const [pipelineTopology, setPipelineTopology] =
     React.useState<PipelineNode[]>();
 
-  const [pipelineTopologyRequestTopic, setPipelineTopologyRequestTopic] =
-    React.useState<string>(
-      `${joinIDsWithDelimiter(id as string[], "/")}/topology/get`,
-    );
-  const [pipelineTopologyResponseTopic, setPipelineTopologyResponseTopic] =
-    React.useState<string>(
-      `${joinIDsWithDelimiter(id as string[], "/")}/topology`,
-    );
+  const pipelineTopologyRequestTopic = `${joinIDsWithDelimiter(
+    id as string[],
+    "/",
+  )}/topology/get`;
 
-  React.useEffect(() => {
-    const pumpTopologyRequestTopic = `${joinIDsWithDelimiter(
-      id as string[],
-      "/",
-    )}/topology/get`;
+  const pipelineTopologyResponseTopic = `${joinIDsWithDelimiter(
+    id as string[],
+    "/",
+  )}/topology`;
 
-    const pumpTopologyResponseTopic = `${joinIDsWithDelimiter(
-      id as string[],
-      "/",
-    )}/topology`;
-
-    setPipelineTopologyRequestTopic(pumpTopologyRequestTopic);
-    setPipelineTopologyResponseTopic(pumpTopologyResponseTopic);
-  }, [id]);
-
-  const pipelineTopologyOnMessageHandler =
-    React.useCallback<mqtt.OnMessageCallback>(
-      (_topic, payload) => {
-        const res: PumpTopologyResponse = JSON.parse(
-          payload.toString(),
-        ) as PumpTopologyResponse;
-
-        const topology = flattenTopology(res);
+  const {} = useMQTTRequestResponseSubscription<PumpTopologyResponse>({
+    queryKey: "topology-subscription", // Add the queryKey property here
+    requestResponseTopicHandler: {
+      requestTopic: pipelineTopologyRequestTopic,
+      responseTopic: pipelineTopologyResponseTopic,
+      requestMessage: "get",
+      onMessageCallback: (response) => {
+        const topology = flattenTopology(response);
         setPipelineTopology(topology);
       },
-      [setPipelineTopology],
-    );
-
-  useMQTT({
-    requestResponseTopicHandlers: [
-      {
-        requestTopic: pipelineTopologyRequestTopic,
-        responseTopic: pipelineTopologyResponseTopic,
-        handler: pipelineTopologyOnMessageHandler,
-      },
-    ],
+    },
   });
 
   const getBreadcrumbs = (pipelineIDs: string[]) => {

@@ -176,25 +176,29 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
               </CardDescription>
             </div>
           </div>
-          <div className="flex">
-            {
-              <div
-                title="Inspect Pipeline"
-                className="hover:cursor-pointer"
-                onClick={() => {
-                  router
-                    .push(`${currentPath}/${nodeID}`)
-                    .then(() => window.location.reload())
-                    .catch((err) => console.log(err));
-                }}
-              >
-                <View size={24} className="" />
-              </div>
-            }
-          </div>
+          {nodeType === "pipeline" && (
+            <div className="flex">
+              {
+                <div
+                  title="Inspect Pipeline"
+                  className="hover:cursor-pointer"
+                  onClick={() => {
+                    router
+                      .push(`${currentPath}/${nodeID}`)
+                      .then(() => {
+                        // window.location.reload()
+                      })
+                      .catch((err) => console.log(err));
+                  }}
+                >
+                  <View size={24} className="" />
+                </div>
+              }
+            </div>
+          )}
         </div>
       </CardHeader>
-      <CardContent className="divide-y p-0 pr-2">
+      <CardContent className="r-2 divide-y p-0">
         <CollapsibleSection
           title="Stats"
           icon={<BarChartBig size={18} className="text-neutral-600" />}

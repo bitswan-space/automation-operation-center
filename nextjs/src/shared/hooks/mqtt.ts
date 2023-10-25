@@ -1,59 +1,99 @@
-import type * as mqtt from "mqtt/dist/mqtt.min";
+import * as mqtt from "mqtt/dist/mqtt.min";
+
+import type { SWRSubscription, SWRSubscriptionOptions } from "swr/subscription";
 
 import React from "react";
-import { useMQTTStore } from "@/store/mqtt";
+import { env } from "@/env.mjs";
+import useSWRSubscription from "swr/subscription";
 
-export interface UseMQTTProps {
-  onConnect?: () => void;
-  requestResponseTopicHandlers?: {
-    requestTopic: string;
-    responseTopic: string;
-    handler: mqtt.OnMessageCallback;
-  }[];
+export interface RequestResponseTopicHandler<T> {
+  requestTopic: string;
+  responseTopic: string;
+  requestMessage: string | object;
+  requestMessageType?: "json" | "string";
+  onMessageCallback?: (response: T) => void;
 }
 
-export function useMQTT(props: UseMQTTProps) {
-  const { onConnect, requestResponseTopicHandlers } = props;
+export interface UseNewMQTTProps<T> {
+  queryKey: string;
+  onConnect?: () => void;
+  requestResponseTopicHandler: RequestResponseTopicHandler<T>;
+}
 
-  const initMQTT = useMQTTStore((state) => state.initialiseConnection);
-  const closeMQTT = useMQTTStore((state) => state.closeConnection);
+export function useMQTTRequestResponseSubscription<T>(
+  props: UseNewMQTTProps<T>,
+) {
+  const { requestResponseTopicHandler, queryKey } = props;
 
-  React.useEffect(() => {
-    initMQTT();
-    return () => {
-      closeMQTT();
-    };
-  }, [closeMQTT, initMQTT]);
+  const {
+    requestMessage,
+    responseTopic,
+    requestMessageType,
+    requestTopic,
+    onMessageCallback,
+  } = requestResponseTopicHandler;
 
-  const mqttClient = useMQTTStore((state) => state.client);
+  const subscribe: SWRSubscription<string, T, Error> = React.useCallback(
+    (key, { next }: SWRSubscriptionOptions<T, Error>) => {
+      const client = mqtt.connect(env.NEXT_PUBLIC_MQTT_URL, {
+        keepalive: 10,
+        reschedulePings: true,
+        protocolId: "MQTT",
+        // reconnectPeriod: 1000,
+        connectTimeout: 3 * 1000,
+        clean: true,
+        queueQoSZero: true,
+        clientId: "mqttjs_" + Math.random().toString(16).substr(2, 8),
+        // log: console.log,
+      });
 
-  React.useEffect(() => {
-    mqttClient?.on("connect", () => {
-      console.log("Connected to MQTT Broker");
-      onConnect?.();
+      client.on("connect", () => {
+        console.log("Connected to MQTT Broker");
 
-      requestResponseTopicHandlers?.forEach((handler) => {
-        mqttClient?.subscribe(handler.responseTopic, (err) => {
+        client.subscribe(responseTopic, (err) => {
           if (!err) {
-            mqttClient?.publish(handler.requestTopic, "get");
+            if (requestMessageType === "json") {
+              client.publish(requestTopic, JSON.stringify(requestMessage));
+            } else {
+              console.log("publishing string message");
+              client.publish(requestTopic, requestMessage as string);
+            }
           } else {
             console.log("Error subscribing: ", err);
+            next(err);
           }
         });
       });
-    });
 
-    mqttClient?.on("error", (err) => {
-      console.error("MQTT Error:", err);
-      mqttClient?.end();
-    });
+      const onMessage = (_topic: string, message: Buffer) => {
+        const res: T = JSON.parse(message.toString()) as T;
+        onMessageCallback?.(res);
+        next(null, res);
+      };
 
-    mqttClient?.on("message", (topic, message, packet) => {
-      const th = requestResponseTopicHandlers?.find(
-        (t) => t.responseTopic === topic,
-      );
+      const onError = (err: Error) => {
+        next(err);
+        console.error("MQTT Error:", err);
+        client.end();
+      };
+      client.on("message", onMessage);
+      client.on("error", onError);
 
-      th?.handler(topic, message, packet);
-    });
-  }, [mqttClient, onConnect, requestResponseTopicHandlers]);
+      return () => {
+        client.removeAllListeners();
+        client.end();
+      };
+    },
+    [
+      requestTopic,
+      responseTopic,
+      requestMessageType,
+      requestMessage,
+      onMessageCallback,
+    ],
+  );
+
+  // This ensures that the subscription key is unique for each request/response topic pair
+  const subscriptionKey = `${queryKey}-${requestTopic}-${responseTopic}`;
+  return useSWRSubscription(subscriptionKey, subscribe);
 }

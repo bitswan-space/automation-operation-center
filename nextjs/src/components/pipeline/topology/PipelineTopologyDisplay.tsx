@@ -11,6 +11,7 @@ import ReactFlow, {
 
 import { useCallback } from "react";
 import PipelineNode from "./PipelineNode";
+import React from "react";
 
 // we define the nodeTypes outside of the component to prevent re-renderings
 // you could also use useMemo inside the component
@@ -28,12 +29,28 @@ export const PipelineTopologyDisplay = (
   props: PipelineTopologyDisplayProps,
 ) => {
   const { initialNodes, initialEdges } = props;
-  const [nodes, , onNodesChange] = useNodesState<Node[]>(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>(initialEdges);
+
+  const [initialNodesCopy, setInitialNodesCopy] = React.useState<Node[]>([]);
+  const [initialEdgesCopy, setInitialEdgesCopy] = React.useState<Edge[]>([]);
+
+  React.useEffect(() => {
+    setInitialNodesCopy(initialNodes);
+    setInitialEdgesCopy(initialEdges);
+  }, [initialNodes, initialEdges]);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+  React.useEffect(() => {
+    setNodes(initialNodesCopy);
+    setEdges(initialEdgesCopy);
+  }, [setNodes, setEdges, initialNodesCopy, initialEdgesCopy]);
+
   const onConnect: OnConnect = useCallback(
     (connection) => setEdges((eds) => addEdge(connection, eds)),
     [setEdges],
   );
+
   return (
     <div
       style={{
