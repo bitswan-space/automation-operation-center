@@ -3,7 +3,7 @@ import { lazy, Suspense } from "react";
 import Fallback from "keycloakify/login";
 import type { KcContext } from "./kcContext";
 import { useI18n } from "./i18n";
-import { ExtendedPageProps } from "../../lib/keycloakify";
+import { ExtendedPageProps } from "../lib/keycloakify";
 
 const Template = lazy(() => import("./Template"));
 const DefaultTemplate = lazy(() => import("keycloakify/login/Template"));

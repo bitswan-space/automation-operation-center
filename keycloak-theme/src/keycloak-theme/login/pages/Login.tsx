@@ -3,10 +3,12 @@ import { clsx } from "keycloakify/tools/clsx";
 import { useConstCallback } from "keycloakify/tools/useConstCallback";
 import type { PageProps } from "keycloakify/login/pages/PageProps";
 import { useGetClassName } from "keycloakify/login/lib/useGetClassName";
-import type { KcContext } from "../kcContext";
-import type { I18n } from "../i18n";
+
 import { retrieveQueryParamFromUrl } from "oidc-spa/tools/urlQueryParams";
-import { Input } from "../../components/ui/input";
+import { Input } from "../../../components/ui/input";
+import { I18n } from "keycloakify/login/i18n";
+import { KcContext } from "keycloakify/login/kcContext";
+import React from "react";
 
 const result = retrieveQueryParamFromUrl({
     "url": window.location.href,

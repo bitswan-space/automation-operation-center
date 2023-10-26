@@ -6,7 +6,7 @@ import { clsx } from "keycloakify/tools/clsx";
 
 // ejected using 'npx eject-keycloak-page'
 import { useState } from "react";
-import { useGetClassName } from "../../../lib/keycloakify";
+import { useGetClassName } from "../../lib/keycloakify";
 
 export default function RegisterUserProfile(
   props: PageProps<

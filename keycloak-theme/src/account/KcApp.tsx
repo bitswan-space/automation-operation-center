@@ -4,7 +4,7 @@ import { Suspense, lazy } from "react";
 
 import type { KcContext } from "./kcContext";
 import { useI18n } from "./i18n";
-import { ExtendedPageProps } from "../../lib/keycloakify";
+import { ExtendedPageProps } from "../lib/keycloakify";
 
 const Template = lazy(() => import("./Template"));
 
