@@ -26,10 +26,11 @@ import {
 export interface PipelineDetailTabsProps {
   pipeline?: PipelineWithStats;
   pipelineTopology?: PipelineNode[];
+  pipelineParentIDs: string[];
 }
 
 export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
-  const { pipeline, pipelineTopology } = props;
+  const { pipeline, pipelineTopology, pipelineParentIDs } = props;
 
   return (
     <Tabs defaultValue="summary" className="h-full w-full">
@@ -59,6 +60,7 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
               initialEdges={transformTopologyToFlowEdges(
                 pipelineTopology ?? [],
               )}
+              pipelineParentIDs={pipelineParentIDs}
             />
           </CardContent>
         </Card>

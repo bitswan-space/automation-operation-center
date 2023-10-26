@@ -5,7 +5,11 @@ import { type ReactElement } from "react";
 import React from "react";
 import { usePipelinesWithStats } from "@/components/pipeline/hooks";
 import { TitleBar } from "@/components/layout/TitleBar";
-import { flattenTopology, formatPipelineName } from "@/utils/pipelineUtils";
+import {
+  flattenTopology,
+  formatPipelineName,
+  joinIDsWithDelimiter,
+} from "@/utils/pipelineUtils";
 import Link from "next/link";
 import { PipelineDetailTabs } from "../../../components/pipeline/PipelineDetailTabs";
 import { type PumpTopologyResponse, type PipelineNode } from "@/types";
@@ -19,17 +23,6 @@ interface PipelineDetailPageProps {
 const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
   id,
 }) => {
-  function joinIDsWithDelimiter(ids: string[], delimiter: string): string {
-    const joinedIDs = ids
-      .map((id, index) => {
-        if (index === 0) return `c/${id}`;
-
-        return `c/${id}`;
-      })
-      .join(delimiter);
-    return joinedIDs;
-  }
-
   const { pipelinesWithStats: pipelines } = usePipelinesWithStats();
   const pipeline = pipelines.find((p) => p.id === id?.[0]);
 
@@ -47,7 +40,7 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
   )}/topology`;
 
   const {} = useMQTTRequestResponseSubscription<PumpTopologyResponse>({
-    queryKey: "topology-subscription", // Add the queryKey property here
+    queryKey: "topology-subscription",
     requestResponseTopicHandler: {
       requestTopic: pipelineTopologyRequestTopic,
       responseTopic: pipelineTopologyResponseTopic,
@@ -96,6 +89,7 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
         </div>
         <div className="h-full py-2">
           <PipelineDetailTabs
+            pipelineParentIDs={(id as string[]) ?? []}
             pipeline={pipeline}
             pipelineTopology={pipelineTopology}
           />

@@ -17,13 +17,14 @@ export interface RequestResponseTopicHandler<T> {
 export interface UseNewMQTTProps<T> {
   queryKey: string;
   onConnect?: () => void;
+  enabled?: boolean;
   requestResponseTopicHandler: RequestResponseTopicHandler<T>;
 }
 
 export function useMQTTRequestResponseSubscription<T>(
   props: UseNewMQTTProps<T>,
 ) {
-  const { requestResponseTopicHandler, queryKey } = props;
+  const { requestResponseTopicHandler, queryKey, enabled } = props;
 
   const {
     requestMessage,
@@ -32,6 +33,12 @@ export function useMQTTRequestResponseSubscription<T>(
     requestTopic,
     onMessageCallback,
   } = requestResponseTopicHandler;
+
+  console.log(
+    "Entered useMQTTRequestResponseSubscription with topics:",
+    requestTopic,
+    responseTopic,
+  );
 
   const subscribe: SWRSubscription<string, T, Error> = React.useCallback(
     (key, { next }: SWRSubscriptionOptions<T, Error>) => {
@@ -43,7 +50,7 @@ export function useMQTTRequestResponseSubscription<T>(
         connectTimeout: 3 * 1000,
         clean: true,
         queueQoSZero: true,
-        clientId: "mqttjs_" + Math.random().toString(16).substr(2, 8),
+        clientId: "mqttjs_" + Math.random().toString(16).substring(2, 8),
         // log: console.log,
       });
 
@@ -95,5 +102,7 @@ export function useMQTTRequestResponseSubscription<T>(
 
   // This ensures that the subscription key is unique for each request/response topic pair
   const subscriptionKey = `${queryKey}-${requestTopic}-${responseTopic}`;
-  return useSWRSubscription(subscriptionKey, subscribe);
+  const subscription = useSWRSubscription(subscriptionKey, subscribe);
+
+  return subscription;
 }

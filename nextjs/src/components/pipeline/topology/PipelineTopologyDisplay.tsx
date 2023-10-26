@@ -10,7 +10,7 @@ import ReactFlow, {
 } from "reactflow";
 
 import { useCallback } from "react";
-import PipelineNode from "./PipelineNode";
+import PipelineNode, { type NodeData } from "./PipelineNode";
 import React from "react";
 
 // we define the nodeTypes outside of the component to prevent re-renderings
@@ -21,6 +21,7 @@ const fitViewOptions = {
 };
 
 interface PipelineTopologyDisplayProps {
+  pipelineParentIDs: string[];
   initialNodes: Node[];
   initialEdges: Edge[];
 }
@@ -28,15 +29,20 @@ interface PipelineTopologyDisplayProps {
 export const PipelineTopologyDisplay = (
   props: PipelineTopologyDisplayProps,
 ) => {
-  const { initialNodes, initialEdges } = props;
+  const { initialNodes, initialEdges, pipelineParentIDs } = props;
 
   const [initialNodesCopy, setInitialNodesCopy] = React.useState<Node[]>([]);
   const [initialEdgesCopy, setInitialEdgesCopy] = React.useState<Edge[]>([]);
 
   React.useEffect(() => {
-    setInitialNodesCopy(initialNodes);
+    setInitialNodesCopy(
+      initialNodes.map((node) => ({
+        ...node,
+        data: { ...node.data, parentIDs: pipelineParentIDs } as NodeData,
+      })),
+    );
     setInitialEdgesCopy(initialEdges);
-  }, [initialNodes, initialEdges]);
+  }, [initialNodes, initialEdges, pipelineParentIDs]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);

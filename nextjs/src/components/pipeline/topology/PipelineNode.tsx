@@ -33,6 +33,8 @@ import {
   outputSampleJSON,
 } from "@/utils/jsonTree";
 import { useRouter } from "next/router";
+import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
+import { joinIDsWithDelimiter } from "@/utils/pipelineUtils";
 
 type Section = "stats" | "configure" | "data" | "logs";
 type PipelineNodeActionType =
@@ -111,7 +113,8 @@ const typeIconMap: Record<string, ProcessorNodeAttributes> = {
   },
 };
 
-type NodeData = {
+export type NodeData = {
+  parentIDs: string[];
   type: string;
   name: string;
   kind: string;
@@ -119,7 +122,13 @@ type NodeData = {
 };
 
 export function PipelineNode({ data }: NodeProps<NodeData>) {
-  const { type: nodeType, name: nodeName, kind: nodeKind, id: nodeID } = data;
+  const {
+    type: nodeType,
+    name: nodeName,
+    kind: nodeKind,
+    id: nodeID,
+    parentIDs,
+  } = data;
 
   const router = useRouter();
   const currentPath = router.asPath;
@@ -151,6 +160,43 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
     const bgColor = typeIconMap[type]?.bgColor;
     return bgColor ? bgColor : "bg-neutral-950";
   };
+
+  const [componentEvents, setComponentEvents] = React.useState<unknown[]>([]);
+
+  const pipelineEventsRequestTopic = `${joinIDsWithDelimiter(
+    parentIDs,
+    "/",
+  )}/c/${nodeID}/events/subscribe`;
+
+  const pipelineEventsResponseTopic = `${joinIDsWithDelimiter(
+    parentIDs,
+    "/",
+  )}/c/${nodeID}/events`;
+
+  console.log("pipelineEventsRequestTopic", pipelineEventsRequestTopic);
+  console.log("pipelineEventsResponseTopic", pipelineEventsResponseTopic);
+
+  type EventResponse = {
+    timestamp: number;
+    data: unknown;
+    event_number: number;
+  };
+
+  const {} = useMQTTRequestResponseSubscription<EventResponse>({
+    queryKey: "events-subscription",
+    requestResponseTopicHandler: {
+      requestTopic: pipelineEventsRequestTopic,
+      responseTopic: pipelineEventsResponseTopic,
+      requestMessageType: "json",
+      requestMessage: { events: 1 },
+      onMessageCallback: (response) => {
+        setComponentEvents((events) => [...events, response]);
+      },
+    },
+    enabled: nodeType === "component",
+  });
+
+  console.log("componentEvents", componentEvents);
 
   return (
     <Card className="w-[800px] rounded-sm border border-neutral-200 shadow-md">

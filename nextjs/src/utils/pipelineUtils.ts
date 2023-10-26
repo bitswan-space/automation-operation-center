@@ -18,3 +18,16 @@ export function flattenTopology(
 
   return flattenedArray;
 }
+
+export function joinIDsWithDelimiter(ids: string[], delimiter: string): string {
+  console.log("ids", ids);
+
+  const joinedIDs = ids
+    ?.map((id, index) => {
+      if (index === 0) return `c/${id}`;
+
+      return `c/${id}`;
+    })
+    .join(delimiter);
+  return joinedIDs;
+}
