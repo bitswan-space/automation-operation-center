@@ -3,7 +3,7 @@ import type { KcContext } from "../kcContext";
 import type { PageProps } from "keycloakify/login/pages/PageProps";
 // ejected using 'npx eject-keycloak-page'
 import { clsx } from "keycloakify/tools/clsx";
-import { useGetClassName } from "keycloakify/login/lib/useGetClassName";
+import { useGetClassName } from "../../../lib/keycloakify";
 
 export default function Register(
   props: PageProps<Extract<KcContext, { pageId: "register.ftl" }>, I18n>

@@ -3,9 +3,10 @@ import type { KcContext } from "../kcContext";
 import type { PageProps } from "keycloakify/login/pages/PageProps";
 import { UserProfileFormFields } from "./shared/UserProfileFormFields";
 import { clsx } from "keycloakify/tools/clsx";
-import { useGetClassName } from "keycloakify/login/lib/useGetClassName";
+
 // ejected using 'npx eject-keycloak-page'
 import { useState } from "react";
+import { useGetClassName } from "../../../lib/keycloakify";
 
 export default function RegisterUserProfile(
   props: PageProps<

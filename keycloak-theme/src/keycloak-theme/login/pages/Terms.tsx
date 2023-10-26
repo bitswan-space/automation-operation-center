@@ -7,8 +7,9 @@ import { evtTermMarkdown } from "keycloakify/login/lib/useDownloadTerms";
 import tos_en_url from "../assets/tos_en.md";
 import tos_fr_url from "../assets/tos_fr.md";
 import { useDownloadTerms } from "keycloakify/login";
-import { useGetClassName } from "keycloakify/login/lib/useGetClassName";
+
 import { useRerenderOnStateChange } from "evt/hooks";
+import { useGetClassName } from "../../../lib/keycloakify";
 
 export default function Terms(
   props: PageProps<Extract<KcContext, { pageId: "terms.ftl" }>, I18n>
