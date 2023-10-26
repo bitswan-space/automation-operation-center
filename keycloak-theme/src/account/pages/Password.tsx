@@ -2,14 +2,14 @@ import type { I18n } from "../i18n";
 import type { KcContext } from "../kcContext";
 import type { PageProps } from "keycloakify/account/pages/PageProps";
 import { clsx } from "keycloakify/tools/clsx";
-import { useGetClassName } from "../../lib/keycloakify";
+import { useExtendedGetClassName } from "../../lib/keycloakify";
 
 export default function LogoutConfirm(
   props: PageProps<Extract<KcContext, { pageId: "password.ftl" }>, I18n>
 ) {
   const { kcContext, i18n, doUseDefaultCss, Template, classes } = props;
 
-  const { getClassName } = useGetClassName({
+  const { getClassName } = useExtendedGetClassName({
     doUseDefaultCss,
     classes: {
       ...classes,

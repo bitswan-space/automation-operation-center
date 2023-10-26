@@ -3,14 +3,14 @@ import type { KcContext } from "../kcContext";
 import type { PageProps } from "keycloakify/login/pages/PageProps";
 // ejected using 'npx eject-keycloak-page'
 import { clsx } from "keycloakify/tools/clsx";
-import { useGetClassName } from "../../lib/keycloakify";
+import { useExtendedGetClassName } from "../../lib/keycloakify";
 
 export default function Register(
   props: PageProps<Extract<KcContext, { pageId: "register.ftl" }>, I18n>
 ) {
   const { kcContext, i18n, doUseDefaultCss, Template, classes } = props;
 
-  const { getClassName } = useGetClassName({
+  const { getClassName } = useExtendedGetClassName({
     doUseDefaultCss,
     classes,
   });

@@ -9,14 +9,14 @@ import tos_fr_url from "../assets/tos_fr.md";
 import { useDownloadTerms } from "keycloakify/login";
 
 import { useRerenderOnStateChange } from "evt/hooks";
-import { useGetClassName } from "../../lib/keycloakify";
+import { useExtendedGetClassName } from "../../lib/keycloakify";
 
 export default function Terms(
   props: PageProps<Extract<KcContext, { pageId: "terms.ftl" }>, I18n>
 ) {
   const { kcContext, i18n, doUseDefaultCss, Template, classes } = props;
 
-  const { getClassName } = useGetClassName({
+  const { getClassName } = useExtendedGetClassName({
     doUseDefaultCss,
     classes,
   });

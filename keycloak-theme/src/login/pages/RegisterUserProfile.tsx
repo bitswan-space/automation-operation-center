@@ -6,7 +6,7 @@ import { clsx } from "keycloakify/tools/clsx";
 
 // ejected using 'npx eject-keycloak-page'
 import { useState } from "react";
-import { useGetClassName } from "../../lib/keycloakify";
+import { useExtendedGetClassName } from "../../lib/keycloakify";
 
 export default function RegisterUserProfile(
   props: PageProps<
@@ -16,7 +16,7 @@ export default function RegisterUserProfile(
 ) {
   const { kcContext, i18n, doUseDefaultCss, Template, classes } = props;
 
-  const { getClassName } = useGetClassName({
+  const { getClassName } = useExtendedGetClassName({
     doUseDefaultCss,
     classes,
   });
