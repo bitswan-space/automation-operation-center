@@ -5,6 +5,7 @@ import type { PageProps } from "keycloakify/login/pages/PageProps";
 import { useGetClassName } from "keycloakify/login/lib/useGetClassName";
 import type { KcContext } from "../kcContext";
 import type { I18n } from "../i18n";
+import { Input } from "../../../components/ui/input";
 
 export default function Login(props: PageProps<Extract<KcContext, { pageId: "login.ftl" }>, I18n>) {
     const { kcContext, i18n, doUseDefaultCss, Template, classes } = props;
@@ -29,7 +30,7 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
 
         //NOTE: Even if we login with email Keycloak expect username and password in
         //the POST request.
-        formElement.querySelector("input[name='email']")?.setAttribute("name", "username");
+        formElement.querySelector("Input[name='email']")?.setAttribute("name", "username");
 
         formElement.submit();
     });
@@ -39,7 +40,7 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
             {...{ kcContext, i18n, doUseDefaultCss, classes }}
             displayInfo={social.displayInfo}
             displayWide={realm.password && social.providers !== undefined}
-            headerNode={msg("doLogIn")}
+            headerNode={""}
             infoNode={
                 realm.password &&
                 realm.registrationAllowed &&
@@ -55,6 +56,11 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                 )
             }
         >
+            <div className="flex gap-4 py-2 pb-6">
+            <img src="/keycloak-resources/resources/img/bitswan-dark-sm.png" alt="Logo" className="text-neutral-950" />
+            <div className="font-bold text-5xl text-neutral-950 py-2">Sign In</div>
+            </div>
+
             <div id="kc-form" className={clsx(realm.password && social.providers !== undefined && getClassName("kcContentWrapperClass"))}>
                 <div
                     id="kc-form-wrapper"
@@ -81,10 +87,10 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                                                 <label htmlFor={autoCompleteHelper} className={getClassName("kcLabelClass")}>
                                                     {msg(label)}
                                                 </label>
-                                                <input
+                                                <Input
                                                     tabIndex={1}
                                                     id={autoCompleteHelper}
-                                                    className={getClassName("kcInputClass")}
+                                                    className={clsx(getClassName("kcInputClass"), "text-xl")}
                                                     //NOTE: This is used by Google Chrome auto fill so we use it to tell
                                                     //the browser how to pre fill the form but before submit we put it back
                                                     //to username because it is what keycloak expects.
@@ -102,10 +108,10 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                                 <label htmlFor="password" className={getClassName("kcLabelClass")}>
                                     {msg("password")}
                                 </label>
-                                <input
+                                <Input
                                     tabIndex={2}
                                     id="password"
-                                    className={getClassName("kcInputClass")}
+                                    className={clsx(getClassName("kcInputClass"), "text-xl")}
                                     name="password"
                                     type="password"
                                     autoComplete="off"
@@ -157,9 +163,10 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                                     tabIndex={4}
                                     className={clsx(
                                         getClassName("kcButtonClass"),
-                                        getClassName("kcButtonPrimaryClass"),
+                                        getClassName("kcHeaderWrapperClass"),
                                         getClassName("kcButtonBlockClass"),
-                                        getClassName("kcButtonLargeClass")
+                                        getClassName("kcButtonLargeClass"),
+                                        "bg-neutral-950 rounded"
                                     )}
                                     name="login"
                                     id="kc-login"

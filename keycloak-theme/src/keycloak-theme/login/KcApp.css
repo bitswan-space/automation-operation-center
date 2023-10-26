@@ -1,16 +1,16 @@
-
 .my-color {
-	color: red;
+  color: #fafafa;
+  background-color: #0a0a0a;
 }
 
 .my-font {
-	font-family: 'Work Sans';
+  /* font-family: "Work Sans"; */
 }
 
 .my-root-class {
-	background: white;
+  background-color: #0a0a0a;
 }
 
 .my-root-class body {
-	background: url(./assets/background.svg) no-repeat center center fixed;
+  background: #0a0a0a no-repeat center center fixed;
 }
