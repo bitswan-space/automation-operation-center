@@ -8,10 +8,6 @@ import { ExtendedPageProps } from "../../lib/keycloakify";
 const Template = lazy(() => import("./Template"));
 const DefaultTemplate = lazy(() => import("keycloakify/login/Template"));
 
-// You can uncomment this to see the values passed by the main app before redirecting.
-//import { foo, bar } from "./valuesTransferredOverUrl";
-//console.log(`Values passed by the main app in the URL parameter:`, { foo, bar });
-
 const Login = lazy(() => import("./pages/Login"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 // If you can, favor register-user-profile.ftl over register.ftl, see: https://docs.keycloakify.dev/realtime-input-validation
