@@ -24,18 +24,20 @@ func HandleTopologyRequest(client mqtt.Client, message mqtt.Message) {
 		json.Unmarshal([]byte(message.Payload()), &msg)
 		logger.Info.Printf("Method: " + msg.Method)
 		if msg.Method == "get" {
-			topology, err := portainer.GetTopology()
-			if err != nil {
-				logger.Error.Println(err)
-				return
-			}
-			b, err := json.MarshalIndent(topology, "", "  ")
-			if err != nil {
-				logger.Error.Println(err)
-				return
-			}
-
-			client.Publish(cfg.MQTTTopologyPub, 0, false, string(b))
+			go func(){
+				topology, err := portainer.GetTopology()
+				if err != nil {
+					logger.Error.Println(err)
+					return
+				}
+				b, err := json.MarshalIndent(topology, "", "  ")
+				if err != nil {
+					logger.Error.Println(err)
+					return
+				}
+	
+				client.Publish(cfg.MQTTTopologyPub, 0, false, string(b))
+			}()
 		}
 	}
 
