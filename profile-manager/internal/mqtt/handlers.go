@@ -27,11 +27,14 @@ func HandleTopologyRequest(client mqtt.Client, message mqtt.Message) {
 			topology, err := portainer.GetTopology()
 			if err != nil {
 				logger.Error.Println(err)
+				return
 			}
 			b, err := json.MarshalIndent(topology, "", "  ")
 			if err != nil {
 				logger.Error.Println(err)
+				return
 			}
+
 			client.Publish(cfg.MQTTTopologyPub, 0, false, string(b))
 		}
 	}
