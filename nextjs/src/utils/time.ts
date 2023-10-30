@@ -20,8 +20,6 @@ export function nanoToFormattedTime(nanoTimestamp: number): string {
   // Convert nanoseconds timestamp to milliseconds
   const date = new Date(nanoTimestamp / 1000000);
 
-  console.log("date", date);
-
   // Use date-fns to format most parts of the date
   const formattedDate = format(date, "dd-MMM-yyyy HH:mm:ss.SSS");
 

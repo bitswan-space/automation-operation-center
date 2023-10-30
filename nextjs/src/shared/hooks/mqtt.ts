@@ -56,7 +56,6 @@ export function useMQTTRequestResponseSubscription<T>(
             if (requestMessageType === "json") {
               client.publish(requestTopic, JSON.stringify(requestMessage));
             } else {
-              console.log("publishing string message");
               client.publish(requestTopic, requestMessage as string);
             }
           } else {

@@ -13,8 +13,6 @@ function handler(req: NextApiRequest, res: NextApiResponse) {
 
     const filePath = path.join(process.cwd(), "pipeline-flows.json");
 
-    console.log("filePath", filePath);
-
     if (!fs.existsSync(filePath)) {
       res.status(404).json({ error: "File not found" });
       return;
