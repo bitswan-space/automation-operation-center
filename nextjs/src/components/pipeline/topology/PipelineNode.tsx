@@ -35,6 +35,7 @@ import {
 import { useRouter } from "next/router";
 import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
 import { joinIDsWithDelimiter } from "@/utils/pipelineUtils";
+import { nanoToFormattedTime, nanoToNormalTime } from "@/utils/time";
 
 type Section = "stats" | "configure" | "data" | "logs";
 type PipelineNodeActionType =
@@ -173,9 +174,6 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
     "/",
   )}/c/${nodeID}/events`;
 
-  console.log("pipelineEventsRequestTopic", pipelineEventsRequestTopic);
-  console.log("pipelineEventsResponseTopic", pipelineEventsResponseTopic);
-
   type EventResponse = {
     timestamp: number;
     data: unknown;
@@ -188,15 +186,13 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
       requestTopic: pipelineEventsRequestTopic,
       responseTopic: pipelineEventsResponseTopic,
       requestMessageType: "json",
-      requestMessage: { events: 1 },
+      requestMessage: { event_count: 4 },
       onMessageCallback: (response) => {
         setComponentEvents((events) => [...events, response]);
       },
     },
     enabled: nodeType === "component",
   });
-
-  console.log("componentEvents", componentEvents);
 
   return (
     <Card className="w-[800px] rounded-sm border border-neutral-200 shadow-md">
@@ -273,7 +269,7 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
           expanded={state.expandedSections.includes("data")}
           onToggleExpanded={() => dispatch({ type: "toggleExpandData" })}
         >
-          <DataSectionBody />
+          <DataSectionBody events={componentEvents} />
         </CollapsibleSection>
       </CardContent>
       <Handle
@@ -349,20 +345,32 @@ enum DataSectionTabOptions {
   Logs,
 }
 
-function DataSectionBody() {
+interface DataSectionBodyProps {
+  events: unknown[];
+}
+
+function DataSectionBody(props: DataSectionBodyProps) {
+  const { events } = props;
+
   const [activeTab, setActiveTab] = React.useState<DataSectionTabOptions>(
     DataSectionTabOptions.Input,
   );
+
+  type EventResponse = {
+    timestamp: number;
+    data: unknown;
+    event_number: number;
+  };
 
   return (
     <div className="w-full pb-8">
       <div className="flex w-full border-b border-neutral-300">
         <DataSectionTab
           isActive={activeTab === DataSectionTabOptions.Input}
-          label="Sample Input"
+          label="Events"
           onClick={() => setActiveTab(DataSectionTabOptions.Input)}
         />
-        <DataSectionTab
+        {/* <DataSectionTab
           isActive={activeTab === DataSectionTabOptions.Output}
           label="Sample Output"
           onClick={() => setActiveTab(DataSectionTabOptions.Output)}
@@ -371,12 +379,34 @@ function DataSectionBody() {
           isActive={activeTab === DataSectionTabOptions.Logs}
           label="Logs"
           onClick={() => setActiveTab(DataSectionTabOptions.Logs)}
-        />
+        /> */}
       </div>
       <div className="px-2">
         {activeTab === DataSectionTabOptions.Input && (
           <div className="font-mono text-sm">
-            <JSONTree data={inputSampleJSON} theme={jsonTreeTheme} />
+            <JSONTree
+              hideRoot
+              data={events}
+              theme={jsonTreeTheme}
+              // getItemString={(type, data, itemType, itemString, keyPath) => (
+              //   <span>
+              //     {nanoToNormalTime((data as EventResponse).timestamp)} | event
+              //     id: {(data as EventResponse).event_number} data:{" "}
+              //     {(data as EventResponse).data?.toString()}
+              //   </span>
+              // )}
+              // postprocessValue={(value) => {
+              //   return value as EventResponse;
+              // }}
+              // labelRenderer={() => null}
+              // valueRenderer={(valueAsString, value, ...keypath) => {
+              //   console.log(valueAsString, value, keypath);
+
+              //   const show = keypath.find((s) => s === "data");
+
+              //   return show && <em>{value}</em>;
+              // }}
+            />
           </div>
         )}
         {activeTab === DataSectionTabOptions.Output && (

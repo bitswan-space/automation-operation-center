@@ -24,7 +24,7 @@ export interface UseNewMQTTProps<T> {
 export function useMQTTRequestResponseSubscription<T>(
   props: UseNewMQTTProps<T>,
 ) {
-  const { requestResponseTopicHandler, queryKey, enabled } = props;
+  const { requestResponseTopicHandler, queryKey } = props;
 
   const {
     requestMessage,
@@ -33,12 +33,6 @@ export function useMQTTRequestResponseSubscription<T>(
     requestTopic,
     onMessageCallback,
   } = requestResponseTopicHandler;
-
-  console.log(
-    "Entered useMQTTRequestResponseSubscription with topics:",
-    requestTopic,
-    responseTopic,
-  );
 
   const subscribe: SWRSubscription<string, T, Error> = React.useCallback(
     (key, { next }: SWRSubscriptionOptions<T, Error>) => {
