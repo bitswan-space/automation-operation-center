@@ -44,14 +44,20 @@ type ContainerDetail struct {
 }
 
 type TopologyItem struct {
-	EndpointID   int
-	ContainerID  string
-	EndpointName string
-	DeploymentId string
-	CreatedAt    time.Time
-	Name         string
-	State        string
-	Status       string
+	Wires      []string           `json:"wires"`
+	Properties TopologyProperties `json:"properties"`
+	Metrics    []int              `json:"metrics"`
+}
+
+type TopologyProperties struct {
+	EndpointID   int       `json:"endpoint-id"`
+	ContainerID  string    `json:"container-id"`
+	EndpointName string    `json:"endpoint-name"`
+	DeploymentId string    `json:"deployment-id"`
+	CreatedAt    time.Time `json:"created-at"`
+	Name         string    `json:"name"`
+	State        string    `json:"state"`
+	Status       string    `json:"status"`
 }
 
 type Topology struct {
@@ -115,19 +121,28 @@ func GetTopologyItems(endpoints []Endpoint) map[string]TopologyItem {
 					if err != nil {
 						logger.Error.Println(err)
 					}
-					container := TopologyItem{
+					deploymentId := GetDeploymentId(detail.Config.Env)
+					if deploymentId == "" {
+						continue
+					}
+
+					topologyItem := TopologyItem{
+						Wires:      []string{},
+						Properties: TopologyProperties{},
+						Metrics:    []int{},
+					}
+					topologyItem.Properties = TopologyProperties{
 						EndpointID:   endpoint.ID,
 						ContainerID:  container.ID,
 						EndpointName: endpoint.Name,
-						DeploymentId: GetDeploymentId(detail.Config.Env),
+						DeploymentId: deploymentId,
 						CreatedAt:    detail.CreatedAt,
 						Name:         strings.Replace(detail.Name, "/", "", -1),
 						Status:       container.Status,
 						State:        container.State,
 					}
-					if container.DeploymentId != "" {
-						topologyItems[container.DeploymentId] = container
-					}
+
+					topologyItems[deploymentId] = topologyItem
 				}
 			}
 		}
