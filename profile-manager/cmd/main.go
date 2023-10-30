@@ -12,16 +12,16 @@ import (
 )
 
 func main() {
-    logger.Init()
+	logger.Init()
 	godotenv.Load(".env")
 
-    err := config.LoadConfig("../config/config.yaml")
-    if err != nil {
-        logger.Error.Fatalf("Failed to load configuration: %v", err)
+	err := config.LoadConfig("../config/config.yaml")
+	if err != nil {
+		logger.Error.Fatalf("Failed to load configuration: %v", err)
 		os.Exit(1)
-    }
+	}
 
-	err = mqtt.Init() 
+	err = mqtt.Init()
 	if err != nil {
 		logger.Error.Fatalf("Failed to initialize MQTT client: %v", err)
 		os.Exit(1)

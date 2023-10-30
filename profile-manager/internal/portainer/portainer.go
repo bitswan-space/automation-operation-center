@@ -23,15 +23,15 @@ type DockerSnapshotRaw struct {
 }
 
 type EndpointContainer struct {
-	ID    string `json:"Id"`
+	ID     string            `json:"Id"`
 	Labels map[string]string `json:"Labels"`
-	State string `json:"State"`
-	Status string `json:"Status"`
+	State  string            `json:"State"`
+	Status string            `json:"Status"`
 }
 
 type Endpoint struct {
-	ID       int    `json:"Id"`
-	Name     string `json:"Name"`
+	ID        int        `json:"Id"`
+	Name      string     `json:"Name"`
 	SnapShots []Snapshot `json:"Snapshots"`
 }
 
@@ -40,24 +40,24 @@ type ContainerDetail struct {
 		Env []string `json:"Env"`
 	} `json:"Config"`
 	CreatedAt time.Time `json:"Created"`
-	Name string `json:"Name"`
+	Name      string    `json:"Name"`
 }
 
 type TopologyItem struct {
-	EndpointID int
-	ContainerID string
+	EndpointID   int
+	ContainerID  string
 	EndpointName string
 	DeploymentId string
-	CreatedAt time.Time
-	Name string
-	State string
-	Status string
+	CreatedAt    time.Time
+	Name         string
+	State        string
+	Status       string
 }
 
 type Topology struct {
-	Topology map[string]TopologyItem `json:"topology"`
-	DisplayStyle string `json:"display-style"`
-	DisplayPriority string `json:"display-priority"`
+	Topology        map[string]TopologyItem `json:"topology"`
+	DisplayStyle    string                  `json:"display-style"`
+	DisplayPriority string                  `json:"display-priority"`
 }
 
 func GetTopology() (Topology, error) {
@@ -68,7 +68,7 @@ func GetTopology() (Topology, error) {
 	if err != nil {
 		return topology, err
 	}
-	
+
 	// Get topology items
 	topology.Topology = GetTopologyItems(endpoints)
 	topology.DisplayStyle = "list"
@@ -80,7 +80,7 @@ func GetTopology() (Topology, error) {
 func GetEndpoints() ([]Endpoint, error) {
 	cfg := config.GetConfig()
 	var endpoints []Endpoint
-	req, err := http.NewRequest("GET", cfg.PortainerURL +"/api/endpoints", nil)
+	req, err := http.NewRequest("GET", cfg.PortainerURL+"/api/endpoints", nil)
 	if err != nil {
 		return endpoints, err
 	}
@@ -116,14 +116,14 @@ func GetTopologyItems(endpoints []Endpoint) map[string]TopologyItem {
 						logger.Error.Println(err)
 					}
 					container := TopologyItem{
-						EndpointID: endpoint.ID,
-						ContainerID: container.ID,
+						EndpointID:   endpoint.ID,
+						ContainerID:  container.ID,
 						EndpointName: endpoint.Name,
 						DeploymentId: GetDeploymentId(detail.Config.Env),
-						CreatedAt: detail.CreatedAt,
-						Name: strings.Replace(detail.Name, "/", "", -1),
-						Status: container.Status,
-						State: container.State,
+						CreatedAt:    detail.CreatedAt,
+						Name:         strings.Replace(detail.Name, "/", "", -1),
+						Status:       container.Status,
+						State:        container.State,
 					}
 					if container.DeploymentId != "" {
 						topologyItems[container.DeploymentId] = container
@@ -136,7 +136,7 @@ func GetTopologyItems(endpoints []Endpoint) map[string]TopologyItem {
 	return topologyItems
 }
 
-func GetContainerDetail(endpointId int, containerId string) (ContainerDetail, error){
+func GetContainerDetail(endpointId int, containerId string) (ContainerDetail, error) {
 	cfg := config.GetConfig()
 	containerDetail := ContainerDetail{}
 

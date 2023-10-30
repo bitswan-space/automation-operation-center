@@ -6,11 +6,11 @@ import (
 )
 
 var (
-    Info  *log.Logger
-    Error *log.Logger
+	Info  *log.Logger
+	Error *log.Logger
 )
 
 func Init() {
-    Info = log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
-    Error = log.New(os.Stderr, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+	Info = log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+	Error = log.New(os.Stderr, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 }

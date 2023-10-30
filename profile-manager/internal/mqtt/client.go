@@ -9,7 +9,6 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-
 var client mqtt.Client
 
 func Init() error {

@@ -14,9 +14,9 @@ type Message struct {
 }
 
 func HandleTopologyRequest(client mqtt.Client, message mqtt.Message) {
-	var msg Message;
+	var msg Message
 	cfg := config.GetConfig()
-	
+
 	logger.Info.Printf("Received message: " + string(message.Payload()))
 	if !json.Valid([]byte(message.Payload())) {
 		logger.Error.Println("Invalid JSON")
@@ -38,5 +38,5 @@ func HandleTopologyRequest(client mqtt.Client, message mqtt.Message) {
 			client.Publish(cfg.MQTTTopologyPub, 0, false, string(b))
 		}
 	}
-	
+
 }
