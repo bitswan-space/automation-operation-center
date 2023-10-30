@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,10 +13,14 @@ import (
 )
 
 func main() {
+	// Define a command-line flag
+	configPath := flag.String("c", "config.yaml", "path to the configuration file")
+	flag.Parse() // Parse the flags
+
 	logger.Init()
 	godotenv.Load(".env")
 
-	err := config.LoadConfig("../config/config.yaml")
+	err := config.LoadConfig(*configPath)
 	if err != nil {
 		logger.Error.Fatalf("Failed to load configuration: %v", err)
 		os.Exit(1)
