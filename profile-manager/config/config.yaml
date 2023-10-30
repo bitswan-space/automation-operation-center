@@ -1,3 +1,5 @@
-portainer-url: http://portainer:9000
+portainer-url: http://localhost:9000
 mqtt-broker-host: localhost
 mqtt-broker-port: 1883
+mqtt-topology-topic-pub: topology
+mqtt-topology-topic-sub: topology/get

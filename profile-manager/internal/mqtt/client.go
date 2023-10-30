@@ -11,9 +11,9 @@ import (
 
 var client mqtt.Client
 
-func NewClient(cfg *config.Configuration) {
+func Init() {
+	cfg := config.GetConfig()
 	opts := mqtt.NewClientOptions()
-	logger.Info.Printf("mqtt://" + cfg.MQTTBrokerHost + ":" + fmt.Sprint(cfg.MQTTBrokerPort))
 	opts.AddBroker("mqtt://" + cfg.MQTTBrokerHost + ":" + fmt.Sprint(cfg.MQTTBrokerPort))
 	opts.SetClientID("container-discovery-service")
 
@@ -22,24 +22,8 @@ func NewClient(cfg *config.Configuration) {
 		logger.Error.Fatalf("Failed to connect to MQTT broker: %v", token.Error())
 		panic(token.Error())
 	}
+	logger.Info.Println("Connected to MQTT broker")
 
-	if client.IsConnected() {
-		logger.Info.Println("Connected to MQTT broker")
-	} else {
-		logger.Error.Println("Failed to connect to MQTT broker")
-	}
-}
-
-func GetClient() mqtt.Client {
-	if client.IsConnected() {
-		logger.Info.Println("MQTT client is connected")
-		return client
-	} else {
-		logger.Error.Println("MQTT client is not connected")
-		return nil
-	}
-}
-
-func Disconnect(){
-	client.Disconnect(250)
+	logger.Info.Println("Subscribing to " + cfg.MQTTTopologySub)
+	client.Subscribe(cfg.MQTTTopologySub, 0, HandleTopologyRequest)
 }
