@@ -59,7 +59,6 @@ export const PipelineTopologyDisplay = (
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
       return setNodes((nds) => {
-        console.log("freshchange", changes, "freshNds", nds);
         const newChanges: NodeChange[] = [];
         changes.forEach((c) => {
           if (c.type === "dimensions") {
@@ -85,8 +84,6 @@ export const PipelineTopologyDisplay = (
             });
           }
         });
-
-        console.log("changes: ", [...changes, ...newChanges], "nds: ", nds);
 
         const newNodes = applyNodeChanges([...changes, ...newChanges], nds);
 
