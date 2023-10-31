@@ -6,7 +6,7 @@ import { useGetClassName } from "keycloakify/login/lib/useGetClassName";
 import type { KcContext } from "../kcContext";
 import type { I18n } from "../i18n";
 import { retrieveQueryParamFromUrl } from "oidc-spa/tools/urlQueryParams";
-import { Input } from "../../components/ui/input";
+import logo from "../assets/bitswan-dark-sm.png";
 
 const result = retrieveQueryParamFromUrl({
     "url": window.location.href,
@@ -67,9 +67,23 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                 )
             }
         >
-            <div className="flex gap-4 py-2 pb-6">
-            <img src="/keycloak-resources/resources/img/bitswan-dark-sm.png" alt="Logo" className="text-neutral-950" />
-            <div className="font-bold text-5xl text-neutral-950 py-2">Sign In</div>
+            <div  style={{
+                "display": "flex",
+                "gap": "1rem",
+                "paddingTop": "0.5rem",
+                "paddingBottom": "1.5rem",
+            }}>
+            <img src={logo} alt="Logo" style={{
+                "color": "rgba(255, 255, 255, 1)",
+            }} />
+            <div style={{
+                "fontWeight": "bold",
+                "fontSize": "3rem",
+                "lineHeight": "1",
+                "color": "rgb(10 10 10 / 1);",
+                "paddingTop": "0.5rem",
+                "paddingBottom": "0.5rem",
+            }}>Sign In</div>
             </div>
 
             <div id="kc-form" className={clsx(realm.password && social.providers !== undefined && getClassName("kcContentWrapperClass"))}>
@@ -98,10 +112,15 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                                                 <label htmlFor={autoCompleteHelper} className={getClassName("kcLabelClass")}>
                                                     {msg(label)}
                                                 </label>
-                                                <Input
+                                                <input
                                                     tabIndex={1}
                                                     id={autoCompleteHelper}
-                                                    className={clsx(getClassName("kcInputClass"), "text-xl")}
+                                                    className={clsx(getClassName("kcInputClass"))}
+                                                    style={{
+                                                       "fontSize":"1.25rem",
+                                                       "lineHeight": "1.75rem",
+                                                       "borderRadius":"0.375rem"
+                                                    }}
                                                     //NOTE: This is used by Google Chrome auto fill so we use it to tell
                                                     //the browser how to pre fill the form but before submit we put it back
                                                     //to username because it is what keycloak expects.
@@ -119,10 +138,15 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                                 <label htmlFor="password" className={getClassName("kcLabelClass")}>
                                     {msg("password")}
                                 </label>
-                                <Input
+                                <input
                                     tabIndex={2}
                                     id="password"
-                                    className={clsx(getClassName("kcInputClass"), "text-xl")}
+                                    className={clsx(getClassName("kcInputClass"))}
+                                    style={{
+                                        "fontSize":"1.25rem",
+                                       "lineHeight": "1.75rem",
+                                       "borderRadius":"0.375rem"
+                                    }}
                                     name="password"
                                     type="password"
                                     autoComplete="off"
@@ -177,8 +201,12 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                                         getClassName("kcHeaderWrapperClass"),
                                         getClassName("kcButtonBlockClass"),
                                         getClassName("kcButtonLargeClass"),
-                                        "bg-neutral-950 rounded"
                                     )}
+                                    style={{
+                                        "paddingTop": "1rem",
+                                        "paddingBottom": "1rem",
+                                       "borderRadius":"0.375rem"
+                                    }}
                                     name="login"
                                     id="kc-login"
                                     type="submit"

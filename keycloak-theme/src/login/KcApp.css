@@ -1,6 +1,6 @@
 .my-color {
   color: #fafafa;
-  background-color: #0a0a0a;
+  background-color: #262626;
 }
 
 .my-font {
@@ -8,9 +8,9 @@
 }
 
 .my-root-class {
-  background-color: #0a0a0a;
+  background-color: #262626;
 }
 
 .my-root-class body {
-  background: #0a0a0a no-repeat center center fixed;
+  background: #262626 no-repeat center center fixed;
 }
