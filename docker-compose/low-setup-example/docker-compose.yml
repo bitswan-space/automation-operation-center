@@ -1,23 +1,23 @@
 version: "3.3"
 
+x-example-pipeline-image-tag: &example-pipeline-image-tag public.registry.bitswan.space/bitswan/example-pipeline:sha256_3a453c9dfe25fcf5d17820a985d8a22104423b0acbd3d7283f502e66c7f7f63d
+
 include:
   - ../docker-compose.yml
 
 services:
   example-pipeline-1:
     restart: always
-    image: public.registry.bitswan.space/bitswan/example-pipeline:latest
+    image: *example-pipeline-image-tag
     env_file:
       - ../pipeline.env
-    # network_mode: host
     volumes:
       - ./conf-1.conf:/conf/pipeline.conf:rw
       - /tmp/example-pipeline-data/:/data:rw
 
   example-pipeline-2:
     restart: always
-    image: public.registry.bitswan.space/bitswan/example-pipeline:latest
-    # network_mode: host
+    image: *example-pipeline-image-tag
     env_file:
       - ../pipeline.env
     volumes:
@@ -26,18 +26,9 @@ services:
 
   example-pipeline-3:
     restart: always
-    image: public.registry.bitswan.space/bitswan/example-pipeline:latest
+    image: *example-pipeline-image-tag
     env_file:
       - ../pipeline.env
-    # network_mode: host
     volumes:
       - ./conf-3.conf:/conf/pipeline.conf:rw
       - /tmp/example-pipeline-data/:/data:rw
-
-  mynodered:
-    image: nodered/node-red
-    ports:
-      - "1880:1880"
-    volumes:
-      - ./node_red_data:/data
-    container_name: mynodered

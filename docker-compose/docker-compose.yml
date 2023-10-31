@@ -66,7 +66,7 @@ services:
 
   pipeline-operations-centre:
     restart: always
-    image: public.registry.bitswan.space/bitswan/pipeline-operations-centre:latest
+    image: public.registry.bitswan.space/bitswan/pipeline-operations-centre:sha256_ea03a11a614e3e612d8bc36d8058c38fa250bfafe102e556601be26aa9cdadcb
     env_file:
       - operations_centre.env
     ports:
@@ -74,7 +74,7 @@ services:
 
   container-config-service:
     restart: always
-    image: public.registry.bitswan.space/bitswan/container-configuration-service:latest
+    image: public.registry.bitswan.space/bitswan/container-configuration-service:sha256_f5d8b03552708b0ad3563a2e5bc73df26e7d1fd866e4290898a9ec59180495f1
     ports:
       - "8080:8080"
     env_file:
