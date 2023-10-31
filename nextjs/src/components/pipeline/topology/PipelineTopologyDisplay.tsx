@@ -5,8 +5,10 @@ import ReactFlow, {
   type Edge,
   type OnConnect,
   addEdge,
-  useEdgesState,
-  useNodesState,
+  applyNodeChanges,
+  type NodeChange,
+  applyEdgeChanges,
+  type EdgeChange,
 } from "reactflow";
 
 import { useCallback } from "react";
@@ -31,29 +33,72 @@ export const PipelineTopologyDisplay = (
 ) => {
   const { initialNodes, initialEdges, pipelineParentIDs } = props;
 
-  const [initialNodesCopy, setInitialNodesCopy] = React.useState<Node[]>([]);
-  const [initialEdgesCopy, setInitialEdgesCopy] = React.useState<Edge[]>([]);
+  const [nodes, setNodes] = React.useState<Node[]>(initialNodes);
+  const [edges, setEdges] = React.useState<Edge[]>(initialEdges);
 
   React.useEffect(() => {
-    setInitialNodesCopy(
+    setNodes(
       initialNodes.map((node) => ({
         ...node,
         data: { ...node.data, parentIDs: pipelineParentIDs } as NodeData,
       })),
     );
-    setInitialEdgesCopy(initialEdges);
+    setEdges(initialEdges);
   }, [initialNodes, initialEdges, pipelineParentIDs]);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
   React.useEffect(() => {
-    setNodes(initialNodesCopy);
-    setEdges(initialEdgesCopy);
-  }, [setNodes, setEdges, initialNodesCopy, initialEdgesCopy]);
+    setNodes(nodes);
+    setEdges(edges);
+  }, [setNodes, setEdges, nodes, edges]);
 
   const onConnect: OnConnect = useCallback(
     (connection) => setEdges((eds) => addEdge(connection, eds)),
+    [setEdges],
+  );
+
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      return setNodes((nds) => {
+        console.log("freshchange", changes, "freshNds", nds);
+        const newChanges: NodeChange[] = [];
+        changes.forEach((c) => {
+          if (c.type === "dimensions") {
+            const expandedNode: Node | undefined = nds.find(
+              (n) => n.id === c.id,
+            );
+
+            const nodesBelow = nds.filter(
+              (n) => n?.position?.y > (expandedNode?.position.y ?? 0),
+            );
+
+            nodesBelow.forEach((nb) => {
+              newChanges.push({
+                id: nb.id,
+                type: "position",
+                position: {
+                  x: nb.position.x,
+                  y:
+                    nb.position.y +
+                    ((c.dimensions?.height ?? 0) - (expandedNode?.height ?? 0)),
+                },
+              });
+            });
+          }
+        });
+
+        console.log("changes: ", [...changes, ...newChanges], "nds: ", nds);
+
+        const newNodes = applyNodeChanges([...changes, ...newChanges], nds);
+
+        return newNodes;
+      });
+    },
+    [setNodes],
+  );
+
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange[]) =>
+      setEdges((eds) => applyEdgeChanges(changes, eds)),
     [setEdges],
   );
 

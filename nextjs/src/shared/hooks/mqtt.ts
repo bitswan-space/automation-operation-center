@@ -48,21 +48,17 @@ export function useMQTTRequestResponseSubscription<T>(
         // log: console.log,
       });
 
-      client.on("connect", () => {
-        console.log("Connected to MQTT Broker");
-
-        client.subscribe(responseTopic, (err) => {
-          if (!err) {
-            if (requestMessageType === "json") {
-              client.publish(requestTopic, JSON.stringify(requestMessage));
-            } else {
-              client.publish(requestTopic, requestMessage as string);
-            }
+      client.subscribe(responseTopic, (err) => {
+        if (!err) {
+          if (requestMessageType === "json") {
+            client.publish(requestTopic, JSON.stringify(requestMessage));
           } else {
-            console.log("Error subscribing: ", err);
-            next(err);
+            client.publish(requestTopic, requestMessage as string);
           }
-        });
+        } else {
+          console.log("Error subscribing: ", err);
+          next(err);
+        }
       });
 
       const onMessage = (_topic: string, message: Buffer) => {

@@ -15,6 +15,7 @@ export const transformTopologyToFlowNodes = (topology: PipelineNode[]) => {
   return topology.map((node, index) => {
     return {
       id: node.id,
+      draggable: false,
       type: "processor",
       position: { x: 200, y: initialY + index * spacingY },
       // using the id as name, kind and type for now but they should be separate
