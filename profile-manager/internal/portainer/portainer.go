@@ -91,7 +91,7 @@ func GetEndpoints() ([]Endpoint, error) {
 		return endpoints, err
 	}
 
-	api_key := os.Getenv("PORTAINER_API_KEY")
+	api_key := os.Getenv("PORTAINER_ACCESS_TOKEN")
 	req.Header.Set("X-API-Key", api_key)
 	req.Header.Set("Content-Type", "application/json")
 	res, err := client.Do(req)
@@ -161,7 +161,7 @@ func GetContainerDetail(endpointId int, containerId string) (ContainerDetail, er
 		return containerDetail, err
 	}
 
-	api_key := os.Getenv("PORTAINER_API_KEY")
+	api_key := os.Getenv("PORTAINER_ACCESS_TOKEN")
 	req.Header.Set("X-API-Key", api_key)
 	req.Header.Set("Content-Type", "application/json")
 	res, err := client.Do(req)
