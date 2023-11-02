@@ -91,10 +91,6 @@ export const PipelineTopologyDisplay = (
           }
         });
 
-        console.log("newChanges", newChanges);
-        console.log("changes", changes);
-        console.log("nds", nds);
-
         const newNodes = applyNodeChanges([...changes, ...newChanges], nds);
 
         return newNodes;

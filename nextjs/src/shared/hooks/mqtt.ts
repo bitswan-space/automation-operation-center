@@ -62,7 +62,6 @@ export function useMQTTRequestResponseSubscription<T>(
       });
 
       const onMessage = (_topic: string, message: Buffer) => {
-        console.log("MQTT Message: ", message.toString());
         const res: T = JSON.parse(message.toString()) as T;
         onMessageCallback?.(res);
         next(null, res);
