@@ -45,7 +45,7 @@ services:
       - "9001:9001"
 
   keycloak:
-    image: registry.bitswan.space/bitswan/bitswan-keycloak:sha256_eb7e2711e5bd339af34ec4da269a7f8ac07e2075d8add5df5856152a66bdfe98 
+    image: registry.bitswan.space/bitswan-keycloak:sha256_eb7e2711e5bd339af34ec4da269a7f8ac07e2075d8add5df5856152a66bdfe98 
     ports:
       - "9090:8080"
     env_file:
