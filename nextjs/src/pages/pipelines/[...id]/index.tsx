@@ -44,7 +44,10 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
     requestResponseTopicHandler: {
       requestTopic: pipelineTopologyRequestTopic,
       responseTopic: pipelineTopologyResponseTopic,
-      requestMessage: "get",
+      requestMessageType: "json",
+      requestMessage: {
+        method: "get",
+      },
       onMessageCallback: (response) => {
         const topology = flattenTopology(response);
         setPipelineTopology(topology);

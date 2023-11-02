@@ -7,11 +7,16 @@ import { Button } from "@/components/ui/button";
 import React from "react";
 import { PipelineDataTable } from "@/components/pipeline/PipelineDataTable";
 import { PipelineDataCard } from "@/components/pipeline/PipelineDataCard";
-import { usePipelinesWithStats } from "@/components/pipeline/hooks";
+import {
+  usePipelinesWithStats,
+  usePreparePipelineMQTTService,
+} from "@/components/pipeline/hooks";
 import { TitleBar } from "../components/layout/TitleBar";
 
 const DashboardPage: NextPageWithLayout = () => {
   const { pipelinesWithStats: pipelines } = usePipelinesWithStats();
+  const prepMQTTQuery = usePreparePipelineMQTTService();
+  console.log("prepMQTTQuery", prepMQTTQuery);
 
   return (
     <>

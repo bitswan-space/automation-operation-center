@@ -142,6 +142,7 @@ export interface PipelineNode {
   id: string;
   type?: string;
   kind?: string;
+  capabilities?: string[];
   label?: string;
   disabled?: boolean;
   info?: string;

@@ -35,7 +35,7 @@ import {
 import { useRouter } from "next/router";
 import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
 import { joinIDsWithDelimiter } from "@/utils/pipelineUtils";
-import { nanoToFormattedTime, nanoToNormalTime } from "@/utils/time";
+import { epochToFormattedTime, nanoToNormalTime } from "@/utils/time";
 
 type Section = "stats" | "configure" | "data" | "logs";
 type PipelineNodeActionType =
@@ -119,6 +119,7 @@ export type NodeData = {
   type: string;
   name: string;
   kind: string;
+  capabilities: string[];
   id: string;
 };
 
@@ -128,6 +129,7 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
     name: nodeName,
     kind: nodeKind,
     id: nodeID,
+    capabilities,
     parentIDs,
   } = data;
 
@@ -162,7 +164,9 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
     return bgColor ? bgColor : "bg-neutral-950";
   };
 
-  const [componentEvents, setComponentEvents] = React.useState<unknown[]>([]);
+  const [componentEvents, setComponentEvents] = React.useState<EventResponse[]>(
+    [],
+  );
 
   const pipelineEventsRequestTopic = `${joinIDsWithDelimiter(
     parentIDs,
@@ -180,15 +184,15 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
     event_number: number;
   };
 
-  const {} = useMQTTRequestResponseSubscription<EventResponse>({
+  useMQTTRequestResponseSubscription<EventResponse>({
     queryKey: "events-subscription",
     requestResponseTopicHandler: {
       requestTopic: pipelineEventsRequestTopic,
       responseTopic: pipelineEventsResponseTopic,
       requestMessageType: "json",
-      requestMessage: { event_count: 4 },
+      requestMessage: { event_count: 200 },
       onMessageCallback: (response) => {
-        setComponentEvents((events) => [...events, response]);
+        setComponentEvents((events) => [response, ...events]);
       },
     },
     enabled: nodeType === "component",
@@ -218,7 +222,7 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
               </CardDescription>
             </div>
           </div>
-          {nodeType === "pipeline" && (
+          {capabilities.includes("has-children") && (
             <div className="flex">
               {
                 <div
@@ -263,14 +267,16 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
         >
           Collapsible Section
         </CollapsibleSection>
-        <CollapsibleSection
-          title="Data"
-          icon={<Braces size={18} className="text-neutral-600" />}
-          expanded={state.expandedSections.includes("data")}
-          onToggleExpanded={() => dispatch({ type: "toggleExpandData" })}
-        >
-          <DataSectionBody events={componentEvents} />
-        </CollapsibleSection>
+        {capabilities.includes("subscribable-events") && (
+          <CollapsibleSection
+            title="Data"
+            icon={<Braces size={18} className="text-neutral-600" />}
+            expanded={state.expandedSections.includes("data")}
+            onToggleExpanded={() => dispatch({ type: "toggleExpandData" })}
+          >
+            <DataSectionBody events={componentEvents} />
+          </CollapsibleSection>
+        )}
       </CardContent>
       <Handle
         type="target"
@@ -345,8 +351,20 @@ enum DataSectionTabOptions {
   Logs,
 }
 
+type EventResponse = {
+  timestamp: number;
+  data: unknown;
+  event_number: number;
+};
+
+type FormattedEventResponse = {
+  timestamp: string;
+  data: unknown;
+  event_number: number;
+};
+
 interface DataSectionBodyProps {
-  events: unknown[];
+  events: EventResponse[];
 }
 
 function DataSectionBody(props: DataSectionBodyProps) {
@@ -356,15 +374,27 @@ function DataSectionBody(props: DataSectionBodyProps) {
     DataSectionTabOptions.Input,
   );
 
-  type EventResponse = {
-    timestamp: number;
-    data: unknown;
-    event_number: number;
-  };
+  const eventResponseObject: Record<string, FormattedEventResponse> = events
+    .map((e) => {
+      return {
+        ...e,
+        timestamp: epochToFormattedTime(e.timestamp),
+      } as FormattedEventResponse;
+    })
+    .reduce(
+      (
+        accumulator: Record<string, FormattedEventResponse>,
+        e: FormattedEventResponse,
+      ) => {
+        accumulator[`event no. - ${e.event_number}`] = e;
+        return accumulator;
+      },
+      {} as Record<string, FormattedEventResponse>,
+    );
 
   return (
     <div className="w-full pb-8">
-      <div className="flex w-full border-b border-neutral-300">
+      <div className="nodrag flex w-full border-b border-neutral-300">
         <DataSectionTab
           isActive={activeTab === DataSectionTabOptions.Input}
           label="Events"
@@ -377,16 +407,16 @@ function DataSectionBody(props: DataSectionBodyProps) {
         />
         <DataSectionTab
           isActive={activeTab === DataSectionTabOptions.Logs}
-          label="Logs"
+          // label="Logs"
           onClick={() => setActiveTab(DataSectionTabOptions.Logs)}
         /> */}
       </div>
-      <div className="px-2">
+      <div className="nodrag px-2">
         {activeTab === DataSectionTabOptions.Input && (
-          <div className="font-mono text-sm">
+          <div className="nodrag scroll scrollbar mt-3 h-60 max-h-60 overflow-y-scroll px-2 font-mono text-sm">
             <JSONTree
               hideRoot
-              data={events}
+              data={eventResponseObject}
               theme={jsonTreeTheme}
               // getItemString={(type, data, itemType, itemString, keyPath) => (
               //   <span>

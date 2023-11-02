@@ -8,7 +8,7 @@ export const transformTopologyToFlowNodes = (topology: PipelineNode[]) => {
   // Assumption here is that the nodes are always ordered by their index
   // The second assumption is that they're always in a single column
   const initialY = 0;
-  const spacingY = 400;
+  const spacingY = 800;
 
   // console.log("topology", topology);
 
@@ -19,7 +19,13 @@ export const transformTopologyToFlowNodes = (topology: PipelineNode[]) => {
       type: "processor",
       position: { x: 200, y: initialY + index * spacingY },
       // using the id as name, kind and type for now but they should be separate
-      data: { type: node.type, name: node.id, kind: node.id, id: node.id },
+      data: {
+        type: node.type,
+        name: node.id,
+        kind: node.id,
+        id: node.id,
+        capabilities: node.capabilities,
+      },
     };
   });
 };

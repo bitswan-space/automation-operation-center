@@ -16,16 +16,11 @@ export function nanoToNormalTime(nanoTimestamp: number): string {
   return date.toLocaleString();
 }
 
-export function nanoToFormattedTime(nanoTimestamp: number): string {
-  // Convert nanoseconds timestamp to milliseconds
-  const date = new Date(nanoTimestamp / 1000000);
+export function epochToFormattedTime(epochTime: number): string {
+  const date = new Date(epochTime / 1000000);
 
-  // Use date-fns to format most parts of the date
-  const formattedDate = format(date, "dd-MMM-yyyy HH:mm:ss.SSS");
-
-  // Get the remaining nanoseconds
-  const nanoseconds = (nanoTimestamp % 1000000).toString().padStart(6, "0");
+  const formattedDate = format(date, "dd-MMM-yyyy HH:mm:ss.SSSSSS");
 
   // Return the full formatted date string
-  return `${formattedDate}${nanoseconds}`;
+  return formattedDate;
 }

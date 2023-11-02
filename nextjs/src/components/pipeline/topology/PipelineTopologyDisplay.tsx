@@ -9,6 +9,8 @@ import ReactFlow, {
   type NodeChange,
   applyEdgeChanges,
   type EdgeChange,
+  useNodesState,
+  useEdgesState,
 } from "reactflow";
 
 import { useCallback } from "react";
@@ -33,23 +35,26 @@ export const PipelineTopologyDisplay = (
 ) => {
   const { initialNodes, initialEdges, pipelineParentIDs } = props;
 
-  const [nodes, setNodes] = React.useState<Node[]>(initialNodes);
-  const [edges, setEdges] = React.useState<Edge[]>(initialEdges);
+  const [initialNodesCopy, setInitialNodesCopy] = React.useState<Node[]>([]);
+  const [initialEdgesCopy, setInitialEdgesCopy] = React.useState<Edge[]>([]);
 
   React.useEffect(() => {
-    setNodes(
+    setInitialNodesCopy(
       initialNodes.map((node) => ({
         ...node,
         data: { ...node.data, parentIDs: pipelineParentIDs } as NodeData,
       })),
     );
-    setEdges(initialEdges);
+    setInitialEdgesCopy(initialEdges);
   }, [initialNodes, initialEdges, pipelineParentIDs]);
 
+  const [nodes, setNodes] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
   React.useEffect(() => {
-    setNodes(nodes);
-    setEdges(edges);
-  }, [setNodes, setEdges, nodes, edges]);
+    setNodes(initialNodesCopy);
+    setEdges(initialEdgesCopy);
+  }, [setNodes, setEdges, initialNodesCopy, initialEdgesCopy]);
 
   const onConnect: OnConnect = useCallback(
     (connection) => setEdges((eds) => addEdge(connection, eds)),
@@ -61,7 +66,10 @@ export const PipelineTopologyDisplay = (
       return setNodes((nds) => {
         const newChanges: NodeChange[] = [];
         changes.forEach((c) => {
-          if (c.type === "dimensions") {
+          if (
+            c.type === "dimensions" &&
+            nds.every((n) => n.height && n.width)
+          ) {
             const expandedNode: Node | undefined = nds.find(
               (n) => n.id === c.id,
             );
@@ -85,18 +93,16 @@ export const PipelineTopologyDisplay = (
           }
         });
 
+        console.log("newChanges", newChanges);
+        console.log("changes", changes);
+        console.log("nds", nds);
+
         const newNodes = applyNodeChanges([...changes, ...newChanges], nds);
 
         return newNodes;
       });
     },
     [setNodes],
-  );
-
-  const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) =>
-      setEdges((eds) => applyEdgeChanges(changes, eds)),
-    [setEdges],
   );
 
   return (
