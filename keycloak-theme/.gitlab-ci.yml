@@ -3,4 +3,4 @@ variables:
 
 include:
   - project: 'LibertyAces/Product/bitswanmonorepo'
-    file: 'cicd/docker-build.yml'
+    file: 'cicd/docker-build-public.yml'
