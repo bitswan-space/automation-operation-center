@@ -7,8 +7,6 @@ import ReactFlow, {
   addEdge,
   applyNodeChanges,
   type NodeChange,
-  applyEdgeChanges,
-  type EdgeChange,
   useNodesState,
   useEdgesState,
 } from "reactflow";

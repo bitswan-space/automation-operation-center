@@ -27,15 +27,11 @@ import React from "react";
 import clsx from "clsx";
 import { memo } from "react";
 import { SiApachekafka, SiJavascript } from "react-icons/si";
-import {
-  inputSampleJSON,
-  jsonTreeTheme,
-  outputSampleJSON,
-} from "@/utils/jsonTree";
+import { jsonTreeTheme, outputSampleJSON } from "@/utils/jsonTree";
 import { useRouter } from "next/router";
 import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
 import { joinIDsWithDelimiter } from "@/utils/pipelineUtils";
-import { epochToFormattedTime, nanoToNormalTime } from "@/utils/time";
+import { epochToFormattedTime } from "@/utils/time";
 
 type Section = "stats" | "configure" | "data" | "logs";
 type PipelineNodeActionType =
