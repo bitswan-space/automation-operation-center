@@ -14,4 +14,4 @@ RUN yarn install && \
 FROM quay.io/keycloak/keycloak:22.0.2
 
 # Copy the theme JAR from the build stage into the Keycloak server image
-COPY --from=builder /usr/src/app/build_keycloak/target/*keycloak-theme*.jar /opt/jboss/keycloak/themes/
+COPY --from=builder /usr/src/app/build_keycloak/target/*keycloak-theme*.jar /opt/keycloak/providers/
