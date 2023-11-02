@@ -45,7 +45,7 @@ services:
       - "9001:9001"
 
   keycloak:
-    image: quay.io/keycloak/keycloak:22.0.2
+    image: registry.bitswan.space/bitswan/bitswan-keycloak:sha256_eb7e2711e5bd339af34ec4da269a7f8ac07e2075d8add5df5856152a66bdfe98 
     ports:
       - "9090:8080"
     env_file:
@@ -66,7 +66,7 @@ services:
 
   pipeline-operations-centre:
     restart: always
-    image: public.registry.bitswan.space/bitswan/pipeline-operations-centre:sha256_09e4f0106a4e306e0ff5426b7d0d8802a623690d1ab126b2421bc787c743fb72
+    image: public.registry.bitswan.space/bitswan/pipeline-operations-centre:sha256_38e7079eaf7b2d94a54967ca44afd522464f5187a9de82c7b716431647018094
     env_file:
       - operations_centre.env
     ports:

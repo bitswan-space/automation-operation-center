@@ -1,6 +1,6 @@
 version: "3.3"
 
-x-example-pipeline-image-tag: &example-pipeline-image-tag public.registry.bitswan.space/bitswan/example-pipeline:sha256_3a453c9dfe25fcf5d17820a985d8a22104423b0acbd3d7283f502e66c7f7f63d
+x-example-pipeline-image-tag: &example-pipeline-image-tag public.registry.bitswan.space/bitswan/example-pipeline:sha256_3cdc79c9b7b0f941092c6c4699a6be9eea74cfd5d68d6044d0daa3a18d6f4ae1
 
 include:
   - ../docker-compose.yml
