@@ -78,7 +78,6 @@ func GetTopology() (Topology, error) {
 	// Get topology items
 	topology.Topology = GetTopologyItems(endpoints)
 	topology.DisplayStyle = "list"
-	topology.DisplayPriority = "hidden"
 
 	return topology, nil
 }
