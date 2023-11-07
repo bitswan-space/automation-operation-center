@@ -1,0 +1,6 @@
+variables:
+  DOCKER_IMAGE: container-discovery-service
+
+include:
+  - project: 'LibertyAces/Product/bitswanmonorepo'
+    file: 'cicd/docker-build-public.yml'
