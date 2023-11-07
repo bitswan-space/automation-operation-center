@@ -1,7 +1,6 @@
 package mqtt
 
 import (
-	"fmt"
 	"time"
 
 	"bitswan.space/container-discovery-service/internal/config"
@@ -14,7 +13,7 @@ var client mqtt.Client
 func Init() error {
 	cfg := config.GetConfig()
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker("mqtt://" + cfg.MQTTBrokerHost + ":" + fmt.Sprint(cfg.MQTTBrokerPort))
+	opts.AddBroker(cfg.MQTTBrokerUrl)
 	opts.SetClientID("container-discovery-service")
 	opts.SetAutoReconnect(true)
 	opts.SetConnectRetry(true)

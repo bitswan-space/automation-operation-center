@@ -31,7 +31,6 @@ func main() {
 		logger.Error.Fatalf("Failed to initialize MQTT client: %v", err)
 		os.Exit(1)
 	}
-	defer mqtt.Close()
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
@@ -40,6 +39,7 @@ func main() {
 	<-sigChan
 	logger.Info.Println("Shutting down gracefully...")
 	// Perform any necessary cleanup here
+	mqtt.Close()
 
 	logger.Info.Println("Shutdown complete")
 }

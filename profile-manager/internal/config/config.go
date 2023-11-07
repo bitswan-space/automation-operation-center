@@ -9,8 +9,7 @@ import (
 
 type Configuration struct {
 	PortainerURL    string `yaml:"portainer-url"`
-	MQTTBrokerHost  string `yaml:"mqtt-broker-host"`
-	MQTTBrokerPort  int    `yaml:"mqtt-broker-port"`
+	MQTTBrokerUrl  string `yaml:"mqtt-broker-url"`
 	MQTTTopologyPub string `yaml:"mqtt-topology-topic-pub"`
 	MQTTTopologySub string `yaml:"mqtt-topology-topic-sub"`
 }
