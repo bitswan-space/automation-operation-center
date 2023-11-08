@@ -15,6 +15,7 @@ import { PipelineDetailTabs } from "../../../components/pipeline/PipelineDetailT
 import { type PumpTopologyResponse, type PipelineNode } from "@/types";
 import type * as next from "next";
 import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
+import { splitArrayUpToElementAndJoin } from "@/utils/arrays";
 
 interface PipelineDetailPageProps {
   id: string | string[];
@@ -64,16 +65,26 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
               Running Pipelines
             </Link>
             <span className="text-lg">&#x25B8;</span>
-            <span className="underline">
+            <Link href={`/pipelines/${id}`} className="underline">
               {formatPipelineName(pipeline?.name ?? "N/A")}
-            </span>
+            </Link>
           </React.Fragment>
         );
       }
+
+      console.log(splitArrayUpToElementAndJoin<string>(pipelineIDs, id));
       return (
         <React.Fragment key={id}>
           <span className="text-lg">&#x25B8;</span>
-          <span className="underline">{id}</span>
+          <Link
+            href={`/pipelines/${splitArrayUpToElementAndJoin<string>(
+              pipelineIDs,
+              id,
+            )}`}
+            className="underline"
+          >
+            {id}
+          </Link>
         </React.Fragment>
       );
     });

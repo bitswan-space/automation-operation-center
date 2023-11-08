@@ -2,6 +2,7 @@ import {
   BarChartBig,
   Braces,
   ChevronRight,
+  Copy,
   Layers,
   SlidersHorizontal,
   View,
@@ -370,7 +371,7 @@ function DataSectionBody(props: DataSectionBodyProps) {
     DataSectionTabOptions.Input,
   );
 
-  const eventResponseObject: Record<string, FormattedEventResponse> = events
+  const eventResponseObject: Record<string, unknown> = events
     .map((e) => {
       return {
         ...e,
@@ -378,14 +379,11 @@ function DataSectionBody(props: DataSectionBodyProps) {
       } as FormattedEventResponse;
     })
     .reduce(
-      (
-        accumulator: Record<string, FormattedEventResponse>,
-        e: FormattedEventResponse,
-      ) => {
-        accumulator[`event no. - ${e.event_number}`] = e;
+      (accumulator: Record<string, unknown>, e: FormattedEventResponse) => {
+        accumulator[`#${e.event_number} ${e.timestamp}`] = e.data;
         return accumulator;
       },
-      {} as Record<string, FormattedEventResponse>,
+      {} as Record<string, unknown>,
     );
 
   return (
@@ -396,16 +394,6 @@ function DataSectionBody(props: DataSectionBodyProps) {
           label="Events"
           onClick={() => setActiveTab(DataSectionTabOptions.Input)}
         />
-        {/* <DataSectionTab
-          isActive={activeTab === DataSectionTabOptions.Output}
-          label="Sample Output"
-          onClick={() => setActiveTab(DataSectionTabOptions.Output)}
-        />
-        <DataSectionTab
-          isActive={activeTab === DataSectionTabOptions.Logs}
-          // label="Logs"
-          onClick={() => setActiveTab(DataSectionTabOptions.Logs)}
-        /> */}
       </div>
       <div className="nodrag px-2">
         {activeTab === DataSectionTabOptions.Input && (
@@ -414,24 +402,22 @@ function DataSectionBody(props: DataSectionBodyProps) {
               hideRoot
               data={eventResponseObject}
               theme={jsonTreeTheme}
-              // getItemString={(type, data, itemType, itemString, keyPath) => (
-              //   <span>
-              //     {nanoToNormalTime((data as EventResponse).timestamp)} | event
-              //     id: {(data as EventResponse).event_number} data:{" "}
-              //     {(data as EventResponse).data?.toString()}
-              //   </span>
-              // )}
-              // postprocessValue={(value) => {
-              //   return value as EventResponse;
-              // }}
-              // labelRenderer={() => null}
-              // valueRenderer={(valueAsString, value, ...keypath) => {
-              //   console.log(valueAsString, value, keypath);
-
-              //   const show = keypath.find((s) => s === "data");
-
-              //   return show && <em>{value}</em>;
-              // }}
+              getItemString={(type, data, itemType, itemString, keyPath) => {
+                return (
+                  keyPath.length === 1 && (
+                    <span className="">
+                      {`${
+                        JSON.stringify(data).length > 60
+                          ? JSON.stringify(data).substring(0, 60) + "..."
+                          : JSON.stringify(data)
+                      }`}
+                      <span>
+                        <Copy size={14} className="m-1 mt-2" />
+                      </span>
+                    </span>
+                  )
+                );
+              }}
             />
           </div>
         )}

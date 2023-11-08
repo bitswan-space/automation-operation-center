@@ -1,8 +1,6 @@
 import { type Edge } from "reactflow";
 import { type PipelineNode } from "@/types";
 
-// {"topology": [{"id": "RandomNumberSource", "wires": ["ExampleProcessor"]}, {"id": "ExampleProcessor", "wires": ["FileCSVSink"]}, {"id": "FileCSVSink", "wires": []}]}
-
 export const transformTopologyToFlowNodes = (topology: PipelineNode[]) => {
   // Define the initial Y position and the spacing between nodes
   // Assumption here is that the nodes are always ordered by their index
@@ -15,7 +13,6 @@ export const transformTopologyToFlowNodes = (topology: PipelineNode[]) => {
   return topology.map((node, index) => {
     return {
       id: node.id,
-      draggable: false,
       type: "processor",
       position: { x: 200, y: initialY + index * spacingY },
       // using the id as name, kind and type for now but they should be separate

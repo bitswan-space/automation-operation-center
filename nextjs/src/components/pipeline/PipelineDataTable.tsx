@@ -31,6 +31,7 @@ import { type PipelineStat, type PipelineWithStats } from "@/types";
 
 import { ResponsiveContainer, Area, AreaChart, XAxis } from "recharts";
 import Link from "next/link";
+import { parseDateTimeStringToPandaFormat } from "@/utils/time";
 
 export const columns: ColumnDef<PipelineWithStats>[] = [
   {
@@ -95,7 +96,9 @@ export const columns: ColumnDef<PipelineWithStats>[] = [
     accessorKey: "dateCreated",
     header: "Date Created",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("dateCreated")}</div>
+      <div className="capitalize">
+        {parseDateTimeStringToPandaFormat(row.getValue("dateCreated"))}
+      </div>
     ),
   },
   {

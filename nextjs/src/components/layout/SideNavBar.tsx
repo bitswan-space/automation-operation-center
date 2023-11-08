@@ -16,6 +16,7 @@ import Image from "next/image";
 import { Button } from "../ui/button";
 import clsx from "clsx";
 import { signOut } from "next-auth/react";
+import { useRouter } from "next/router";
 
 interface SideNavBarProps {
   expanded: boolean;
@@ -61,6 +62,7 @@ const SideNavBar = (props: SideNavBarProps) => {
               alt={""}
               width={expanded ? 150 : 25}
               height={expanded ? 100 : 25}
+              className={clsx({ "h-8 w-36": expanded })}
             />
           </div>
           <div className="flex flex-col justify-center gap-4">
@@ -69,36 +71,43 @@ const SideNavBar = (props: SideNavBarProps) => {
               title="Running Pipelines"
               active
               expanded={expanded}
+              url="/"
             />
             <SideBarNavItem
               Icon={PencilLine}
               title="Pipelines builder"
               expanded={expanded}
+              hidden
             />
             <SideBarNavItem
               Icon={PieChart}
               title="View Data"
               expanded={expanded}
+              hidden
             />
             <SideBarNavItem
               Icon={Braces}
               title="Data Studio"
               expanded={expanded}
+              hidden
             />
             <SideBarNavItem
               Icon={ShoppingCart}
               title="Store"
               expanded={expanded}
+              hidden
             />
             <SideBarNavItem
               Icon={Router}
               title="Data Providers"
               expanded={expanded}
+              hidden
             />
             <SideBarNavItem
               Icon={Settings}
               title="Settings"
               expanded={expanded}
+              hidden
             />
           </div>
         </div>
@@ -125,14 +134,29 @@ interface SideBarNavItemProps {
   title: string;
   active?: boolean;
   expanded?: boolean;
+  hidden?: boolean;
+  url?: string;
 }
 
 function SideBarNavItem(props: SideBarNavItemProps) {
-  const { Icon, title, active, expanded } = props;
+  const { Icon, title, active, expanded, hidden, url } = props;
+
+  const router = useRouter();
 
   const variants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 },
+  };
+
+  const handleOnClick = () => {
+    router
+      .push(url ?? "/")
+      .then(() => {
+        console.log("Navigated to ", url);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   return (
@@ -147,7 +171,9 @@ function SideBarNavItem(props: SideBarNavItemProps) {
         "justify-start": expanded,
         "bg-blue-700 text-white hover:bg-blue-600 hover:text-white":
           active && expanded,
+        "hidden ": hidden,
       })}
+      onClick={handleOnClick}
     >
       <Icon size={20} strokeWidth={2.3} />
       {expanded && (
