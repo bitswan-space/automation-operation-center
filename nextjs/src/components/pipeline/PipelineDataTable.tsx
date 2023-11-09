@@ -96,9 +96,7 @@ export const columns: ColumnDef<PipelineWithStats>[] = [
     accessorKey: "dateCreated",
     header: "Date Created",
     cell: ({ row }) => (
-      <div className="capitalize">
-        {parseDateTimeStringToPandaFormat(row.getValue("dateCreated"))}
-      </div>
+      <div className="capitalize">{row.getValue("dateCreated")}</div>
     ),
   },
   {
