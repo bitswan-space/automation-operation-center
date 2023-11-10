@@ -18,21 +18,14 @@ export interface UseNewMQTTProps<T> {
   queryKey: string;
   onConnect?: () => void;
   enabled?: boolean;
-  infiniteSubscription?: boolean; // Added this new property
+  infiniteSubscription?: boolean;
   requestResponseTopicHandler: RequestResponseTopicHandler<T>;
-  pauseSubscription?: boolean;
 }
 
 export function useMQTTRequestResponseSubscription<T>(
   props: UseNewMQTTProps<T>,
 ) {
-  // Extended the type T to include the new property
-  const {
-    requestResponseTopicHandler,
-    pauseSubscription,
-    queryKey,
-    infiniteSubscription,
-  } = props;
+  const { requestResponseTopicHandler, queryKey, infiniteSubscription } = props;
 
   const {
     requestMessage,
@@ -106,7 +99,7 @@ export function useMQTTRequestResponseSubscription<T>(
       requestMessageType,
       requestTopic,
       requestMessage,
-      infiniteSubscription, // Added as a dependency
+      infiniteSubscription,
       onMessageCallback,
     ],
   );

@@ -31,7 +31,6 @@ import { type PipelineStat, type PipelineWithStats } from "@/types";
 
 import { ResponsiveContainer, Area, AreaChart, XAxis } from "recharts";
 import Link from "next/link";
-import { parseDateTimeStringToPandaFormat } from "@/utils/time";
 
 export const columns: ColumnDef<PipelineWithStats>[] = [
   {

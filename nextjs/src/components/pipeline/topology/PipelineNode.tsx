@@ -1,12 +1,10 @@
 import {
   BarChartBig,
   Braces,
-  Check,
   CheckCheck,
   ChevronRight,
   Copy,
   Layers,
-  Pause,
   PauseCircle,
   Play,
   SlidersHorizontal,
