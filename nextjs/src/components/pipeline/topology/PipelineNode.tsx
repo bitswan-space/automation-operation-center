@@ -1,9 +1,14 @@
 import {
   BarChartBig,
   Braces,
+  Check,
+  CheckCheck,
   ChevronRight,
   Copy,
   Layers,
+  Pause,
+  PauseCircle,
+  Play,
   SlidersHorizontal,
   View,
 } from "lucide-react";
@@ -33,6 +38,7 @@ import { useRouter } from "next/router";
 import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
 import { joinIDsWithDelimiter } from "@/utils/pipelineUtils";
 import { epochToFormattedTime } from "@/utils/time";
+import { useClipboard } from "use-clipboard-copy";
 
 type Section = "stats" | "configure" | "data" | "logs";
 type PipelineNodeActionType =
@@ -161,6 +167,8 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
     return bgColor ? bgColor : "bg-neutral-950";
   };
 
+  const pauseStreamRef = React.useRef<boolean>(false);
+
   const [componentEvents, setComponentEvents] = React.useState<EventResponse[]>(
     [],
   );
@@ -189,9 +197,12 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
       requestMessageType: "json",
       requestMessage: { event_count: 200 },
       onMessageCallback: (response) => {
-        setComponentEvents((events) => [response, ...events]);
+        if (!pauseStreamRef.current) {
+          setComponentEvents((events) => [response, ...events]);
+        }
       },
     },
+    infiniteSubscription: true,
     enabled: nodeType === "component",
   });
 
@@ -271,7 +282,11 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
             expanded={state.expandedSections.includes("data")}
             onToggleExpanded={() => dispatch({ type: "toggleExpandData" })}
           >
-            <DataSectionBody events={componentEvents} />
+            <DataSectionBody
+              events={componentEvents}
+              onPauseEventStream={() => (pauseStreamRef.current = true)}
+              onResumeEventStream={() => (pauseStreamRef.current = false)}
+            />
           </CollapsibleSection>
         )}
       </CardContent>
@@ -362,10 +377,55 @@ type FormattedEventResponse = {
 
 interface DataSectionBodyProps {
   events: EventResponse[];
+  onPauseEventStream?: () => void;
+  onResumeEventStream?: () => void;
 }
 
 function DataSectionBody(props: DataSectionBodyProps) {
-  const { events } = props;
+  const { events, onPauseEventStream, onResumeEventStream } = props;
+
+  const [isPaused, setIsPaused] = React.useState<boolean>(false);
+
+  const handlePause = () => {
+    setIsPaused(true);
+    onPauseEventStream?.();
+  };
+
+  const handleResume = () => {
+    setIsPaused(false);
+    onResumeEventStream?.();
+  };
+
+  const datakeyToCopyRef = React.useRef<string>("");
+  const [copied, setCopied] = React.useState<Record<string, boolean>>();
+
+  const clipboard = useClipboard({
+    onSuccess() {
+      setCopied((prevCopyState) => {
+        return {
+          ...prevCopyState,
+          [datakeyToCopyRef.current]: true,
+        };
+      });
+
+      setTimeout(() => {
+        setCopied((prevCopyState) => {
+          return {
+            ...prevCopyState,
+            [datakeyToCopyRef.current]: false,
+          };
+        });
+      }, 2000);
+    },
+    onError() {
+      console.log("error");
+    },
+  });
+
+  const handleCopy = (data: unknown, key: string) => {
+    datakeyToCopyRef.current = key;
+    clipboard.copy(data);
+  };
 
   const [activeTab, setActiveTab] = React.useState<DataSectionTabOptions>(
     DataSectionTabOptions.Input,
@@ -397,28 +457,61 @@ function DataSectionBody(props: DataSectionBodyProps) {
       </div>
       <div className="nodrag px-2">
         {activeTab === DataSectionTabOptions.Input && (
-          <div className="nodrag scroll scrollbar mt-3 h-60 max-h-60 overflow-y-scroll px-2 font-mono text-sm">
-            <JSONTree
-              hideRoot
-              data={eventResponseObject}
-              theme={jsonTreeTheme}
-              getItemString={(type, data, itemType, itemString, keyPath) => {
-                return (
-                  keyPath.length === 1 && (
-                    <span className="">
-                      {`${
-                        JSON.stringify(data).length > 60
-                          ? JSON.stringify(data).substring(0, 60) + "..."
-                          : JSON.stringify(data)
-                      }`}
-                      <span>
-                        <Copy size={14} className="m-1 mt-2" />
-                      </span>
-                    </span>
-                  )
-                );
-              }}
-            />
+          <div>
+            <div className="my-2">
+              {!isPaused ? (
+                <Button size={"sm"} onClick={handlePause}>
+                  <PauseCircle size={20} className="mr-2" />
+                  Pause Stream
+                </Button>
+              ) : (
+                <Button size={"sm"} onClick={handleResume}>
+                  <Play size={16} className="mr-2" />
+                  Resume Stream
+                </Button>
+              )}
+            </div>
+            <div className="nodrag scroll scrollbar h-60 max-h-60 overflow-y-scroll px-2 font-mono text-sm">
+              <JSONTree
+                hideRoot
+                data={eventResponseObject}
+                theme={jsonTreeTheme}
+                getItemString={(type, data, itemType, itemString, keyPath) => {
+                  return (
+                    keyPath.length === 1 && (
+                      <div className="flex justify-between">
+                        {`${
+                          JSON.stringify(data).length > 70
+                            ? JSON.stringify(data).substring(0, 70) + "..."
+                            : JSON.stringify(data)
+                        }`}
+
+                        <span>
+                          {copied?.[keyPath.join("")] ? (
+                            <CheckCheck
+                              size={18}
+                              className="m-1 mt-2 text-green-600"
+                              strokeWidth={2.5}
+                            />
+                          ) : (
+                            <Copy
+                              size={14}
+                              className="m-1 mt-2"
+                              onClick={() =>
+                                handleCopy(
+                                  JSON.stringify(data),
+                                  keyPath.join(""),
+                                )
+                              }
+                            />
+                          )}
+                        </span>
+                      </div>
+                    )
+                  );
+                }}
+              />
+            </div>
           </div>
         )}
         {activeTab === DataSectionTabOptions.Output && (

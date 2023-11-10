@@ -72,7 +72,6 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
         );
       }
 
-      console.log(splitArrayUpToElementAndJoin<string>(pipelineIDs, id));
       return (
         <React.Fragment key={id}>
           <span className="text-lg">&#x25B8;</span>

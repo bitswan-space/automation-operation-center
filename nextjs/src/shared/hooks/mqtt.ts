@@ -18,13 +18,21 @@ export interface UseNewMQTTProps<T> {
   queryKey: string;
   onConnect?: () => void;
   enabled?: boolean;
+  infiniteSubscription?: boolean; // Added this new property
   requestResponseTopicHandler: RequestResponseTopicHandler<T>;
+  pauseSubscription?: boolean;
 }
 
 export function useMQTTRequestResponseSubscription<T>(
   props: UseNewMQTTProps<T>,
 ) {
-  const { requestResponseTopicHandler, queryKey } = props;
+  // Extended the type T to include the new property
+  const {
+    requestResponseTopicHandler,
+    pauseSubscription,
+    queryKey,
+    infiniteSubscription,
+  } = props;
 
   const {
     requestMessage,
@@ -40,31 +48,44 @@ export function useMQTTRequestResponseSubscription<T>(
         keepalive: 10,
         reschedulePings: true,
         protocolId: "MQTT",
-        // reconnectPeriod: 1000,
         connectTimeout: 3 * 1000,
         clean: true,
         queueQoSZero: true,
         clientId: "mqttjs_" + Math.random().toString(16).substring(2, 8),
-        // log: console.log,
       });
 
       client.subscribe(responseTopic, (err) => {
         if (!err) {
-          if (requestMessageType === "json") {
-            client.publish(requestTopic, JSON.stringify(requestMessage));
-          } else {
-            client.publish(requestTopic, requestMessage as string);
-          }
+          publishRequest();
         } else {
           console.log("Error subscribing: ", err);
           next(err);
         }
       });
 
+      const publishRequest = () => {
+        if (requestMessageType === "json") {
+          client.publish(requestTopic, JSON.stringify(requestMessage));
+        } else {
+          client.publish(requestTopic, requestMessage as string);
+        }
+      };
+
       const onMessage = (_topic: string, message: Buffer) => {
-        const res: T = JSON.parse(message.toString()) as T;
+        const res = JSON.parse(message.toString()) as T & {
+          remaining_subscription_count?: number;
+        };
         onMessageCallback?.(res);
         next(null, res);
+
+        // Check the remaining_subscription_count and republish if conditions are met
+        if (
+          infiniteSubscription &&
+          res.remaining_subscription_count &&
+          res.remaining_subscription_count <= 1
+        ) {
+          publishRequest();
+        }
       };
 
       const onError = (err: Error) => {
@@ -81,15 +102,15 @@ export function useMQTTRequestResponseSubscription<T>(
       };
     },
     [
-      requestTopic,
       responseTopic,
       requestMessageType,
+      requestTopic,
       requestMessage,
+      infiniteSubscription, // Added as a dependency
       onMessageCallback,
     ],
   );
 
-  // This ensures that the subscription key is unique for each request/response topic pair
   const subscriptionKey = `${queryKey}-${requestTopic}-${responseTopic}`;
   const subscription = useSWRSubscription(subscriptionKey, subscribe);
 
