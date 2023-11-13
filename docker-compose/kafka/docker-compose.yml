@@ -29,6 +29,7 @@ services:
   kafka-ui:
     restart: on-failure:3
     image: provectuslabs/kafka-ui:latest
+    entrypoint: /bin/sh -c 'java --add-opens java.rmi/javax.rmi.ssl=ALL-UNNAMED -Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true $JAVA_OPTS -jar kafka-ui-api.jar'
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka:9092"
