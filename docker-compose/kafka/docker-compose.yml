@@ -31,9 +31,11 @@ services:
     image: provectuslabs/kafka-ui:latest
     environment:
       KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka:9093"
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka:9092"
       SERVER_SERVLET_CONTEXTPATH: "/"
       DYNAMIC_CONFIG_ENABLED: 'true'
+    volumes:
+      - /etc/kafka-ui/config.yml:/etc/kafkaui/dynamic_config.yaml
 
 volumes:
   kafka-volume:
