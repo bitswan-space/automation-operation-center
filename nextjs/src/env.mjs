@@ -20,10 +20,6 @@ export const env = createEnv({
       process.env.VERCEL ? z.string().min(1) : z.string().url(),
     ),
 
-    // PORTAINER
-    PORTAINER_ACCESS_TOKEN: z.string().min(1),
-    PORTAINER_BASE_URL: z.string().min(1),
-
     // INFLUX
     INFLUXDB_URL: z.string().url(),
     INFLUXDB_TOKEN: z.string().min(1),
@@ -65,8 +61,6 @@ export const env = createEnv({
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
 
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
-    PORTAINER_ACCESS_TOKEN: process.env.PORTAINER_ACCESS_TOKEN,
-    PORTAINER_BASE_URL: process.env.PORTAINER_BASE_URL,
 
     // INFLUX
     INFLUXDB_URL: process.env.INFLUXDB_URL,
