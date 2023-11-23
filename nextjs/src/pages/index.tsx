@@ -15,6 +15,7 @@ import { TitleBar } from "../components/layout/TitleBar";
 
 const DashboardPage: NextPageWithLayout = () => {
   const { pipelinesWithStats: pipelines } = usePipelinesWithStats();
+
   usePreparePipelineMQTTService();
 
   return (

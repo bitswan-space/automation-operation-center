@@ -1,6 +1,5 @@
 import { ChevronDownIcon, ChevronRight } from "lucide-react";
 import {
-  type ColumnDef,
   type ColumnFiltersState,
   type ExpandedState,
   type SortingState,
@@ -12,6 +11,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  createColumnHelper,
 } from "@tanstack/react-table";
 import {
   TableBody,
@@ -32,8 +32,10 @@ import { type PipelineStat, type PipelineWithStats } from "@/types";
 import { ResponsiveContainer, Area, AreaChart, XAxis } from "recharts";
 import Link from "next/link";
 
-export const columns: ColumnDef<PipelineWithStats>[] = [
-  {
+const columnHelper = createColumnHelper<PipelineWithStats>();
+
+export const columns = [
+  columnHelper.display({
     id: "select",
     header: ({ table }) => (
       <Checkbox
@@ -51,33 +53,33 @@ export const columns: ColumnDef<PipelineWithStats>[] = [
     ),
     enableSorting: false,
     enableHiding: false,
-  },
-  {
-    accessorKey: "name",
+  }),
+  columnHelper.accessor("properties.name", {
     header: "Name",
     cell: ({ row }) => {
-      const { name, id } = row.original;
-      const correctedName = name.startsWith("/") ? name.slice(1) : name;
+      const { properties } = row.original;
 
       return (
-        <Link href={`/pipelines/${id}`} className="text-blue-700 underline">
-          {correctedName}
+        <Link
+          href={`/pipelines/${properties["container-id"]}`}
+          className="text-blue-700 underline"
+        >
+          {properties.name}
         </Link>
       );
     },
-  },
-  {
-    accessorKey: "machineName",
+  }),
+  columnHelper.accessor("properties.endpoint-id", {
     header: "Machine Name",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("machineName")}</div>
-    ),
-  },
-  {
-    accessorKey: "status",
+    cell: ({ row }) => {
+      const machineName = row.original.properties["endpoint-name"];
+      return <div className="capitalize">{machineName}</div>;
+    },
+  }),
+  columnHelper.accessor("properties.state", {
     header: "Status",
     cell: ({ row }) => {
-      const status = row.original.status;
+      const status = row.original.properties.state;
 
       const getStatusBadge = (status: string) => {
         switch (status) {
@@ -90,15 +92,19 @@ export const columns: ColumnDef<PipelineWithStats>[] = [
 
       return <div className="capitalize">{getStatusBadge(status)}</div>;
     },
-  },
-  {
-    accessorKey: "dateCreated",
+  }),
+  columnHelper.accessor("properties.created-at", {
     header: "Date Created",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("dateCreated")}</div>
-    ),
-  },
-  {
+    cell: ({ row }) => {
+      const createdAt = new Date(row.original.properties["created-at"])
+        .toISOString()
+        .slice(0, 16)
+        .replace("T", ", ");
+
+      return <div className="capitalize">{createdAt}</div>;
+    },
+  }),
+  columnHelper.accessor("pipelineStat", {
     header: "eps.in",
     cell: ({ row }) => {
       return (
@@ -107,8 +113,8 @@ export const columns: ColumnDef<PipelineWithStats>[] = [
         </div>
       );
     },
-  },
-  {
+  }),
+  columnHelper.accessor("pipelineStat", {
     header: "eps.out",
     cell: ({ row }) => {
       return (
@@ -117,15 +123,16 @@ export const columns: ColumnDef<PipelineWithStats>[] = [
         </div>
       );
     },
-  },
-  {
-    accessorKey: "upTime",
+  }),
+  columnHelper.accessor("properties.status", {
     header: "Uptime",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("upTime")}</div>
-    ),
-  },
-  {
+    cell: ({ row }) => {
+      const uptime = row.original.properties.status;
+
+      return <div className="capitalize">{uptime}</div>;
+    },
+  }),
+  columnHelper.display({
     id: "expand",
     enableHiding: false,
     cell: ({ row }) => {
@@ -141,7 +148,7 @@ export const columns: ColumnDef<PipelineWithStats>[] = [
         </div>
       );
     },
-  },
+  }),
 ];
 
 type PipelineDataTableProps = {
@@ -187,10 +194,15 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
       <div className="flex items-center pb-4">
         <Input
           placeholder="Find pipelines..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
+          value={
+            (table.getColumn("properties_name")?.getFilterValue() as string) ??
+            ""
           }
+          onChange={(event) => {
+            table
+              .getColumn("properties_name")
+              ?.setFilterValue(event.target.value);
+          }}
           className="max-w-sm"
         />
       </div>

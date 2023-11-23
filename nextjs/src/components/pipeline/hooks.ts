@@ -6,10 +6,12 @@ import {
   type PipelineWithStats,
   type PipelineNode,
   type ServicePreparationResponse,
+  type ContainerServiceTopologyResponse,
 } from "@/types";
 import axios from "axios";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import React from "react";
+import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
 
 const API_BASE_URL = "/api";
 
@@ -145,15 +147,28 @@ export const usePipelineStats = () => {
 
 export const usePipelinesWithStats = (): {
   pipelinesWithStats: PipelineWithStats[];
-  isError: boolean;
-  isLoading: boolean;
+  error?: Error;
 } => {
-  const { pipelines, isLoading, isError } = usePipelines();
   const pipelineStats = usePipelineStats();
+
+  const { data: containerServiceTopology, error } =
+    useMQTTRequestResponseSubscription<ContainerServiceTopologyResponse>({
+      queryKey: "container-service-subscription",
+      requestResponseTopicHandler: {
+        requestTopic: `/topology/get`,
+        responseTopic: `/topology`,
+        requestMessageType: "json",
+        requestMessage: {
+          method: "get",
+        },
+      },
+    });
+
+  const pipelines = Object.values(containerServiceTopology?.topology ?? {});
 
   const pipelinesWithStats = pipelines?.map((pipeline) => {
     const pipelineStat = pipelineStats?.filter((pipelineStat) =>
-      pipeline.id.startsWith(pipelineStat.host),
+      pipeline.properties["container-id"].startsWith(pipelineStat.host),
     );
 
     return {
@@ -162,7 +177,7 @@ export const usePipelinesWithStats = (): {
     };
   });
 
-  return { pipelinesWithStats, isLoading, isError };
+  return { pipelinesWithStats, error };
 };
 
 export const fetchPipelineTopology = (

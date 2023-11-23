@@ -76,7 +76,7 @@ interface PipelineSummaryProps {
 function PipelineSummary(props: PipelineSummaryProps) {
   const { pipeline } = props;
 
-  const pipelineName = formatPipelineName(pipeline?.name ?? "N/A");
+  const pipelineName = formatPipelineName(pipeline?.properties.name ?? "N/A");
   return (
     <div className="space-y-6">
       <Card className="rounded-md">

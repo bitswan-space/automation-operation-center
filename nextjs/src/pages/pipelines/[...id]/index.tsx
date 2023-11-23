@@ -25,7 +25,9 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
   id,
 }) => {
   const { pipelinesWithStats: pipelines } = usePipelinesWithStats();
-  const pipeline = pipelines.find((p) => p.id === id?.[0]);
+  const pipeline = pipelines.find(
+    (p) => p.properties["container-id"] === id?.[0],
+  );
 
   const [pipelineTopology, setPipelineTopology] =
     React.useState<PipelineNode[]>();
@@ -66,7 +68,7 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
             </Link>
             <span className="text-lg">&#x25B8;</span>
             <Link href={`/pipelines/${id}`} className="underline">
-              {formatPipelineName(pipeline?.name ?? "N/A")}
+              {formatPipelineName(pipeline?.properties.name ?? "N/A")}
             </Link>
           </React.Fragment>
         );
