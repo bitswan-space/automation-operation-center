@@ -17,7 +17,7 @@ services:
       - influx_data:/var/lib/influxdb2
       - influx_config:/etc/influxdb2
     env_file:
-      - influxdb.env
+      - .influxdb.env
     environment:
       - DOCKER_INFLUXDB_INIT_MODE=setup
 
@@ -49,14 +49,14 @@ services:
     ports:
       - "9090:8080"
     env_file:
-      - keycloak.env
+      - .keycloak.env
     command: start-dev
 
   postgres:
     image: postgres:12-bullseye
     volumes:
     - postgres-keycloak-data:/var/lib/postgresql/data
-    env_file: postgres.env
+    env_file: .postgres.env
 
   mailhog:
     image: mailhog/mailhog
@@ -68,7 +68,7 @@ services:
     restart: always
     image: public.ecr.aws/bitswan/pipeline-operations-centre:sha256_d4d9b17075f67b13a11e3ea0939f97dc018d5a282c4047983b158655e51a7942
     env_file:
-      - operations_centre.env
+      - .operations_centre.env
     ports:
       - "3000:3000"
 
@@ -78,6 +78,14 @@ services:
     ports:
       - "8080:8080"
     env_file:
-      - config_service.env
+      - .config_service.env
     volumes:
       - ./container_config_service.conf:/conf/container_config_service.conf:r
+
+  container-discovery-service:
+    restart: always
+    image: public.registry.bitswan.space/bitswan/container-discovery-service:sha256_3991b7682fe9d7fbb4e633a1dcc2b81e6e9bd7940d06f55c719f9d7070cbb148
+    env_file:
+      - .discovery_service.env
+    volumes:
+      - ./discovery_service.yaml:/conf/config.yaml:r
