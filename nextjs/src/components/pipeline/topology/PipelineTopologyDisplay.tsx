@@ -9,6 +9,7 @@ import ReactFlow, {
   type NodeChange,
   useNodesState,
   useEdgesState,
+  SelectionMode,
 } from "reactflow";
 
 import { useCallback } from "react";
@@ -27,6 +28,7 @@ interface PipelineTopologyDisplayProps {
   initialNodes: Node[];
   initialEdges: Edge[];
 }
+const panOnDrag = [1, 2];
 
 export const PipelineTopologyDisplay = (
   props: PipelineTopologyDisplayProps,
@@ -114,6 +116,10 @@ export const PipelineTopologyDisplay = (
         onConnect={onConnect}
         nodeTypes={nodeTypes}
         fitViewOptions={fitViewOptions}
+        panOnScroll
+        selectionOnDrag
+        panOnDrag={panOnDrag}
+        selectionMode={SelectionMode.Partial}
       >
         <Background />
         <Controls />
