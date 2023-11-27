@@ -9,6 +9,8 @@ services:
   example-pipeline-1:
     restart: always
     image: *example-pipeline-image-tag
+    environment:
+      - DEPLOYMENT_ID=example-pipeline-1
     env_file:
       - ../pipeline.env
     volumes:
@@ -18,6 +20,8 @@ services:
   example-pipeline-2:
     restart: always
     image: *example-pipeline-image-tag
+    environment:
+      - DEPLOYMENT_ID=example-pipeline-2
     env_file:
       - ../pipeline.env
     volumes:
@@ -27,6 +31,8 @@ services:
   example-pipeline-3:
     restart: always
     image: *example-pipeline-image-tag
+    environment:
+      - DEPLOYMENT_ID=example-pipeline-3
     env_file:
       - ../pipeline.env
     volumes:
