@@ -17,13 +17,15 @@ interface EpsSyncAreaChartProps {
 export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
   const { data } = props;
 
-  const processData = (data: PipelineStat[]) => {
-    return data.map((stat) => {
-      return {
-        // time: stat._time,
-        [stat._field]: stat._value,
-      };
-    });
+  const processData = (data: PipelineStat[], eventKey: string) => {
+    return data
+      .map((stat) => {
+        return {
+          time: stat._time,
+          [stat._field]: stat._value,
+        };
+      })
+      .filter((stat) => stat[eventKey]);
   };
 
   return (
@@ -34,14 +36,14 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
       className="space-y-10"
     >
       <div>
-        <h4 className="text-xs font-semibold uppercase text-neutral-600">
+        <h4 className="mb-4 text-base font-bold uppercase text-neutral-600">
           eps.in
         </h4>
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={300}>
           <AreaChart
             width={400}
             height={200}
-            data={processData(data)}
+            data={processData(data, "eps.in")}
             syncId="anyId"
             margin={{
               top: 10,
@@ -51,8 +53,8 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
             }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" hide />
-            <YAxis hide />
+            <XAxis dataKey="time" />
+            <YAxis />
             <Tooltip />
             <Area
               type="monotone"
@@ -65,14 +67,14 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
       </div>
 
       <div>
-        <h4 className="text-xs font-semibold uppercase text-neutral-600">
+        <h4 className="mb-4 text-base font-bold uppercase text-neutral-600">
           eps.out
         </h4>
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={300}>
           <AreaChart
             width={400}
             height={200}
-            data={processData(data)}
+            data={processData(data, "eps.out")}
             syncId="anyId"
             margin={{
               top: 10,
@@ -82,8 +84,8 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
             }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" hide />
-            <YAxis hide />
+            <XAxis dataKey="time" />
+            <YAxis />
             <Tooltip />
             <Area
               type="monotone"

@@ -105,21 +105,29 @@ export const columns = [
     },
   }),
   columnHelper.accessor("pipelineStat", {
-    header: "eps.in",
+    header: "latest eps.in",
     cell: ({ row }) => {
+      const epsInStat = row.original.pipelineStat?.filter(
+        (stat) => stat._field === "eps.in",
+      );
       return (
         <div className="text-start">
-          <EpsTinyLineChart data={row.original.pipelineStat} type="in" />
+          {/* <EpsTinyLineChart data={row.original.pipelineStat} type="in" /> */}
+          {epsInStat?.[epsInStat.length - 1]?._value}
         </div>
       );
     },
   }),
   columnHelper.accessor("pipelineStat", {
-    header: "eps.out",
+    header: "latest eps.out",
     cell: ({ row }) => {
+      const epsOutStat = row.original.pipelineStat?.filter(
+        (stat) => stat._field === "eps.out",
+      );
       return (
         <div className="flex justify-start">
-          <EpsTinyLineChart data={row.original.pipelineStat} type="out" />
+          {/* <EpsTinyLineChart data={row.original.pipelineStat} type="out" /> */}
+          {epsOutStat?.[epsOutStat.length - 1]?._value}
         </div>
       );
     },
@@ -325,19 +333,21 @@ export const EpsTinyLineChart = (props: EpsTinyLineChartProps) => {
     }
   };
 
-  const processedData = (data: PipelineStat[]) => {
-    return data.map((stat) => {
-      return {
-        time: stat._time,
-        [stat._field]: stat._value,
-      };
-    });
+  const processedData = (data: PipelineStat[], dataKey: string) => {
+    return data
+      .map((stat) => {
+        return {
+          time: stat._time,
+          [stat._field]: stat._value,
+        };
+      })
+      .filter((stat) => stat[dataKey]);
   };
 
   return (
     <ResponsiveContainer width={100} height={50}>
       <AreaChart
-        data={processedData(data)}
+        data={processedData(data, getDataKey(type))}
         margin={{
           top: 2,
           right: 5,
