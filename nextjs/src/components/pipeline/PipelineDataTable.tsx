@@ -110,10 +110,11 @@ export const columns = [
       const epsInStat = row.original.pipelineStat?.filter(
         (stat) => stat._field === "eps.in",
       );
+      const latestEpsIn = epsInStat?.[epsInStat.length - 1]?._value;
       return (
         <div className="text-start">
-          {/* <EpsTinyLineChart data={row.original.pipelineStat} type="in" /> */}
-          {epsInStat?.[epsInStat.length - 1]?._value}
+          <EpsTinyLineChart data={row.original.pipelineStat} type="in" />
+          <div className="text-xs">Latest value: {latestEpsIn}</div>
         </div>
       );
     },
@@ -124,10 +125,11 @@ export const columns = [
       const epsOutStat = row.original.pipelineStat?.filter(
         (stat) => stat._field === "eps.out",
       );
+      const latestEpsOut = epsOutStat?.[epsOutStat.length - 1]?._value;
       return (
-        <div className="flex justify-start">
-          {/* <EpsTinyLineChart data={row.original.pipelineStat} type="out" /> */}
-          {epsOutStat?.[epsOutStat.length - 1]?._value}
+        <div>
+          <EpsTinyLineChart data={row.original.pipelineStat} type="out" />
+          <div className="text-xs">Latest value: {latestEpsOut}</div>
         </div>
       );
     },
