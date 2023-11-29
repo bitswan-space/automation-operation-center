@@ -15,7 +15,6 @@ import { formatPipelineName } from "@/utils/pipelineUtils";
 import { type PipelineNode, type PipelineWithStats } from "@/types";
 import { Textarea } from "@/components/ui/textarea";
 
-import { SimpleAreaChart } from "@/components/metrics/charts/SimpleAreaChart";
 import { PipelineTopologyDisplay } from "./topology/PipelineTopologyDisplay";
 import { EPSSyncAreaChart } from "../metrics/charts/EPSSyncAreaChart";
 import {

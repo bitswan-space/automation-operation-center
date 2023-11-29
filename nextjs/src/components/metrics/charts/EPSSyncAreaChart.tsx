@@ -44,7 +44,6 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
             width={400}
             height={200}
             data={processData(data, "eps.in")}
-            syncId="anyId"
             margin={{
               top: 10,
               right: 30,
@@ -75,7 +74,6 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
             width={400}
             height={200}
             data={processData(data, "eps.out")}
-            syncId="anyId"
             margin={{
               top: 10,
               right: 30,
