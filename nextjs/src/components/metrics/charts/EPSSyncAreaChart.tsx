@@ -2,6 +2,7 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
+  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -28,6 +29,9 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
       .filter((stat) => stat[eventKey]);
   };
 
+  const epsInData = processData(data, "eps.in");
+  const epsOutData = processData(data, "eps.out");
+
   return (
     <div
       style={{
@@ -43,7 +47,7 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
           <AreaChart
             width={400}
             height={200}
-            data={processData(data, "eps.in")}
+            data={epsInData}
             margin={{
               top: 10,
               right: 30,
@@ -52,8 +56,19 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
             }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="time" />
-            <YAxis />
+            <XAxis
+              includeHidden
+              dataKey="time"
+              type="category"
+              tick={{ fontSize: 12, dy: 10 }}
+              interval={"preserveStartEnd"}
+              ticks={[
+                epsInData[0]?.time ?? "10:00:00",
+                epsInData[epsInData.length - 1]?.time ?? "0:00:00",
+              ]}
+              height={60}
+            />
+            <YAxis allowDecimals={false} tick={{ fontSize: 12, dx: -10 }} />
             <Tooltip />
             <Area
               type="monotone"
@@ -61,6 +76,7 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
               stroke="#8884d8"
               fill="#8884d8"
             />
+            <Legend />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -73,7 +89,7 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
           <AreaChart
             width={400}
             height={200}
-            data={processData(data, "eps.out")}
+            data={epsOutData}
             margin={{
               top: 10,
               right: 30,
@@ -82,8 +98,19 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
             }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="time" />
-            <YAxis />
+            <XAxis
+              includeHidden
+              dataKey="time"
+              type="category"
+              tick={{ fontSize: 12, dy: 12 }}
+              interval={"preserveStartEnd"}
+              ticks={[
+                epsOutData[0]?.time ?? "10:00:00",
+                epsOutData[epsOutData.length - 1]?.time ?? "0:00:00",
+              ]}
+              height={60}
+            />
+            <YAxis allowDecimals={false} tick={{ fontSize: 12, dx: -10 }} />
             <Tooltip />
             <Area
               type="monotone"
@@ -91,6 +118,7 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
               stroke="#82ca9d"
               fill="#82ca9d"
             />
+            <Legend />
           </AreaChart>
         </ResponsiveContainer>
       </div>

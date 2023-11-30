@@ -1,4 +1,4 @@
-import mqtt, { type MqttClient, connect } from "mqtt";
+import { type MqttClient, connect } from "mqtt";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type UseMqttRequestResponseProps = {
@@ -11,7 +11,6 @@ type UseMqttRequestResponseProps = {
 export function useMqttRequestResponse({
   brokerUrl,
   requestTopic,
-  responseTopic,
   shouldConnect,
 }: UseMqttRequestResponseProps) {
   const mqttClient = useRef<MqttClient | null>(null);

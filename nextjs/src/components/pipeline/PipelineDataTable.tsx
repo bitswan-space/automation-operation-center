@@ -105,7 +105,7 @@ export const columns = [
     },
   }),
   columnHelper.accessor("pipelineStat", {
-    header: "latest eps.in",
+    header: "eps.in",
     cell: ({ row }) => {
       const epsInStat = row.original.pipelineStat?.filter(
         (stat) => stat._field === "eps.in",
@@ -114,13 +114,13 @@ export const columns = [
       return (
         <div className="text-start">
           <EpsTinyLineChart data={row.original.pipelineStat} type="in" />
-          <div className="text-xs">Latest value: {latestEpsIn}</div>
+          <div className="text-xs font-semibold">: {latestEpsIn}</div>
         </div>
       );
     },
   }),
   columnHelper.accessor("pipelineStat", {
-    header: "latest eps.out",
+    header: "eps.out",
     cell: ({ row }) => {
       const epsOutStat = row.original.pipelineStat?.filter(
         (stat) => stat._field === "eps.out",
@@ -129,7 +129,9 @@ export const columns = [
       return (
         <div>
           <EpsTinyLineChart data={row.original.pipelineStat} type="out" />
-          <div className="text-xs">Latest value: {latestEpsOut}</div>
+          <div className="text-xs font-semibold" title="Latest value">
+            : {latestEpsOut}
+          </div>
         </div>
       );
     },
