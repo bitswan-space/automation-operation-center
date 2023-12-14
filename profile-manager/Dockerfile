@@ -22,6 +22,7 @@ WORKDIR /app
 
 # Copy the Pre-built binary file from the previous stage.
 COPY --from=builder /app/container-discovery-service .
+COPY ./conf/ /conf/
 
 
 # Command to run the executable.
