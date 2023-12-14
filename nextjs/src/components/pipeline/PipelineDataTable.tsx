@@ -57,13 +57,10 @@ export const columns = [
   columnHelper.accessor("properties.name", {
     header: "Name",
     cell: ({ row }) => {
-      const { properties } = row.original;
+      const { properties, _key } = row.original;
 
       return (
-        <Link
-          href={`/pipelines/${properties["container-id"]}`}
-          className="text-blue-700 underline"
-        >
+        <Link href={`/pipelines/${_key}`} className="text-blue-700 underline">
           {properties.name}
         </Link>
       );

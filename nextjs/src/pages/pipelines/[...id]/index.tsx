@@ -25,9 +25,7 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
   id,
 }) => {
   const { pipelinesWithStats: pipelines } = usePipelinesWithStats();
-  const pipeline = pipelines.find(
-    (p) => p.properties["container-id"] === id?.[0],
-  );
+  const pipeline = pipelines.find((p) => p._key === id?.[0]);
 
   const [pipelineTopology, setPipelineTopology] =
     React.useState<PipelineNode[]>();
@@ -35,7 +33,7 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
   const pipelineTopologyRequestTopic = `${joinIDsWithDelimiter(
     id as string[],
     "/",
-  )}/topology/get`;
+  )}/topology/subscribe`;
 
   const pipelineTopologyResponseTopic = `${joinIDsWithDelimiter(
     id as string[],
@@ -49,7 +47,8 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
       responseTopic: pipelineTopologyResponseTopic,
       requestMessageType: "json",
       requestMessage: {
-        method: "get",
+        // method: "get",
+        count: 1,
       },
       onMessageCallback: (response) => {
         const topology = flattenTopology(response);

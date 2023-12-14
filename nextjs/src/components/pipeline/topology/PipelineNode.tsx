@@ -33,21 +33,17 @@ import { memo } from "react";
 import { SiApachekafka, SiJavascript } from "react-icons/si";
 import { jsonTreeTheme, outputSampleJSON } from "@/utils/jsonTree";
 import { useRouter } from "next/router";
+
 import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
 import { joinIDsWithDelimiter } from "@/utils/pipelineUtils";
 import { epochToFormattedTime } from "@/utils/time";
 import { useClipboard } from "use-clipboard-copy";
 
-type Section = "stats" | "configure" | "data" | "logs";
+type Section = "stats" | "properties" | "data";
 type PipelineNodeActionType =
   | "toggleExpandStats"
-  | "toggleExpandConfigure"
-  | "toggleExpandData"
-  | "toggleExpandLogs"
-  | "togglePinStats"
-  | "togglePinConfigure"
-  | "togglePinData"
-  | "togglePinLogs";
+  | "toggleExpandProperties"
+  | "toggleExpandData";
 interface PipelineNodeState {
   expandedSections: Section[];
   pinnedSections: Section[];
@@ -76,12 +72,10 @@ const reducer = (
   switch (action.type) {
     case "toggleExpandStats":
       return toggleExpandedSection(state, "stats");
-    case "toggleExpandConfigure":
-      return toggleExpandedSection(state, "configure");
+    case "toggleExpandProperties":
+      return toggleExpandedSection(state, "properties");
     case "toggleExpandData":
       return toggleExpandedSection(state, "data");
-    case "toggleExpandLogs":
-      return toggleExpandedSection(state, "logs");
     default:
       return state;
   }
@@ -193,7 +187,7 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
       requestTopic: pipelineEventsRequestTopic,
       responseTopic: pipelineEventsResponseTopic,
       requestMessageType: "json",
-      requestMessage: { event_count: 200 },
+      requestMessage: { count: 200 },
       onMessageCallback: (response) => {
         if (!pauseStreamRef.current) {
           setComponentEvents((events) => [response, ...events]);
@@ -266,10 +260,10 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
           </div>
         </CollapsibleSection>
         <CollapsibleSection
-          title="Configure"
+          title="Properties"
           icon={<SlidersHorizontal size={18} className="text-neutral-600" />}
-          expanded={state.expandedSections.includes("configure")}
-          onToggleExpanded={() => dispatch({ type: "toggleExpandConfigure" })}
+          expanded={state.expandedSections.includes("properties")}
+          onToggleExpanded={() => dispatch({ type: "toggleExpandProperties" })}
         >
           Collapsible Section
         </CollapsibleSection>
