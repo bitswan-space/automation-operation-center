@@ -164,7 +164,7 @@ export interface PipelineNode {
   noerr?: number;
   initialize?: string;
   finalize?: string;
-  properties?: string;
+  properties?: Record<string, unknown>;
   metrics?: unknown[];
   outproperty?: string;
   tag?: string;
@@ -188,7 +188,7 @@ export interface PumpTopologyResponse {
       string,
       {
         wires: string[];
-        properties: string;
+        properties: Record<string, unknown>;
         metrics: unknown[];
       }
     >;

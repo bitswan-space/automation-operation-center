@@ -116,6 +116,7 @@ export type NodeData = {
   kind: string;
   capabilities: string[];
   id: string;
+  properties: Record<string, unknown>;
 };
 
 export function PipelineNode({ data }: NodeProps<NodeData>) {
@@ -126,6 +127,7 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
     id: nodeID,
     capabilities,
     parentIDs,
+    properties,
   } = data;
 
   const router = useRouter();
@@ -265,7 +267,27 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
           expanded={state.expandedSections.includes("properties")}
           onToggleExpanded={() => dispatch({ type: "toggleExpandProperties" })}
         >
-          Collapsible Section
+          <div className="space-y-1.5 text-sm">
+            {Object.entries(properties).length > 0 ? (
+              Object.entries(properties).map(([key, value]) => {
+                return (
+                  <StatItem
+                    key={key}
+                    label={key}
+                    value={
+                      <span className="text-neutral-500">
+                        {JSON.stringify(value)}
+                      </span>
+                    }
+                  />
+                );
+              })
+            ) : (
+              <div className="font-semibold text-neutral-500">
+                No properties found
+              </div>
+            )}
+          </div>
         </CollapsibleSection>
         {capabilities.includes("subscribable-events") && (
           <CollapsibleSection
@@ -341,7 +363,9 @@ function StatItem(props: StatItemProps) {
   const { label, value } = props;
   return (
     <div className="flex justify-between">
-      <span className="font-bold text-neutral-600">{label}:</span>
+      <span className="title font-bold capitalize text-neutral-600">
+        {label}:
+      </span>
       <span className="w-2/3 text-start font-mono text-neutral-500">
         {value}
       </span>
