@@ -22,6 +22,7 @@ export const transformTopologyToFlowNodes = (topology: PipelineNode[]) => {
         kind: node.id,
         id: node.id,
         capabilities: node.capabilities,
+        properties: node.properties,
       },
     };
   });

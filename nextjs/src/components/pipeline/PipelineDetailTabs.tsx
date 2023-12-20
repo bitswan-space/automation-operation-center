@@ -44,7 +44,10 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
         </TabsTrigger>
       </TabsList>
       <TabsContent value="summary">
-        <PipelineSummary pipeline={pipeline} />
+        <PipelineSummary
+          pipeline={pipeline}
+          pipelineTopology={pipelineTopology ?? []}
+        />
       </TabsContent>
       <TabsContent value="scheme" className="h-5/6">
         <Card className="h-full rounded-md">
@@ -70,15 +73,16 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
 
 interface PipelineSummaryProps {
   pipeline?: PipelineWithStats;
+  pipelineTopology: PipelineNode[];
 }
 
 function PipelineSummary(props: PipelineSummaryProps) {
   const { pipeline } = props;
 
-  const [editMode, SetEditMode] = React.useState(false);
+  const [editMode, setEditMode] = React.useState(false);
 
   const handleEditModeToggle = () => {
-    SetEditMode(!editMode);
+    setEditMode(!editMode);
   };
 
   const pipelineName = formatPipelineName(pipeline?.properties.name ?? "N/A");

@@ -9,7 +9,7 @@ export function flattenTopology(
 ): PipelineNode[] {
   const flattenedArray: PipelineNode[] = [];
 
-  for (const [id, value] of Object.entries(response.topology)) {
+  for (const [id, value] of Object.entries(response.data.topology ?? {})) {
     flattenedArray.push({
       id,
       ...value,
@@ -22,7 +22,7 @@ export function flattenTopology(
 export function joinIDsWithDelimiter(ids: string[], delimiter: string): string {
   const joinedIDs = ids
     ?.map((id, index) => {
-      if (index === 0) return `c/${id}`;
+      if (index === 0) return `/c/${id}`;
 
       return `c/${id}`;
     })

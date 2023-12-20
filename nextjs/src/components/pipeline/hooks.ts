@@ -61,7 +61,14 @@ export const usePipelinesWithStats = (): {
       },
     });
 
-  const pipelines = Object.values(containerServiceTopology?.topology ?? {});
+  const pipelines = Object.entries(
+    containerServiceTopology?.topology ?? {},
+  ).map(([key, value]) => {
+    return {
+      ...value,
+      _key: key,
+    };
+  });
 
   const pipelinesWithStats = pipelines?.map((pipeline) => {
     const pipelineStat = pipelineStats?.filter((pipelineStat) =>

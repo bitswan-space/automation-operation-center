@@ -58,7 +58,9 @@ const SideNavBar = (props: SideNavBarProps) => {
         <div className="flex flex-col justify-center gap-8">
           <div className={"flex justify-center py-6 text-center"}>
             <Image
-              src={expanded ? "/bitswan-logo-full.png" : "/bitswan-logo-sm.png"}
+              src={
+                expanded ? "/bitswan-logo-full.png" : "/bitswan-logo-sm.jpeg"
+              }
               alt={""}
               width={expanded ? 150 : 25}
               height={expanded ? 100 : 25}

@@ -137,6 +137,7 @@ export interface PipelineStat {
 }
 
 export type PipelineWithStats = PipelineTopology & {
+  _key: string;
   pipelineStat: PipelineStat[];
 };
 export interface PipelineNode {
@@ -164,7 +165,7 @@ export interface PipelineNode {
   noerr?: number;
   initialize?: string;
   finalize?: string;
-  properties?: string;
+  properties?: Record<string, unknown>;
   metrics?: unknown[];
   outproperty?: string;
   tag?: string;
@@ -182,14 +183,19 @@ export interface ServicePreparationResponse {
 }
 
 export interface PumpTopologyResponse {
-  topology: Record<
-    string,
-    {
-      wires: string[];
-      properties: string;
-      metrics: unknown[];
-    }
-  >;
+  timestamp: number;
+  data: {
+    topology: Record<
+      string,
+      {
+        wires: string[];
+        properties: Record<string, unknown>;
+        metrics: unknown[];
+      }
+    >;
+  };
+  count: number;
+  remaining_subscription_count: number;
 }
 
 export interface ContainerServiceTopologyResponse {
