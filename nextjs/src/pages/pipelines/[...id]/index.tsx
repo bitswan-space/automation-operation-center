@@ -26,7 +26,7 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
 }) => {
   const { pipelinesWithStats: pipelines } = usePipelinesWithStats();
   const pipeline = pipelines.find(
-    (p) => p.properties["container-id"] === id?.[0],
+    (p) => p.properties["deployment-id"] === id?.[0],
   );
 
   const [pipelineTopology, setPipelineTopology] =

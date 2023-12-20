@@ -61,7 +61,7 @@ export const columns = [
 
       return (
         <Link
-          href={`/pipelines/${properties["container-id"]}`}
+          href={`/pipelines/${properties["deployment-id"]}`}
           className="text-blue-700 underline"
         >
           {properties.name}

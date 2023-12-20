@@ -132,6 +132,7 @@ export interface PipelineStat {
   _measurement: string;
   appclass: string;
   host: string;
+  deployment_id: string;
   pipeline: string;
 }
 

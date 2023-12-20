@@ -65,7 +65,7 @@ export const usePipelinesWithStats = (): {
 
   const pipelinesWithStats = pipelines?.map((pipeline) => {
     const pipelineStat = pipelineStats?.filter((pipelineStat) =>
-      pipeline.properties["container-id"].startsWith(pipelineStat.host),
+      pipeline.properties["deployment-id"].startsWith(pipelineStat.deployment_id),
     );
 
     return {
