@@ -4,6 +4,7 @@
 .influxdb.env
 .postgres.env
 .config_service.env
+*.env
 
 config/
 data/
