@@ -4,5 +4,5 @@ mqtt-containers-pub: /c/running-pipelines
 mqtt-containers-sub: /c/running-pipelines/subscribe
 mqtt-navigation-topic: /topology
 mqtt-navigation-set: /topology/set
-navigation-file: /path/to/navigation_menu.json
-navigation-schema-file: /path/to/navigation_schema.json
+navigation-file: /conf/navigation_menu.json
+navigation-schema-file: /conf/navigation_schema.json

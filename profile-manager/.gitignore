@@ -1,3 +1,5 @@
 .env
 *.json
 !navigation_menu_schema_template.json
+!config.yaml
+*.yaml
