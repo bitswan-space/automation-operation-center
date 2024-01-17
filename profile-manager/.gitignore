@@ -1,1 +1,3 @@
 .env
+*.json
+!navigation_menu_schema_template.json

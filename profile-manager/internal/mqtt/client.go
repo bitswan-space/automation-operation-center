@@ -1,18 +1,24 @@
 package mqtt
 
 import (
+	"os"
 	"time"
 
 	"bitswan.space/container-discovery-service/internal/config"
 	"bitswan.space/container-discovery-service/internal/logger"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/xeipuuv/gojsonschema"
 )
 
 var client mqtt.Client
+var schemaLoader gojsonschema.JSONLoader
+var cfg *config.Configuration
 
 func Init() error {
-	cfg := config.GetConfig()
+	cfg = config.GetConfig()
 	opts := mqtt.NewClientOptions()
+	logger.Info.Printf("Schema file: %s", cfg.NavigationSchemaFile)
+	schemaLoader = gojsonschema.NewReferenceLoader("file://" + cfg.NavigationSchemaFile)
 	opts.AddBroker(cfg.MQTTBrokerUrl)
 	opts.SetClientID("container-discovery-service")
 	opts.SetAutoReconnect(true)
@@ -30,9 +36,20 @@ func Init() error {
 
 	opts.SetOnConnectHandler(func(client mqtt.Client) {
 		logger.Info.Println("Connected to MQTT broker subscribing to topics...")
-		if token := client.Subscribe(cfg.MQTTTopologySub, 0, HandleTopologyRequest); token.Wait() && token.Error() != nil {
+		if token := client.Subscribe(cfg.MQTTContainersSub, 0, HandleContainersRequest); token.Wait() && token.Error() != nil {
 			logger.Error.Printf("Subscription failed: %v", token.Error())
 		}
+		if token := client.Subscribe(cfg.MQTTNavigationSet, 0, HandleNavigationSetRequest); token.Wait() && token.Error() != nil {
+			logger.Error.Printf("Subscription failed: %v", token.Error())
+		}
+
+		logger.Info.Println("Sending retained message with current navigation structure...")
+		jsonData, err := os.ReadFile(cfg.NavigationFile)
+		if err != nil {
+			logger.Error.Println(err)
+			return
+		}
+		client.Publish(cfg.MQTTNavigationPub, 0, true, string(jsonData))
 	})
 
 	client = mqtt.NewClient(opts)

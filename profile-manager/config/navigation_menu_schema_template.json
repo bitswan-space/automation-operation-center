@@ -1,0 +1,37 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "topology": {
+            "type": "object",
+            "patternProperties": {
+                "^[a-zA-Z0-9-]+$": {
+                    "type": "object",
+                    "properties": {
+                        "wires": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "properties": {
+                            "type": "object",
+                            "properties": {
+                                "name": { "type": "string" },
+                                "icon": { "type": "string" },
+                                "link": { "type": "string" }
+                            },
+                            "required": ["name", "icon", "link"]
+                        }
+                    },
+                    "required": ["wires", "properties"]
+                }
+            },
+            "additionalProperties": false
+        },
+        "display-style": {
+            "type": "string"
+        }
+    },
+    "required": ["topology", "display-style"]
+}
