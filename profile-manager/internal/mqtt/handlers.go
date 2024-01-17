@@ -23,7 +23,7 @@ type TopologyEvent struct {
 func HandleContainersRequest(client mqtt.Client, message mqtt.Message) {
 	var msg Message
 
-	logger.Info.Printf("Received message: " + string(message.Payload()))
+	logger.Info.Println("Received containers request")
 	if !json.Valid([]byte(message.Payload())) {
 		logger.Error.Println("Invalid JSON")
 	} else {
@@ -44,7 +44,7 @@ func HandleContainersRequest(client mqtt.Client, message mqtt.Message) {
 				logger.Error.Println(err)
 				return
 			}
-			client.Publish(cfg.MQTTContainersPub, 0, false, string(b))
+			client.Publish(cfg.MQTTContainersPub, 0, true, string(b))
 		}()
 	}
 
@@ -52,9 +52,10 @@ func HandleContainersRequest(client mqtt.Client, message mqtt.Message) {
 
 func HandleNavigationSetRequest(client mqtt.Client, message mqtt.Message){
 	var msg json.RawMessage
-
+	logger.Info.Println("Received navigation set request")
 	documentLoader := gojsonschema.NewStringLoader(string(message.Payload()))
 
+	logger.Info.Printf("Validating JSON schema...")
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 	if err != nil {
 		logger.Error.Println(err)
