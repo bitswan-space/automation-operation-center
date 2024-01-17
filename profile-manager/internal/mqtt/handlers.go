@@ -15,9 +15,9 @@ type Message struct {
 }
 
 type TopologyEvent struct {
-	Count uint64 `json:"count"`
-	RemainingSubscriptionCount uint64 `json:"remaining_subscription_count"`
-	Data portainer.Topology `json:"data"`
+	Count                      uint64             `json:"count"`
+	RemainingSubscriptionCount uint64             `json:"remaining_subscription_count"`
+	Data                       portainer.Topology `json:"data"`
 }
 
 func HandleContainersRequest(client mqtt.Client, message mqtt.Message) {
@@ -28,16 +28,16 @@ func HandleContainersRequest(client mqtt.Client, message mqtt.Message) {
 		logger.Error.Println("Invalid JSON")
 	} else {
 		json.Unmarshal([]byte(message.Payload()), &msg)
-		go func(){
+		go func() {
 			topology, err := portainer.GetTopology()
 			if err != nil {
 				logger.Error.Println(err)
 				return
 			}
 			topologyEvent := TopologyEvent{
-				Count: 1,
-				RemainingSubscriptionCount: msg.Count-1,
-				Data: topology,
+				Count:                      1,
+				RemainingSubscriptionCount: msg.Count - 1,
+				Data:                       topology,
 			}
 			b, err := json.MarshalIndent(topologyEvent, "", "  ")
 			if err != nil {
@@ -50,7 +50,7 @@ func HandleContainersRequest(client mqtt.Client, message mqtt.Message) {
 
 }
 
-func HandleNavigationSetRequest(client mqtt.Client, message mqtt.Message){
+func HandleNavigationSetRequest(client mqtt.Client, message mqtt.Message) {
 	var msg json.RawMessage
 	logger.Info.Println("Received navigation set request")
 	documentLoader := gojsonschema.NewStringLoader(string(message.Payload()))
@@ -65,8 +65,8 @@ func HandleNavigationSetRequest(client mqtt.Client, message mqtt.Message){
 	if !result.Valid() {
 		logger.Error.Println("Invalid JSON schema. Errors:")
 		for _, desc := range result.Errors() {
-            logger.Error.Printf("- %s\n", desc)
-        }
+			logger.Error.Printf("- %s\n", desc)
+		}
 	} else {
 		json.Unmarshal([]byte(message.Payload()), &msg)
 		err := os.WriteFile(cfg.NavigationFile, msg, 0644)
