@@ -1,0 +1,21 @@
+{
+    "topology": {
+        "running-piplines": {
+            "wires": [],
+            "properties": {
+                "name": "Running pipelines",
+                "icon": "image.png",
+                "link": "/some/mqtt/topic/with/its/own/topoology"
+            }
+        },
+        "ml-ops-updated": {
+            "wires": [],
+            "properties": {
+                "name": "ML Ops",
+                "icon": "image.png",
+                "link": "/some/mqtt/topic/with/its/own/topoology"
+            }
+        }
+    },
+    "display-style": "menu"
+}

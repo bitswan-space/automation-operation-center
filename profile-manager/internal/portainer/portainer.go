@@ -63,7 +63,6 @@ type TopologyProperties struct {
 type Topology struct {
 	Topology        map[string]TopologyItem `json:"topology"`
 	DisplayStyle    string                  `json:"display-style"`
-	DisplayPriority string                  `json:"display-priority"`
 }
 
 func GetTopology() (Topology, error) {

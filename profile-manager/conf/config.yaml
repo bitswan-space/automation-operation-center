@@ -1,7 +1,7 @@
 portainer-url: http://localhost:9000
 mqtt-broker-url: mqtt://localhost:1883
-mqtt-containers-pub: /c/running-pipelines
-mqtt-containers-sub: /c/running-pipelines/subscribe
+mqtt-containers-pub: /c/running-pipelines/topology
+mqtt-containers-sub: /c/running-pipelines/topology/subscribe
 mqtt-navigation-topic: /topology
 mqtt-navigation-set: /topology/set
 navigation-file: /conf/navigation_menu.json
