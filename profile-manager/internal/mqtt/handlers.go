@@ -11,8 +11,13 @@ import (
 )
 
 type Message struct {
-	Method string `json:"method"`
-	Body  json.RawMessage `json:"body"`
+	Count uint64 `json:"count"`
+}
+
+type TopologyEvent struct {
+	Count uint64 `json:"count"`
+	RemainingSubscriptionCount uint64 `json:"remaining_subscription_count"`
+	Data portainer.Topology `json:"data"`
 }
 
 func HandleContainersRequest(client mqtt.Client, message mqtt.Message) {
@@ -23,23 +28,24 @@ func HandleContainersRequest(client mqtt.Client, message mqtt.Message) {
 		logger.Error.Println("Invalid JSON")
 	} else {
 		json.Unmarshal([]byte(message.Payload()), &msg)
-		logger.Info.Printf("Method: " + msg.Method)
-		if msg.Method == "get" {
-			go func(){
-				topology, err := portainer.GetTopology()
-				if err != nil {
-					logger.Error.Println(err)
-					return
-				}
-				b, err := json.MarshalIndent(topology, "", "  ")
-				if err != nil {
-					logger.Error.Println(err)
-					return
-				}
-	
-				client.Publish(cfg.MQTTContainersPub, 0, false, string(b))
-			}()
-		}
+		go func(){
+			topology, err := portainer.GetTopology()
+			if err != nil {
+				logger.Error.Println(err)
+				return
+			}
+			topologyEvent := TopologyEvent{
+				Count: 1,
+				RemainingSubscriptionCount: msg.Count-1,
+				Data: topology,
+			}
+			b, err := json.MarshalIndent(topologyEvent, "", "  ")
+			if err != nil {
+				logger.Error.Println(err)
+				return
+			}
+			client.Publish(cfg.MQTTContainersPub, 0, false, string(b))
+		}()
 	}
 
 }
@@ -48,7 +54,7 @@ func HandleNavigationSetRequest(client mqtt.Client, message mqtt.Message){
 	var msg json.RawMessage
 
 	documentLoader := gojsonschema.NewStringLoader(string(message.Payload()))
-	
+
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 	if err != nil {
 		logger.Error.Println(err)
