@@ -8,7 +8,7 @@
                 "link": "/some/mqtt/topic/with/its/own/topoology"
             }
         },
-        "ml-ops-updated": {
+        "ml-ops": {
             "wires": [],
             "properties": {
                 "name": "ML Ops",
