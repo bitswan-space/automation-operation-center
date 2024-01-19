@@ -10,16 +10,46 @@
                     "properties": {
                         "wires": {
                             "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
+                            "items": {}
                         },
                         "properties": {
                             "type": "object",
                             "properties": {
-                                "name": { "type": "string" },
-                                "icon": { "type": "string" },
-                                "link": { "type": "string" }
+                                "name": {
+                                    "type": "string"
+                                },
+                                "icon": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "src": {
+                                            "type": "string"
+                                        },
+                                        "content": {
+                                            "type": "string",
+                                            "contentEncoding": "base64"
+                                        }
+                                    },
+                                    "required": ["type"],
+                                    "oneOf": [
+                                        { "required": ["src"] },
+                                        { "required": ["content"] }
+                                    ]
+                                },
+                                "link": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "topic": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["type", "topic"]
+                                }
                             },
                             "required": ["name", "icon", "link"]
                         }

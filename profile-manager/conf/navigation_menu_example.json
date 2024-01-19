@@ -4,16 +4,28 @@
             "wires": [],
             "properties": {
                 "name": "Running pipelines",
-                "icon": "image.png",
-                "link": "/some/mqtt/topic/with/its/own/topoology"
+                "icon": {
+                    "type": "image",
+                    "src": "image.png"
+                },
+                "link": {
+                    "type": "topic-link",
+                    "topic": "/c/running-pipelines/topology"
+                }
             }
         },
         "ml-ops": {
             "wires": [],
             "properties": {
                 "name": "ML Ops",
-                "icon": "image.png",
-                "link": "/some/mqtt/topic/with/its/own/topoology"
+                "icon": {
+                    "type": "image",
+                    "src": "image.png"
+                },
+                "link": {
+                    "type": "topic-link",
+                    "topic": "/c/ml-ops/topology"
+                }
             }
         }
     },
