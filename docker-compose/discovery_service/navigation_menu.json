@@ -1,0 +1,33 @@
+{
+    "topology": {
+        "running-piplines": {
+            "wires": [],
+            "properties": {
+                "name": "Running pipelines",
+                "icon": {
+                    "type": "image",
+                    "src": "image.png"
+                },
+                "link": {
+                    "type": "topic-link",
+                    "topic": "/c/running-pipelines/topology"
+                }
+            }
+        },
+        "ml-ops": {
+            "wires": [],
+            "properties": {
+                "name": "ML Ops",
+                "icon": {
+                    "type": "image",
+                    "src": "image.png"
+                },
+                "link": {
+                    "type": "topic-link",
+                    "topic": "/c/ml-ops/topology"
+                }
+            }
+        }
+    },
+    "display-style": "menu"
+}

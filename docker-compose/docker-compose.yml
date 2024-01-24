@@ -70,4 +70,6 @@ services:
     env_file:
       - .discovery_service.env
     volumes:
-      - ./discovery_service.yaml:/conf/config.yaml:r
+      - ./discovery_service/discovery_service.yaml:/conf/config.yaml:r
+      - ./discovery_service/navigation_menu.json:/conf/navigation_menu.json
+      - ./discovery_service/navigation_schema.json:/conf/navigation_schema.json:r
