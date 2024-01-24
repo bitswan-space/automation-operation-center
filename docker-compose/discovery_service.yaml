@@ -1,4 +1,0 @@
-portainer-url: http://portainer:9000
-mqtt-broker-url: mqtt://mosquitto:1883
-mqtt-topology-topic-pub: /topology
-mqtt-topology-topic-sub: /topology/get
