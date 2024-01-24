@@ -64,27 +64,9 @@ services:
       - "8025:8025" # Web UI
       - "1025:1025" # SMTP server
 
-  pipeline-operations-centre:
-    restart: always
-    image: public.ecr.aws/bitswan/pipeline-operations-centre:sha256_7e5fde7af2dcf9ae7146a3f3b16bc704f5a212d547010a9d359e9103b7febf6c
-    env_file:
-      - .operations_centre.env
-    ports:
-      - "3000:3000"
-
-  container-config-service:
-    restart: always
-    image: public.registry.bitswan.space/bitswan/container-configuration-service:sha256_f5d8b03552708b0ad3563a2e5bc73df26e7d1fd866e4290898a9ec59180495f1
-    ports:
-      - "8080:8080"
-    env_file:
-      - .config_service.env
-    volumes:
-      - ./container_config_service.conf:/conf/container_config_service.conf:r
-
   container-discovery-service:
     restart: always
-    image: public.registry.bitswan.space/bitswan/container-discovery-service:sha256_3991b7682fe9d7fbb4e633a1dcc2b81e6e9bd7940d06f55c719f9d7070cbb148
+    image: public.registry.bitswan.space/bitswan/container-discovery-service:sha256_00d756500bcdd624b813d73f2f3f45ceda1d6ec67b82a1adbe1e4586d4f21ba4
     env_file:
       - .discovery_service.env
     volumes:
