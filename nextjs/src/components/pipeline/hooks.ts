@@ -2,7 +2,6 @@ import {
   type PipelineStat,
   type PipelineWithStats,
   type PipelineNode,
-  type ServicePreparationResponse,
   type ContainerServiceTopologyResponse,
 } from "@/types";
 import axios from "axios";
@@ -96,18 +95,5 @@ export const usePipelineTopology = (pipelineId: string) => {
   return useQuery({
     queryKey: ["pipeline-topology", pipelineId],
     queryFn: () => fetchPipelineTopology(pipelineId),
-  });
-};
-
-export const preparePiplelineMQTT = (): Promise<ServicePreparationResponse> => {
-  return axios
-    .get<ServicePreparationResponse>(`${API_BASE_URL}/pipelines/prepare-mqtt`)
-    .then((response) => response.data);
-};
-
-export const usePreparePipelineMQTTService = () => {
-  return useQuery({
-    queryKey: ["prepare-pipeline-service-topology"],
-    queryFn: () => preparePiplelineMQTT(),
   });
 };

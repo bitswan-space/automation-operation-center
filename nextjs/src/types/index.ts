@@ -178,10 +178,6 @@ export interface Prop {
   vt?: string;
 }
 
-export interface ServicePreparationResponse {
-  result: "OK" | "ERROR";
-}
-
 export interface PumpTopologyResponse {
   timestamp: number;
   data: {
