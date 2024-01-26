@@ -9,15 +9,11 @@ import { PipelineDataTable } from "@/components/pipeline/PipelineDataTable";
 import { PipelineDataCard } from "@/components/pipeline/PipelineDataCard";
 import {
   usePipelinesWithStats,
-  usePreparePipelineMQTTService,
 } from "@/components/pipeline/hooks";
 import { TitleBar } from "../components/layout/TitleBar";
 
 const DashboardPage: NextPageWithLayout = () => {
   const { pipelinesWithStats: pipelines } = usePipelinesWithStats();
-
-  usePreparePipelineMQTTService();
-
   return (
     <>
       <div className="p-4 lg:p-8">

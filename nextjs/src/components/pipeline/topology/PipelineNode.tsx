@@ -180,7 +180,7 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
   type EventResponse = {
     timestamp: number;
     data: unknown;
-    event_number: number;
+    count: number;
   };
 
   useMQTTRequestResponseSubscription<EventResponse>({
@@ -382,13 +382,13 @@ enum DataSectionTabOptions {
 type EventResponse = {
   timestamp: number;
   data: unknown;
-  event_number: number;
+  count: number;
 };
 
 type FormattedEventResponse = {
   timestamp: string;
   data: unknown;
-  event_number: number;
+  count: number;
 };
 
 interface DataSectionBodyProps {
@@ -456,7 +456,7 @@ function DataSectionBody(props: DataSectionBodyProps) {
     })
     .reduce(
       (accumulator: Record<string, unknown>, e: FormattedEventResponse) => {
-        accumulator[`#${e.event_number} ${e.timestamp}`] = e.data;
+        accumulator[`#${e.count} ${e.timestamp}`] = e.data;
         return accumulator;
       },
       {} as Record<string, unknown>,

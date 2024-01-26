@@ -132,6 +132,7 @@ export interface PipelineStat {
   _measurement: string;
   appclass: string;
   host: string;
+  deployment_id: string;
   pipeline: string;
 }
 
@@ -175,10 +176,6 @@ export interface PipelineNode {
 export interface Prop {
   p: string;
   vt?: string;
-}
-
-export interface ServicePreparationResponse {
-  result: "OK" | "ERROR";
 }
 
 export interface PumpTopologyResponse {
