@@ -195,9 +195,14 @@ export interface PumpTopologyResponse {
 }
 
 export interface ContainerServiceTopologyResponse {
-  topology: Topology;
-  "display-style": string;
-  "display-priority": string;
+  timestamp: number;
+  data: {
+    topology: Topology;
+    "display-style": string;
+    "display-priority": string;
+  };
+  count: number;
+  remaining_subscription_count: number;
 }
 
 export type Topology = Record<string, PipelineTopology>;

@@ -51,17 +51,17 @@ export const usePipelinesWithStats = (): {
     useMQTTRequestResponseSubscription<ContainerServiceTopologyResponse>({
       queryKey: "container-service-subscription",
       requestResponseTopicHandler: {
-        requestTopic: `/topology/get`,
-        responseTopic: `/topology`,
+        requestTopic: `/c/running-pipelines/topology/subscribe`,
+        responseTopic: `/c/running-pipelines/topology`,
         requestMessageType: "json",
         requestMessage: {
-          method: "get",
+          count: 10,
         },
       },
     });
 
   const pipelines = Object.entries(
-    containerServiceTopology?.topology ?? {},
+    containerServiceTopology?.data.topology ?? {},
   ).map(([key, value]) => {
     return {
       ...value,
