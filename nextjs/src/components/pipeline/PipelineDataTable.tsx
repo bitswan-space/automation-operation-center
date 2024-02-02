@@ -101,7 +101,8 @@ export const columns = [
       return <div className="capitalize">{createdAt}</div>;
     },
   }),
-  columnHelper.accessor("pipelineStat", {
+  columnHelper.display({
+    id: "pipelineStatEpsIn",
     header: "eps.in",
     cell: ({ row }) => {
       const epsInStat = row.original.pipelineStat?.filter(
@@ -116,7 +117,8 @@ export const columns = [
       );
     },
   }),
-  columnHelper.accessor("pipelineStat", {
+  columnHelper.display({
+    id: "pipelineStatEpsOut",
     header: "eps.out",
     cell: ({ row }) => {
       const epsOutStat = row.original.pipelineStat?.filter(

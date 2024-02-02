@@ -3,6 +3,10 @@ import { type PipelineNode } from "@/types";
 export function convertTopologyToMermaidGraph(nodes: PipelineNode[]): string {
   let graph = "graph LR\n"; // Start of the Mermaid graph definition
 
+  if (nodes.length === 0) {
+    return "";
+  }
+
   nodes.forEach((node) => {
     // For each node, create a connection to each of its wires
     node.wires?.forEach((wire) => {

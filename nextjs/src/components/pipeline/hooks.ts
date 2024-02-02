@@ -3,6 +3,7 @@ import {
   type PipelineWithStats,
   type PipelineNode,
   type ContainerServiceTopologyResponse,
+  type PipelineTopology,
 } from "@/types";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
@@ -60,18 +61,20 @@ export const usePipelinesWithStats = (): {
       },
     });
 
-  const pipelines = Object.entries(
+  const pipelines: (PipelineTopology & { _key: string })[] = Object.entries(
     containerServiceTopology?.data.topology ?? {},
   ).map(([key, value]) => {
     return {
-      ...value,
       _key: key,
+      ...value,
     };
   });
 
   const pipelinesWithStats = pipelines?.map((pipeline) => {
     const pipelineStat = pipelineStats?.filter((pipelineStat) =>
-      pipeline.properties["deployment-id"].startsWith(pipelineStat.deployment_id),
+      pipeline.properties["deployment-id"].startsWith(
+        pipelineStat.deployment_id,
+      ),
     );
 
     return {

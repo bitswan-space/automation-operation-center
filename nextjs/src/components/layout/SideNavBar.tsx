@@ -9,6 +9,7 @@ import {
   Router,
   ChevronRight,
   Settings,
+  Menu,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -17,6 +18,13 @@ import { Button } from "../ui/button";
 import clsx from "clsx";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/router";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "../ui/sheet";
 
 interface SideNavBarProps {
   expanded: boolean;
@@ -67,51 +75,7 @@ const SideNavBar = (props: SideNavBarProps) => {
               className={clsx({ "h-8 w-36": expanded })}
             />
           </div>
-          <div className="flex flex-col justify-center gap-4">
-            <SideBarNavItem
-              Icon={RefreshCcw}
-              title="Running Pipelines"
-              active
-              expanded={expanded}
-              url="/"
-            />
-            <SideBarNavItem
-              Icon={PencilLine}
-              title="Pipelines builder"
-              expanded={expanded}
-              hidden
-            />
-            <SideBarNavItem
-              Icon={PieChart}
-              title="View Data"
-              expanded={expanded}
-              hidden
-            />
-            <SideBarNavItem
-              Icon={Braces}
-              title="Data Studio"
-              expanded={expanded}
-              hidden
-            />
-            <SideBarNavItem
-              Icon={ShoppingCart}
-              title="Store"
-              expanded={expanded}
-              hidden
-            />
-            <SideBarNavItem
-              Icon={Router}
-              title="Data Providers"
-              expanded={expanded}
-              hidden
-            />
-            <SideBarNavItem
-              Icon={Settings}
-              title="Settings"
-              expanded={expanded}
-              hidden
-            />
-          </div>
+          <MenuItemList expanded={expanded} />
         </div>
         <div className="p-6 pb-16 md:hidden">
           <Button
@@ -131,7 +95,7 @@ const SideNavBar = (props: SideNavBarProps) => {
 
 export default SideNavBar;
 
-interface SideBarNavItemProps {
+export interface SideBarNavItemProps {
   Icon: LucideIcon;
   title: string;
   active?: boolean;
@@ -140,7 +104,7 @@ interface SideBarNavItemProps {
   url?: string;
 }
 
-function SideBarNavItem(props: SideBarNavItemProps) {
+export function SideBarNavItem(props: SideBarNavItemProps) {
   const { Icon, title, active, expanded, hidden, url } = props;
 
   const router = useRouter();
@@ -189,5 +153,84 @@ function SideBarNavItem(props: SideBarNavItemProps) {
         </motion.div>
       )}
     </Button>
+  );
+}
+
+export type MenuItemListProps = {
+  expanded: boolean;
+};
+
+export function MenuItemList(props: MenuItemListProps) {
+  const { expanded } = props;
+  return (
+    <div className="flex flex-col justify-center gap-4 py-6">
+      <SideBarNavItem
+        Icon={RefreshCcw}
+        title="Running Pipelines"
+        active
+        expanded={expanded}
+        url="/"
+      />
+      <SideBarNavItem
+        Icon={PencilLine}
+        title="Pipelines builder"
+        expanded={expanded}
+        hidden
+      />
+      <SideBarNavItem
+        Icon={PieChart}
+        title="View Data"
+        expanded={expanded}
+        hidden
+      />
+      <SideBarNavItem
+        Icon={Braces}
+        title="Data Studio"
+        expanded={expanded}
+        hidden
+      />
+      <SideBarNavItem
+        Icon={ShoppingCart}
+        title="Store"
+        expanded={expanded}
+        hidden
+      />
+      <SideBarNavItem
+        Icon={Router}
+        title="Data Providers"
+        expanded={expanded}
+        hidden
+      />
+      <SideBarNavItem
+        Icon={Settings}
+        title="Settings"
+        expanded={expanded}
+        hidden
+      />
+    </div>
+  );
+}
+
+export function MobileNavSheet() {
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Menu size={30} className="text-neutral-50" />
+      </SheetTrigger>
+      <SheetContent className="bg-neutral-800 text-neutral-50">
+        <SheetHeader>
+          <SheetTitle className="mx-auto">
+            <Image
+              height={40}
+              width={140}
+              className="h-8 w-36"
+              src={"/bitswan-logo-full.png"}
+              alt="logo"
+            />
+          </SheetTitle>
+          <MenuItemList expanded={true} />
+        </SheetHeader>
+      </SheetContent>
+    </Sheet>
   );
 }

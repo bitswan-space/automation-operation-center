@@ -7,10 +7,9 @@ import { Button } from "@/components/ui/button";
 import React from "react";
 import { PipelineDataTable } from "@/components/pipeline/PipelineDataTable";
 import { PipelineDataCard } from "@/components/pipeline/PipelineDataCard";
-import {
-  usePipelinesWithStats,
-} from "@/components/pipeline/hooks";
+import { usePipelinesWithStats } from "@/components/pipeline/hooks";
 import { TitleBar } from "../components/layout/TitleBar";
+import { type PipelineWithStats } from "@/types";
 
 const DashboardPage: NextPageWithLayout = () => {
   const { pipelinesWithStats: pipelines } = usePipelinesWithStats();
@@ -31,18 +30,7 @@ const DashboardPage: NextPageWithLayout = () => {
           </Button>
         </div>
 
-        <div className="flex flex-col gap-2 md:pt-2 lg:hidden">
-          <PipelineDataCard
-            name="Pipeline 1"
-            machineName="test_vm"
-            dateCreated="2021-08-01"
-          />
-          <PipelineDataCard
-            name="Pipeline 1"
-            machineName="test_vm"
-            dateCreated="2021-08-01"
-          />
-        </div>
+        <PipelineDataCardList pipelines={pipelines} />
         <div className="hidden py-4 lg:block">
           <Card
             className={
@@ -64,3 +52,29 @@ DashboardPage.getLayout = function getLayout(page: ReactElement) {
 };
 
 export default DashboardPage;
+
+type PipelineDataCardListProps = {
+  pipelines?: PipelineWithStats[];
+};
+
+function PipelineDataCardList(props: PipelineDataCardListProps) {
+  const { pipelines } = props;
+
+  return (
+    <div className="flex flex-col gap-2 md:pt-2 lg:hidden">
+      {pipelines?.map((pipeline) => (
+        <div key={pipeline._key}>
+          <PipelineDataCard
+            id={pipeline._key}
+            key={pipeline.properties["container-id"]}
+            name={pipeline.properties.name}
+            machineName={pipeline.properties["endpoint-name"]}
+            dateCreated={pipeline.properties["created-at"]}
+            status={pipeline.properties.state}
+            uptime={pipeline.properties.status}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}

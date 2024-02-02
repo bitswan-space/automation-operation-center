@@ -22,6 +22,10 @@ import {
   transformTopologyToFlowEdges,
 } from "@/utils/reactflow";
 
+import { convertTopologyToMermaidGraph } from "@/utils/mermaid";
+import MermaidTopologyOverview from "./overview/TopologyOverview";
+import { Skeleton } from "../ui/skeleton";
+
 export interface PipelineDetailTabsProps {
   pipeline?: PipelineWithStats;
   pipelineTopology?: PipelineNode[];
@@ -33,7 +37,7 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
 
   return (
     <Tabs defaultValue="summary" className="h-full w-full">
-      <TabsList className="grid w-[400px] grid-cols-2 bg-neutral-200">
+      <TabsList className="grid grid-cols-2 bg-neutral-200 md:w-[400px]">
         <TabsTrigger value="summary" className="">
           <Clipboard size={18} className="mr-2" />
           Summary
@@ -77,7 +81,21 @@ interface PipelineSummaryProps {
 }
 
 function PipelineSummary(props: PipelineSummaryProps) {
-  const { pipeline } = props;
+  const { pipeline, pipelineTopology } = props;
+
+  const [mermaidChart, setMermaidChart] = React.useState("");
+  const [showMermaid, setShowMermaid] = React.useState(false);
+
+  React.useEffect(() => {
+    setInterval(() => {
+      setShowMermaid(true);
+    }, 800);
+  }, []);
+
+  React.useEffect(() => {
+    const mermaidChart = convertTopologyToMermaidGraph(pipelineTopology);
+    setMermaidChart(mermaidChart);
+  }, [pipelineTopology]);
 
   const [editMode, setEditMode] = React.useState(false);
 
@@ -103,8 +121,18 @@ function PipelineSummary(props: PipelineSummaryProps) {
             </div>
           </CardTitle>
           <CardDescription>
-            This is a sample description of the pipeline. It describes what the
-            pipeline does with more detail
+            <div className="pb-10">
+              This is a sample description of the pipeline. It describes what
+              the pipeline does with more detail
+            </div>
+
+            {showMermaid ? (
+              <MermaidTopologyOverview chart={mermaidChart} id={"df"} />
+            ) : (
+              <Skeleton className="h-10 w-fit p-2 px-6">
+                Loading topology...
+              </Skeleton>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -134,8 +162,8 @@ function PipelineSummary(props: PipelineSummaryProps) {
         <CardContent className="space-y-6">
           <div className="flex w-full flex-wrap gap-2">
             <div className="flex-auto">
-              <Card className="h-full rounded-md border border-neutral-300 p-4 shadow-sm">
-                <CardContent className="pl-4">
+              <Card className="h-full rounded-md border border-neutral-300 p-2 shadow-sm md:p-4">
+                <CardContent className="md:pl-4">
                   <EPSSyncAreaChart data={pipeline?.pipelineStat ?? []} />
                 </CardContent>
               </Card>

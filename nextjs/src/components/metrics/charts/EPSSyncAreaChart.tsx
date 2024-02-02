@@ -37,7 +37,7 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
       style={{
         width: "100%",
       }}
-      className="space-y-10"
+      className="md:space-y-10"
     >
       <div>
         <h4 className="mb-4 text-base font-bold uppercase text-neutral-600">
@@ -67,6 +67,7 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
                 epsInData[epsInData.length - 1]?.time ?? "0:00:00",
               ]}
               height={60}
+              className="hidden md:block"
             />
             <YAxis allowDecimals={false} tick={{ fontSize: 12, dx: -10 }} />
             <Tooltip />
@@ -109,6 +110,7 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
                 epsOutData[epsOutData.length - 1]?.time ?? "0:00:00",
               ]}
               height={60}
+              className="hidden md:block"
             />
             <YAxis allowDecimals={false} tick={{ fontSize: 12, dx: -10 }} />
             <Tooltip />
