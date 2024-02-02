@@ -2,14 +2,9 @@ import {
   LogOut,
   type LucideIcon,
   RefreshCcw,
-  PencilLine,
-  PieChart,
-  Braces,
-  ShoppingCart,
-  Router,
   ChevronRight,
-  Settings,
   Menu,
+  BrainCircuit,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -25,6 +20,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
+import {
+  type DynamicSidebarItem,
+  type DynamicSidebarResponse,
+} from "@/types/sidebar";
+import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
+import React from "react";
 
 interface SideNavBarProps {
   expanded: boolean;
@@ -162,51 +163,59 @@ export type MenuItemListProps = {
 
 export function MenuItemList(props: MenuItemListProps) {
   const { expanded } = props;
+
+  const [sideBarItems, setSideBarItems] = React.useState<DynamicSidebarItem[]>(
+    [],
+  );
+
+  useMQTTRequestResponseSubscription<DynamicSidebarResponse>({
+    queryKey: "dynamic-sidebar",
+    requestResponseTopicHandler: {
+      requestTopic: "/topology/subscribe",
+      responseTopic: "/topology",
+      requestMessageType: "json",
+      requestMessage: {
+        count: 1,
+      },
+      onMessageCallback: (response) => {
+        const sidbarItems = Object.entries(response.topology).reduce(
+          (acc, v) => {
+            return [...acc, v[1] as DynamicSidebarItem];
+          },
+          [] as DynamicSidebarItem[],
+        );
+
+        setSideBarItems(sidbarItems);
+      },
+    },
+  });
+
+  // todo: add machine readable attributes to the sidebar items
+  const getIconFromType = (type: string) => {
+    switch (type) {
+      case "Running pipelines":
+        return RefreshCcw;
+      case "ML Ops":
+        return BrainCircuit;
+      default:
+        return RefreshCcw;
+    }
+  };
+
+  console.log("sideBarItems", sideBarItems);
   return (
     <div className="flex flex-col justify-center gap-4 py-6">
-      <SideBarNavItem
-        Icon={RefreshCcw}
-        title="Running Pipelines"
-        active
-        expanded={expanded}
-        url="/"
-      />
-      <SideBarNavItem
-        Icon={PencilLine}
-        title="Pipelines builder"
-        expanded={expanded}
-        hidden
-      />
-      <SideBarNavItem
-        Icon={PieChart}
-        title="View Data"
-        expanded={expanded}
-        hidden
-      />
-      <SideBarNavItem
-        Icon={Braces}
-        title="Data Studio"
-        expanded={expanded}
-        hidden
-      />
-      <SideBarNavItem
-        Icon={ShoppingCart}
-        title="Store"
-        expanded={expanded}
-        hidden
-      />
-      <SideBarNavItem
-        Icon={Router}
-        title="Data Providers"
-        expanded={expanded}
-        hidden
-      />
-      <SideBarNavItem
-        Icon={Settings}
-        title="Settings"
-        expanded={expanded}
-        hidden
-      />
+      {sideBarItems.map((item, idx) => (
+        <SideBarNavItem
+          key={idx}
+          Icon={getIconFromType(item.properties.name)}
+          title={item.properties.name}
+          // todo: this is hardcoded it will be easier to use the machine readable attributes
+          active={item.properties.name === "Running pipelines"}
+          expanded={expanded}
+          url={"#"}
+        />
+      ))}
     </div>
   );
 }

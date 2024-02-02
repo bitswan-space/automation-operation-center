@@ -1,8 +1,4 @@
-import {
-  ChevronDownIcon,
-  ChevronRight,
-  FileCog,
-} from "lucide-react";
+import { ChevronDownIcon, ChevronRight, FileCog } from "lucide-react";
 import {
   type ColumnFiltersState,
   type ExpandedState,
@@ -148,7 +144,7 @@ export const columns = [
     },
   }),
   columnHelper.display({
-    id: "properties_name",
+    id: "launchPipelineEditor",
     cell: ({ row }) => {
       return (
         <Link href={`/pipelines/launch-jupyter-lab/${row.original._key}`}>
