@@ -14,17 +14,31 @@
                 }
             }
         },
-        "ml-ops": {
+        "dashboard": {
             "wires": [],
             "properties": {
-                "name": "ML Ops",
+                "name": "Dashboard",
                 "icon": {
                     "type": "image",
                     "src": "image.png"
                 },
                 "link": {
-                    "type": "topic-link",
-                    "topic": "/c/ml-ops/topology"
+                    "type": "external-link",
+                    "href": "https://dashboard.bitswan.space"
+                }
+            }
+        },
+        "kibana": {
+            "wires": [],
+            "properties": {
+                "name": "Kibana",
+                "icon": {
+                    "type": "image",
+                    "src": "image.png"
+                },
+                "link": {
+                    "type": "external-link",
+                    "href": "https://kibana.bitswan.space"
                 }
             }
         }
