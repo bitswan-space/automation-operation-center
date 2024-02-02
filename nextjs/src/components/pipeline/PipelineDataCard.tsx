@@ -5,6 +5,7 @@ import { type ReactNode } from "react";
 import { Separator } from "../ui/separator";
 import { Badge } from "../ui/badge";
 import Link from "next/link";
+import { Eye, FileCog } from "lucide-react";
 
 interface PipelineDataCardProps {
   id: string;
@@ -45,11 +46,20 @@ function PipelineDataCard(props: PipelineDataCardProps) {
       </CardContent>
       <Separator />
       <CardFooter className="px-4 pb-4 pt-4">
-        <Link href={`/pipelines/${id}`} className="w-full">
-          <Button className="w-full" variant={"outline"}>
-            View
-          </Button>
-        </Link>
+        <div className="flex w-full flex-col gap-2">
+          <Link href={`/pipelines/${id}`} className="w-full">
+            <Button className="w-full" variant={"outline"}>
+              <Eye size={22} className="mr-2" />
+              View
+            </Button>
+          </Link>
+          <Link href={`/pipelines/launch-jupyter-lab/${id}`} className="w-full">
+            <Button variant={"outline"} className="w-full">
+              <FileCog size={22} className=" mr-2" />
+              Launch JupyterLab
+            </Button>
+          </Link>
+        </div>
       </CardFooter>
     </Card>
   );

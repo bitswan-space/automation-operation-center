@@ -1,4 +1,8 @@
-import { ChevronDownIcon, ChevronRight } from "lucide-react";
+import {
+  ChevronDownIcon,
+  ChevronRight,
+  FileCog,
+} from "lucide-react";
 import {
   type ColumnFiltersState,
   type ExpandedState,
@@ -141,6 +145,18 @@ export const columns = [
       const uptime = row.original.properties.status;
 
       return <div className="capitalize">{uptime}</div>;
+    },
+  }),
+  columnHelper.display({
+    id: "properties_name",
+    cell: ({ row }) => {
+      return (
+        <Link href={`/pipelines/launch-jupyter-lab/${row.original._key}`}>
+          <Button variant={"outline"}>
+            <FileCog size={20} />
+          </Button>
+        </Link>
+      );
     },
   }),
   columnHelper.display({
