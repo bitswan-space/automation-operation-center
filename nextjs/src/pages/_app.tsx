@@ -11,6 +11,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactFlowProvider } from "reactflow";
 import React from "react";
+import { SideBarContext } from "@/context/sideBarContext";
+import { useDynamicSidebar } from "@/shared/hooks/dynamic-sidebar";
 
 const queryClient = new QueryClient();
 
@@ -32,16 +34,20 @@ const MyApp: AppTypeWithLayout<{ session: Session | null }> = ({
   Component,
   pageProps: { session, ...pageProps },
 }) => {
+  const dynamicSideBarItems = useDynamicSidebar();
+
   const getLayout = Component.getLayout ?? ((page: ReactElement) => page);
   const layout = getLayout(<Component {...pageProps} />);
 
   return (
     <SessionProvider session={session}>
       <QueryClientProvider client={queryClient}>
-        <ReactFlowProvider>
-          {layout}
-          <ReactQueryDevtools initialIsOpen={false} />
-        </ReactFlowProvider>
+        <SideBarContext.Provider value={dynamicSideBarItems}>
+          <ReactFlowProvider>
+            {layout}
+            <ReactQueryDevtools initialIsOpen={false} />
+          </ReactFlowProvider>
+        </SideBarContext.Provider>
       </QueryClientProvider>
     </SessionProvider>
   );

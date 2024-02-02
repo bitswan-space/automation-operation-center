@@ -13,7 +13,8 @@ export type DynamicSidebarItem = {
     };
     link: {
       type: string;
-      topic: string;
+      topic?: string;
+      href?: string;
     };
   };
 };

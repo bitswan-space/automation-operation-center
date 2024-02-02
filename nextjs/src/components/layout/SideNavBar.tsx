@@ -5,6 +5,7 @@ import {
   ChevronRight,
   Menu,
   BrainCircuit,
+  ArrowUpRightSquare,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -12,7 +13,7 @@ import Image from "next/image";
 import { Button } from "../ui/button";
 import clsx from "clsx";
 import { signOut } from "next-auth/react";
-import { useRouter } from "next/router";
+import { SiApachekafka } from "react-icons/si";
 import {
   Sheet,
   SheetContent,
@@ -20,12 +21,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
-import {
-  type DynamicSidebarItem,
-  type DynamicSidebarResponse,
-} from "@/types/sidebar";
-import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
 import React from "react";
+import { SideBarContext } from "@/context/sideBarContext";
+import { Skeleton } from "../ui/skeleton";
+import Link from "next/link";
+import { type IconType } from "react-icons";
 
 interface SideNavBarProps {
   expanded: boolean;
@@ -97,63 +97,56 @@ const SideNavBar = (props: SideNavBarProps) => {
 export default SideNavBar;
 
 export interface SideBarNavItemProps {
-  Icon: LucideIcon;
+  Icon: LucideIcon | IconType;
   title: string;
   active?: boolean;
   expanded?: boolean;
   hidden?: boolean;
   url?: string;
+  isExternal?: boolean;
 }
 
 export function SideBarNavItem(props: SideBarNavItemProps) {
-  const { Icon, title, active, expanded, hidden, url } = props;
-
-  const router = useRouter();
+  const { Icon, title, active, expanded, hidden, url, isExternal } = props;
 
   const variants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 },
   };
 
-  const handleOnClick = () => {
-    router
-      .push(url ?? "/")
-      .then(() => {
-        console.log("Navigated to ", url);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  };
-
   return (
-    <Button
-      title={title}
-      variant={"ghost"}
-      size={expanded ? "lg" : "default"}
-      className={clsx("flex gap-3 text-neutral-100", {
-        "rounded-none border-l-4 border-blue-500 p-6 text-blue-500":
-          active && !expanded,
-        "rounded-none p-6 text-neutral-50": !expanded && !active,
-        "justify-start": expanded,
-        "bg-blue-700 text-white hover:bg-blue-600 hover:text-white":
-          active && expanded,
-        "hidden ": hidden,
-      })}
-      onClick={handleOnClick}
+    <Link
+      href={url ?? "/"}
+      target={isExternal ? "_blank" : undefined}
+      className="w-full"
     >
-      <Icon size={20} strokeWidth={2.3} />
-      {expanded && (
-        <motion.div
-          initial="hidden"
-          animate={expanded ? "visible" : "hidden"}
-          variants={variants}
-          transition={{ duration: 0.8 }}
-        >
-          <span>{title}</span>
-        </motion.div>
-      )}
-    </Button>
+      <Button
+        title={title}
+        variant={"ghost"}
+        size={expanded ? "lg" : "default"}
+        className={clsx("flex w-full gap-3 text-neutral-100", {
+          "rounded-none border-l-4 border-blue-500 p-6 text-blue-500":
+            active && !expanded,
+          "ml-1 rounded-none p-6 text-neutral-50": !expanded && !active,
+          "justify-start": expanded,
+          "bg-blue-700 text-white hover:bg-blue-600 hover:text-white":
+            active && expanded,
+          "hidden ": hidden,
+        })}
+      >
+        <Icon size={22} />
+        {expanded && (
+          <motion.div
+            initial="hidden"
+            animate={expanded ? "visible" : "hidden"}
+            variants={variants}
+            transition={{ duration: 0.8 }}
+          >
+            <span>{title}</span>
+          </motion.div>
+        )}
+      </Button>
+    </Link>
   );
 }
 
@@ -164,31 +157,7 @@ export type MenuItemListProps = {
 export function MenuItemList(props: MenuItemListProps) {
   const { expanded } = props;
 
-  const [sideBarItems, setSideBarItems] = React.useState<DynamicSidebarItem[]>(
-    [],
-  );
-
-  useMQTTRequestResponseSubscription<DynamicSidebarResponse>({
-    queryKey: "dynamic-sidebar",
-    requestResponseTopicHandler: {
-      requestTopic: "/topology/subscribe",
-      responseTopic: "/topology",
-      requestMessageType: "json",
-      requestMessage: {
-        count: 1,
-      },
-      onMessageCallback: (response) => {
-        const sidbarItems = Object.entries(response.topology).reduce(
-          (acc, v) => {
-            return [...acc, v[1] as DynamicSidebarItem];
-          },
-          [] as DynamicSidebarItem[],
-        );
-
-        setSideBarItems(sidbarItems);
-      },
-    },
-  });
+  const sideBarItems = React.useContext(SideBarContext);
 
   // todo: add machine readable attributes to the sidebar items
   const getIconFromType = (type: string) => {
@@ -197,15 +166,17 @@ export function MenuItemList(props: MenuItemListProps) {
         return RefreshCcw;
       case "ML Ops":
         return BrainCircuit;
+      case "Kafka":
+        return SiApachekafka;
       default:
-        return RefreshCcw;
+        return ArrowUpRightSquare;
     }
   };
 
   console.log("sideBarItems", sideBarItems);
   return (
     <div className="flex flex-col justify-center gap-4 py-6">
-      {sideBarItems.map((item, idx) => (
+      {sideBarItems?.map((item, idx) => (
         <SideBarNavItem
           key={idx}
           Icon={getIconFromType(item.properties.name)}
@@ -213,9 +184,15 @@ export function MenuItemList(props: MenuItemListProps) {
           // todo: this is hardcoded it will be easier to use the machine readable attributes
           active={item.properties.name === "Running pipelines"}
           expanded={expanded}
-          url={"#"}
+          isExternal={item.properties.link.type === "external-link"}
+          url={item.properties.link.href ?? "/"}
         />
       ))}
+      {sideBarItems?.length === 0 && (
+        <div className="flex justify-center text-neutral-50">
+          <Skeleton className="h-6 w-16" />
+        </div>
+      )}
     </div>
   );
 }
@@ -237,8 +214,10 @@ export function MobileNavSheet() {
               alt="logo"
             />
           </SheetTitle>
-          <MenuItemList expanded={true} />
         </SheetHeader>
+        <div>
+          <MenuItemList expanded={true} />
+        </div>
       </SheetContent>
     </Sheet>
   );
