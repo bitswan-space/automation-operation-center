@@ -53,10 +53,13 @@ function PipelineDataCard(props: PipelineDataCardProps) {
               View
             </Button>
           </Link>
-          <Link href={`/pipelines/launch-jupyter-lab/${id}`} className="w-full">
+          <Link
+            href={`/pipelines/launch-pipeline-editor/${id}`}
+            className="w-full"
+          >
             <Button variant={"outline"} className="w-full">
               <FileCog size={22} className=" mr-2" />
-              Launch JupyterLab
+              Launch Pipeline Editor
             </Button>
           </Link>
         </div>

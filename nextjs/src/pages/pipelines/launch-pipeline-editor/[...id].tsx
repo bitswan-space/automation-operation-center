@@ -11,27 +11,27 @@ import type * as next from "next";
 import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
 import { splitArrayUpToElementAndJoin } from "@/utils/arrays";
 
-interface JupyterLabLaunchPageProps {
+interface PipelineEditorLaunchPageProps {
   id: string | string[];
 }
 
-const JupyterLabLaunchPage: NextPageWithLayout<JupyterLabLaunchPageProps> = ({
-  id,
-}) => {
+const PipelineEditorLaunchPage: NextPageWithLayout<
+  PipelineEditorLaunchPageProps
+> = ({ id }) => {
   const { pipelinesWithStats: pipelines } = usePipelinesWithStats();
   const pipeline = pipelines.find((p) => p._key === id?.[0]);
 
   const [logMessages, setLogMessages] = React.useState<string[]>([]);
 
-  type JupyterLabLaunchResponse = {
+  type PipelineEditorLaunchResponse = {
     message: string;
   };
 
-  useMQTTRequestResponseSubscription<JupyterLabLaunchResponse>({
-    queryKey: "jupyterlab-launch",
+  useMQTTRequestResponseSubscription<PipelineEditorLaunchResponse>({
+    queryKey: "pipeline-editor-launch",
     requestResponseTopicHandler: {
-      requestTopic: "test/jupyterlab/launch/subscribe",
-      responseTopic: "test/jupyterlab/launch",
+      requestTopic: "test/pipeline-editor/launch/subscribe",
+      responseTopic: "test/pipeline-editor/launch",
       requestMessageType: "json",
       requestMessage: {
         pipelineID: id,
@@ -99,7 +99,7 @@ const JupyterLabLaunchPage: NextPageWithLayout<JupyterLabLaunchPageProps> = ({
   );
 };
 
-JupyterLabLaunchPage.getLayout = function getLayout(page: ReactElement) {
+PipelineEditorLaunchPage.getLayout = function getLayout(page: ReactElement) {
   return <DashboardLayout>{page}</DashboardLayout>;
 };
 
@@ -115,4 +115,4 @@ export function getServerSideProps(context: next.GetServerSidePropsContext) {
   };
 }
 
-export default JupyterLabLaunchPage;
+export default PipelineEditorLaunchPage;

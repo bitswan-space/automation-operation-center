@@ -147,7 +147,10 @@ export const columns = [
     id: "launchPipelineEditor",
     cell: ({ row }) => {
       return (
-        <Link href={`/pipelines/launch-jupyter-lab/${row.original._key}`}>
+        <Link
+          href={`/pipelines/launch-pipeline-editor/${row.original._key}`}
+          title="Launch pipeline editor"
+        >
           <Button variant={"outline"}>
             <FileCog size={20} />
           </Button>
