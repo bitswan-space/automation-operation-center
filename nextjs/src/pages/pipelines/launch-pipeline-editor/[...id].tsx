@@ -80,9 +80,9 @@ const PipelineEditorLaunchPage: NextPageWithLayout<
     <>
       <div className="h-screen p-4 lg:p-8">
         <h1 className="text-2xl font-bold text-stone-700 md:hidden">
-          Launching Jupyterlab ...
+          Launching Pipeline Editor ...
         </h1>
-        <TitleBar title={"Launching Jupyterlab ..."} />
+        <TitleBar title={"Launching Pipeline Editor ..."} />
 
         <div className="space-x-4 py-4 text-sm font-semibold text-neutral-600">
           {getBreadcrumbs(id as string[])}
