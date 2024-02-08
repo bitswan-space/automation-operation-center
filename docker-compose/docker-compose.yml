@@ -66,7 +66,7 @@ services:
 
   pipeline-operation-centre:
     restart: always
-    image: public.ecr.aws/bitswan/pipeline-operations-centre:sha256_504ee80db0e2f8bc5d1f41191dfb61fc084cd72435c01c01bd513657c404d660
+    image: public.ecr.aws/bitswan/pipeline-operations-centre:sha256_4cda929310714a5b88495a2e1e99b7983f17b7cd2ef3385b20dcfda273f4fd99
     env_file:
       - .operations_centre.env
     ports:
