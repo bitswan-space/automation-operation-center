@@ -1,10 +1,10 @@
+import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
 import {
   type DynamicSidebarItem,
   type DynamicSidebarResponse,
 } from "@/types/sidebar";
 
 import React from "react";
-import { useMQTTRequestResponseSubscription } from "./mqtt";
 
 export const useDynamicSidebar = () => {
   const [sideBarItems, setSideBarItems] = React.useState<DynamicSidebarItem[]>(

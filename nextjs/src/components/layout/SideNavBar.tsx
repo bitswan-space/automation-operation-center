@@ -173,7 +173,6 @@ export function MenuItemList(props: MenuItemListProps) {
     }
   };
 
-  console.log("sideBarItems", sideBarItems);
   return (
     <div className="flex flex-col justify-center gap-4 py-6">
       {sideBarItems?.map((item, idx) => (

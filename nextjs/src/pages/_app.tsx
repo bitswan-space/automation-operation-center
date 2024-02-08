@@ -12,7 +12,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactFlowProvider } from "reactflow";
 import React from "react";
 import { SideBarContext } from "@/context/sideBarContext";
-import { useDynamicSidebar } from "@/shared/hooks/dynamic-sidebar";
+import { useDynamicSidebar } from "@/components/layout/hooks";
 
 const queryClient = new QueryClient();
 

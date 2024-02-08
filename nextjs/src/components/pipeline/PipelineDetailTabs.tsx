@@ -23,8 +23,14 @@ import {
 } from "@/utils/reactflow";
 
 import { convertTopologyToMermaidGraph } from "@/utils/mermaid";
-import MermaidTopologyOverview from "./overview/TopologyOverview";
+
+const MermaidTopologyOverview = dynamic(
+  () => import("./overview/TopologyOverview"),
+  { ssr: false },
+);
+
 import { Skeleton } from "../ui/skeleton";
+import dynamic from "next/dynamic";
 
 export interface PipelineDetailTabsProps {
   pipeline?: PipelineWithStats;
@@ -89,7 +95,7 @@ function PipelineSummary(props: PipelineSummaryProps) {
   React.useEffect(() => {
     setInterval(() => {
       setShowMermaid(true);
-    }, 800);
+    }, 1500);
   }, []);
 
   React.useEffect(() => {
@@ -127,7 +133,10 @@ function PipelineSummary(props: PipelineSummaryProps) {
             </div>
 
             {showMermaid ? (
-              <MermaidTopologyOverview chart={mermaidChart} id={"df"} />
+              <MermaidTopologyOverview
+                chart={mermaidChart}
+                id={"topology-overview"}
+              />
             ) : (
               <Skeleton className="h-10 w-fit p-2 px-6">
                 Loading topology...
