@@ -27,7 +27,7 @@ fi
 ./env/filter_vars.sh .env.temp env/operations_centre-vars .operations_centre.env
 ./env/filter_vars.sh .env.temp env/influxdb-vars .influxdb.env
 ./env/filter_vars.sh .env.temp env/postgres-vars .postgres.env
-./env/filter_vars.sh .env.temp env/config_service-vars .config_service.env
+./env/filter_vars.sh .env.temp env/discovery-vars .discovery_service.env
 
 rm .env.temp
 
