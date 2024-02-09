@@ -32,6 +32,18 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
   const epsInData = processData(data, "eps.in");
   const epsOutData = processData(data, "eps.out");
 
+  const DataFormater = (number: number) => {
+    if (number > 1000000000) {
+      return (number / 1000000000).toString() + "b";
+    } else if (number > 1000000) {
+      return (number / 1000000).toString() + "m";
+    } else if (number > 1000) {
+      return (number / 1000).toString() + "k";
+    } else {
+      return number.toString();
+    }
+  };
+
   return (
     <div
       style={{
@@ -69,7 +81,11 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
               height={60}
               className="hidden md:block"
             />
-            <YAxis allowDecimals={false} tick={{ fontSize: 12, dx: -10 }} />
+            <YAxis
+              allowDecimals={false}
+              tick={{ fontSize: 12, dx: -10 }}
+              tickFormatter={DataFormater}
+            />
             <Tooltip />
             <Area
               type="monotone"
@@ -112,7 +128,11 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
               height={60}
               className="hidden md:block"
             />
-            <YAxis allowDecimals={false} tick={{ fontSize: 12, dx: -10 }} />
+            <YAxis
+              allowDecimals={false}
+              tick={{ fontSize: 12, dx: -10 }}
+              tickFormatter={DataFormater}
+            />
             <Tooltip />
             <Area
               type="monotone"
