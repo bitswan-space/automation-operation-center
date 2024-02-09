@@ -33,11 +33,11 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
   const epsOutData = processData(data, "eps.out");
 
   const DataFormater = (number: number) => {
-    if (number > 1000000000) {
+    if (number >= 1000000000) {
       return (number / 1000000000).toString() + "b";
-    } else if (number > 1000000) {
+    } else if (number >= 1000000) {
       return (number / 1000000).toString() + "m";
-    } else if (number > 1000) {
+    } else if (number >= 1000) {
       return (number / 1000).toString() + "k";
     } else {
       return number.toString();
