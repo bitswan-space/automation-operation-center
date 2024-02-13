@@ -11,6 +11,7 @@ volumes:
 services:
   influxdb:
     image: influxdb:2.0
+    restart: always
     ports:
       - "8086:8086"
     volumes:
@@ -35,6 +36,7 @@ services:
   mosquitto:
     image: eclipse-mosquitto
     container_name: mosquitto
+    restart: always
     # network_mode: host
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
@@ -46,6 +48,7 @@ services:
 
   keycloak:
     image: public.registry.bitswan.space/bitswan/bitswan-keycloak:sha256_3c9b17e2d24021c65c8f51d692fabc1d5de76018b031783d3d306ddac79397f0
+    restart: always
     ports:
       - "9090:8080"
     env_file:
@@ -54,12 +57,14 @@ services:
 
   postgres:
     image: postgres:12-bullseye
+    restart: always
     volumes:
     - postgres-keycloak-data:/var/lib/postgresql/data
     env_file: .postgres.env
 
   mailhog:
     image: mailhog/mailhog
+    restart: always
     ports:
       - "8025:8025" # Web UI
       - "1025:1025" # SMTP server
