@@ -63,7 +63,7 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
         return (
           <React.Fragment key={id}>
             <Link href={"/"} className="underline">
-              Running Pipelines
+              Pipeline Containers
             </Link>
             <span className="text-lg">&#x25B8;</span>
             <Link href={`/pipelines/${id}`} className="underline">
@@ -94,9 +94,9 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
     <>
       <div className="h-screen p-4 lg:p-8">
         <h1 className="text-2xl font-bold text-stone-700 md:hidden">
-          Running Pipelines
+          Pipeline Container
         </h1>
-        <TitleBar title={"Running Pipelines"} />
+        <TitleBar title={"Pipeline Container"} />
 
         <div className="space-x-4 py-2 text-sm font-semibold text-neutral-600">
           {getBreadcrumbs(id as string[])}

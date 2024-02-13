@@ -62,7 +62,7 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
       <TabsContent value="scheme" className="h-5/6">
         <Card className="h-full rounded-md">
           <CardHeader>
-            <CardTitle className="text-xl">Container Topology</CardTitle>
+            <CardTitle className="text-xl">Topology</CardTitle>
           </CardHeader>
           <CardContent className="h-5/6 w-full space-y-2">
             <PipelineTopologyDisplay
@@ -166,7 +166,7 @@ function PipelineSummary(props: PipelineSummaryProps) {
       </Card>
       <Card className="rounded-md">
         <CardHeader>
-          <CardTitle className="text-xl">Pipeline Metrics</CardTitle>
+          <CardTitle className="text-xl">Metrics</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex w-full flex-wrap gap-2">

@@ -17,9 +17,9 @@ const DashboardPage: NextPageWithLayout = () => {
     <>
       <div className="p-4 lg:p-8">
         <h1 className="text-2xl font-bold text-stone-700 md:hidden">
-          Running Pipelines
+          Pipeline Containers
         </h1>
-        <TitleBar title="Running Pipelines" />
+        <TitleBar title="Pipeline Containers" />
         <div className="flex py-4 pt-6 lg:hidden">
           <Input
             placeholder="Find pipeline"

@@ -6,7 +6,7 @@ export const transformTopologyToFlowNodes = (topology: PipelineNode[]) => {
   // Assumption here is that the nodes are always ordered by their index
   // The second assumption is that they're always in a single column
   const initialY = 0;
-  const spacingY = 800;
+  const spacingY = 300;
 
   // console.log("topology", topology);
 

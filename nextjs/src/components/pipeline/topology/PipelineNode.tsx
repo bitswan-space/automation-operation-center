@@ -7,8 +7,8 @@ import {
   Layers,
   PauseCircle,
   Play,
+  Search,
   SlidersHorizontal,
-  View,
 } from "lucide-react";
 import {
   Card,
@@ -239,7 +239,7 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
                       .catch((err) => console.log(err));
                   }}
                 >
-                  <View size={24} className="" />
+                  <Search size={24} className="" />
                 </div>
               }
             </div>
