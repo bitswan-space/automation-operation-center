@@ -26,6 +26,7 @@ import { SideBarContext } from "@/context/sideBarContext";
 import { Skeleton } from "../ui/skeleton";
 import Link from "next/link";
 import { type IconType } from "react-icons";
+import { handleError } from "@/utils/errors";
 
 interface SideNavBarProps {
   expanded: boolean;
@@ -40,10 +41,10 @@ const SideNavBar = (props: SideNavBarProps) => {
       callbackUrl: "/login",
     })
       .then(() => {
-        console.log("Signed out");
+        console.info("Signed out");
       })
-      .catch((error) => {
-        console.error(error);
+      .catch((error: Error) => {
+        handleError(error, "Failed to sign out");
       });
   };
 
@@ -73,7 +74,10 @@ const SideNavBar = (props: SideNavBarProps) => {
               alt={""}
               width={expanded ? 150 : 25}
               height={expanded ? 100 : 25}
-              className={clsx({ "h-8 w-36": expanded })}
+              className={clsx({
+                "h-8 w-36": expanded,
+                "h-7 w-5": !expanded,
+              })}
             />
           </div>
           <MenuItemList expanded={expanded} />

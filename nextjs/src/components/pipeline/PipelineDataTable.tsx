@@ -29,7 +29,7 @@ import React from "react";
 import { Badge } from "../ui/badge";
 import { type PipelineStat, type PipelineWithStats } from "@/types";
 
-import { ResponsiveContainer, Area, AreaChart, XAxis } from "recharts";
+import { Area, AreaChart, XAxis } from "recharts";
 import Link from "next/link";
 
 const columnHelper = createColumnHelper<PipelineWithStats>();
@@ -84,6 +84,10 @@ export const columns = [
             return <Badge className="bg-green-600 shadow-none">Running</Badge>;
           case "stopped":
             return <Badge className="bg-red-600 shadow-none">Stopped</Badge>;
+          default:
+            return (
+              <Badge className="bg-yellow-600 shadow-none">{status}</Badge>
+            );
         }
       };
 
@@ -363,32 +367,32 @@ export const EpsTinyLineChart = (props: EpsTinyLineChartProps) => {
   };
 
   return (
-    <ResponsiveContainer width={100} height={50}>
-      <AreaChart
-        data={processedData(data, getDataKey(type))}
-        margin={{
-          top: 2,
-          right: 5,
-          left: 0,
-          bottom: 2,
-        }}
-        className="flex justify-start text-left"
-      >
-        <defs>
-          <linearGradient id="colorEps" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#1d4ed8" stopOpacity={0.8} />
-            <stop offset="90%" stopColor="#1d4ed8" stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <XAxis dataKey="time" hide />
-        <Area
-          type="monotone"
-          dataKey={getDataKey(type)}
-          stroke="#1d4ed8"
-          fill="url(#colorEps)"
-          fillOpacity={0.6}
-        />
-      </AreaChart>
-    </ResponsiveContainer>
+    <AreaChart
+      width={100}
+      height={50}
+      data={processedData(data, getDataKey(type))}
+      margin={{
+        top: 2,
+        right: 5,
+        left: 0,
+        bottom: 2,
+      }}
+      className="flex justify-start text-left"
+    >
+      <defs>
+        <linearGradient id="colorEps" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="5%" stopColor="#1d4ed8" stopOpacity={0.8} />
+          <stop offset="90%" stopColor="#1d4ed8" stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <XAxis dataKey="time" hide />
+      <Area
+        type="monotone"
+        dataKey={getDataKey(type)}
+        stroke="#1d4ed8"
+        fill="url(#colorEps)"
+        fillOpacity={0.6}
+      />
+    </AreaChart>
   );
 };

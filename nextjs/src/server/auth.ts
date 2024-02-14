@@ -10,6 +10,7 @@ import { env } from "@/env.mjs";
 import { type DefaultJWT, type JWT } from "next-auth/jwt";
 import jwt_decode from "jwt-decode";
 import { encrypt } from "@/utils/encryption";
+import { handleError } from "@/utils/errors";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -104,7 +105,8 @@ export const authOptions: NextAuthOptions = {
           console.log("Token is refreshed.");
           return refreshedToken;
         } catch (error) {
-          console.error("Error refreshing access token", error);
+          handleError(error as Error, "Failed to refresh access token");
+
           return { ...token, error: "RefreshAccessTokenError" };
         }
       }

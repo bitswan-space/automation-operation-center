@@ -29,7 +29,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     },
     error: (error: Error) => {
       console.error(error);
-      res.write(`data: {"error": "${error.message}"}\n\n`);
+      res.write(`data: {"error": "${error.message}"}\n\n`, (error) => {
+        if (error) console.error("Failed to send error to client", error);
+      });
       res.end();
     },
     complete: () => {
@@ -40,5 +42,6 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   // Handle client disconnect
   req.on("close", () => {
     res.end();
+    console.info("Eventsource Client disconnected");
   });
 }

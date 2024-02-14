@@ -8,8 +8,6 @@ export const transformTopologyToFlowNodes = (topology: PipelineNode[]) => {
   const initialY = 0;
   const spacingY = 300;
 
-  // console.log("topology", topology);
-
   return topology.map((node, index) => {
     return {
       id: node.id,

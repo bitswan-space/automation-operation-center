@@ -1,14 +1,13 @@
 import {
   type PipelineStat,
   type PipelineWithStats,
-  type PipelineNode,
   type ContainerServiceTopologyResponse,
   type PipelineTopology,
 } from "@/types";
-import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
+import { env } from "@/env.mjs";
+import { handleError } from "@/utils/errors";
 
 const API_BASE_URL = "/api";
 
@@ -20,17 +19,19 @@ export const usePipelineStats = () => {
 
     eventSource.onmessage = (event) => {
       try {
-        // console.log("Event Data", event.data);
         const parsedData = JSON.parse(event.data as string) as PipelineStat;
-
         setData((prevData) => [...prevData, parsedData]);
       } catch (error) {
-        console.error("Failed to parse event data:", error);
+        handleError(error as Error, "Failed to parse event data");
       }
     };
 
     eventSource.onerror = (error) => {
-      console.error("EventSource failed:", error);
+      // The error event is fired when a stream is closed by the server
+      // it's part of the spec and not an actual error
+      if (env.NEXT_PUBLIC_NODE_ENV === "development") {
+        console.error("EventSource failed:", error);
+      }
       eventSource.close();
     };
 
@@ -84,19 +85,4 @@ export const usePipelinesWithStats = (): {
   });
 
   return { pipelinesWithStats, error };
-};
-
-export const fetchPipelineTopology = (
-  pipelineId: string,
-): Promise<PipelineNode[]> => {
-  return axios
-    .get<PipelineNode[]>(`${API_BASE_URL}/pipelines/${pipelineId}/topology`)
-    .then((response) => response.data);
-};
-
-export const usePipelineTopology = (pipelineId: string) => {
-  return useQuery({
-    queryKey: ["pipeline-topology", pipelineId],
-    queryFn: () => fetchPipelineTopology(pipelineId),
-  });
 };

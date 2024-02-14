@@ -8,6 +8,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { Button } from "../ui/button";
 import React from "react";
 import { Skeleton } from "../ui/skeleton";
+import { handleError } from "@/utils/errors";
 import { keyCloakSessionLogOut } from "@/utils/keycloak";
 
 interface TitleBarProps {
@@ -21,18 +22,15 @@ export function TitleBar(props: TitleBarProps) {
 
   const handleSignOut = () => {
     keyCloakSessionLogOut()
-      .then(async (res) => {
-        console.log(res);
-        try {
-          await signOut({ callbackUrl: "/" })
-            .then((res) => console.log(res))
-            .catch((err) => console.log(err));
-        } catch (error) {
-          console.log(error);
-        }
+      .then((_) => {
+        signOut({ callbackUrl: "/" })
+          .then((res) => console.info(res))
+          .catch((error: Error) => {
+            handleError(error, "Failed to sign out");
+          });
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((error: Error) => {
+        handleError(error, "Failed to end Keycloak session");
       });
   };
 
@@ -40,8 +38,10 @@ export function TitleBar(props: TitleBarProps) {
     signIn("keycloak", {
       callbackUrl: "/",
     })
-      .then((res) => console.log(res))
-      .catch((err) => console.log(err));
+      .then((res) => console.info(res))
+      .catch((error: Error) => {
+        handleError(error, "Failed to sign in");
+      });
   };
 
   return (

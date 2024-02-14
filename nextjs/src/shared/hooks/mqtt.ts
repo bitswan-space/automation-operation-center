@@ -4,6 +4,7 @@ import type { SWRSubscription, SWRSubscriptionOptions } from "swr/subscription";
 
 import React from "react";
 import { env } from "@/env.mjs";
+import { handleError } from "@/utils/errors";
 import useSWRSubscription from "swr/subscription";
 
 export interface RequestResponseTopicHandler<T> {
@@ -51,7 +52,7 @@ export function useMQTTRequestResponseSubscription<T>(
         if (!err) {
           publishRequest();
         } else {
-          console.log("Error subscribing: ", err);
+          handleError(err, "Failed to subscribe to MQTT response topic");
           next(err);
         }
       });
@@ -83,9 +84,10 @@ export function useMQTTRequestResponseSubscription<T>(
 
       const onError = (err: Error) => {
         next(err);
-        console.error("MQTT Error:", err);
+        handleError(err, "Error processing MQTT request-response subscription");
         client.end();
       };
+
       client.on("message", onMessage);
       client.on("error", onError);
 

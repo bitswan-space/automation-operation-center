@@ -2,6 +2,7 @@
 import * as mqtt from "mqtt";
 
 import { env } from "@/env.mjs";
+import { handleError } from "./errors";
 
 interface RequestResponseTopicHandler<T> {
   requestTopic: string;
@@ -35,10 +36,9 @@ export const subscribeAndPublish = <T>(
     onMessageCallback,
   } = handler;
 
-  client.subscribe(responseTopic, (err) => {
-    if (err) {
-      console.error("Error subscribing:", err);
-      return;
+  client.subscribe(responseTopic, (error) => {
+    if (error) {
+      handleError(error, "Failed to subscribe to MQTT response topic");
     }
     publishRequest(client, requestTopic, requestMessage, requestMessageType);
   });
@@ -51,7 +51,7 @@ export const subscribeAndPublish = <T>(
   });
 
   client.on("error", (err) => {
-    console.error("MQTT Error:", err);
+    handleError(err, "MQTT client error");
     client.end();
   });
 

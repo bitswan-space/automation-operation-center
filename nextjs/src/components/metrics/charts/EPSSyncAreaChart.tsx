@@ -57,8 +57,6 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
         </h4>
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart
-            width={400}
-            height={200}
             data={epsInData}
             margin={{
               top: 10,
@@ -104,8 +102,6 @@ export const EPSSyncAreaChart = (props: EpsSyncAreaChartProps) => {
         </h4>
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart
-            width={400}
-            height={200}
             data={epsOutData}
             margin={{
               top: 10,

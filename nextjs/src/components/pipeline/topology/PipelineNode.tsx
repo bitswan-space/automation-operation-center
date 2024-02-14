@@ -38,6 +38,7 @@ import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
 import { joinIDsWithDelimiter } from "@/utils/pipelineUtils";
 import { epochToFormattedTime } from "@/utils/time";
 import { useClipboard } from "use-clipboard-copy";
+import { handleError } from "@/utils/errors";
 
 type Section = "stats" | "properties" | "data";
 type PipelineNodeActionType =
@@ -236,7 +237,9 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
                       .then(() => {
                         // window.location.reload()
                       })
-                      .catch((err) => console.log(err));
+                      .catch((error: Error) =>
+                        handleError(error, "Failed to navigate"),
+                      );
                   }}
                 >
                   <Search size={24} className="" />
@@ -434,7 +437,7 @@ function DataSectionBody(props: DataSectionBodyProps) {
       }, 2000);
     },
     onError() {
-      console.log("error");
+      handleError(new Error("Failed to copy to clipboard"));
     },
   });
 

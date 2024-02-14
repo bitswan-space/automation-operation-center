@@ -1,5 +1,6 @@
 import { type MqttClient, connect } from "mqtt";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { handleError } from "@/utils/errors";
 
 type UseMqttRequestResponseProps = {
   brokerUrl: string;
@@ -27,7 +28,7 @@ export function useMqttRequestResponse({
         });
         setClient(client);
       } catch (error) {
-        console.error("Failed to connect to MQTT broker:", error);
+        handleError(error as Error, "Failed to connect to MQTT broker");
       }
     }
 
@@ -42,7 +43,7 @@ export function useMqttRequestResponse({
       });
 
       mqttClient.current.on("error", (error) => {
-        console.error("MQTT client error:", error);
+        handleError(error, "MQTT client error");
       });
     }
 
@@ -60,10 +61,11 @@ export function useMqttRequestResponse({
         return;
       }
       if (mqttClient.current) {
-        mqttClient.current.publish(requestTopic, message, (err) => {
-          if (err) {
-            console.error(
-              `Failed to publish message to topic: ${requestTopic}: ${err.message}`,
+        mqttClient.current.publish(requestTopic, message, (error) => {
+          if (error) {
+            handleError(
+              error,
+              `Failed to publish message to topic: ${requestTopic}: ${error.message}`,
             );
           }
         });
