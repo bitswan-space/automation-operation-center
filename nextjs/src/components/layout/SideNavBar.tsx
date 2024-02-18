@@ -1,19 +1,10 @@
-import {
-  LogOut,
-  type LucideIcon,
-  RefreshCcw,
-  ChevronRight,
-  Menu,
-  BrainCircuit,
-  ArrowUpRightSquare,
-} from "lucide-react";
+import { LogOut, ChevronRight, Menu } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 
 import { Button } from "../ui/button";
 import clsx from "clsx";
 import { signOut } from "next-auth/react";
-import { SiApachekafka } from "react-icons/si";
 import {
   Sheet,
   SheetContent,
@@ -25,8 +16,8 @@ import React from "react";
 import { SideBarContext } from "@/context/sideBarContext";
 import { Skeleton } from "../ui/skeleton";
 import Link from "next/link";
-import { type IconType } from "react-icons";
 import { handleError } from "@/utils/errors";
+import { type DynamicSidebarItem } from "@/types/sidebar";
 
 interface SideNavBarProps {
   expanded: boolean;
@@ -76,7 +67,7 @@ const SideNavBar = (props: SideNavBarProps) => {
               height={expanded ? 100 : 25}
               className={clsx({
                 "h-8 w-36": expanded,
-                "h-7 w-5": !expanded,
+                "w-5.5 h-7.5": !expanded,
               })}
             />
           </div>
@@ -101,17 +92,19 @@ const SideNavBar = (props: SideNavBarProps) => {
 export default SideNavBar;
 
 export interface SideBarNavItemProps {
-  Icon: LucideIcon | IconType;
+  iconURL?: string;
   title: string;
   active?: boolean;
   expanded?: boolean;
   hidden?: boolean;
-  url?: string;
+  url: string;
   isExternal?: boolean;
+  onClick?: () => void;
 }
 
 export function SideBarNavItem(props: SideBarNavItemProps) {
-  const { Icon, title, active, expanded, hidden, url, isExternal } = props;
+  const { title, active, expanded, hidden, url, isExternal, onClick, iconURL } =
+    props;
 
   const variants = {
     hidden: { opacity: 0 },
@@ -120,9 +113,10 @@ export function SideBarNavItem(props: SideBarNavItemProps) {
 
   return (
     <Link
-      href={url ?? "/"}
+      href={url}
       target={isExternal ? "_blank" : undefined}
       className="w-full"
+      onClick={onClick}
     >
       <Button
         title={title}
@@ -131,14 +125,26 @@ export function SideBarNavItem(props: SideBarNavItemProps) {
         className={clsx("flex w-full gap-3 text-neutral-100", {
           "rounded-none border-l-4 border-blue-500 p-6 text-blue-500":
             active && !expanded,
-          "ml-1 rounded-none p-6 text-neutral-50": !expanded && !active,
+          "ml-1 rounded-none p-6 text-neutral-50 hover:text-neutral-800":
+            !expanded && !active,
           "justify-start": expanded,
           "bg-blue-700 text-white hover:bg-blue-600 hover:text-white":
             active && expanded,
           "hidden ": hidden,
         })}
       >
-        <Icon size={22} />
+        <div className="relative flex flex-col items-center justify-center overflow-hidden">
+          <div className="h-full rounded bg-neutral-50 p-1 opacity-50">
+            <Image
+              src={iconURL ?? ""}
+              width={15}
+              height={15}
+              alt={"item url"}
+              className="relative h-full bg-cover"
+            />
+          </div>
+        </div>
+
         {expanded && (
           <motion.div
             initial="hidden"
@@ -162,33 +168,37 @@ export function MenuItemList(props: MenuItemListProps) {
   const { expanded } = props;
 
   const sideBarItems = React.useContext(SideBarContext);
+  const [activeItem, setActiveItem] =
+    React.useState<string>("Running pipelines");
 
-  // todo: add machine readable attributes to the sidebar items
-  const getIconFromType = (type: string) => {
+  const getURLFromType = (type: string, item: DynamicSidebarItem) => {
     switch (type) {
-      case "Running pipelines":
-        return RefreshCcw;
-      case "ML Ops":
-        return BrainCircuit;
-      case "Kafka":
-        return SiApachekafka;
+      case "external-link":
+        return item.properties.link.href ?? "/";
+      case "iframe-link":
+        return `/iframe?iframeUrl=${item.properties.link.href}&title=${item.properties.name}`;
       default:
-        return ArrowUpRightSquare;
+        return "/";
     }
   };
+
+  console.log("sideBarItems", sideBarItems);
 
   return (
     <div className="flex flex-col justify-center gap-4 py-6">
       {sideBarItems?.map((item, idx) => (
         <SideBarNavItem
           key={idx}
-          Icon={getIconFromType(item.properties.name)}
+          iconURL={item.properties.icon.src}
           title={item.properties.name}
-          // todo: this is hardcoded it will be easier to use the machine readable attributes
-          active={item.properties.name === "Running pipelines"}
+          active={
+            item.properties.name === activeItem &&
+            item.properties.link.type !== "external-link"
+          }
           expanded={expanded}
           isExternal={item.properties.link.type === "external-link"}
-          url={item.properties.link.href ?? "/"}
+          url={getURLFromType(item.properties.link.type, item)}
+          onClick={() => setActiveItem(item.properties.name)}
         />
       ))}
       {sideBarItems?.length === 0 && (

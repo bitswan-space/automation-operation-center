@@ -60,7 +60,10 @@ export const columns = [
       const { properties, _key } = row.original;
 
       return (
-        <Link href={`/pipelines/${_key}`} className="text-blue-700 underline">
+        <Link
+          href={`/pipelines/${_key}`}
+          className="text-xs text-blue-700 underline"
+        >
           {properties.name}
         </Link>
       );
@@ -70,7 +73,7 @@ export const columns = [
     header: "Machine Name",
     cell: ({ row }) => {
       const machineName = row.original.properties["endpoint-name"];
-      return <div className="capitalize">{machineName}</div>;
+      return <div className="text-xs capitalize">{machineName}</div>;
     },
   }),
   columnHelper.accessor("properties.state", {
@@ -91,7 +94,7 @@ export const columns = [
         }
       };
 
-      return <div className="capitalize">{getStatusBadge(status)}</div>;
+      return <div className="text-xs capitalize">{getStatusBadge(status)}</div>;
     },
   }),
   columnHelper.accessor("properties.created-at", {
@@ -102,7 +105,7 @@ export const columns = [
         .slice(0, 16)
         .replace("T", ", ");
 
-      return <div className="capitalize">{createdAt}</div>;
+      return <div className="text-xs capitalize">{createdAt}</div>;
     },
   }),
   columnHelper.display({
@@ -144,7 +147,7 @@ export const columns = [
     cell: ({ row }) => {
       const uptime = row.original.properties.status;
 
-      return <div className="capitalize">{uptime}</div>;
+      return <div className="text-xs capitalize">{uptime}</div>;
     },
   }),
   columnHelper.display({
