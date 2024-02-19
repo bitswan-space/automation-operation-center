@@ -47,7 +47,7 @@ ENV NODE_ENV production
 
 # ENV NEXT_TELEMETRY_DISABLED 1
 
-ENV NEXT_PUBLIC_MQTT_URL wss://mqtt.cem-control.in.o2bs.sk
+ENV NEXT_PUBLIC_MQTT_URL wss://mqtt.bitswan.space
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
