@@ -26,7 +26,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ENV NEXT_PUBLIC_MQTT_URL wss://mqtt.cem-control.in.o2bs.sk
+ENV NEXT_PUBLIC_MQTT_URL wss://mqtt.bitswan.space
 
 
 # ENV NEXT_TELEMETRY_DISABLED 1
