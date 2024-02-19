@@ -8,8 +8,8 @@ import { handleError } from "@/utils/errors";
 import useSWRSubscription from "swr/subscription";
 
 export interface RequestResponseTopicHandler<T> {
-  requestTopic: string;
-  responseTopic: string;
+  requestTopic?: string;
+  subscriptionTopic: string;
   requestMessage: string | object;
   requestMessageType?: "json" | "string";
   onMessageCallback?: (response: T) => void;
@@ -30,7 +30,7 @@ export function useMQTTRequestResponseSubscription<T>(
 
   const {
     requestMessage,
-    responseTopic,
+    subscriptionTopic: responseTopic,
     requestMessageType,
     requestTopic,
     onMessageCallback,
@@ -50,7 +50,7 @@ export function useMQTTRequestResponseSubscription<T>(
 
       client.subscribe(responseTopic, (err) => {
         if (!err) {
-          publishRequest();
+          if (requestTopic) publishRequest();
         } else {
           handleError(err, "Failed to subscribe to MQTT response topic");
           next(err);
@@ -59,9 +59,9 @@ export function useMQTTRequestResponseSubscription<T>(
 
       const publishRequest = () => {
         if (requestMessageType === "json") {
-          client.publish(requestTopic, JSON.stringify(requestMessage));
+          client.publish(requestTopic ?? "", JSON.stringify(requestMessage));
         } else {
-          client.publish(requestTopic, requestMessage as string);
+          client.publish(requestTopic ?? "", requestMessage as string);
         }
       };
 
@@ -78,7 +78,7 @@ export function useMQTTRequestResponseSubscription<T>(
           res.remaining_subscription_count &&
           res.remaining_subscription_count <= 1
         ) {
-          publishRequest();
+          if (requestTopic) publishRequest();
         }
       };
 

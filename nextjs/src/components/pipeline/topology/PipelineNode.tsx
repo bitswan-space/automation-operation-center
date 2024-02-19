@@ -188,7 +188,7 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
     queryKey: "events-subscription",
     requestResponseTopicHandler: {
       requestTopic: pipelineEventsRequestTopic,
-      responseTopic: pipelineEventsResponseTopic,
+      subscriptionTopic: pipelineEventsResponseTopic,
       requestMessageType: "json",
       requestMessage: { count: 200 },
       onMessageCallback: (response) => {

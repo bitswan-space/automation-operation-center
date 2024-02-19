@@ -8,11 +8,11 @@ import { TitleBar } from "@/components/layout/TitleBar";
 import { formatPipelineName } from "@/utils/pipelineUtils";
 import Link from "next/link";
 import type * as next from "next";
-import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
+import { useMQTTRequestResponseSubscription as useMQTTSubscription } from "@/shared/hooks/mqtt";
 import { splitArrayUpToElementAndJoin } from "@/utils/arrays";
 
 interface PipelineEditorLaunchPageProps {
-  id: string | string[];
+  id: string;
 }
 
 const PipelineEditorLaunchPage: NextPageWithLayout<
@@ -23,18 +23,27 @@ const PipelineEditorLaunchPage: NextPageWithLayout<
 
   const [logMessages, setLogMessages] = React.useState<string[]>([]);
 
+  const [redirectParams, setRedirectParams] =
+    React.useState<PipelineEditorRedirectResponse>();
+
+  console.log("logMessages", logMessages);
+
   type PipelineEditorLaunchResponse = {
     message: string;
   };
 
-  useMQTTRequestResponseSubscription<PipelineEditorLaunchResponse>({
-    queryKey: "pipeline-editor-launch",
+  type PipelineEditorRedirectResponse = {
+    redirect: boolean;
+    url: string;
+  };
+
+  useMQTTSubscription<PipelineEditorLaunchResponse>({
+    queryKey: `pipeline-editor-launch-${id}`,
     requestResponseTopicHandler: {
-      requestTopic: "test/pipeline-editor/launch/subscribe",
-      responseTopic: "test/pipeline-editor/launch",
+      requestTopic: `${id}/editor/launch/subscribe`,
+      subscriptionTopic: `${id}/editor/launch`,
       requestMessageType: "json",
       requestMessage: {
-        pipelineID: id,
         count: 1,
       },
       onMessageCallback: (response) => {
@@ -42,6 +51,28 @@ const PipelineEditorLaunchPage: NextPageWithLayout<
       },
     },
   });
+
+  useMQTTSubscription<PipelineEditorRedirectResponse>({
+    queryKey: "pipeline-editor-redirect",
+    requestResponseTopicHandler: {
+      subscriptionTopic: `${id}/editor/redirect`,
+      requestMessageType: "json",
+      requestMessage: {
+        count: 1,
+      },
+      onMessageCallback: (response) => {
+        if (response.redirect) setRedirectParams(response);
+      },
+    },
+  });
+
+  React.useEffect(() => {
+    console.log("redirectParams", redirectParams);
+    const { redirect, url } = redirectParams ?? {};
+    if (redirect && url) {
+      window.open(url, "_blank");
+    }
+  }, [redirectParams]);
 
   const getBreadcrumbs = (pipelineIDs: string[]) => {
     return pipelineIDs.map((id, index) => {
@@ -85,7 +116,7 @@ const PipelineEditorLaunchPage: NextPageWithLayout<
         <TitleBar title={"Launching Pipeline Editor ..."} />
 
         <div className="space-x-4 py-4 text-sm font-semibold text-neutral-600">
-          {getBreadcrumbs(id as string[])}
+          {getBreadcrumbs([id])}
         </div>
         <div className="h-5/6 overflow-auto overflow-y-scroll rounded-md bg-black/90 p-4 font-mono text-xs text-white/90">
           <ul className=" space-y-2">
@@ -106,7 +137,7 @@ PipelineEditorLaunchPage.getLayout = function getLayout(page: ReactElement) {
 export function getServerSideProps(context: next.GetServerSidePropsContext) {
   const { id } = context.query;
 
-  const pipelineId = id as string[];
+  const pipelineId = id as string;
 
   return {
     props: {

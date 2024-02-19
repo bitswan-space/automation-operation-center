@@ -44,7 +44,7 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
     queryKey: "topology-subscription",
     requestResponseTopicHandler: {
       requestTopic: pipelineTopologyRequestTopic,
-      responseTopic: pipelineTopologyResponseTopic,
+      subscriptionTopic: pipelineTopologyResponseTopic,
       requestMessageType: "json",
       requestMessage: {
         // method: "get",

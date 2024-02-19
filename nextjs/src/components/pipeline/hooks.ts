@@ -54,7 +54,7 @@ export const usePipelinesWithStats = (): {
       queryKey: "container-service-subscription",
       requestResponseTopicHandler: {
         requestTopic: `/c/running-pipelines/topology/subscribe`,
-        responseTopic: `/c/running-pipelines/topology`,
+        subscriptionTopic: `/c/running-pipelines/topology`,
         requestMessageType: "json",
         requestMessage: {
           count: 10,

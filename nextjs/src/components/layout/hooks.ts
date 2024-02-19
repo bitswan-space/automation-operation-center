@@ -15,7 +15,7 @@ export const useDynamicSidebar = () => {
     queryKey: "dynamic-sidebar",
     requestResponseTopicHandler: {
       requestTopic: "/topology/subscribe",
-      responseTopic: "/topology",
+      subscriptionTopic: "/topology",
       requestMessageType: "json",
       requestMessage: {
         count: 1,
