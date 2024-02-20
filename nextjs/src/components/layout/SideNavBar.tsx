@@ -18,6 +18,7 @@ import { Skeleton } from "../ui/skeleton";
 import Link from "next/link";
 import { handleError } from "@/utils/errors";
 import { type DynamicSidebarItem } from "@/types/sidebar";
+import { env } from "@/env.mjs";
 
 interface SideNavBarProps {
   expanded: boolean;
@@ -73,16 +74,26 @@ const SideNavBar = (props: SideNavBarProps) => {
           </div>
           <MenuItemList expanded={expanded} />
         </div>
-        <div className="p-6 pb-16 md:hidden">
-          <Button
-            variant={"ghost"}
-            size={"lg"}
-            className="flex w-full justify-start gap-3 rounded-none p-6 text-neutral-50 lg:rounded-md"
-            onClick={handleSignOut}
-          >
-            <LogOut size={22} />
-            {expanded && <span className="ml-2">Sign out</span>}
-          </Button>
+        <div
+          className={clsx({
+            "p-4 pb-10": !expanded,
+            "p-0": expanded,
+          })}
+        >
+          <div>
+            {" "}
+            <Button
+              variant={"ghost"}
+              size={"lg"}
+              className="flex w-full justify-start gap-3 rounded-none p-6 text-neutral-50 md:hidden lg:rounded-md"
+              onClick={handleSignOut}
+            >
+              <LogOut size={22} />
+              {expanded && <span className="ml-2">Sign out</span>}
+            </Button>
+          </div>
+
+          <BuildTags expanded={expanded} />
         </div>
       </div>
     </div>
@@ -211,6 +222,20 @@ export function MenuItemList(props: MenuItemListProps) {
 }
 
 export function MobileNavSheet() {
+  const handleSignOut = () => {
+    signOut({
+      callbackUrl: "/login",
+    })
+      .then(() => {
+        console.info("Signed out");
+      })
+      .catch((error: Error) => {
+        handleError(error, "Failed to sign out");
+      });
+  };
+
+  const expanded = true;
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -228,10 +253,67 @@ export function MobileNavSheet() {
             />
           </SheetTitle>
         </SheetHeader>
-        <div>
-          <MenuItemList expanded={true} />
+        <div className="flex h-full min-h-max flex-col justify-between bg-neutral-800 py-6 text-slate-400">
+          <MenuItemList expanded />
+          <div
+            className={clsx("space-y-4", {
+              "p-0": expanded,
+            })}
+          >
+            <div>
+              {" "}
+              <Button
+                variant={"ghost"}
+                size={"lg"}
+                className="flex w-full justify-start gap-3 rounded-none p-6 text-neutral-50 md:hidden lg:rounded-md"
+                onClick={handleSignOut}
+              >
+                <LogOut size={20} />
+                <span className="ml-2">Sign out</span>
+              </Button>
+            </div>
+
+            <BuildTags expanded />
+          </div>
         </div>
       </SheetContent>
     </Sheet>
+  );
+}
+
+export type BuildTagsProps = {
+  expanded: boolean;
+};
+
+function BuildTags(props: BuildTagsProps) {
+  const { expanded } = props;
+
+  return (
+    <div
+      className={clsx(
+        "flex w-full flex-col justify-center space-y-3 pl-6 font-mono text-[8px] md:pl-0",
+      )}
+    >
+      <div
+        className={clsx("space-y-0.5", {
+          "flex gap-1 md:justify-start ": expanded,
+        })}
+      >
+        <div className="font-bold">Commit Hash:</div>
+        <div className="text-blue-500 underline">
+          #{env.NEXT_PUBLIC_COMMIT_HASH.substring(0, 6)}
+        </div>
+      </div>
+      <div
+        className={clsx("space-y-0.5", {
+          "flex gap-1 md:justify-start": expanded,
+        })}
+      >
+        <div className="font-bold">Build No:</div>
+        <div className="text-blue-500 underline">
+          {env.NEXT_PUBLIC_BUILD_NO}
+        </div>
+      </div>
+    </div>
   );
 }

@@ -4,7 +4,7 @@ FROM --platform=linux/amd64 node:16-alpine3.17 AS deps
 RUN apk add --no-cache libc6-compat openssl1.1-compat
 WORKDIR /app
 
-ENV NEXT_PUBLIC_MQTT_URL wss://mqtt.cem-control.in.o2bs.sk
+ENV NEXT_PUBLIC_MQTT_URL wss://mqtt.bitswan.space
 
 # Install dependencies based on the preferred package manager
 
