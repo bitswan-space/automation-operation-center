@@ -1,10 +1,11 @@
+ARG BUILD_NO
+ARG COMMIT_HASH
+
 ##### DEPENDENCIES
 
 FROM --platform=linux/amd64 node:16-alpine3.17 AS deps
 RUN apk add --no-cache libc6-compat openssl1.1-compat
 WORKDIR /app
-
-ENV NEXT_PUBLIC_MQTT_URL wss://mqtt.bitswan.space
 
 # Install dependencies based on the preferred package manager
 
@@ -27,7 +28,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_PUBLIC_MQTT_URL wss://mqtt.bitswan.space
-
+ENV NEXT_PUBLIC_COMMIT_HASH=${COMMIT_HASH}
+ENV NEXT_PUBLIC_BUILD_NO=${BUILD_NO}
 
 # ENV NEXT_TELEMETRY_DISABLED 1
 
@@ -48,6 +50,8 @@ ENV NODE_ENV production
 # ENV NEXT_TELEMETRY_DISABLED 1
 
 ENV NEXT_PUBLIC_MQTT_URL wss://mqtt.bitswan.space
+ENV NEXT_PUBLIC_COMMIT_HASH=${COMMIT_HASH}
+ENV NEXT_PUBLIC_BUILD_NO=${BUILD_NO}
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
