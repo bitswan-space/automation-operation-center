@@ -4,6 +4,10 @@ ARG COMMIT_HASH
 ##### DEPENDENCIES
 
 FROM --platform=linux/amd64 node:16-alpine3.17 AS deps
+
+ARG BUILD_NO
+ARG COMMIT_HASH
+
 RUN apk add --no-cache libc6-compat openssl1.1-compat
 WORKDIR /app
 
@@ -21,8 +25,10 @@ RUN \
 ##### BUILDER
 
 FROM --platform=linux/amd64 node:16-alpine3.17 AS builder
-ARG DATABASE_URL
-ARG NEXT_PUBLIC_CLIENTVAR
+
+ARG BUILD_NO
+ARG COMMIT_HASH
+
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -43,6 +49,10 @@ RUN \
 ##### RUNNER
 
 FROM --platform=linux/amd64 node:16-alpine3.17 AS runner
+
+ARG BUILD_NO
+ARG COMMIT_HASH
+
 WORKDIR /app
 
 ENV NODE_ENV production
