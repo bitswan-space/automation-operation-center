@@ -1,0 +1,7 @@
+# PostgreSQL
+# ------------------------------------------------------------------------------
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=bitswan_backend
+POSTGRES_USER=rZwhQcHPRAzWpDGzZaKqeaUGbQmuLitY
+POSTGRES_PASSWORD=lLRxwe7ZbdM4VxKSvjLuL1xLQD0GciI55qBJ5FurZwvpHfAp8uK4opCgv7rlIo3I
