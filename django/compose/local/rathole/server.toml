@@ -1,0 +1,18 @@
+[server]
+bind_addr = "0.0.0.0:2333"
+
+[server.services.who-am-i]
+token = "use_a_secret_that_only_you_know"
+bind_addr = "0.0.0.0:5202"
+
+[server.services.deployment-2-test-slug-tgsKtgfOikraMsiVgFjtklaTeJFOCn]
+token = "107c1498376b7058382674266f204bd5e3312525ae167256ba213299cd012677"
+bind_addr = "http://bitswan_backend_local_rathole:10001"
+
+[server.services.deployment-3-test-slug-tpypHmRkHmoNGlCkuvFAqNCaEJikZC]
+token = "71f71dbea75374bb8dacaafad667987a68e7ebd2b7fed163b8393edbc1a65637"
+bind_addr = "http://bitswan_backend_local_rathole:10002"
+
+[server.services.deployment-4-test-slug-wjMjjmotlIzvaPhcOJpqAXXKLOvxdC]
+token = "ab1cbe368cecfa6a7c4e8a638250edf4a7ca14c5c8de17b7c93035860c6bcc92"
+bind_addr = "0.0.0.0:10003"

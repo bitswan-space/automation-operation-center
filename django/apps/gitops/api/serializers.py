@@ -10,6 +10,7 @@ class GitopsSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "secret_key",
             "keycloak_group_id",
             "created_at",
             "updated_at",
@@ -28,3 +29,8 @@ class BrokerSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+
+class PipelineEditorStartSerializer(serializers.Serializer):
+    secret_key = serializers.CharField()
+    deployment_id = serializers.CharField()

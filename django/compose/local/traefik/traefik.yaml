@@ -1,0 +1,42 @@
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+# -- (Optional) Change Log Level and Format here...
+#     - loglevels [DEBUG, INFO, WARNING, ERROR, CRITICAL]
+#     - format [common, json, logfmt]
+log:
+ level: DEBUG
+ format: common
+
+
+
+# -- (Optional) Enable API and Dashboard here, don't do in production
+api:
+  dashboard: true
+  insecure: true
+
+# -- Change EntryPoints here...
+entryPoints:
+  web:
+    address: :80
+
+
+providers:
+  docker:
+    # -- (Optional) Enable this, if you want to expose all containers automatically
+    exposedByDefault: false
+  file:
+    directory: /etc/traefik
+    watch: true
+
+
+experimental:
+  plugins:
+    keycloakopenid:
+      moduleName: "github.com/Gwojda/keycloakopenid"
+      version: "v0.1.34"
+
+    traefik-oidc-relying-party:
+      moduleName: "github.com/alexdelprete/traefik-oidc-relying-party"
+      version: "v1.0.0"

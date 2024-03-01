@@ -1,0 +1,54 @@
+http:
+  middlewares:
+    keycloak:
+      forwardAuth:
+        address: http://bitswan_backend_local_traefik_forward_auth:4181
+        authResponseHeaders:
+        - X-Forwarded-User
+        trustForwardHeader: true
+  routers:
+    deployment-2-test-slug-tgsKtgfOikraMsiVgFjtklaTeJFOCn-route:
+      entryPoints:
+      - web
+      middlewares:
+      - keycloak
+      rule: Host(`deployment-2.test-slug.ides.bitswan.space`)
+      service: deployment-2-test-slug-tgsKtgfOikraMsiVgFjtklaTeJFOCn-route
+    deployment-3-test-slug-tpypHmRkHmoNGlCkuvFAqNCaEJikZC-route:
+      entryPoints:
+      - web
+      middlewares:
+      - keycloak
+      rule: Host(`deployment-3.test-slug.ides.bitswan.space`)
+      service: deployment-3-test-slug-tpypHmRkHmoNGlCkuvFAqNCaEJikZC-route
+    deployment-4-test-slug-wjMjjmotlIzvaPhcOJpqAXXKLOvxdC-route:
+      entryPoints:
+      - web
+      middlewares:
+      - keycloak
+      rule: Host(`deployment-4.test-slug.ides.bitswan.space`)
+      service: deployment-4-test-slug-wjMjjmotlIzvaPhcOJpqAXXKLOvxdC-route
+    to-whoami:
+      entryPoints:
+      - web
+      middlewares:
+      - keycloak
+      rule: Host(`whoami.localhost`)
+      service: whoami
+  services:
+    deployment-2-test-slug-tgsKtgfOikraMsiVgFjtklaTeJFOCn-route:
+      loadBalancer:
+        servers:
+        - url: http://bitswan_backend_local_rathole:10001
+    deployment-3-test-slug-tpypHmRkHmoNGlCkuvFAqNCaEJikZC-route:
+      loadBalancer:
+        servers:
+        - url: http://bitswan_backend_local_rathole:10002
+    deployment-4-test-slug-wjMjjmotlIzvaPhcOJpqAXXKLOvxdC-route:
+      loadBalancer:
+        servers:
+        - url: http://bitswan_backend_local_rathole:10003
+    whoami:
+      loadBalancer:
+        servers:
+        - url: http://bitswan_backend_rathole:5202

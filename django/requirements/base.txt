@@ -25,3 +25,6 @@ drf-spectacular==0.27.1  # https://github.com/tfranzel/drf-spectacular
 # Django jwt authentication
 djoser == 2.2.0 # https://github.com/sunscrapers/djoser
 djangorestframework_simplejwt == 5.2.2 # https://github.com/jazzband/djangorestframework-simplejwt
+toml==0.10.2  # https://github.com/uiri/toml
+pyyaml==6.0.1 # https://github.com/yaml/pyyaml
+docker==7.0.0 # https://github.com/docker/docker-py

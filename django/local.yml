@@ -17,6 +17,10 @@ services:
       - mailpit
     volumes:
       - .:/app:z
+      - ./compose/local/rathole/server.toml:/etc/rathole/rathole.toml:z
+      - ./compose/local/traefik/config/routes.yml:/etc/traefik/routes.yaml:z
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+
     env_file:
       - ./.envs/.local/.django
       - ./.envs/.local/.postgres
@@ -91,3 +95,33 @@ services:
     ports:
       - '5555:5555'
     command: /start-flower
+
+  rathole:
+    container_name: bitswan_backend_local_rathole
+    ports:
+      - 2333:2333
+    build:
+      context: .
+      dockerfile: ./compose/local/rathole/Dockerfile
+    image: local_rathole
+    volumes:
+      - ./compose/local/rathole/server.toml:/app/server.toml
+
+  traefik:
+    image: traefik:v2.11.0
+    container_name: bitswan_backend_local_traefik
+    ports:
+      - 80:80
+      - 8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./compose/local/traefik/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - ./compose/local/traefik/config/:/etc/traefik/conf/
+    restart: unless-stopped
+
+  traefik-forward-auth:
+    image: thomseddon/traefik-forward-auth:latest
+    container_name: bitswan_backend_local_traefik_forward_auth
+    restart: always
+    env_file:
+      - ./.envs/.local/.traefik-forward-auth

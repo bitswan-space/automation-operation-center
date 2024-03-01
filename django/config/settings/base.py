@@ -1,6 +1,7 @@
 # ruff: noqa: ERA001, E501
 """Base settings to build other settings files upon."""
 
+import os
 from datetime import timedelta
 from pathlib import Path
 
@@ -348,3 +349,14 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "ALGORITHM": "HS512",
 }
+
+
+#  Gitops settings
+# ------------------------------------------------------------------------------
+GITOPS_IDE_HOST = os.environ.get("GITOPS_IDE_HOST", "ides.bitswan.space")
+RATHOLE_SERVER_HOST = os.environ.get(
+    "RATHOLE_SERVER_HOST",
+    "bitswan_backend_local_rathole",
+)
+RATHOLE_CONFIG_PATH = os.environ.get("RATHOLE_CONFIG_PATH", "/etc/rathole/rathole.toml")
+TRAEFIK_CONFIG_PATH = os.environ.get("TRAEFIK_CONFIG_PATH", "/etc/traefik/routes.yaml")
