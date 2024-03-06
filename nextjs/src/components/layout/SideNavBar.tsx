@@ -1,4 +1,4 @@
-import { LogOut, ChevronRight, Menu } from "lucide-react";
+import { LogOut, ChevronRight, Menu, Settings } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 
@@ -19,6 +19,7 @@ import Link from "next/link";
 import { handleError } from "@/utils/errors";
 import { type DynamicSidebarItem } from "@/types/sidebar";
 import { env } from "@/env.mjs";
+import { keyCloakSessionLogOut } from "@/utils/keycloak";
 
 interface SideNavBarProps {
   expanded: boolean;
@@ -29,14 +30,16 @@ const SideNavBar = (props: SideNavBarProps) => {
   const { expanded, onExpand } = props;
 
   const handleSignOut = () => {
-    signOut({
-      callbackUrl: "/login",
-    })
-      .then(() => {
-        console.info("Signed out");
+    keyCloakSessionLogOut()
+      .then((_) => {
+        signOut({ callbackUrl: "/" })
+          .then((res) => console.info(res))
+          .catch((error: Error) => {
+            handleError(error, "Failed to sign out");
+          });
       })
       .catch((error: Error) => {
-        handleError(error, "Failed to sign out");
+        handleError(error, "Failed to end Keycloak session");
       });
   };
 
@@ -80,12 +83,21 @@ const SideNavBar = (props: SideNavBarProps) => {
             "p-0": expanded,
           })}
         >
-          <div>
+          <div className="mb-8 w-full space-y-4">
             {" "}
             <Button
               variant={"ghost"}
               size={"lg"}
-              className="flex w-full justify-start gap-3 rounded-none p-6 text-neutral-50 md:hidden lg:rounded-md"
+              className="flex w-full justify-start gap-3 rounded-none p-4 text-neutral-400 lg:rounded-md"
+              onClick={handleSignOut}
+            >
+              <Settings size={22} />
+              {expanded && <span className="ml-2">Settings</span>}
+            </Button>
+            <Button
+              variant={"ghost"}
+              size={"lg"}
+              className="flex w-full justify-start gap-3 rounded-none p-4 text-neutral-400 lg:rounded-md"
               onClick={handleSignOut}
             >
               <LogOut size={22} />
@@ -296,21 +308,21 @@ function BuildTags(props: BuildTagsProps) {
     >
       <div
         className={clsx("space-y-0.5", {
-          "flex gap-1 md:justify-start ": expanded,
+          "flex gap-1 pl-4 md:justify-start": expanded,
         })}
       >
         <div className="font-bold">Commit Hash:</div>
-        <div className="text-blue-500 underline">
+        <div className="text-neutral-500 underline">
           #{env.NEXT_PUBLIC_COMMIT_HASH.substring(0, 6)}
         </div>
       </div>
       <div
         className={clsx("space-y-0.5", {
-          "flex gap-1 md:justify-start": expanded,
+          "flex gap-1 pl-4 md:justify-start": expanded,
         })}
       >
         <div className="font-bold">Build No:</div>
-        <div className="text-blue-500 underline">
+        <div className="text-neutral-500 underline">
           {env.NEXT_PUBLIC_BUILD_NO}
         </div>
       </div>

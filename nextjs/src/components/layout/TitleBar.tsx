@@ -1,15 +1,14 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { BellDot, LogIn, LogOut } from "lucide-react";
+import { BellDot, LogIn } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 
 import { Button } from "../ui/button";
 import React from "react";
 import { Skeleton } from "../ui/skeleton";
 import { handleError } from "@/utils/errors";
-import { keyCloakSessionLogOut } from "@/utils/keycloak";
 
 interface TitleBarProps {
   title: string;
@@ -19,20 +18,6 @@ export function TitleBar(props: TitleBarProps) {
   const { title } = props;
 
   const { data: session, status } = useSession();
-
-  const handleSignOut = () => {
-    keyCloakSessionLogOut()
-      .then((_) => {
-        signOut({ callbackUrl: "/" })
-          .then((res) => console.info(res))
-          .catch((error: Error) => {
-            handleError(error, "Failed to sign out");
-          });
-      })
-      .catch((error: Error) => {
-        handleError(error, "Failed to end Keycloak session");
-      });
-  };
 
   const handleSignIn = () => {
     signIn("keycloak", {
@@ -76,26 +61,21 @@ export function TitleBar(props: TitleBarProps) {
             </div>
           )}
           {status === "authenticated" && session && (
-            <div className="flex gap-4">
+            <div className="flex gap-4 pr-2">
+              <div className="flex gap-1">
+                <BellDot size={25} className="my-auto" />
+              </div>
               <Avatar>
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>CN</AvatarFallback>
+                <AvatarImage src="#" />
+                <AvatarFallback className="bg-neutral-700 font-bold text-neutral-200">
+                  CN
+                </AvatarFallback>
               </Avatar>
               <div>
                 <div className="font-semibold text-slate-800">
                   {session.user.name}
                 </div>
                 <div className="text-sm underline">{session.user.email}</div>
-              </div>
-              <div className="flex gap-1">
-                <BellDot size={25} className="my-auto" />
-                <Button
-                  variant={"ghost"}
-                  onClick={handleSignOut}
-                  className="hover:bg-transparent"
-                >
-                  <LogOut size={25} className="my-auto" />
-                </Button>
               </div>
             </div>
           )}
