@@ -77,7 +77,7 @@ In development, it is often nice to be able to see emails that are being sent fr
 Container mailpit will start automatically when you will run all docker containers.
 Please check [cookiecutter-django Docker documentation](http://cookiecutter-django.readthedocs.io/en/latest/deployment-with-docker.html) for more details how to start all containers.
 
-With Mailpit running, to view messages that are sent by your application, open your browser and go to `http://127.0.0.1:8025`
+With Mailpit running, to view messages that are sent by your application, open your browser and go to `http://127.0.0.1:8026`
 
 ### Sentry
 

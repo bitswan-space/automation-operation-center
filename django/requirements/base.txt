@@ -28,3 +28,6 @@ djangorestframework_simplejwt == 5.2.2 # https://github.com/jazzband/djangorestf
 toml==0.10.2  # https://github.com/uiri/toml
 pyyaml==6.0.1 # https://github.com/yaml/pyyaml
 docker==7.0.0 # https://github.com/docker/docker-py
+djangorestframework-api-key==3.0.0 # https://github.com/florimondmanca/djangorestframework-api-key
+python-keycloak==3.9.1 # https://github.com/marcospereirampj/python-keycloak/
+debugpy==1.8.1 # https://github.com/microsoft/debugpy

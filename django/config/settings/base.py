@@ -84,12 +84,15 @@ THIRD_PARTY_APPS = [
     "djoser",
     "corsheaders",
     "drf_spectacular",
+    "rest_framework_api_key",
 ]
 
 LOCAL_APPS = [
     "bitswan_backend.users",
-    # Your stuff: custom apps go here
-    "apps.gitops",
+    "bitswan_backend.core",
+    "bitswan_backend.gitops",
+    "bitswan_backend.brokers",
+    "bitswan_backend.deployments",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -108,8 +111,8 @@ AUTHENTICATION_BACKENDS = [
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
 AUTH_USER_MODEL = "users.User"
-# https://docs.djangoproject.com/en/dev/ref/settings/#login-redirect-url
-LOGIN_REDIRECT_URL = "users:redirect"
+# https://docs.djangoproject.com/en/dev/ref/settings/#in-redirect-url
+IN_REDIRECT_URL = "users:redirect"
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-url
 LOGIN_URL = "account_login"
 
@@ -358,5 +361,19 @@ RATHOLE_SERVER_HOST = os.environ.get(
     "RATHOLE_SERVER_HOST",
     "bitswan_backend_local_rathole",
 )
-RATHOLE_CONFIG_PATH = os.environ.get("RATHOLE_CONFIG_PATH", "/etc/rathole/rathole.toml")
-TRAEFIK_CONFIG_PATH = os.environ.get("TRAEFIK_CONFIG_PATH", "/etc/traefik/routes.yaml")
+RATHOLE_CONFIG_PATH = os.environ.get("RATHOLE_CONFIG_PATH")
+TRAEFIK_CONFIG_PATH = os.environ.get("TRAEFIK_CONFIG_PATH")
+
+
+KEYCLOAK_CLIENT_SECRET_KEY = os.environ.get("KEYCLOAK_CLIENT_SECRET_KEY")
+KEYCLOAK_CLIENT_ID = os.environ.get("KEYCLOAK_CLIENT_ID")
+KEYCLOAK_REALM_NAME = os.environ.get("KEYCLOAK_REALM_NAME")
+KEYCLOAK_SERVER_URL = os.environ.get("KEYCLOAK_SERVER_URL")
+
+AUTH_SECRET_KEY = os.environ.get("AUTH_SECRET_KEY")
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://localhost:9090",
+]

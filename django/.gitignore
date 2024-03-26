@@ -278,4 +278,4 @@ bitswan_backend/media/
 .ipython/
 .env
 .envs/*
-!.envs/.local/
+!.envs/.example/

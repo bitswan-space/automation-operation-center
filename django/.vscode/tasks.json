@@ -1,0 +1,45 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "docker-run",
+      "label": "docker-run: debug",
+      "dependsOn": ["docker-build"],
+      "dockerRun": {
+        "containerName": "bitswan_backend_local_django",
+        "image": "bitswan_backend_local_django:latest",
+        "envFiles": [
+          "${workspaceFolder}/.envs/.local/.django.env",
+          "${workspaceFolder}/.envs/.local/.postgres.env"
+        ],
+        "volumes": [
+          {
+            "containerPath": "/app",
+            "localPath": "${workspaceFolder}"
+          }
+        ],
+        "ports": [
+          {
+            "containerPort": 8000,
+            "hostPort": 6000
+          }
+        ],
+        "command": "/bin/bash",
+        "args": ["-c", "cat .devcontainer/bashrc.override.sh >> ~/.bashrc"]
+      },
+      "python": {
+        "args": ["runserver", "0.0.0.0:8000", "--nothreading", "--noreload"],
+        "file": "manage.py"
+      }
+    },
+    {
+      "label": "docker-build",
+      "type": "docker-build",
+      "dockerBuild": {
+        "context": "${workspaceFolder}",
+        "dockerfile": "${workspaceFolder}/compose/local/django/Dockerfile",
+        "tag": "bitswan_backend_local_django:latest"
+      }
+    }
+  ]
+}

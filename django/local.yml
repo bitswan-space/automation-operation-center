@@ -22,10 +22,11 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:rw
 
     env_file:
-      - ./.envs/.local/.django
-      - ./.envs/.local/.postgres
+      - ./.envs/.local/.django.env
+      - ./.envs/.local/.postgres.env
     ports:
       - '8000:8000'
+      - '5678:5678'
     command: /start
 
   postgres:
@@ -38,7 +39,7 @@ services:
       - bitswan_backend_local_postgres_data:/var/lib/postgresql/data
       - bitswan_backend_local_postgres_data_backups:/backups
     env_file:
-      - ./.envs/.local/.postgres
+      - ./.envs/.local/.postgres.env
 
   docs:
     image: bitswan_backend_local_docs
@@ -47,20 +48,20 @@ services:
       context: .
       dockerfile: ./compose/local/docs/Dockerfile
     env_file:
-      - ./.envs/.local/.django
+      - ./.envs/.local/.django.env
     volumes:
       - ./docs:/docs:z
       - ./config:/app/config:z
       - ./bitswan_backend:/app/bitswan_backend:z
     ports:
-      - '9000:9000'
+      - '9060:9000'
     command: /start-docs
 
   mailpit:
     image: docker.io/axllent/mailpit:latest
     container_name: bitswan_backend_local_mailpit
     ports:
-      - "8025:8025"
+      - "8026:8025"
 
   redis:
     image: docker.io/redis:6
@@ -124,4 +125,4 @@ services:
     container_name: bitswan_backend_local_traefik_forward_auth
     restart: always
     env_file:
-      - ./.envs/.local/.traefik-forward-auth
+      - ./.envs/.local/.traefik-forward-auth.env
