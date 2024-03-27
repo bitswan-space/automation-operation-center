@@ -45,14 +45,32 @@ build docker:
   script:
     - YEAR=$(date +%Y)
     - COMMIT_HASH=$(git rev-parse --short HEAD)
-    - aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin $DOCKER_REGISTRY
-    - docker build -t $DOCKER_REGISTRY/$DOCKER_IMAGE:latest --build-arg COMMIT_HASH=$COMMIT_HASH --build-arg BUILD_NO=$CI_JOB_ID -f ./compose/production/django/Dockerfile .
     - TAG=$YEAR-$CI_PIPELINE_IID-git-$COMMIT_HASH
-    - IMAGE_ID=$(docker images --no-trunc -q $DOCKER_REGISTRY/$DOCKER_IMAGE:latest)
-    - ID_TAG=$(echo $IMAGE_ID | sed 's/:/_/g')
-    - docker tag $DOCKER_REGISTRY/$DOCKER_IMAGE:latest $DOCKER_REGISTRY/$DOCKER_IMAGE:$TAG
-    - docker tag $DOCKER_REGISTRY/$DOCKER_IMAGE:latest $DOCKER_REGISTRY/$DOCKER_IMAGE:$ID_TAG
-    - docker push $DOCKER_REGISTRY/$DOCKER_IMAGE:latest
-    - docker push $DOCKER_REGISTRY/$DOCKER_IMAGE:$TAG
-    - docker push $DOCKER_REGISTRY/$DOCKER_IMAGE:$ID_TAG
-    - echo Now you can use $DOCKER_REGISTRY/$DOCKER_IMAGE:$ID_TAG in your docker-compose file.
+    - aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin $DOCKER_REGISTRY
+
+    - SERVICES=("django" "postgres" "awscli")
+    - CONTEXTS=("./compose/production/django" "./compose/production/postgres" "./compose/production/aws")
+    - IMAGES=("bitswan-backend-production-django" "bitswan-backend-production-postgres" "bitswan-backend-production-awscli")
+    - USAGE_MESSAGES=""
+
+    - |
+      for i in "${!SERVICES[@]}"; do
+        SERVICE=${SERVICES[$i]}
+        CONTEXT=${CONTEXTS[$i]}
+        DOCKERFILE=${DOCKERFILES[$i]}
+        IMAGE=${IMAGES[$i]}
+        FULL_IMAGE_NAME=$DOCKER_REGISTRY/$IMAGE:latest
+        ID_TAG=$(echo $TAG | sed 's/:/_/g')
+        IMAGE_ID_TAG=$DOCKER_REGISTRY/$IMAGE:$ID_TAG
+
+        echo "Building and pushing image for $SERVICE"
+        docker build -t $FULL_IMAGE_NAME --build-arg COMMIT_HASH=$COMMIT_HASH --build-arg BUILD_NO=$CI_JOB_ID -f $CONTEXT/Dockerfile .
+        docker tag $FULL_IMAGE_NAME $IMAGE_ID_TAG
+        docker push $FULL_IMAGE_NAME
+        docker push $IMAGE_ID_TAG
+
+        echo "Image for $SERVICE pushed: $IMAGE_ID_TAG"
+        USAGE_MESSAGES="${USAGE_MESSAGES}Now you can use $IMAGE_ID_TAG in your docker-compose file.\n"
+      done
+
+    - echo -e "Images built and pushed successfully. \n$USAGE_MESSAGES"
