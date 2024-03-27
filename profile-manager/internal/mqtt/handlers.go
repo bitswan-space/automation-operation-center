@@ -36,8 +36,8 @@ type Properties struct {
 }
 
 type TopologyEvent struct {
-	Count                      uint64             `json:"count"`
-	RemainingSubscriptionCount uint64             `json:"remaining_subscription_count"`
+	Count                      uint64   `json:"count"`
+	RemainingSubscriptionCount uint64   `json:"remaining_subscription_count"`
 	Data                       Topology `json:"data"`
 }
 
