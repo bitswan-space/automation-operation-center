@@ -3,9 +3,9 @@ package mqtt
 import (
 	"encoding/json"
 	"os"
+	"sync"
 
 	"bitswan.space/container-discovery-service/internal/logger"
-	"bitswan.space/container-discovery-service/internal/portainer"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/xeipuuv/gojsonschema"
 )
@@ -14,38 +14,72 @@ type Message struct {
 	Count uint64 `json:"count"`
 }
 
-type TopologyEvent struct {
-	Count                      uint64             `json:"count"`
-	RemainingSubscriptionCount uint64             `json:"remaining_subscription_count"`
-	Data                       portainer.Topology `json:"data"`
+type Topology struct {
+	Topology     map[string]Pipeline `json:"topology"`
+	DisplayStyle string              `json:"display-style"`
 }
 
-func HandleContainersRequest(client mqtt.Client, message mqtt.Message) {
-	var msg Message
+type Pipeline struct {
+	Wires      []interface{} `json:"wires"`
+	Properties Properties    `json:"properties"`
+	Metrics    []interface{} `json:"metrics"`
+}
 
-	logger.Info.Println("Received containers request")
+type Properties struct {
+	ContainerID  string `json:"container-id"`
+	EndpointName string `json:"endpoint-name"`
+	DeploymentID string `json:"deployment-id"`
+	CreatedAt    string `json:"created-at"`
+	Name         string `json:"name"`
+	State        string `json:"state"`
+	Status       string `json:"status"`
+}
+
+type TopologyEvent struct {
+	Count                      uint64   `json:"count"`
+	RemainingSubscriptionCount uint64   `json:"remaining_subscription_count"`
+	Data                       Topology `json:"data"`
+}
+
+var (
+	mergedTopology Topology
+	lock           sync.Mutex
+)
+
+func init() {
+	mergedTopology = Topology{
+		Topology: make(map[string]Pipeline),
+	}
+}
+
+func HandleTopologyRequest(client mqtt.Client, message mqtt.Message) {
+	var newTopology Topology
+
 	if !json.Valid([]byte(message.Payload())) {
 		logger.Error.Println("Invalid JSON")
 	} else {
-		json.Unmarshal([]byte(message.Payload()), &msg)
-		go func() {
-			topology, err := portainer.GetTopology()
-			if err != nil {
-				logger.Error.Println(err)
-				return
-			}
-			topologyEvent := TopologyEvent{
-				Count:                      1,
-				RemainingSubscriptionCount: msg.Count - 1,
-				Data:                       topology,
-			}
-			b, err := json.MarshalIndent(topologyEvent, "", "  ")
-			if err != nil {
-				logger.Error.Println(err)
-				return
-			}
-			client.Publish(cfg.MQTTContainersPub, 0, true, string(b))
-		}()
+		json.Unmarshal([]byte(message.Payload()), &newTopology)
+
+		lock.Lock()
+		for key, value := range newTopology.Topology {
+			mergedTopology.Topology[key] = value
+		}
+		mergedTopology.DisplayStyle = newTopology.DisplayStyle
+		lock.Unlock()
+
+		// TODO: remove this and return just topology
+		topologyEvent := TopologyEvent{
+			Count:                      1,
+			RemainingSubscriptionCount: 1,
+			Data:                       mergedTopology,
+		}
+		b, err := json.MarshalIndent(topologyEvent, "", "  ")
+		if err != nil {
+			logger.Error.Println(err)
+			return
+		}
+
+		client.Publish(cfg.MQTTContainersPub, 0, true, string(b))
 	}
 
 }

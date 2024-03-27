@@ -1,6 +1,8 @@
 package mqtt
 
 import (
+	"fmt"
+	"math/rand"
 	"os"
 	"time"
 
@@ -20,7 +22,8 @@ func Init() error {
 	logger.Info.Printf("Schema file: %s", cfg.NavigationSchemaFile)
 	schemaLoader = gojsonschema.NewReferenceLoader("file://" + cfg.NavigationSchemaFile)
 	opts.AddBroker(cfg.MQTTBrokerUrl)
-	opts.SetClientID("container-discovery-service")
+	clientID := fmt.Sprintf("cds-%d", rand.Intn(10000))
+	opts.SetClientID(clientID)
 	opts.SetAutoReconnect(true)
 	opts.SetConnectRetry(true)
 	opts.SetConnectRetryInterval(2 * time.Second)
@@ -36,8 +39,10 @@ func Init() error {
 
 	opts.SetOnConnectHandler(func(client mqtt.Client) {
 		logger.Info.Println("Connected to MQTT broker subscribing to topics...")
-		if token := client.Subscribe(cfg.MQTTContainersSub, 0, HandleContainersRequest); token.Wait() && token.Error() != nil {
-			logger.Error.Printf("Subscription failed: %v", token.Error())
+		for _, topic := range cfg.MQTTTopologyTopics {
+			if token := client.Subscribe(topic, 0, HandleTopologyRequest); token.Wait() && token.Error() != nil {
+				logger.Error.Printf("Subscription failed: %v", token.Error())
+			}
 		}
 		if token := client.Subscribe(cfg.MQTTNavigationSet, 0, HandleNavigationSetRequest); token.Wait() && token.Error() != nil {
 			logger.Error.Printf("Subscription failed: %v", token.Error())
