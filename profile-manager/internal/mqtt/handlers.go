@@ -42,8 +42,8 @@ type TopologyEvent struct {
 }
 
 var (
-	mergedTopology Topology
-	lock           sync.Mutex
+	mergedTopology  Topology
+	lock            sync.Mutex
 	pipelineSources = make(map[string]string)
 )
 
