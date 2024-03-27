@@ -46,7 +46,7 @@ build docker:
     - YEAR=$(date +%Y)
     - COMMIT_HASH=$(git rev-parse --short HEAD)
     - aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin $DOCKER_REGISTRY
-    - docker build -t $DOCKER_REGISTRY/$DOCKER_IMAGE:latest --build-arg COMMIT_HASH=$COMMIT_HASH --build-arg BUILD_NO=$CI_JOB_ID ./compose/production/django
+    - docker build -t $DOCKER_REGISTRY/$DOCKER_IMAGE:latest --build-arg COMMIT_HASH=$COMMIT_HASH --build-arg BUILD_NO=$CI_JOB_ID -f ./compose/production/django/Dockerfile .
     - TAG=$YEAR-$CI_PIPELINE_IID-git-$COMMIT_HASH
     - IMAGE_ID=$(docker images --no-trunc -q $DOCKER_REGISTRY/$DOCKER_IMAGE:latest)
     - ID_TAG=$(echo $IMAGE_ID | sed 's/:/_/g')
