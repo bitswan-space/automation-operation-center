@@ -60,7 +60,8 @@ build docker:
         DOCKERFILE=${DOCKERFILES[$i]}
         IMAGE=${IMAGES[$i]}
         FULL_IMAGE_NAME=$DOCKER_REGISTRY/$IMAGE:latest
-        ID_TAG=$(echo $TAG | sed 's/:/_/g')
+        IMAGE_ID=$(docker images --no-trunc -q $DOCKER_REGISTRY/$IMAGE:latest)
+        ID_TAG=$(echo $IMAGE_ID | sed 's/:/_/g')
         IMAGE_ID_TAG=$DOCKER_REGISTRY/$IMAGE:$ID_TAG
 
         echo "Building and pushing image for $SERVICE"
