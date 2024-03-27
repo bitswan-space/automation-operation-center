@@ -12,7 +12,7 @@ variables:
   DOCKER_REGISTRY: public.ecr.aws/bitswan
   AWS_DEFAULT_REGION: us-east-1
   DOCKER_HOST: tcp://docker:2375
-  DOCKER_IMAGE: bitswan_backend
+  DOCKER_IMAGE: bitswan-backend
 
 precommit:
   stage: lint
