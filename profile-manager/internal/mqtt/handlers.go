@@ -44,6 +44,7 @@ type TopologyEvent struct {
 var (
 	mergedTopology Topology
 	lock           sync.Mutex
+	pipelineSources = make(map[string]string)
 )
 
 func init() {
@@ -60,11 +61,30 @@ func HandleTopologyRequest(client mqtt.Client, message mqtt.Message) {
 	} else {
 		json.Unmarshal([]byte(message.Payload()), &newTopology)
 
+		// Identify the topic from the message
+		topic := message.Topic()
+
+		// Track pipelines received in this message
+		receivedPipelines := make(map[string]struct{})
+
 		lock.Lock()
 		for key, value := range newTopology.Topology {
 			mergedTopology.Topology[key] = value
+			pipelineSources[key] = topic
+			receivedPipelines[key] = struct{}{}
 		}
-		mergedTopology.DisplayStyle = newTopology.DisplayStyle
+
+		// Check for any pipelines that need to be removed
+		// These are pipelines that were previously added by this topic but are not present in the new message
+		for pipeline, srcTopic := range pipelineSources {
+			if srcTopic == topic {
+				if _, exists := receivedPipelines[pipeline]; !exists {
+					// Pipeline was not in the received message; remove it
+					delete(mergedTopology.Topology, pipeline)
+					delete(pipelineSources, pipeline)
+				}
+			}
+		}
 		lock.Unlock()
 
 		// TODO: remove this and return just topology
