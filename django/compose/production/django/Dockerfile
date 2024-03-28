@@ -93,4 +93,4 @@ RUN DATABASE_URL="" \
   DJANGO_SETTINGS_MODULE="config.settings.test" \
   python manage.py compilemessages
 
-ENTRYPOINT ["/bin/bash", "-c", "source /entrypoint"]
+ENTRYPOINT ["source", "/entrypoint"]
