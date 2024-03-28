@@ -15,16 +15,33 @@ logger = logging.getLogger(__name__)
 class PipelineEditorConfigurator:
     _instance = None
 
-    def __new__(cls, rathole_config_path, traefik_config_path):
+    def __new__(
+        cls,
+        rathole_config_path,
+        traefik_config_path,
+        rathole_host_name,
+        traefik_host_name,
+    ):
         if not cls._instance:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, rathole_config_path="", traefik_config_path=""):
-        self.rathole_configurator = RatholeConfigurator(rathole_config_path)
+    def __init__(
+        self,
+        rathole_config_path="",
+        traefik_config_path="",
+        rathole_host_name="",
+        traefik_host_name="",
+    ):
+        self.rathole_configurator = RatholeConfigurator(
+            rathole_config_path,
+            rathole_host_name,
+        )
         self.traefik_configurator = TraefikConfigurator(traefik_config_path)
         self.docker_service = DockerService()
         self.keycloak_service = KeycloakService()
+        self.rathole_host_name = rathole_host_name
+        self.traefik_host_name = traefik_host_name
 
     def setup_rathole_service(self, service_name, token):
         """Add a new service to Rathole's configuration."""
@@ -43,11 +60,7 @@ class PipelineEditorConfigurator:
 
     def restart_services(self):
         """Restart Rathole and Traefik Docker containers to apply changes."""
-
-        traefik_container_name = "bitswan_backend_local_traefik"
-        rathole_container_name = "bitswan_backend_local_rathole"
-
-        containers = [traefik_container_name, rathole_container_name]
+        containers = [self.rathole_host_name, self.traefik_host_name]
 
         for container in containers:
             if self.docker_service.restart_container(container):

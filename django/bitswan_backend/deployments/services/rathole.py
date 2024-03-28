@@ -9,13 +9,14 @@ from bitswan_backend.deployments.utils import get_port_from_url
 class RatholeConfigurator:
     _instance = None
 
-    def __new__(cls, rathole_config_path):
+    def __new__(cls, rathole_config_path, host_name):
         if not cls._instance:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, rathole_config_path):
+    def __init__(self, rathole_config_path, host_name):
         self.rathole_config_path = rathole_config_path
+        self.host_name = host_name
 
     def load_rathole_config(self):
         """Load the current Rathole TOML configuration from a file."""
@@ -71,5 +72,4 @@ class RatholeConfigurator:
     def is_port_in_use(self, port):
         """Check if a port is already in use."""
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            # TODO: Add host to config
-            return s.connect_ex(("bitswan_backend_local_rathole", port)) == 0
+            return s.connect_ex((self.host_name, port)) == 0

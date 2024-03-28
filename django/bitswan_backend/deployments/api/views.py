@@ -33,6 +33,8 @@ class PipelineIDEStartView(KeycloakMixin, APIView):
         editor_configurator = PipelineEditorConfigurator(
             rathole_config_path=settings.RATHOLE_CONFIG_PATH,
             traefik_config_path=settings.TRAEFIK_CONFIG_PATH,
+            rathole_host_name=settings.RATHOLE_SERVER_HOST,
+            traefik_host_name=settings.TRAEFIK_SERVER_HOST,
         )
         token = generate_secret()
 

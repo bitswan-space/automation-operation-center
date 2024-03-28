@@ -357,11 +357,11 @@ SIMPLE_JWT = {
 #  Gitops settings
 # ------------------------------------------------------------------------------
 GITOPS_IDE_HOST = os.environ.get("GITOPS_IDE_HOST", "ides.bitswan.space")
-RATHOLE_SERVER_HOST = os.environ.get(
-    "RATHOLE_SERVER_HOST",
-    "bitswan_backend_local_rathole",
-)
+
+RATHOLE_SERVER_HOST = os.environ.get("RATHOLE_SERVER_HOST")
 RATHOLE_CONFIG_PATH = os.environ.get("RATHOLE_CONFIG_PATH")
+
+TRAEFIK_SERVER_HOST = os.environ.get("TRAEFIK_SERVER_HOST")
 TRAEFIK_CONFIG_PATH = os.environ.get("TRAEFIK_CONFIG_PATH")
 
 
