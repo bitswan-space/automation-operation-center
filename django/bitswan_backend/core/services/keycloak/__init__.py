@@ -38,6 +38,7 @@ class KeycloakService:
             client_id=self.keycloak_client_id,
             realm_name=self.keycloak_realm,
             client_secret_key=self.keycloak_client_secret_key,
+            timeout=120,
         )
         self.keycloak_connection = KeycloakOpenIDConnection(
             server_url=self.keycloak_server_url,
@@ -45,6 +46,7 @@ class KeycloakService:
             client_id=self.keycloak_client_id,
             client_secret_key=self.keycloak_client_secret_key,
             verify=True,
+            timeout=120,
         )
 
         self.keycloak_admin = KeycloakAdmin(connection=self.keycloak_connection)
