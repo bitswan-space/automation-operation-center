@@ -98,4 +98,4 @@ class PipelineEditorConfigurator:
 
         self.restart_services()
 
-        return url
+        return {"url": url, "token": token, "service_name": service_name}

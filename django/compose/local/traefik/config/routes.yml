@@ -7,13 +7,6 @@ http:
         - X-Forwarded-User
         trustForwardHeader: true
   routers:
-    random_deployment_id_8-admin-NAULODlSlXTpjXCTzepQfJEpbFNUDo-route:
-      entryPoints:
-      - web
-      middlewares:
-      - keycloak
-      rule: Host(`random_deployment_id_8.admin.gitops-ides.bitswan.space`)
-      service: random_deployment_id_8-admin-NAULODlSlXTpjXCTzepQfJEpbFNUDo-route
     to-whoami:
       entryPoints:
       - web
@@ -22,10 +15,6 @@ http:
       rule: Host(`whoami.localhost`)
       service: whoami
   services:
-    random_deployment_id_8-admin-NAULODlSlXTpjXCTzepQfJEpbFNUDo-route:
-      loadBalancer:
-        servers:
-        - url: 0.0.0.0:10000
     whoami:
       loadBalancer:
         servers:

@@ -38,11 +38,18 @@ class PipelineIDEStartView(KeycloakMixin, APIView):
         )
         token = generate_secret()
 
-        url = editor_configurator.initialise_pipeline_ide_deployment(
+        deployment = editor_configurator.initialise_pipeline_ide_deployment(
             token=token,
             deployment_id=deployment_id,
             company_slug=self.get_active_user_org_name_slug(),
             middleware="keycloak",
         )
 
-        return Response({"token": token, "url": url}, status=status.HTTP_200_OK)
+        return Response(
+            {
+                "token": token,
+                "url": deployment.get("url"),
+                "service_name": deployment.get("service_name"),
+            },
+            status=status.HTTP_200_OK,
+        )

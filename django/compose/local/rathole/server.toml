@@ -4,7 +4,3 @@ bind_addr = "0.0.0.0:2333"
 [server.services.who-am-i]
 token = "use_a_secret_that_only_you_know"
 bind_addr = "0.0.0.0:5202"
-
-[server.services.random_deployment_id_8-admin-NAULODlSlXTpjXCTzepQfJEpbFNUDo]
-token = "ee09d7ab937d251ad6e204f18bff73c51520844b02c017b012247662afa9f674"
-bind_addr = "0.0.0.0:10000"
