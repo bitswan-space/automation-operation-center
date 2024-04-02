@@ -93,9 +93,9 @@ class PipelineEditorConfigurator:
             service_config["service_url"],
         )
 
-        self.keycloak_service.add_redirect_uri(gitops_host_name)
+        url = f"https://{gitops_host_name}"
+        self.keycloak_service.add_redirect_uri(url)
 
-        # TODO: This is a temporary solution i.e. file watcher
         self.restart_services()
 
-        return gitops_host_name
+        return url
