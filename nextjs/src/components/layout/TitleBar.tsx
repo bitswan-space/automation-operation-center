@@ -14,7 +14,7 @@ interface TitleBarProps {
   title: string;
 }
 
-export function TitleBar(props: TitleBarProps) {
+export function TitleBar(props: Readonly<TitleBarProps>) {
   const { title } = props;
 
   const { data: session, status } = useSession();

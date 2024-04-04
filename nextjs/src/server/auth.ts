@@ -9,7 +9,6 @@ import KeycloakProvider from "next-auth/providers/keycloak";
 import { env } from "@/env.mjs";
 import { type DefaultJWT, type JWT } from "next-auth/jwt";
 import jwt_decode from "jwt-decode";
-import { encrypt } from "@/utils/encryption";
 import { handleError } from "@/utils/errors";
 
 /**
@@ -21,6 +20,7 @@ import { handleError } from "@/utils/errors";
 declare module "next-auth" {
   interface Session extends DefaultSession {
     access_token: string;
+    expired: boolean;
     id_token: string;
     roles?: string[];
     user: DefaultSession["user"] & {
@@ -29,11 +29,6 @@ declare module "next-auth" {
       // role: UserRole;
     };
   }
-
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
 }
 
 declare module "next-auth/jwt" {
@@ -88,11 +83,13 @@ export const authOptions: NextAuthOptions = {
     jwt: async ({ token, account }) => {
       const nowTimeStamp = Math.floor(Date.now() / 1000);
       if (account) {
+        console.log("Account is present. Will decode and return token.");
         token.decoded = jwt_decode(account.access_token ?? "");
         token.access_token = account.access_token ?? "";
         token.id_token = account.id_token ?? "";
         token.expires_at = account.expires_at ?? 0;
         token.refresh_token = account.refresh_token ?? "";
+        token.expired = false;
         return token;
       } else if (nowTimeStamp < (token.expires_at ?? 0)) {
         // token has not expired yet, return it
@@ -107,21 +104,28 @@ export const authOptions: NextAuthOptions = {
         } catch (error) {
           handleError(error as Error, "Failed to refresh access token");
 
-          return { ...token, error: "RefreshAccessTokenError" };
+          return {
+            ...token,
+            expired: true,
+            error: "RefreshAccessTokenError",
+          };
         }
       }
     },
 
-    session: ({ session, token }) => ({
-      ...session,
-      access_token: encrypt(token.access_token),
-      id_token: encrypt(token.id_token),
-      roles: token.decoded?.realm_access?.roles ?? [],
-      user: {
-        ...session.user,
-        id: token.sub,
-      },
-    }),
+    session: ({ session, token }) => {
+      return {
+        ...session,
+        expired: token.expired,
+        access_token: token.access_token,
+        id_token: token.id_token,
+        roles: token.decoded?.realm_access?.roles ?? [],
+        user: {
+          ...session.user,
+          id: token.sub,
+        },
+      };
+    },
   },
   providers: [
     KeycloakProvider({
@@ -130,6 +134,9 @@ export const authOptions: NextAuthOptions = {
       issuer: env.KEYCLOAK_ISSUER,
     }),
   ],
+  // pages: {
+  //   signIn: "/auth/signin",
+  // },
 };
 
 export type ServerAuthSessionCtx = {

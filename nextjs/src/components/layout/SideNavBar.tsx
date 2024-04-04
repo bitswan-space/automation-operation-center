@@ -49,12 +49,12 @@ const SideNavBar = (props: SideNavBarProps) => {
 
   return (
     <div className="relative h-full min-h-max bg-neutral-800 py-6 text-slate-400">
-      <div
+      <button
         className="absolute -right-2 top-12 rounded-full bg-neutral-800 text-white shadow-lg"
         onClick={handleExpand}
       >
         <ChevronRight size={28} />
-      </div>
+      </button>
       <div
         className={clsx("flex h-full flex-col justify-between", {
           "p-6": expanded,
@@ -79,33 +79,40 @@ const SideNavBar = (props: SideNavBarProps) => {
         </div>
         <div
           className={clsx({
-            "p-4 pb-10": !expanded,
+            "p-4 px-0 pb-10": !expanded,
             "p-0": expanded,
           })}
         >
           <div className="mb-8 w-full space-y-4">
-            {" "}
+            <Link href={"/settings"} className="w-full">
+              <Button
+                variant={"ghost"}
+                size={"lg"}
+                className={clsx("flex w-full gap-3 p-4 text-neutral-400", {
+                  "justify-start": expanded,
+                  "justify-center rounded-none": !expanded,
+                })}
+              >
+                <Settings size={24} />
+                {expanded && <span className="ml-2">Settings</span>}
+              </Button>
+            </Link>
             <Button
               variant={"ghost"}
               size={"lg"}
-              className="flex w-full justify-start gap-3 rounded-none p-4 text-neutral-400 lg:rounded-md"
+              className={clsx("flex w-full gap-3 p-4 text-neutral-400", {
+                "justify-start": expanded,
+                "justify-center rounded-none": !expanded,
+              })}
               onClick={handleSignOut}
             >
-              <Settings size={22} />
-              {expanded && <span className="ml-2">Settings</span>}
-            </Button>
-            <Button
-              variant={"ghost"}
-              size={"lg"}
-              className="flex w-full justify-start gap-3 rounded-none p-4 text-neutral-400 lg:rounded-md"
-              onClick={handleSignOut}
-            >
-              <LogOut size={22} />
+              <LogOut size={24} />
               {expanded && <span className="ml-2">Sign out</span>}
             </Button>
           </div>
-
-          <BuildTags expanded={expanded} />
+          <div className="px-2">
+            <BuildTags expanded={expanded} />
+          </div>
         </div>
       </div>
     </div>
@@ -125,7 +132,7 @@ export interface SideBarNavItemProps {
   onClick?: () => void;
 }
 
-export function SideBarNavItem(props: SideBarNavItemProps) {
+export function SideBarNavItem(props: Readonly<SideBarNavItemProps>) {
   const { title, active, expanded, hidden, url, isExternal, onClick, iconURL } =
     props;
 
@@ -187,7 +194,7 @@ export type MenuItemListProps = {
   expanded: boolean;
 };
 
-export function MenuItemList(props: MenuItemListProps) {
+export function MenuItemList(props: Readonly<MenuItemListProps>) {
   const { expanded } = props;
 
   const sideBarItems = React.useContext(SideBarContext);
@@ -205,13 +212,11 @@ export function MenuItemList(props: MenuItemListProps) {
     }
   };
 
-  console.log("sideBarItems", sideBarItems);
-
   return (
     <div className="flex flex-col justify-center gap-4 py-6">
-      {sideBarItems?.map((item, idx) => (
+      {sideBarItems?.map((item) => (
         <SideBarNavItem
-          key={idx}
+          key={item.properties.name}
           iconURL={item.properties.icon.src}
           title={item.properties.name}
           active={
@@ -297,7 +302,7 @@ export type BuildTagsProps = {
   expanded: boolean;
 };
 
-function BuildTags(props: BuildTagsProps) {
+function BuildTags(props: Readonly<BuildTagsProps>) {
   const { expanded } = props;
 
   return (
@@ -308,7 +313,7 @@ function BuildTags(props: BuildTagsProps) {
     >
       <div
         className={clsx("space-y-0.5", {
-          "flex gap-1 pl-4 md:justify-start": expanded,
+          "flex gap-1 pl-2 md:justify-start": expanded,
         })}
       >
         <div className="font-bold">Commit Hash:</div>
@@ -318,7 +323,7 @@ function BuildTags(props: BuildTagsProps) {
       </div>
       <div
         className={clsx("space-y-0.5", {
-          "flex gap-1 pl-4 md:justify-start": expanded,
+          "flex gap-1 pl-2 md:justify-start": expanded,
         })}
       >
         <div className="font-bold">Build No:</div>

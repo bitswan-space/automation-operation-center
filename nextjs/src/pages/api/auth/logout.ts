@@ -17,8 +17,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       return res.status(401).json({ error: "Not authenticated" });
     }
 
+    const KEYCLOAK_END_SESSION_URL = env.KEYCLOAK_END_SESSION_URL;
+    const KEYCLOAK_POST_LOGOUT_REDIRECT_URI =
+      env.KEYCLOAK_POST_LOGOUT_REDIRECT_URI;
+
     const idToken = await getIdToken({ req, res });
-    const url = `${env.KEYCLOAK_END_SESSION_URL}?id_token_hint=${idToken}&post_logout_redirect_uri=${env.KEYCLOAK_POST_LOGOUT_REDIRECT_URI}`;
+    const url = `${KEYCLOAK_END_SESSION_URL}?id_token_hint=${idToken}&post_logout_redirect_uri=${KEYCLOAK_POST_LOGOUT_REDIRECT_URI}`;
 
     try {
       await fetch(url, { method: "GET" });
