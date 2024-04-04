@@ -17,7 +17,9 @@ export function GitopsList() {
         <Skeleton className="h-[150px] w-full rounded-xl" />
       )}
       {gitopsListQuery.isError && (
-        <div className="text-red-500">Error fetching gitops</div>
+        <div className="w-full rounded bg-red-400/30 p-4 text-sm">
+          <div className="text-red-600">Error fetching gitops</div>
+        </div>
       )}
 
       {gitopsListQuery.isSuccess &&
