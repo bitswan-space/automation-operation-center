@@ -52,6 +52,7 @@ export const env = createEnv({
     NEXT_PUBLIC_NODE_ENV: z.enum(["development", "test", "production"]),
     NEXT_PUBLIC_COMMIT_HASH: z.string().min(1),
     NEXT_PUBLIC_BUILD_NO: z.string().min(1),
+    NEXT_PUBLIC_BITSWAN_BACKEND_API_URL: z.string().url(),
   },
 
   /**
@@ -90,6 +91,7 @@ export const env = createEnv({
     NEXT_PUBLIC_NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_COMMIT_HASH: process.env.NEXT_PUBLIC_COMMIT_HASH,
     NEXT_PUBLIC_BUILD_NO: process.env.NEXT_PUBLIC_BUILD_NO,
+    NEXT_PUBLIC_BITSWAN_BACKEND_API_URL: process.env.NEXT_PUBLIC_BITSWAN_BACKEND_API_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.
