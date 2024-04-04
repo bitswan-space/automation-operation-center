@@ -157,6 +157,7 @@ export const columns = [
         <Link
           href={`/pipelines/launch-pipeline-editor/${row.original._key}`}
           title="Launch pipeline editor"
+          className="hidden"
         >
           <Button variant={"outline"}>
             <FileCog size={20} />

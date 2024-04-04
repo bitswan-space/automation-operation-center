@@ -62,7 +62,7 @@ export function TitleBar(props: Readonly<TitleBarProps>) {
           )}
           {status === "authenticated" && session && (
             <div className="flex gap-4 pr-2">
-              <div className="flex gap-1">
+              <div className="flex hidden gap-1">
                 <BellDot size={25} className="my-auto" />
               </div>
               <Avatar>

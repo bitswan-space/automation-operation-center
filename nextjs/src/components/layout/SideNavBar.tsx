@@ -152,28 +152,26 @@ export function SideBarNavItem(props: Readonly<SideBarNavItemProps>) {
         title={title}
         variant={"ghost"}
         size={expanded ? "lg" : "default"}
-        className={clsx("flex w-full gap-3 text-neutral-100", {
+        className={clsx("group flex w-full gap-3 text-neutral-100", {
           "rounded-none border-l-4 border-blue-500 p-6 text-blue-500":
             active && !expanded,
-          "ml-1 rounded-none p-6 text-neutral-50 hover:text-neutral-800":
-            !expanded && !active,
+          "ml-1 rounded-none p-6 text-neutral-50": !expanded && !active,
           "justify-start": expanded,
-          "bg-blue-700 text-white hover:bg-blue-600 hover:text-white":
-            active && expanded,
+          "bg-blue-700 text-white ": active && expanded,
           "hidden ": hidden,
         })}
       >
-        <div className="relative flex flex-col items-center justify-center overflow-hidden">
-          <div className="h-full rounded bg-neutral-50 p-1 opacity-50">
-            <Image
-              src={iconURL ?? ""}
-              width={15}
-              height={15}
-              alt={"item url"}
-              className="relative h-full bg-cover"
-            />
-          </div>
-        </div>
+        <div
+          className={clsx(
+            "h-5 w-5 items-center justify-center bg-neutral-300 group-hover:bg-neutral-700",
+          )}
+          style={{
+            WebkitMaskImage: `url(${iconURL})`,
+            WebkitMaskRepeat: "no-repeat",
+            WebkitMaskSize: "contain",
+            maskImage: `url(${iconURL})`,
+          }}
+        ></div>
 
         {expanded && (
           <motion.div

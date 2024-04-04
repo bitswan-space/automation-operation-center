@@ -31,6 +31,7 @@ const MermaidTopologyOverview = dynamic(
 
 import { Skeleton } from "../ui/skeleton";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 
 export interface PipelineDetailTabsProps {
   pipeline?: PipelineWithStats;
@@ -41,14 +42,28 @@ export interface PipelineDetailTabsProps {
 export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
   const { pipeline, pipelineTopology, pipelineParentIDs } = props;
 
+  const [selectedTab, setSelectedTab] = React.useState("summary");
+
+  const handlePipelineTopologyClick = () => {
+    setSelectedTab("scheme");
+  };
+
   return (
-    <Tabs defaultValue="summary" className="h-full w-full">
+    <Tabs
+      defaultValue={selectedTab}
+      value={selectedTab}
+      className="h-full w-full"
+    >
       <TabsList className="grid grid-cols-2 bg-neutral-200 md:w-[400px]">
-        <TabsTrigger value="summary" className="">
+        <TabsTrigger
+          value="summary"
+          className=""
+          onClick={() => setSelectedTab("summary")}
+        >
           <Clipboard size={18} className="mr-2" />
           Summary
         </TabsTrigger>
-        <TabsTrigger value="scheme">
+        <TabsTrigger value="scheme" onClick={() => setSelectedTab("scheme")}>
           <Workflow size={18} className="mr-2" />
           Scheme
         </TabsTrigger>
@@ -57,6 +72,7 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
         <PipelineSummary
           pipeline={pipeline}
           pipelineTopology={pipelineTopology ?? []}
+          onClickPipelineTopology={handlePipelineTopologyClick}
         />
       </TabsContent>
       <TabsContent value="scheme" className="h-5/6">
@@ -84,10 +100,11 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
 interface PipelineSummaryProps {
   pipeline?: PipelineWithStats;
   pipelineTopology: PipelineNode[];
+  onClickPipelineTopology?: () => void;
 }
 
 function PipelineSummary(props: PipelineSummaryProps) {
-  const { pipeline, pipelineTopology } = props;
+  const { pipeline, pipelineTopology, onClickPipelineTopology } = props;
 
   const [mermaidChart, setMermaidChart] = React.useState("");
   const [showMermaid, setShowMermaid] = React.useState(false);
@@ -118,7 +135,7 @@ function PipelineSummary(props: PipelineSummaryProps) {
             <div>{pipelineName}</div>
             <div>
               <button
-                className="cursor-not-allowed"
+                className="hidden cursor-not-allowed"
                 onClick={handleEditModeToggle}
                 disabled
               >
@@ -132,16 +149,18 @@ function PipelineSummary(props: PipelineSummaryProps) {
               the pipeline does with more detail
             </div>
 
-            {showMermaid ? (
-              <MermaidTopologyOverview
-                chart={mermaidChart}
-                id={"topology-overview"}
-              />
-            ) : (
-              <Skeleton className="h-10 w-fit p-2 px-6">
-                Loading topology...
-              </Skeleton>
-            )}
+            <button onClick={onClickPipelineTopology}>
+              {showMermaid ? (
+                <MermaidTopologyOverview
+                  chart={mermaidChart}
+                  id={"topology-overview"}
+                />
+              ) : (
+                <Skeleton className="h-10 w-fit p-2 px-6">
+                  Loading topology...
+                </Skeleton>
+              )}
+            </button>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
