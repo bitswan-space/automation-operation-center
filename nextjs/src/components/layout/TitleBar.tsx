@@ -55,7 +55,7 @@ export function TitleBar(props: Readonly<TitleBarProps>) {
                   <Skeleton className="h-4 w-[200px]" />
                   <Skeleton className="h-4 w-[150px]" />
                 </div>
-                <Skeleton className="h-12 w-12" />
+                <Skeleton className="hidden h-12 w-12" />
               </div>
             </div>
           )}

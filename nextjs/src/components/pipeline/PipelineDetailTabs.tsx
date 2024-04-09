@@ -31,7 +31,6 @@ const MermaidTopologyOverview = dynamic(
 
 import { Skeleton } from "../ui/skeleton";
 import dynamic from "next/dynamic";
-import Link from "next/link";
 
 export interface PipelineDetailTabsProps {
   pipeline?: PipelineWithStats;

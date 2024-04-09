@@ -15,36 +15,34 @@ const DashboardPage: NextPageWithLayout = () => {
   const { pipelinesWithStats: pipelines } = usePipelinesWithStats();
 
   return (
-    <>
-      <div className="p-4 lg:p-8">
-        <h1 className="text-2xl font-bold text-stone-700 md:hidden">
-          Pipeline Containers
-        </h1>
-        <TitleBar title="Pipeline Containers" />
-        <div className="flex py-4 pt-6 lg:hidden">
-          <Input
-            placeholder="Find pipeline"
-            className="rounded-r-none bg-white"
-          />
-          <Button type="submit" className="my-auto rounded-l-none bg-stone-800">
-            Search
-          </Button>
-        </div>
-
-        <PipelineDataCardList pipelines={pipelines} />
-        <div className="hidden py-4 lg:block">
-          <Card
-            className={
-              "h-full w-full rounded-md border border-slate-300 shadow-sm"
-            }
-          >
-            <CardContent className="p-3">
-              <PipelineDataTable pipelines={pipelines} />
-            </CardContent>
-          </Card>
-        </div>
+    <div className="p-4 lg:p-8">
+      <h1 className="text-2xl font-bold text-stone-700 md:hidden">
+        Pipeline Containers
+      </h1>
+      <TitleBar title="Pipeline Containers" />
+      <div className="flex py-4 pt-6 lg:hidden">
+        <Input
+          placeholder="Find pipeline"
+          className="rounded-r-none bg-white"
+        />
+        <Button type="submit" className="my-auto rounded-l-none bg-stone-800">
+          Search
+        </Button>
       </div>
-    </>
+
+      <PipelineDataCardList pipelines={pipelines} />
+      <div className="hidden py-4 lg:block">
+        <Card
+          className={
+            "h-full w-full rounded-md border border-slate-300 shadow-sm"
+          }
+        >
+          <CardContent className="p-3">
+            <PipelineDataTable pipelines={pipelines} />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 };
 
@@ -58,7 +56,7 @@ type PipelineDataCardListProps = {
   pipelines?: PipelineWithStats[];
 };
 
-function PipelineDataCardList(props: PipelineDataCardListProps) {
+function PipelineDataCardList(props: Readonly<PipelineDataCardListProps>) {
   const { pipelines } = props;
 
   return (
