@@ -114,6 +114,7 @@ export const authOptions: NextAuthOptions = {
     },
 
     session: ({ session, token }) => {
+      console.log("Session callback", session, token);
       return {
         ...session,
         expired: token.expired,

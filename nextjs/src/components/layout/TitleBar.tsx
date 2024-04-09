@@ -29,6 +29,13 @@ export function TitleBar(props: Readonly<TitleBarProps>) {
       });
   };
 
+  const getInitials = (name: string) => {
+    const [firstName, lastName] = name.split(" ");
+    return `${firstName?.charAt(0) ?? ""}${lastName?.charAt(0) ?? ""}`;
+  };
+
+  console.log("session", session);
+
   return (
     <div className="hidden md:block">
       <Card
@@ -62,13 +69,13 @@ export function TitleBar(props: Readonly<TitleBarProps>) {
           )}
           {status === "authenticated" && session && (
             <div className="flex gap-4 pr-2">
-              <div className="flex hidden gap-1">
+              <div className="hidden gap-1">
                 <BellDot size={25} className="my-auto" />
               </div>
               <Avatar>
                 <AvatarImage src="#" />
-                <AvatarFallback className="bg-neutral-700 font-bold text-neutral-200">
-                  CN
+                <AvatarFallback className="bg-neutral-700 font-bold uppercase text-neutral-200">
+                  {getInitials(session.user.name ?? "")}
                 </AvatarFallback>
               </Avatar>
               <div>
