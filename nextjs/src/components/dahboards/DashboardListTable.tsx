@@ -25,16 +25,9 @@ import { Checkbox } from "../ui/checkbox";
 import { type DashboardEntry } from "@/types/dashboardList";
 import { Input } from "../ui/input";
 import Link from "next/link";
-import Image from "next/image";
 import React from "react";
 import { CreateDashboardEntryFormSheet } from "./CreateDashboardEntryFormSheet";
-import {
-  LayoutDashboard,
-  PenLine,
-  PlusCircle,
-  Trash2,
-  XCircle,
-} from "lucide-react";
+import { PenLine, PlusCircle, Trash2, XCircle } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -73,34 +66,19 @@ export const columns = [
     enableSorting: false,
     enableHiding: false,
   }),
-  columnHelper.accessor("img", {
-    header: "",
-    cell: ({ row }) => {
-      const image: string = row.getValue("img");
 
-      return image ? (
-        <Image
-          className="rounded bg-black text-xs capitalize"
-          src={image}
-          alt={row.getValue("name")}
-          width={150}
-          height={50}
-        />
-      ) : (
-        <div className="flex h-[100px] w-[150px] flex-col justify-center rounded border border-neutral-300 bg-neutral-200/80">
-          <LayoutDashboard
-            strokeWidth={1.5}
-            className="mx-auto my-auto text-neutral-400/80"
-            size={28}
-          />
-        </div>
-      );
-    },
-  }),
   columnHelper.accessor("name", {
     header: "Name",
     cell: ({ row }) => {
-      return <div className="text-xs capitalize">{row.getValue("name")}</div>;
+      return (
+        <Link
+          href={row.original.url}
+          className="text-xs text-blue-700 underline"
+          target="_blank"
+        >
+          {row.getValue("name")}
+        </Link>
+      );
     },
   }),
   columnHelper.accessor("description", {
@@ -108,19 +86,6 @@ export const columns = [
     cell: ({ row }) => {
       return (
         <div className="text-xs capitalize">{row.getValue("description")}</div>
-      );
-    },
-  }),
-  columnHelper.accessor("url", {
-    header: "",
-    cell: ({ row }) => {
-      return (
-        <Link
-          href={row.getValue("url")}
-          className="text-xs text-blue-700 underline"
-        >
-          {row.getValue("url")}
-        </Link>
       );
     },
   }),

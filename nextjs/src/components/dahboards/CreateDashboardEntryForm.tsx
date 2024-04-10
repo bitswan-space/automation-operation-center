@@ -39,13 +39,6 @@ export function CreateDashboardEntryForm(props: CreateDashboardEntryFormProps) {
     console.log(values);
   }
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    form.setValue("image", file);
-  };
-
   const isLoading = false;
 
   return (
@@ -93,31 +86,7 @@ export function CreateDashboardEntryForm(props: CreateDashboardEntryFormProps) {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="image"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex gap-1">
-                Image{" "}
-                <span title="This is the name configured for your gitops.">
-                  <HelpCircle size={15} className="mr-2" />
-                </span>
-                :
-              </FormLabel>
-              <FormControl>
-                <Input
-                  type="file"
-                  {...{ ...field, value: undefined }}
-                  onChange={(e) => handleImageChange(e)}
-                  className="text-xs text-stone-500 file:mr-5 file:rounded-md file:border-[0.5px]
-                  file:bg-neutral-800 file:px-3 file:py-1 file:text-xs file:font-medium file:text-neutral-50 hover:file:cursor-pointer"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+
         <FormField
           control={form.control}
           name="description"

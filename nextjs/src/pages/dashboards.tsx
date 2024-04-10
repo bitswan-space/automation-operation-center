@@ -40,7 +40,6 @@ const DashboardListingPage: NextPageWithLayout = () => {
                   description:
                     "This is a sample description of the dashboard. It describes what the dashboard does with more detail",
                   url: "https://example.com",
-                  img: "/anomaly-detector.png",
                 },
                 {
                   id: "2",
