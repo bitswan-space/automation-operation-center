@@ -28,6 +28,28 @@ import Link from "next/link";
 import Image from "next/image";
 import React from "react";
 import { CreateDashboardEntryFormSheet } from "./CreateDashboardEntryFormSheet";
+import {
+  LayoutDashboard,
+  PenLine,
+  PlusCircle,
+  Trash2,
+  XCircle,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
 
 const columnHelper = createColumnHelper<DashboardEntry>();
 
@@ -54,14 +76,24 @@ export const columns = [
   columnHelper.accessor("img", {
     header: "",
     cell: ({ row }) => {
-      return (
+      const image: string = row.getValue("img");
+
+      return image ? (
         <Image
-          className="text-xs capitalize"
-          src={"/anomaly-detector.png"}
+          className="rounded bg-black text-xs capitalize"
+          src={image}
           alt={row.getValue("name")}
           width={150}
-          height={150}
+          height={50}
         />
+      ) : (
+        <div className="flex h-[100px] w-[150px] flex-col justify-center rounded border border-neutral-300 bg-neutral-200/80">
+          <LayoutDashboard
+            strokeWidth={1.5}
+            className="mx-auto my-auto text-neutral-400/80"
+            size={28}
+          />
+        </div>
       );
     },
   }),
@@ -91,6 +123,13 @@ export const columns = [
         </Link>
       );
     },
+  }),
+  columnHelper.display({
+    id: "actions",
+    header: "",
+    cell: ({ row }) => <ItemActions dashboardEntry={row.original} />,
+    enableSorting: false,
+    enableHiding: false,
   }),
 ];
 
@@ -153,7 +192,14 @@ export default function DashboardListTable(props: DashboardListTableProps) {
           className="max-w-sm"
         />
         <div>
-          <CreateDashboardEntryFormSheet />
+          <CreateDashboardEntryFormSheet
+            trigger={
+              <Button size="sm">
+                <PlusCircle size={20} className="mr-2" />
+                Create Dashboard Entry
+              </Button>
+            }
+          />
         </div>
       </div>
       <div className="rounded-md border">
@@ -257,3 +303,84 @@ export default function DashboardListTable(props: DashboardListTableProps) {
     </div>
   );
 }
+
+type ItemActionProps = {
+  dashboardEntry: DashboardEntry;
+};
+
+const ItemActions = (props: ItemActionProps) => {
+  const { dashboardEntry } = props;
+  const [open, setOpen] = React.useState(false);
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm">
+          Actions
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <CreateDashboardEntryFormSheet
+          dashboardEntry={dashboardEntry}
+          trigger={
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <div className="flex w-full justify-start hover:bg-neutral-100">
+                <PenLine size={18} className="mr-2" />
+                Edit
+              </div>
+            </DropdownMenuItem>
+          }
+        />
+
+        <DeleteModal
+          trigger={
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <button className="flex w-full justify-start hover:bg-neutral-100">
+                <Trash2 size={18} className="mr-2" />
+                Delete
+              </button>
+            </DropdownMenuItem>
+          }
+        />
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+type DeleteModalProps = {
+  //   onClose: () => void;
+  //   onConfirm: () => void;
+  trigger: React.ReactNode;
+};
+const DeleteModal = (props: DeleteModalProps) => {
+  const { trigger } = props;
+  const [open, setOpen] = React.useState(false);
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+            <div className="flex flex-col">
+              <XCircle size={36} className="mb-2 text-center text-red-500" />
+              <div className="text-2xl">Are you sure?</div>
+            </div>
+          </DialogTitle>
+          <DialogDescription>
+            This action cannot be undone. This will permanently delete the
+            dashboard entry.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button type="submit">Confirm</Button>
+          <Button
+            type="submit"
+            variant={"outline"}
+            onClick={() => setOpen(false)}
+          >
+            Cancel
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};

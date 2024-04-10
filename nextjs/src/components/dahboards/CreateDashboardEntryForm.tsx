@@ -17,13 +17,20 @@ import { type z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { HelpCircle, Loader } from "lucide-react";
+import { type DashboardEntry } from "@/types/dashboardList";
 
-export function CreateDashboardEntryForm() {
+type CreateDashboardEntryFormProps = {
+  dashboardEntry?: DashboardEntry;
+};
+
+export function CreateDashboardEntryForm(props: CreateDashboardEntryFormProps) {
+  const { dashboardEntry } = props;
   const form = useForm<z.infer<typeof CreateDashboardEntrySchema>>({
     resolver: zodResolver(CreateDashboardEntrySchema),
     defaultValues: {
-      dashboardName: "",
-      url: "",
+      dashboardName: dashboardEntry?.name ?? "",
+      description: dashboardEntry?.description ?? "",
+      url: dashboardEntry?.url ?? "",
     },
   });
 
