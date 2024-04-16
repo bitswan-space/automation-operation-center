@@ -5,19 +5,22 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import React from "react";
 import { TitleBar } from "../components/layout/TitleBar";
-import DashboardListTable from "@/components/dahboards/DashboardListTable";
+import DashboardListTable from "@/components/dashboards/DashboardListTable";
 import { Card, CardContent } from "@/components/ui/card";
+import { useDashboardEntryList } from "@/components/dashboards/hooks";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const DashboardListingPage: NextPageWithLayout = () => {
+  const dashboardEntryListQuery = useDashboardEntryList();
   return (
     <div className="p-4 lg:p-8">
       <h1 className="text-2xl font-bold text-stone-700 md:hidden">
-        Dashboard List
+        Dashboard Hub
       </h1>
-      <TitleBar title="Dashboards" />
+      <TitleBar title="Dashboard Hub" />
       <div className="flex py-4 pt-6 lg:hidden">
         <Input
-          placeholder="Find pipeline"
+          placeholder="Find dashboard"
           className="rounded-r-none bg-white"
         />
         <Button type="submit" className="my-auto rounded-l-none bg-stone-800">
@@ -32,24 +35,20 @@ const DashboardListingPage: NextPageWithLayout = () => {
           }
         >
           <CardContent className="p-3">
-            <DashboardListTable
-              dashboardEntries={[
-                {
-                  id: "1",
-                  name: "Dashboard 1",
-                  description:
-                    "This is a sample description of the dashboard. It describes what the dashboard does with more detail",
-                  url: "https://example.com",
-                },
-                {
-                  id: "2",
-                  name: "Dashboard 2",
-                  description:
-                    "This is a sample description of the dashboard. It describes what the dashboard does with more detail",
-                  url: "https://example2.com",
-                },
-              ]}
-            />
+            {dashboardEntryListQuery.isSuccess && (
+              <DashboardListTable
+                dashboardEntries={dashboardEntryListQuery.data?.results ?? []}
+              />
+            )}
+            {dashboardEntryListQuery.isLoading && (
+              <div>
+                <div className="flex justify-between pb-2">
+                  <Skeleton className="h-8 w-1/3" />
+                  <Skeleton className="h-8 w-1/5" />
+                </div>
+                <Skeleton className="h-[400px] w-full" />
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

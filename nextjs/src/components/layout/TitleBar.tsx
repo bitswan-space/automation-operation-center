@@ -34,8 +34,6 @@ export function TitleBar(props: Readonly<TitleBarProps>) {
     return `${firstName?.charAt(0) ?? ""}${lastName?.charAt(0) ?? ""}`;
   };
 
-  console.log("session", session);
-
   return (
     <div className="hidden md:block">
       <Card
