@@ -10,6 +10,7 @@ module.exports = {
     "./src/**/*.{ts,tsx}",
   ],
   theme: {
+    darkMode: ["class"],
     container: {
       center: true,
       padding: "2rem",

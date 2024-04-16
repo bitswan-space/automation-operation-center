@@ -3,19 +3,21 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BellDot, LogIn } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import React, { type ReactNode } from "react";
 import { signIn, useSession } from "next-auth/react";
 
 import { Button } from "../ui/button";
-import React from "react";
 import { Skeleton } from "../ui/skeleton";
+import clsx from "clsx";
 import { handleError } from "@/utils/errors";
 
 interface TitleBarProps {
-  title: string;
+  title: ReactNode;
+  className?: string;
 }
 
 export function TitleBar(props: Readonly<TitleBarProps>) {
-  const { title } = props;
+  const { title, className } = props;
 
   const { data: session, status } = useSession();
 
@@ -35,14 +37,15 @@ export function TitleBar(props: Readonly<TitleBarProps>) {
   };
 
   return (
-    <div className="hidden md:block">
+    <div className={clsx("hidden md:block", className)}>
       <Card
-        className={
-          "h-full w-full rounded-lg border border-slate-300 shadow-none"
-        }
+        className={clsx(
+          "h-full w-full rounded-lg border border-slate-300 shadow-none",
+          "dark:border-neutral-200 dark:bg-neutral-800",
+        )}
       >
-        <CardContent className="flex justify-between px-5 py-4">
-          <h1 className="text-3xl font-bold text-stone-700 md:text-2xl">
+        <CardContent className="flex justify-between px-5 py-4 align-middle">
+          <h1 className="text-3xl font-bold text-neutral-700 dark:text-neutral-200 md:text-2xl">
             {title}
           </h1>
           {status === "loading" && (
@@ -77,10 +80,12 @@ export function TitleBar(props: Readonly<TitleBarProps>) {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <div className="font-semibold text-slate-800">
+                <div className="font-semibold text-slate-800 dark:text-neutral-200">
                   {session.user.name}
                 </div>
-                <div className="text-sm underline">{session.user.email}</div>
+                <div className="text-sm underline dark:text-neutral-300">
+                  {session.user.email}
+                </div>
               </div>
             </div>
           )}
