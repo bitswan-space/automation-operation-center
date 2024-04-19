@@ -48,9 +48,9 @@ const SideNavBar = (props: SideNavBarProps) => {
   };
 
   return (
-    <div className="relative h-full min-h-max bg-neutral-800 py-6 text-slate-400">
+    <div className="z-10 h-full min-h-max bg-neutral-800 py-6 text-slate-400">
       <button
-        className="absolute -right-2 top-12 rounded-full bg-neutral-800 text-white shadow-lg"
+        className="z-60 absolute -right-2 top-12 rounded-full bg-neutral-800 text-white shadow-lg"
         onClick={handleExpand}
       >
         <ChevronRight size={28} />
@@ -61,7 +61,10 @@ const SideNavBar = (props: SideNavBarProps) => {
         })}
       >
         <div className="flex flex-col justify-center gap-8">
-          <div className={"flex justify-center py-6 text-center"}>
+          <Link
+            href={"/main"}
+            className={"flex justify-center py-6 text-center"}
+          >
             <Image
               src={
                 expanded ? "/bitswan-logo-full.png" : "/bitswan-logo-sm.jpeg"
@@ -74,7 +77,7 @@ const SideNavBar = (props: SideNavBarProps) => {
                 "w-5.5 h-7.5": !expanded,
               })}
             />
-          </div>
+          </Link>
           <MenuItemList expanded={expanded} />
         </div>
         <div

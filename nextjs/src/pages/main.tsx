@@ -1,41 +1,40 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { LayoutDashboard, LucideArrowUpRight, RefreshCcw } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import { Card, CardContent } from "@/components/ui/card";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import { type NextPageWithLayout } from "./_app";
+import { type ReactElement } from "react";
 import { TitleBar } from "@/components/layout/TitleBar";
+import { SideBarContext } from "@/context/sideBarContext";
+import { type DynamicSidebarItem } from "@/types/sidebar";
+import React from "react";
 import clsx from "clsx";
+import Link from "next/link";
 
-const MainHomePage = () => {
+const MainHomePage: NextPageWithLayout = () => {
+  const sideBarItems = React.useContext(SideBarContext);
+
+  const getURLFromType = (type: string, item: DynamicSidebarItem) => {
+    switch (type) {
+      case "external-link":
+        return item.properties.link.href ?? "/";
+      case "iframe-link":
+        return `/iframe?iframeUrl=${item.properties.link.href}&title=${item.properties.name}`;
+      default:
+        return "/";
+    }
+  };
+
   return (
-    <div className="h-full min-h-screen bg-neutral-100 p-4">
+    <div className="p-4 lg:p-8">
       <h1 className="text-2xl font-bold text-neutral-700 md:hidden">
-        Bitswan Admin Hub
+        PoC Admin Panel
       </h1>
-      <div className="fixed inset-x-0 top-10 z-50 mx-auto max-w-[84rem]">
+      <div className="inset-x-0 mx-auto mt-4 max-w-7xl">
         <TitleBar
           title={
             <div className="mt-1 flex h-full gap-4 text-center align-middle">
-              <div>
-                <Image
-                  src={"/bitswan-logo-sm.jpeg"}
-                  alt={""}
-                  width={25}
-                  height={25}
-                  className={clsx("w-5.5 h-7.5")}
-                />
-              </div>
               <span>PoC Admin Panel</span>
             </div>
           }
-          className="dark relative"
         />
         <div className="pt-6 text-base">
           Welcome to the{" "}
@@ -45,26 +44,28 @@ const MainHomePage = () => {
         </div>
       </div>
 
-      <div className="mx-auto flex max-w-[84rem] flex-col gap-8 pt-48">
-        <div className="grid grid-cols-3 gap-4">
-          <PanelActionCard
-            title="Running pipelines"
-            description="View and manage your pipelines"
-            count={0}
-            icon={<RefreshCcw size={22} />}
-          />
-          <PanelActionCard
-            title="Dashboard Hub Entries"
-            description="dashboard entries"
-            count={0}
-            icon={<LayoutDashboard size={22} />}
-          />
-          <PanelActionCard
-            title="Dashboard Hub"
-            description="dashboard entries"
-            count={0}
-            icon={<LayoutDashboard size={22} />}
-          />
+      <div className="mx-auto flex max-w-7xl flex-col gap-8 pt-6">
+        <div className="grid grid-cols-4 gap-4">
+          {sideBarItems?.map((item) => (
+            <PanelActionCard
+              key={item.properties.name + "card"}
+              icon={
+                <div
+                  className={clsx(
+                    "h-8 w-6 items-center justify-center bg-blue-600",
+                  )}
+                  style={{
+                    WebkitMaskImage: `url(${item.properties.icon.src})`,
+                    WebkitMaskRepeat: "no-repeat",
+                    WebkitMaskSize: "contain",
+                    maskImage: `url(${item.properties.icon.src})`,
+                  }}
+                ></div>
+              }
+              title={item.properties.name}
+              url={getURLFromType(item.properties.link.type, item)}
+            />
+          ))}
         </div>
       </div>
     </div>
@@ -73,39 +74,32 @@ const MainHomePage = () => {
 
 export default MainHomePage;
 
+MainHomePage.getLayout = function getLayout(page: ReactElement) {
+  return <DashboardLayout>{page}</DashboardLayout>;
+};
+
 type PanelActionCardProps = {
   title: string;
-  description: string;
-  count: number;
   icon: React.ReactNode;
+  url: string;
 };
 
 function PanelActionCard(props: PanelActionCardProps) {
-  const { title, description, count, icon } = props;
+  const { title, icon, url } = props;
 
   return (
-    <Card className="rounded-md">
-      <CardHeader className="rounded-t-md bg-neutral-800 text-neutral-300">
-        <div className="flex justify-between">
-          <div>
-            <CardTitle>{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
-          </div>
-          <div>{icon}</div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="flex justify-between pt-4">
-          <div className="flex gap-2  align-bottom">
-            <div className="text-4xl font-bold text-neutral-700">{count}</div>
-            <div className="mt-auto text-sm lowercase text-neutral-500">
-              {title}
+    <Card className="h-40 rounded-md border-neutral-300 shadow-sm hover:cursor-pointer">
+      <CardContent className="h-full pt-4">
+        <Link href={url}>
+          <div className="my-auto flex h-full flex-col justify-center gap-3 pt-4 text-center">
+            <div className=" mx-auto text-blue-600">{icon}</div>
+            <div className="mx-auto flex  gap-2 align-bottom">
+              <div className="mt-auto text-base   capitalize text-neutral-700">
+                {title}
+              </div>
             </div>
           </div>
-          <Button variant={"outline"} size={"sm"}>
-            View <LucideArrowUpRight size={20} className="ml-2" />
-          </Button>
-        </div>
+        </Link>
       </CardContent>
     </Card>
   );
