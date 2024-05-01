@@ -40,6 +40,7 @@ export const env = createEnv({
     MQTT_URL: z.string().url(),
     CCS_CONFIG_KEY: z.string().min(1),
     PREPARE_MQTT_SERVICE_URL: z.string().url(),
+    CDS_API_URL: z.string().url(),
   },
 
   /**
@@ -87,11 +88,13 @@ export const env = createEnv({
     MQTT_URL: process.env.MQTT_URL,
     CCS_CONFIG_KEY: process.env.CCS_CONFIG_KEY,
     PREPARE_MQTT_SERVICE_URL: process.env.PREPARE_MQTT_SERVICE_URL,
+    CDS_API_URL: process.env.CDS_API_URL,
     NEXT_PUBLIC_MQTT_URL: process.env.NEXT_PUBLIC_MQTT_URL,
     NEXT_PUBLIC_NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_COMMIT_HASH: process.env.NEXT_PUBLIC_COMMIT_HASH,
     NEXT_PUBLIC_BUILD_NO: process.env.NEXT_PUBLIC_BUILD_NO,
-    NEXT_PUBLIC_BITSWAN_BACKEND_API_URL: process.env.NEXT_PUBLIC_BITSWAN_BACKEND_API_URL,
+    NEXT_PUBLIC_BITSWAN_BACKEND_API_URL:
+      process.env.NEXT_PUBLIC_BITSWAN_BACKEND_API_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.

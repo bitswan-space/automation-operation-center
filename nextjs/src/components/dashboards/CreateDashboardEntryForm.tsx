@@ -19,7 +19,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { HelpCircle, Loader } from "lucide-react";
 import { type DashboardEntry } from "@/types/dashboardList";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
 import { createDashboardEntry, updateDashboardEntry } from "./hooks";
 
 type CreateDashboardEntryFormProps = {
@@ -31,10 +30,7 @@ export function CreateDashboardEntryForm(
 ) {
   const { dashboardEntry } = props;
 
-  const { data: session } = useSession();
   const queryClient = useQueryClient();
-
-  const accessToken = session?.access_token;
 
   const handleInvalidateDashboardEntries = () => {
     queryClient
@@ -84,7 +80,6 @@ export function CreateDashboardEntryForm(
 
     if (dashboardEntry) {
       updateDashboardEntryMutation.mutate({
-        apiToken: accessToken ?? "",
         dashboardEntry: {
           id: dashboardEntry.id,
           name: values.dashboardName,
@@ -96,7 +91,6 @@ export function CreateDashboardEntryForm(
     }
 
     createDashboardEntryMutation.mutate({
-      apiToken: accessToken ?? "",
       dashboardEntry: {
         name: values.dashboardName,
         description: values.description,
@@ -131,9 +125,11 @@ export function CreateDashboardEntryForm(
             <FormItem>
               <FormLabel className="flex gap-1">
                 Dashboard Name
-                <span title="This is the name configured for your gitops.">
-                  <HelpCircle size={15} className="mr-2" />
-                </span>
+                <HelpCircle
+                  size={15}
+                  className="mr-2"
+                  xlinkTitle="This is the name configured for your gitops."
+                />
                 :
               </FormLabel>
               <FormControl>
@@ -150,9 +146,11 @@ export function CreateDashboardEntryForm(
             <FormItem>
               <FormLabel className="flex gap-1">
                 URL
-                <span title="This is the name configured for your gitops.">
-                  <HelpCircle size={15} className="mr-2" />
-                </span>
+                <HelpCircle
+                  size={15}
+                  className="mr-2"
+                  xlinkTitle="This is the name configured for your gitops."
+                />
                 :
               </FormLabel>
               <FormControl>
@@ -170,9 +168,11 @@ export function CreateDashboardEntryForm(
             <FormItem>
               <FormLabel className="flex gap-1">
                 Description
-                <span title="This is the name configured for your gitops.">
-                  <HelpCircle size={15} className="mr-2" />
-                </span>
+                <HelpCircle
+                  size={15}
+                  className="mr-2"
+                  xlinkTitle="This is the name configured for your gitops."
+                />
                 :
               </FormLabel>
               <FormControl>

@@ -45,7 +45,6 @@ import {
 } from "../ui/dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteDashboardEntry } from "./hooks";
-import { useSession } from "next-auth/react";
 
 const columnHelper = createColumnHelper<DashboardEntry>();
 
@@ -282,7 +281,6 @@ type ItemActionProps = {
 const ItemActions = (props: ItemActionProps) => {
   const { dashboardEntry } = props;
 
-  const { data: session } = useSession();
   const queryClient = useQueryClient();
   const [open, setOpen] = React.useState(false);
 
@@ -313,7 +311,6 @@ const ItemActions = (props: ItemActionProps) => {
 
   const handleConfirmDelete = () => {
     deleteDashboardEntryMutation.mutate({
-      apiToken: session?.access_token ?? "",
       id: dashboardEntry.id,
     });
   };
