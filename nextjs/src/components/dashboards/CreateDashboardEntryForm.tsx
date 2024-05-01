@@ -20,15 +20,17 @@ import { HelpCircle, Loader } from "lucide-react";
 import { type DashboardEntry } from "@/types/dashboard-hub";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createDashboardEntry, updateDashboardEntry } from "./hooks";
+import { toast } from "sonner";
 
 type CreateDashboardEntryFormProps = {
   dashboardEntry?: DashboardEntry;
+  onSuccessfulSubmit?: () => void;
 };
 
 export function CreateDashboardEntryForm(
   props: Readonly<CreateDashboardEntryFormProps>,
 ) {
-  const { dashboardEntry } = props;
+  const { dashboardEntry, onSuccessfulSubmit } = props;
 
   const queryClient = useQueryClient();
 
@@ -50,6 +52,8 @@ export function CreateDashboardEntryForm(
     onSuccess: () => {
       console.log("Dashboard entry created");
       handleInvalidateDashboardEntries();
+      toast.success("Dashboard entry created");
+      onSuccessfulSubmit?.();
     },
     onError: (error) => {
       debugger;
@@ -60,8 +64,9 @@ export function CreateDashboardEntryForm(
   const updateDashboardEntryMutation = useMutation({
     mutationFn: updateDashboardEntry,
     onSuccess: () => {
-      console.log("Dashboard entry updated");
       handleInvalidateDashboardEntries();
+      toast.success("Dashboard entry updated");
+      onSuccessfulSubmit?.();
     },
   });
 

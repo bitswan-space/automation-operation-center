@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -19,8 +20,15 @@ export function CreateDashboardEntryFormSheet(
   props: Readonly<CreateDashboardEntryFormSheetProps>,
 ) {
   const { trigger, dashboardEntry } = props;
+
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+
+  const handleOnSuccessfulSubmit = () => {
+    setIsExpanded(false);
+  };
+
   return (
-    <Sheet>
+    <Sheet open={isExpanded} onOpenChange={(open) => setIsExpanded(open)}>
       <SheetTrigger asChild>{trigger}</SheetTrigger>
       <SheetContent className="min-w-full md:min-w-[550px]">
         <SheetHeader>
@@ -33,7 +41,10 @@ export function CreateDashboardEntryFormSheet(
           </SheetDescription>
         </SheetHeader>
         <div className="py-6">
-          <CreateDashboardEntryForm dashboardEntry={dashboardEntry} />
+          <CreateDashboardEntryForm
+            dashboardEntry={dashboardEntry}
+            onSuccessfulSubmit={handleOnSuccessfulSubmit}
+          />
         </div>
       </SheetContent>
     </Sheet>

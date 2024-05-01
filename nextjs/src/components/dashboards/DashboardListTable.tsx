@@ -45,6 +45,7 @@ import {
 } from "../ui/dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteDashboardEntry } from "./hooks";
+import { toast } from "sonner";
 
 const columnHelper = createColumnHelper<DashboardEntry>();
 
@@ -237,9 +238,9 @@ export default function DashboardListTable(
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center text-slate-500"
+                  className="h-24 text-center text-neutral-500"
                 >
-                  No results.
+                  No dashboard entries found.
                 </TableCell>
               </TableRow>
             )}
@@ -300,8 +301,8 @@ const ItemActions = (props: ItemActionProps) => {
   const deleteDashboardEntryMutation = useMutation({
     mutationFn: deleteDashboardEntry,
     onSuccess: () => {
-      console.log("Dashboard entry created");
       handleInvalidateDashboardEntries();
+      toast.success("Dashboard entry deleted");
     },
     onError: (error) => {
       debugger;
@@ -353,14 +354,22 @@ const ItemActions = (props: ItemActionProps) => {
 };
 
 type DeleteModalProps = {
-  //   onClose: () => void;
   onConfirm: () => void;
   trigger: React.ReactNode;
   isLoading: boolean;
 };
 const DeleteModal = (props: DeleteModalProps) => {
   const { trigger, onConfirm, isLoading } = props;
+
   const [open, setOpen] = React.useState(false);
+
+  const handleConfirm = () => {
+    onConfirm();
+    if (!isLoading) {
+      setOpen(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
@@ -378,7 +387,7 @@ const DeleteModal = (props: DeleteModalProps) => {
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button type="submit" disabled={isLoading} onClick={onConfirm}>
+          <Button type="submit" disabled={isLoading} onClick={handleConfirm}>
             Confirm{" "}
             {isLoading && (
               <span>
