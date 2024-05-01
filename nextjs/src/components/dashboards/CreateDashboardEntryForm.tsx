@@ -56,8 +56,8 @@ export function CreateDashboardEntryForm(
       onSuccessfulSubmit?.();
     },
     onError: (error) => {
-      debugger;
       console.log("Error creating dashboard entry", error);
+      toast.error("Error creating dashboard entry");
     },
   });
 
@@ -67,6 +67,10 @@ export function CreateDashboardEntryForm(
       handleInvalidateDashboardEntries();
       toast.success("Dashboard entry updated");
       onSuccessfulSubmit?.();
+    },
+    onError: (error) => {
+      console.error("Error updating dashboard entry", error);
+      toast.error("Error updating dashboard entry");
     },
   });
 

@@ -304,9 +304,8 @@ const ItemActions = (props: ItemActionProps) => {
       handleInvalidateDashboardEntries();
       toast.success("Dashboard entry deleted");
     },
-    onError: (error) => {
-      debugger;
-      console.log("Error creating dashboard entry", error);
+    onError: () => {
+      toast.error("Error deleting dashboard entry");
     },
   });
 
