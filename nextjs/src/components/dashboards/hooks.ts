@@ -21,7 +21,7 @@ export const createDashboardEntry = (params: {
   dashboardEntry: DashboardEntryCreateRequest;
 }): Promise<DashboardEntryCreateResponse> => {
   return axios
-    .post<DashboardEntryCreateResponse>(`/api/dashboard-entries/`, {
+    .post<DashboardEntryCreateResponse>(`/api/dashboard-entries`, {
       name: params.dashboardEntry.name,
       description: params.dashboardEntry.description,
       url: params.dashboardEntry.url,
@@ -33,14 +33,11 @@ export const updateDashboardEntry = (params: {
   dashboardEntry: DashboardEntry;
 }): Promise<DashboardEntry> =>
   axios
-    .put<DashboardEntry>(
-      `/api/dashboard-entries/${params.dashboardEntry.id}/`,
-      {
-        name: params.dashboardEntry.name,
-        description: params.dashboardEntry.description,
-        url: params.dashboardEntry.url,
-      },
-    )
+    .put<DashboardEntry>(`/api/dashboard-entries/${params.dashboardEntry.id}`, {
+      name: params.dashboardEntry.name,
+      description: params.dashboardEntry.description,
+      url: params.dashboardEntry.url,
+    })
     .then((response) => response.data);
 
 export const deleteDashboardEntry = (params: { id: string }): Promise<void> =>
