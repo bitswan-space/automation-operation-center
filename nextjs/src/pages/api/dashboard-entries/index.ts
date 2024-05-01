@@ -4,7 +4,7 @@ import axios from "axios";
 import {
   type DashboardEntryListResponse,
   type DashboardEntryCreateRequest,
-} from "@/types/dashboardList";
+} from "@/types/dashboard-hub";
 import { type NextApiRequest, type NextApiResponse } from "next";
 
 const CDS_API_URL = env.CDS_API_URL;

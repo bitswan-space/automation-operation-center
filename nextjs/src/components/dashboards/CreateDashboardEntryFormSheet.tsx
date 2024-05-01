@@ -8,7 +8,7 @@ import {
 } from "../ui/sheet";
 
 import { CreateDashboardEntryForm } from "./CreateDashboardEntryForm";
-import { type DashboardEntry } from "@/types/dashboardList";
+import { type DashboardEntry } from "@/types/dashboard-hub";
 
 type CreateDashboardEntryFormSheetProps = {
   trigger: React.ReactNode;

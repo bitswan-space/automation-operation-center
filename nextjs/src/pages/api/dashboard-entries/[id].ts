@@ -3,7 +3,7 @@ import { getServerAuthSession } from "@/server/auth";
 import {
   type DashboardEntryListResponse,
   type DashboardEntryUpdateRequest,
-} from "@/types/dashboardList";
+} from "@/types/dashboard-hub";
 import axios from "axios";
 import { type NextApiRequest, type NextApiResponse } from "next";
 

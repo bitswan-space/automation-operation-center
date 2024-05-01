@@ -6,7 +6,7 @@ import {
   type DashboardEntryCreateResponse,
   type DashboardEntryListResponse,
   type DashboardEntry,
-} from "@/types/dashboardList";
+} from "@/types/dashboard-hub";
 
 export const fetchDashboardEntryList =
   (): Promise<DashboardEntryListResponse> =>

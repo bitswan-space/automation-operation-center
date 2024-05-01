@@ -17,7 +17,7 @@ import { type z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { HelpCircle, Loader } from "lucide-react";
-import { type DashboardEntry } from "@/types/dashboardList";
+import { type DashboardEntry } from "@/types/dashboard-hub";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createDashboardEntry, updateDashboardEntry } from "./hooks";
 

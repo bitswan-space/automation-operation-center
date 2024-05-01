@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "../ui/checkbox";
-import { type DashboardEntry } from "@/types/dashboardList";
+import { type DashboardEntry } from "@/types/dashboard-hub";
 import { Input } from "../ui/input";
 import Link from "next/link";
 import React from "react";
