@@ -209,7 +209,7 @@ export function MenuItemList(props: Readonly<MenuItemListProps>) {
       case "iframe-link":
         return `/iframe?iframeUrl=${item.properties.link.href}&title=${item.properties.name}`;
       default:
-        return "/";
+        return "/pipelines";
     }
   };
 
