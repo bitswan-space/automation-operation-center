@@ -24,11 +24,11 @@ const MainHomePage: NextPageWithLayout = () => {
   };
 
   return (
-    <div className="p-4 lg:p-8">
+    <div className="p-4 lg:px-8 ">
       <h1 className="text-2xl font-bold text-neutral-700 md:hidden">
         PoC Admin Panel
       </h1>
-      <div className="inset-x-0 mx-auto mt-4 max-w-7xl">
+      <div className="max-w-8xl inset-x-0 mx-auto mt-4">
         <TitleBar
           title={
             <div className="mt-1 flex h-full gap-4 text-center align-middle">
@@ -44,8 +44,8 @@ const MainHomePage: NextPageWithLayout = () => {
         </div>
       </div>
 
-      <div className="mx-auto flex max-w-7xl flex-col gap-8 pt-6">
-        <div className="grid grid-cols-4 gap-4">
+      <div className="max-w-8xl mx-auto flex flex-col gap-8 pt-6">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {sideBarItems?.map((item) => (
             <PanelActionCard
               key={item.properties.name + "card"}
