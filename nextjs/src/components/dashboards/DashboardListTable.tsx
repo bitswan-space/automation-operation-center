@@ -151,101 +151,103 @@ export default function DashboardListTable(
   });
 
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-between pb-4">
-        <Input
-          size={10}
-          placeholder="Find dashboards..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => {
-            table.getColumn("name")?.setFilterValue(event.target.value);
-          }}
-          className="max-w-sm"
-        />
-        <div>
-          <CreateDashboardEntryFormSheet
-            trigger={
-              <Button size="sm">
-                <PlusCircle size={20} className="mr-2" />
-                Create Dashboard Entry
-              </Button>
-            }
+    <div className="flex h-full w-full flex-col justify-between">
+      <div>
+        <div className="flex items-center justify-between pb-4">
+          <Input
+            size={10}
+            placeholder="Find dashboards..."
+            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+            onChange={(event) => {
+              table.getColumn("name")?.setFilterValue(event.target.value);
+            }}
+            className="max-w-sm"
           />
+          <div>
+            <CreateDashboardEntryFormSheet
+              trigger={
+                <Button size="sm">
+                  <PlusCircle size={20} className="mr-2" />
+                  Create Dashboard Entry
+                </Button>
+              }
+            />
+          </div>
         </div>
-      </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="bg-stone-100/70">
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id} className="font-semibold">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <React.Fragment key={`dt_fragment_${row.id}`}>
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                    className="rounded font-mono"
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                  {row.getIsExpanded() && (
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id} className="bg-stone-100/70">
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id} className="font-semibold">
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                      </TableHead>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <React.Fragment key={`dt_fragment_${row.id}`}>
                     <TableRow
-                      className="bg-blue-100/20 hover:bg-blue-50/50"
-                      key={`expandable-${row.id}`}
+                      key={row.id}
+                      data-state={row.getIsSelected() && "selected"}
+                      className="rounded font-mono"
                     >
-                      <TableCell colSpan={columns.length}>
-                        <Table>
-                          <TableBody>
-                            <TableRow>
-                              <TableCell
-                                colSpan={columns.length}
-                                className="h-24 text-center"
-                              >
-                                No displayable data.
-                              </TableCell>
-                            </TableRow>
-                          </TableBody>
-                        </Table>
-                      </TableCell>
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </TableCell>
+                      ))}
                     </TableRow>
-                  )}
-                </React.Fragment>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center text-neutral-500"
-                >
-                  No dashboard entries found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                    {row.getIsExpanded() && (
+                      <TableRow
+                        className="bg-blue-100/20 hover:bg-blue-50/50"
+                        key={`expandable-${row.id}`}
+                      >
+                        <TableCell colSpan={columns.length}>
+                          <Table>
+                            <TableBody>
+                              <TableRow>
+                                <TableCell
+                                  colSpan={columns.length}
+                                  className="h-24 text-center"
+                                >
+                                  No displayable data.
+                                </TableCell>
+                              </TableRow>
+                            </TableBody>
+                          </Table>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </React.Fragment>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center text-neutral-500"
+                  >
+                    No dashboard entries found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="text-muted-foreground flex-1 text-sm">

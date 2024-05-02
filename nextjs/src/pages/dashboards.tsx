@@ -9,11 +9,12 @@ import DashboardListTable from "@/components/dashboards/DashboardListTable";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDashboardEntryList } from "@/components/dashboards/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
+import { XCircle } from "lucide-react";
 
 const DashboardListingPage: NextPageWithLayout = () => {
   const dashboardEntryListQuery = useDashboardEntryList();
   return (
-    <div className="p-4 lg:p-8">
+    <div className="flex h-screen flex-col p-4 lg:p-8">
       <h1 className="text-2xl font-bold text-stone-700 md:hidden">
         Dashboard Hub
       </h1>
@@ -28,13 +29,13 @@ const DashboardListingPage: NextPageWithLayout = () => {
         </Button>
       </div>
 
-      <div className="hidden py-4 lg:block">
+      <div className="hidden flex-1 py-4 lg:block">
         <Card
           className={
-            "h-full w-full rounded-md border border-slate-300 shadow-sm"
+            "h-fit w-full rounded-md border border-slate-300 shadow-sm"
           }
         >
-          <CardContent className="p-3">
+          <CardContent className="h-fit p-3">
             {dashboardEntryListQuery.isSuccess && (
               <DashboardListTable
                 dashboardEntries={dashboardEntryListQuery.data?.results ?? []}
@@ -42,11 +43,19 @@ const DashboardListingPage: NextPageWithLayout = () => {
             )}
             {dashboardEntryListQuery.isLoading && (
               <div>
-                <div className="flex justify-between pb-2">
-                  <Skeleton className="h-8 w-1/3" />
-                  <Skeleton className="h-8 w-1/5" />
-                </div>
                 <Skeleton className="h-[400px] w-full" />
+              </div>
+            )}
+            {dashboardEntryListQuery.isError && (
+              <div className="flex h-60 flex-col items-center justify-center gap-2 rounded border border-dashed">
+                <XCircle
+                  size={40}
+                  className="text-neutral-500/70"
+                  strokeWidth={"1.5px"}
+                />
+                <div className="text-sm text-neutral-500/90">
+                  Could not fetch dashboard entries
+                </div>
               </div>
             )}
           </CardContent>
