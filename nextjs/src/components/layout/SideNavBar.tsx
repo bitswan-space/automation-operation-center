@@ -61,10 +61,7 @@ const SideNavBar = (props: SideNavBarProps) => {
         })}
       >
         <div className="flex flex-col justify-center gap-8">
-          <Link
-            href={"/main"}
-            className={"flex justify-center py-6 text-center"}
-          >
+          <Link href={"/"} className={"flex justify-center py-6 text-center"}>
             <Image
               src={
                 expanded ? "/bitswan-logo-full.png" : "/bitswan-logo-sm.jpeg"
