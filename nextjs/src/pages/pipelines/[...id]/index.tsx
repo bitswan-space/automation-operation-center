@@ -1,4 +1,3 @@
-import {} from "../../../components/metrics/charts/EPSSyncAreaChart";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { type NextPageWithLayout } from "../../_app";
 import { type ReactElement } from "react";
@@ -40,7 +39,7 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
     "/",
   )}/topology`;
 
-  const {} = useMQTTRequestResponseSubscription<PumpTopologyResponse>({
+  useMQTTRequestResponseSubscription<PumpTopologyResponse>({
     queryKey: "topology-subscription",
     requestResponseTopicHandler: {
       requestTopic: pipelineTopologyRequestTopic,
@@ -62,7 +61,7 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
       if (index === 0) {
         return (
           <React.Fragment key={id}>
-            <Link href={"/"} className="underline">
+            <Link href={"/pipelines"} className="underline">
               Pipeline Containers
             </Link>
             <span className="text-lg">&#x25B8;</span>
@@ -91,25 +90,23 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
   };
 
   return (
-    <>
-      <div className="h-screen p-4 lg:p-8">
-        <h1 className="text-2xl font-bold text-stone-700 md:hidden">
-          Pipeline Container
-        </h1>
-        <TitleBar title={"Pipeline Container"} />
+    <div className="h-screen p-4 lg:p-8">
+      <h1 className="text-2xl font-bold text-stone-700 md:hidden">
+        Pipeline Container
+      </h1>
+      <TitleBar title={"Pipeline Container"} />
 
-        <div className="space-x-4 py-2 text-sm font-semibold text-neutral-600">
-          {getBreadcrumbs(id as string[])}
-        </div>
-        <div className="h-full py-2">
-          <PipelineDetailTabs
-            pipelineParentIDs={(id as string[]) ?? []}
-            pipeline={pipeline}
-            pipelineTopology={pipelineTopology}
-          />
-        </div>
+      <div className="space-x-4 py-2 text-sm font-semibold text-neutral-600">
+        {getBreadcrumbs(id as string[])}
       </div>
-    </>
+      <div className="h-full py-2">
+        <PipelineDetailTabs
+          pipelineParentIDs={(id as string[]) ?? []}
+          pipeline={pipeline}
+          pipelineTopology={pipelineTopology}
+        />
+      </div>
+    </div>
   );
 };
 
