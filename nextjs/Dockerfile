@@ -3,7 +3,7 @@ ARG COMMIT_HASH
 
 ##### DEPENDENCIES
 
-FROM --platform=linux/amd64 node:16-alpine3.17 AS deps
+FROM --platform=linux/amd64 node:18.12-alpine3.17 AS deps
 
 ARG BUILD_NO
 ARG COMMIT_HASH
@@ -24,7 +24,7 @@ RUN \
 
 ##### BUILDER
 
-FROM --platform=linux/amd64 node:16-alpine3.17 AS builder
+FROM --platform=linux/amd64 node:18.12-alpine3.17 AS builder
 
 ARG BUILD_NO
 ARG COMMIT_HASH
@@ -48,7 +48,7 @@ RUN \
 
 ##### RUNNER
 
-FROM --platform=linux/amd64 node:16-alpine3.17 AS runner
+FROM --platform=linux/amd64 node:18.12-alpine3.17 AS runner
 
 ARG BUILD_NO
 ARG COMMIT_HASH
