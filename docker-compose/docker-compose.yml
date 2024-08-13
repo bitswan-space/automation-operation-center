@@ -71,7 +71,7 @@ services:
 
   pipeline-operation-centre:
     restart: always
-    image: bitswan/pipeline-operations-centre:2024-9110209048-git-5f11aae
+    image: bitswan/pipeline-operations-centre:2024-10372947395-git-c9a350f
     env_file: .operations_centre.env
     ports:
       - "3000:3000"
