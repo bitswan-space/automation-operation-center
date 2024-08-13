@@ -71,17 +71,24 @@ services:
 
   pipeline-operation-centre:
     restart: always
-    image: public.registry.bitswan.space/bitswan/pipeline-operations-centre:sha256_9f86bb8ce6afb730cf70b465ba8efb87bc8721a965ade7ff9f347331b1f0909a
+    image: bitswan/pipeline-operations-centre:2024-9110209048-git-5f11aae
     env_file: .operations_centre.env
     ports:
       - "3000:3000"
 
   container-discovery-service:
     restart: always
-    image: public.registry.bitswan.space/bitswan/container-discovery-service:sha256_00d756500bcdd624b813d73f2f3f45ceda1d6ec67b82a1adbe1e4586d4f21ba4
-    env_file:
-      - .discovery_service.env
+    image: bitswan/cds:2024-9110528378-git-2a4182a
     volumes:
-      - ./discovery_service/discovery_service.yaml:/conf/config.yaml:r
-      - ./discovery_service/navigation_menu.json:/conf/navigation_menu.json
-      - ./discovery_service/navigation_schema.json:/conf/navigation_schema.json:r
+      - ./cds/discovery_service.yaml:/conf/config.yaml:r
+      - ./cds/navigation_menu.json:/conf/navigation_menu.json
+      - ./cds/navigation_schema.json:/conf/navigation_schema.json:r
+
+  cds-agent:
+    restart: always
+    image: bitswan/cds-agent:2024-9110585504-git-c5028be
+    volumes:
+      - ./cds-agent/config.yaml:/conf/config.yaml:r
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+    environment:
+      - CDS_AGENT_PORT=9002
