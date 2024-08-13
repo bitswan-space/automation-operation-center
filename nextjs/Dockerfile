@@ -36,6 +36,7 @@ COPY . .
 ENV NEXT_PUBLIC_MQTT_URL wss://mqtt.bitswan.space
 ENV NEXT_PUBLIC_COMMIT_HASH=${COMMIT_HASH}
 ENV NEXT_PUBLIC_BUILD_NO=${BUILD_NO}
+ENV NEXT_PUBLIC_BITSWAN_BACKEND_API_URL=https://backend.bitswan.space
 
 # ENV NEXT_TELEMETRY_DISABLED 1
 
@@ -62,6 +63,7 @@ ENV NODE_ENV production
 ENV NEXT_PUBLIC_MQTT_URL wss://mqtt.bitswan.space
 ENV NEXT_PUBLIC_COMMIT_HASH=${COMMIT_HASH}
 ENV NEXT_PUBLIC_BUILD_NO=${BUILD_NO}
+ENV NEXT_PUBLIC_BITSWAN_BACKEND_API_URL=https://backend.bitswan.space
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs

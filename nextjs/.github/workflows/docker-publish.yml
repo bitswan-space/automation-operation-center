@@ -28,4 +28,6 @@ jobs:
         echo "::set-output name=commit_hash::$(git rev-parse --short HEAD)"
 
     - name: Build and Push
+      env:
+        BUILD_NO: ${{ steps.context.outputs.job_id }}
       run: bash build_and_push.sh
