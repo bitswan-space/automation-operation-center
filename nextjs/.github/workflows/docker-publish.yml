@@ -32,8 +32,8 @@ jobs:
         echo "::set-output name=commit_hash::$(git rev-parse --short HEAD)"
 
     - name: Get JOB ID
-      - uses: qoomon/actions--context@v1
-        id: context
+      uses: qoomon/actions--context@v1
+      id: context
 
     - name: Build and Push
       env:
