@@ -7,6 +7,10 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      deployments: read
 
     steps:
     - name: Check out the repo
@@ -26,6 +30,10 @@ jobs:
       run: |
         echo "::set-output name=year::$(date +%Y)"
         echo "::set-output name=commit_hash::$(git rev-parse --short HEAD)"
+
+    - name: Get JOB ID
+      - uses: qoomon/actions--context@v1
+        id: context
 
     - name: Build and Push
       env:
