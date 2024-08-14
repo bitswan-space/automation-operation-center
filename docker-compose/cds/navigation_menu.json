@@ -55,6 +55,20 @@
                     "href": "https://kafka.apache.org/"
                 }
             }
+        },
+        "jupyterhub": {
+            "wires": [],
+            "properties": {
+                "name": "JupyterHub",
+                "icon": {
+                    "type": "image",
+                    "src": "data:image/svg+xml;utf8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDI0IDI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiPjxwYXRoIGQ9Ik0xNy45MjUgMy43MzFjLTEuNzM3LTEuMjEtMy42NzctMS44MTUtNS42MTgtMS44MTUtMi4wNDMgMC0zLjk4NC42MDUtNS42MTggMS43MTQtMS42MzQgMS4yMS0yLjg2IDIuNzIzLTMuNTc1IDQuNjM5IDEuODM5LTIuMTE4IDUuMjEtMy40MjggOS4xOTQtMy40MjggMy44ODIgMCA3LjM1NSAxLjQxMiA5LjE5NCAzLjQyOEMyMC43ODUgNi40NTQgMTkuNTU5IDQuODQgMTcuOTI1IDMuNzMxek0xNy45MjUgMTkuMjZjMS42MzQtMS4xMDkgMi44Ni0yLjcyMyAzLjU3NS00LjUzOC0xLjgzOSAyLjAxNy01LjMxMiAzLjQyOS05LjE5NCAzLjQyOS0zLjg4MiAwLTcuMzU1LTEuNDEyLTkuMTk0LTMuNDI5LjcxNSAxLjgxNSAxLjk0MSAzLjQyOSAzLjU3NSA0LjUzOHMzLjU3NSAxLjcxNCA1LjYxOCAxLjcxNFMxNi4yOSAyMC4zNyAxNy45MjUgMTkuMjZ6Ii8+PGVsbGlwc2UgY3g9IjMuNTIyIiBjeT0iMy4yMjciIHJ4PSIxLjAyMiIgcnk9IjEuMDA4Ii8+PGVsbGlwc2UgY3g9IjUuMDU0IiBjeT0iMjIuMTg1IiByeD0iMS44MzkiIHJ5PSIxLjgxNSIvPjxwYXRoIGQ9Ik0yMC44ODcsMS40MTJjMC0wLjc3OS0wLjY0LTEuNDEyLTEuNDMtMS40MTJjLTAuNzksMC0xLjQzLDAuNjMyLTEuNDMsMS40MTJjMCwwLjc4LDAuNjQxLDEuNDEyLDEuNDMsMS40MTJDMjAuMjQ3LDIuODI0LDIwLjg4NywyLjE5MSwyMC44ODcsMS40MTJ6Ii8+PC9zdmc+"
+                },
+                "link": {
+                    "type": "external-link",
+                    "href": "https://jupyter-dev.bitswan.space/jupyterhub"
+                }
+            }
         }
     },
     "display-style": "menu"
