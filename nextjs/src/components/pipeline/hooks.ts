@@ -5,9 +5,9 @@ import {
   type PipelineTopology,
 } from "@/types";
 import React from "react";
-import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
 import { env } from "@/env.mjs";
 import { handleError } from "@/utils/errors";
+import { useMQTTRequestResponse } from "@/shared/hooks/mqtt-new";
 
 const API_BASE_URL = "/api";
 
@@ -45,22 +45,24 @@ export const usePipelineStats = () => {
 
 export const usePipelinesWithStats = (): {
   pipelinesWithStats: PipelineWithStats[];
-  error?: Error;
+  error?: Error | null;
+  isLoading: boolean;
 } => {
   const pipelineStats = usePipelineStats();
 
-  const { data: containerServiceTopology, error } =
-    useMQTTRequestResponseSubscription<ContainerServiceTopologyResponse>({
-      queryKey: "container-service-subscription",
-      requestResponseTopicHandler: {
-        requestTopic: `/c/running-pipelines/topology/subscribe`,
-        subscriptionTopic: `/c/running-pipelines/topology`,
-        requestMessageType: "json",
-        requestMessage: {
-          count: 10,
-        },
-      },
-    });
+  const {
+    response: containerServiceTopology,
+    isLoading,
+    error,
+  } = useMQTTRequestResponse<ContainerServiceTopologyResponse>({
+    requestTopic: `/c/running-pipelines/topology/subscribe`,
+    responseTopic: `/c/running-pipelines/topology`,
+    requestMessage: {
+      count: 10,
+    },
+  });
+
+  console.log("containerServiceTopology", containerServiceTopology);
 
   const pipelines: (PipelineTopology & { _key: string })[] = Object.entries(
     containerServiceTopology?.data.topology ?? {},
@@ -84,5 +86,5 @@ export const usePipelinesWithStats = (): {
     };
   });
 
-  return { pipelinesWithStats, error };
+  return { pipelinesWithStats, error, isLoading };
 };

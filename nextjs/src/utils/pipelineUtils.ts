@@ -5,11 +5,11 @@ export const formatPipelineName = (pipelineName: string) => {
 };
 
 export function flattenTopology(
-  response: PumpTopologyResponse,
+  response: PumpTopologyResponse | null,
 ): PipelineNode[] {
   const flattenedArray: PipelineNode[] = [];
 
-  for (const [id, value] of Object.entries(response.data.topology ?? {})) {
+  for (const [id, value] of Object.entries(response?.data.topology ?? {})) {
     flattenedArray.push({
       id,
       ...value,

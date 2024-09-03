@@ -11,10 +11,10 @@ import {
 } from "@/utils/pipelineUtils";
 import Link from "next/link";
 import { PipelineDetailTabs } from "../../../components/pipeline/PipelineDetailTabs";
-import { type PumpTopologyResponse, type PipelineNode } from "@/types";
+import { type PumpTopologyResponse } from "@/types";
 import type * as next from "next";
-import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
 import { splitArrayUpToElementAndJoin } from "@/utils/arrays";
+import { useMQTTRequestResponse } from "@/shared/hooks/mqtt-new";
 
 interface PipelineDetailPageProps {
   id: string | string[];
@@ -26,9 +26,6 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
   const { pipelinesWithStats: pipelines } = usePipelinesWithStats();
   const pipeline = pipelines.find((p) => p._key === id?.[0]);
 
-  const [pipelineTopology, setPipelineTopology] =
-    React.useState<PipelineNode[]>();
-
   const pipelineTopologyRequestTopic = `${joinIDsWithDelimiter(
     id as string[],
     "/",
@@ -39,22 +36,15 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
     "/",
   )}/topology`;
 
-  useMQTTRequestResponseSubscription<PumpTopologyResponse>({
-    queryKey: "topology-subscription",
-    requestResponseTopicHandler: {
-      requestTopic: pipelineTopologyRequestTopic,
-      subscriptionTopic: pipelineTopologyResponseTopic,
-      requestMessageType: "json",
-      requestMessage: {
-        // method: "get",
-        count: 1,
-      },
-      onMessageCallback: (response) => {
-        const topology = flattenTopology(response);
-        setPipelineTopology(topology);
-      },
+  const { response: topology } = useMQTTRequestResponse<PumpTopologyResponse>({
+    requestTopic: pipelineTopologyRequestTopic,
+    responseTopic: pipelineTopologyResponseTopic,
+    requestMessage: {
+      count: 1,
     },
   });
+
+  const pipelineTopology = flattenTopology(topology);
 
   const getBreadcrumbs = (pipelineIDs: string[]) => {
     return pipelineIDs.map((id, index) => {

@@ -1,37 +1,30 @@
-import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
+import { useMQTTRequestResponse } from "@/shared/hooks/mqtt-new";
 import {
   type DynamicSidebarItem,
   type DynamicSidebarResponse,
 } from "@/types/sidebar";
 
-import React from "react";
-
 export const useDynamicSidebar = () => {
-  const [sideBarItems, setSideBarItems] = React.useState<DynamicSidebarItem[]>(
-    [],
-  );
-
-  useMQTTRequestResponseSubscription<DynamicSidebarResponse>({
-    queryKey: "dynamic-sidebar",
-    requestResponseTopicHandler: {
-      requestTopic: "/topology/subscribe",
-      subscriptionTopic: "/topology",
-      requestMessageType: "json",
-      requestMessage: {
-        count: 1,
-      },
-      onMessageCallback: (response) => {
-        const sidbarItems = Object.entries(response.topology).reduce(
-          (acc, v) => {
-            return [...acc, v[1] as DynamicSidebarItem];
-          },
-          [] as DynamicSidebarItem[],
-        );
-
-        setSideBarItems(sidbarItems);
-      },
+  const {
+    response: sidebarRes,
+    isLoading,
+    error,
+  } = useMQTTRequestResponse<DynamicSidebarResponse>({
+    requestTopic: "/topology/subscribe",
+    responseTopic: "/topology",
+    requestMessage: {
+      count: 1,
     },
   });
 
-  return sideBarItems;
+  console.log("useDynamicSidebar", sidebarRes);
+
+  const sideBarItems = Object.entries(sidebarRes?.topology ?? {}).reduce(
+    (acc, v) => {
+      return [...acc, v[1] as DynamicSidebarItem];
+    },
+    [] as DynamicSidebarItem[],
+  );
+
+  return { sideBarItems, isLoading, error };
 };

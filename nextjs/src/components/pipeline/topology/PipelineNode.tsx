@@ -27,18 +27,18 @@ import { Handle, type NodeProps, Position } from "reactflow";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { JSONTree } from "react-json-tree";
-import React from "react";
+import React, { memo } from "react";
 import clsx from "clsx";
-import { memo } from "react";
+
 import { SiApachekafka, SiJavascript } from "react-icons/si";
 import { jsonTreeTheme, outputSampleJSON } from "@/utils/jsonTree";
 import { useRouter } from "next/router";
 
-import { useMQTTRequestResponseSubscription } from "@/shared/hooks/mqtt";
 import { joinIDsWithDelimiter } from "@/utils/pipelineUtils";
 import { epochToFormattedTime } from "@/utils/time";
 import { useClipboard } from "use-clipboard-copy";
 import { handleError } from "@/utils/errors";
+import { useMQTTRequestResponse } from "@/shared/hooks/mqtt-new";
 
 type Section = "stats" | "properties" | "data";
 type PipelineNodeActionType =
@@ -149,17 +149,17 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
 
   const getTitleColorFromType = (type: string): string => {
     const titleColor = typeIconMap[type]?.titleColor;
-    return titleColor ? titleColor : "text-neutral-200";
+    return titleColor ?? "text-neutral-200";
   };
 
   const getSubtitleColorFromType = (type: string): string => {
     const subtitleColor = typeIconMap[type]?.subtitleColor;
-    return subtitleColor ? subtitleColor : "text-neutral-500";
+    return subtitleColor ?? "text-neutral-500";
   };
 
   const getBgColorFromType = (type: string): string => {
     const bgColor = typeIconMap[type]?.bgColor;
-    return bgColor ? bgColor : "bg-neutral-950";
+    return bgColor ?? "bg-neutral-950";
   };
 
   const pauseStreamRef = React.useRef<boolean>(false);
@@ -184,21 +184,18 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
     count: number;
   };
 
-  useMQTTRequestResponseSubscription<EventResponse>({
-    queryKey: "events-subscription",
-    requestResponseTopicHandler: {
-      requestTopic: pipelineEventsRequestTopic,
-      subscriptionTopic: pipelineEventsResponseTopic,
-      requestMessageType: "json",
-      requestMessage: { count: 200 },
-      onMessageCallback: (response) => {
-        if (!pauseStreamRef.current) {
-          setComponentEvents((events) => [response, ...events]);
-        }
-      },
+  useMQTTRequestResponse<EventResponse>({
+    requestTopic: pipelineEventsRequestTopic,
+    responseTopic: pipelineEventsResponseTopic,
+    requestMessage: {
+      count: 200,
+    },
+    onMessage: (response) => {
+      if (!pauseStreamRef.current) {
+        setComponentEvents((events) => [response, ...events]);
+      }
     },
     infiniteSubscription: true,
-    enabled: nodeType === "component",
   });
 
   return (
@@ -228,7 +225,7 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
           {capabilities.includes("has-children") && (
             <div className="flex">
               {
-                <div
+                <button
                   title="Inspect Pipeline"
                   className="hover:cursor-pointer"
                   onClick={() => {
@@ -243,7 +240,7 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
                   }}
                 >
                   <Search size={24} className="" />
-                </div>
+                </button>
               }
             </div>
           )}
