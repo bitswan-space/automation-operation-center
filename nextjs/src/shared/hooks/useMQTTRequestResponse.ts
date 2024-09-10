@@ -1,8 +1,7 @@
-import { isError, useQuery } from "@tanstack/react-query";
-
 import React from "react";
 import { getMQTTConfig } from "@/server/queries/mqtt";
 import { useMQTT } from "./useMQTT";
+import { useQuery } from "@tanstack/react-query";
 
 interface MQTTConfig {
   url: string;
