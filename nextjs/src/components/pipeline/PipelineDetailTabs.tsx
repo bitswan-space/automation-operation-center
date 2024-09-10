@@ -31,15 +31,19 @@ const MermaidTopologyOverview = dynamic(
 
 import { Skeleton } from "../ui/skeleton";
 import dynamic from "next/dynamic";
+import { usePipelineTopology } from "./hooks/usePipelineTopology";
 
 export interface PipelineDetailTabsProps {
   pipeline?: PipelineWithStats;
-  pipelineTopology?: PipelineNode[];
   pipelineParentIDs: string[];
 }
 
 export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
-  const { pipeline, pipelineTopology, pipelineParentIDs } = props;
+  const { pipeline, pipelineParentIDs } = props;
+
+  const { pipelineTopology } = usePipelineTopology({
+    componentIDs: pipelineParentIDs,
+  });
 
   const [selectedTab, setSelectedTab] = React.useState("summary");
 

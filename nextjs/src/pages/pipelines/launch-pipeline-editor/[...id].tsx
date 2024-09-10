@@ -3,13 +3,14 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { type NextPageWithLayout } from "../../_app";
 import { type ReactElement } from "react";
 import React from "react";
-import { usePipelinesWithStats } from "@/components/pipeline/hooks";
+
 import { TitleBar } from "@/components/layout/TitleBar";
 import { formatPipelineName } from "@/utils/pipelineUtils";
 import Link from "next/link";
 import type * as next from "next";
-import { useMQTTRequestResponseSubscription as useMQTTSubscription } from "@/shared/hooks/mqtt";
 import { splitArrayUpToElementAndJoin } from "@/utils/arrays";
+import { useMQTTRequestResponse } from "@/shared/hooks/useMQTTRequestResponse";
+import { usePipelinesWithStats } from "@/components/pipeline/hooks/usePipelinesWithStats";
 
 interface PipelineEditorLaunchPageProps {
   id: string;
@@ -37,32 +38,25 @@ const PipelineEditorLaunchPage: NextPageWithLayout<
     url: string;
   };
 
-  useMQTTSubscription<PipelineEditorLaunchResponse>({
-    queryKey: `pipeline-editor-launch-${id}`,
-    requestResponseTopicHandler: {
-      requestTopic: `${id}/editor/launch/subscribe`,
-      subscriptionTopic: `${id}/editor/launch`,
-      requestMessageType: "json",
-      requestMessage: {
-        count: 1,
-      },
-      onMessageCallback: (response) => {
-        setLogMessages((prev) => [...prev, response.message]);
-      },
+  useMQTTRequestResponse<PipelineEditorLaunchResponse>({
+    requestTopic: `${id}/editor/launch/subscribe`,
+    responseTopic: `${id}/editor/launch`,
+    requestMessage: {
+      count: 1,
+    },
+    onMessage: (response) => {
+      setLogMessages((prev) => [...prev, response.message]);
     },
   });
 
-  useMQTTSubscription<PipelineEditorRedirectResponse>({
-    queryKey: "pipeline-editor-redirect",
-    requestResponseTopicHandler: {
-      subscriptionTopic: `${id}/editor/redirect`,
-      requestMessageType: "json",
-      requestMessage: {
-        count: 1,
-      },
-      onMessageCallback: (response) => {
-        if (response.redirect) setRedirectParams(response);
-      },
+  useMQTTRequestResponse<PipelineEditorRedirectResponse>({
+    responseTopic: `${id}/editor/redirect`,
+    requestTopic: `${id}/editor/redirect/subscribe`,
+    requestMessage: {
+      count: 1,
+    },
+    onMessage: (response) => {
+      if (response.redirect) setRedirectParams(response);
     },
   });
 

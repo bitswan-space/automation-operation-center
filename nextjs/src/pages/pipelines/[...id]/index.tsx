@@ -2,19 +2,14 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { type NextPageWithLayout } from "../../_app";
 import { type ReactElement } from "react";
 import React from "react";
-import { usePipelinesWithStats } from "@/components/pipeline/hooks";
+
 import { TitleBar } from "@/components/layout/TitleBar";
-import {
-  flattenTopology,
-  formatPipelineName,
-  joinIDsWithDelimiter,
-} from "@/utils/pipelineUtils";
+import { formatPipelineName } from "@/utils/pipelineUtils";
 import Link from "next/link";
 import { PipelineDetailTabs } from "../../../components/pipeline/PipelineDetailTabs";
-import { type PumpTopologyResponse } from "@/types";
 import type * as next from "next";
 import { splitArrayUpToElementAndJoin } from "@/utils/arrays";
-import { useMQTTRequestResponse } from "@/shared/hooks/mqtt-new";
+import { usePipelinesWithStats } from "@/components/pipeline/hooks/usePipelinesWithStats";
 
 interface PipelineDetailPageProps {
   id: string | string[];
@@ -24,27 +19,8 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
   id,
 }) => {
   const { pipelinesWithStats: pipelines } = usePipelinesWithStats();
+
   const pipeline = pipelines.find((p) => p._key === id?.[0]);
-
-  const pipelineTopologyRequestTopic = `${joinIDsWithDelimiter(
-    id as string[],
-    "/",
-  )}/topology/subscribe`;
-
-  const pipelineTopologyResponseTopic = `${joinIDsWithDelimiter(
-    id as string[],
-    "/",
-  )}/topology`;
-
-  const { response: topology } = useMQTTRequestResponse<PumpTopologyResponse>({
-    requestTopic: pipelineTopologyRequestTopic,
-    responseTopic: pipelineTopologyResponseTopic,
-    requestMessage: {
-      count: 1,
-    },
-  });
-
-  const pipelineTopology = flattenTopology(topology);
 
   const getBreadcrumbs = (pipelineIDs: string[]) => {
     return pipelineIDs.map((id, index) => {
@@ -85,17 +61,17 @@ const PipelineDetailPage: NextPageWithLayout<PipelineDetailPageProps> = ({
         Pipeline Container
       </h1>
       <TitleBar title={"Pipeline Container"} />
-
       <div className="space-x-4 py-2 text-sm font-semibold text-neutral-600">
         {getBreadcrumbs(id as string[])}
       </div>
+      `
       <div className="h-full py-2">
         <PipelineDetailTabs
           pipelineParentIDs={(id as string[]) ?? []}
           pipeline={pipeline}
-          pipelineTopology={pipelineTopology}
         />
       </div>
+      `
     </div>
   );
 };

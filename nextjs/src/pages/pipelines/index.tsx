@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import React from "react";
 import { PipelineDataTable } from "@/components/pipeline/PipelineDataTable";
 import { PipelineDataCard } from "@/components/pipeline/PipelineDataCard";
-import { usePipelinesWithStats } from "@/components/pipeline/hooks";
+
 import { TitleBar } from "../../components/layout/TitleBar";
 import { type PipelineWithStats } from "@/types";
+import { usePipelinesWithStats } from "@/components/pipeline/hooks/usePipelinesWithStats";
 
 const DashboardPage: NextPageWithLayout = () => {
   const { pipelinesWithStats: pipelines } = usePipelinesWithStats();

@@ -5,6 +5,7 @@ import {
   ChevronRight,
   Copy,
   Layers,
+  Loader,
   PauseCircle,
   Play,
   Search,
@@ -38,7 +39,7 @@ import { joinIDsWithDelimiter } from "@/utils/pipelineUtils";
 import { epochToFormattedTime } from "@/utils/time";
 import { useClipboard } from "use-clipboard-copy";
 import { handleError } from "@/utils/errors";
-import { useMQTTRequestResponse } from "@/shared/hooks/mqtt-new";
+import { useMQTTRequestResponse } from "@/shared/hooks/useMQTTRequestResponse";
 
 type Section = "stats" | "properties" | "data";
 type PipelineNodeActionType =
@@ -162,6 +163,9 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
     return bgColor ?? "bg-neutral-950";
   };
 
+  const [settingNextLevel, setSettingNextLevel] =
+    React.useState<boolean>(false);
+
   const pauseStreamRef = React.useRef<boolean>(false);
 
   const [componentEvents, setComponentEvents] = React.useState<EventResponse[]>(
@@ -188,14 +192,13 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
     requestTopic: pipelineEventsRequestTopic,
     responseTopic: pipelineEventsResponseTopic,
     requestMessage: {
-      count: 200,
+      count: 1,
     },
     onMessage: (response) => {
       if (!pauseStreamRef.current) {
         setComponentEvents((events) => [response, ...events]);
       }
     },
-    infiniteSubscription: true,
   });
 
   return (
@@ -228,18 +231,25 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
                 <button
                   title="Inspect Pipeline"
                   className="hover:cursor-pointer"
+                  disabled={settingNextLevel}
                   onClick={() => {
+                    if (settingNextLevel) return;
+
                     router
                       .push(`${currentPath}/${nodeID}`)
                       .then(() => {
-                        // window.location.reload()
+                        setSettingNextLevel(true);
                       })
                       .catch((error: Error) =>
                         handleError(error, "Failed to navigate"),
                       );
                   }}
                 >
-                  <Search size={24} className="" />
+                  {settingNextLevel ? (
+                    <Loader size={24} className="animate-spin" />
+                  ) : (
+                    <Search size={24} className="" />
+                  )}
                 </button>
               }
             </div>

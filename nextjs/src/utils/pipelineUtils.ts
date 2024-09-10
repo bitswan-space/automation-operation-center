@@ -5,7 +5,7 @@ export const formatPipelineName = (pipelineName: string) => {
 };
 
 export function flattenTopology(
-  response: PumpTopologyResponse | null,
+  response?: PumpTopologyResponse | null,
 ): PipelineNode[] {
   const flattenedArray: PipelineNode[] = [];
 

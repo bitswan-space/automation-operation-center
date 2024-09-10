@@ -12,9 +12,8 @@ import ReactFlow, {
   SelectionMode,
 } from "reactflow";
 
-import { useCallback } from "react";
+import React, { useCallback } from "react";
 import PipelineNode, { type NodeData } from "./PipelineNode";
-import React from "react";
 
 // we define the nodeTypes outside of the component to prevent re-renderings
 // you could also use useMemo inside the component
