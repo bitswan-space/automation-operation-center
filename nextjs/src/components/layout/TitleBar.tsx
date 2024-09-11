@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { BellDot, LogIn } from "lucide-react";
+import { BellDot, LogIn, Workflow } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import React, { type ReactNode } from "react";
 import { signIn, useSession } from "next-auth/react";
@@ -10,6 +10,15 @@ import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import clsx from "clsx";
 import { handleError } from "@/utils/errors";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 interface TitleBarProps {
   title: ReactNode;
@@ -70,6 +79,30 @@ export function TitleBar(props: Readonly<TitleBarProps>) {
           )}
           {status === "authenticated" && session && (
             <div className="flex gap-4 pr-2">
+              <div className="my-auto">
+                <Select>
+                  <SelectTrigger className="w-[250px] bg-neutral-100">
+                    <div className="flex items-center gap-2">
+                      <Workflow
+                        size={20}
+                        strokeWidth={2.0}
+                        className="mr-2 text-neutral-600"
+                      />
+                      <SelectValue
+                        placeholder="Select mqtt broker"
+                        className="font-medium"
+                      />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Active mqtt brokers</SelectLabel>
+                      <SelectItem value="node01">Broker-node01</SelectItem>
+                      <SelectItem value="node02">Broker-node02</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="hidden gap-1">
                 <BellDot size={25} className="my-auto" />
               </div>
