@@ -16,9 +16,33 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { HelpCircle, Loader } from "lucide-react";
 import { CreateMQTTBrokerSchema } from "@/shared/schema/mqtt-brokers";
+import { useSession } from "next-auth/react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createMQTTBroker } from "./hooks/useMQTTBrokers";
 
 export function CreateMQTTBrokerForm() {
   //   create MQTTBroker mutation
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  const accessToken = session?.access_token;
+
+  const createMQTTBrokerMutation = useMutation({
+    mutationFn: createMQTTBroker,
+    onSuccess: () => {
+      console.log("MQTT Broker created");
+      queryClient
+        .invalidateQueries({
+          queryKey: ["mqtt-brokers"],
+        })
+        .then(() => {
+          console.log("Invalidated mqtt-brokers query");
+        })
+        .catch((error) => {
+          console.error("Error invalidating mqtt-brokers query", error);
+        });
+    },
+  });
 
   const form = useForm<z.infer<typeof CreateMQTTBrokerSchema>>({
     resolver: zodResolver(CreateMQTTBrokerSchema),
@@ -32,12 +56,15 @@ export function CreateMQTTBrokerForm() {
 
   function onSubmit(values: z.infer<typeof CreateMQTTBrokerSchema>) {
     console.log("submitting");
-    console.log(values);
 
     // Call the create MQTTBroker mutation
+    createMQTTBrokerMutation.mutate({
+      accessToken: accessToken ?? "",
+      broker: values,
+    });
   }
 
-  const isLoading = false;
+  const isLoading = createMQTTBrokerMutation.isLoading;
 
   return (
     <Form {...form}>

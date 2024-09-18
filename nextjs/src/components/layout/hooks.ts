@@ -9,9 +9,6 @@ export const useDynamicSidebar = () => {
     useMQTTRequestResponse<DynamicSidebarResponse>({
       requestTopic: "/topology/subscribe",
       responseTopic: "/topology",
-      requestMessage: {
-        count: 1,
-      },
     });
 
   const sideBarItems = Object.entries(sidebarRes?.topology ?? {}).reduce(

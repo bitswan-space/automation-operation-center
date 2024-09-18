@@ -22,9 +22,6 @@ export const usePipelineTopology = (props: UsePipelineTopologyProps) => {
   const { response: topology } = useMQTTRequestResponse<PumpTopologyResponse>({
     requestTopic: pipelineTopologyRequestTopic,
     responseTopic: pipelineTopologyResponseTopic,
-    requestMessage: {
-      count: 1,
-    },
   });
 
   const pipelineTopology = flattenTopology(topology);

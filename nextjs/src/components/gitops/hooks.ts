@@ -3,6 +3,7 @@ import axios, { type AxiosError } from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { signIn, useSession } from "next-auth/react";
 import { env } from "@/env.mjs";
+import { BASE_API_URL } from "@/shared/constants";
 
 type Gitops = {
   name: string;
@@ -21,8 +22,6 @@ type GitopsListResponse = {
   previous: string | null;
   results: Gitops[];
 };
-
-const BASE_API_URL = `${env.NEXT_PUBLIC_BITSWAN_BACKEND_API_URL}/api`;
 
 export const fetchGitopsList = (
   apiToken?: string,

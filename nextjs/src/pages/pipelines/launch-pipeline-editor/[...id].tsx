@@ -38,27 +38,29 @@ const PipelineEditorLaunchPage: NextPageWithLayout<
     url: string;
   };
 
-  useMQTTRequestResponse<PipelineEditorLaunchResponse>({
-    requestTopic: `${id}/editor/launch/subscribe`,
-    responseTopic: `${id}/editor/launch`,
-    requestMessage: {
-      count: 1,
-    },
-    onMessage: (response) => {
-      setLogMessages((prev) => [...prev, response.message]);
-    },
-  });
+  const { response: logMessage } =
+    useMQTTRequestResponse<PipelineEditorLaunchResponse>({
+      requestTopic: `${id}/editor/launch/subscribe`,
+      responseTopic: `${id}/editor/launch`,
+    });
 
-  useMQTTRequestResponse<PipelineEditorRedirectResponse>({
-    responseTopic: `${id}/editor/redirect`,
-    requestTopic: `${id}/editor/redirect/subscribe`,
-    requestMessage: {
-      count: 1,
-    },
-    onMessage: (response) => {
-      if (response.redirect) setRedirectParams(response);
-    },
-  });
+  React.useEffect(() => {
+    if (logMessage) {
+      setLogMessages((prev) => [...prev, logMessage.message]);
+    }
+  }, [logMessage]);
+
+  const { response: redirectRes } =
+    useMQTTRequestResponse<PipelineEditorRedirectResponse>({
+      responseTopic: `${id}/editor/redirect`,
+      requestTopic: `${id}/editor/redirect/subscribe`,
+    });
+
+  React.useEffect(() => {
+    if (redirectRes) {
+      setRedirectParams(redirectRes);
+    }
+  }, [redirectRes]);
 
   React.useEffect(() => {
     console.log("redirectParams", redirectParams);
@@ -102,25 +104,23 @@ const PipelineEditorLaunchPage: NextPageWithLayout<
   };
 
   return (
-    <>
-      <div className="h-screen p-4 lg:p-8">
-        <h1 className="text-2xl font-bold text-stone-700 md:hidden">
-          Launching Pipeline Editor ...
-        </h1>
-        <TitleBar title={"Launching Pipeline Editor ..."} />
+    <div className="h-screen p-4 lg:p-8">
+      <h1 className="text-2xl font-bold text-stone-700 md:hidden">
+        Launching Pipeline Editor ...
+      </h1>
+      <TitleBar title={"Launching Pipeline Editor ..."} />
 
-        <div className="space-x-4 py-4 text-sm font-semibold text-neutral-600">
-          {getBreadcrumbs([id])}
-        </div>
-        <div className="h-5/6 overflow-auto overflow-y-scroll rounded-md bg-black/90 p-4 font-mono text-xs text-white/90">
-          <ul className=" space-y-2">
-            {logMessages.map((log, index) => (
-              <li key={index}>{log}</li>
-            ))}
-          </ul>
-        </div>
+      <div className="space-x-4 py-4 text-sm font-semibold text-neutral-600">
+        {getBreadcrumbs([id])}
       </div>
-    </>
+      <div className="h-5/6 overflow-auto overflow-y-scroll rounded-md bg-black/90 p-4 font-mono text-xs text-white/90">
+        <ul className=" space-y-2">
+          {logMessages.map((log) => (
+            <li key={log}>{log}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 };
 

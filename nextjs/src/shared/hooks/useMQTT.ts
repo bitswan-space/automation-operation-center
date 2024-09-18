@@ -11,39 +11,42 @@ export function useMQTT<PayloadT>() {
   } | null>(null);
   const [connectStatus, setConnectStatus] = React.useState("Connect");
 
-  const mqttConnect = (host: string, mqttOption: mqtt.IClientOptions) => {
-    setConnectStatus("Connecting");
-    const newClient = mqtt.connect(host, mqttOption);
+  const mqttConnect = React.useCallback(
+    (host: string, mqttOption: mqtt.IClientOptions) => {
+      setConnectStatus("Connecting");
+      const newClient = mqtt.connect(host, mqttOption);
 
-    newClient.on("connect", () => {
-      setConnectStatus("Connected");
-      console.log("connection successful");
-    });
+      newClient.on("connect", () => {
+        setConnectStatus("Connected");
+        console.log("connection successful");
+      });
 
-    newClient.on("error", (err) => {
-      console.error("Connection error: ", err);
-      newClient.end();
-    });
+      newClient.on("error", (err) => {
+        console.error("Connection error: ", err);
+        newClient.end();
+      });
 
-    newClient.on("reconnect", () => {
-      setConnectStatus("Reconnecting");
-    });
+      newClient.on("reconnect", () => {
+        setConnectStatus("Reconnecting");
+      });
 
-    newClient.on("message", (topic, message) => {
-      const payload = {
-        topic,
-        message: JSON.parse(message.toString()) as PayloadT,
-      };
-      setPayload(payload);
-      console.log(
-        `received message: ${message.toString()} from topic: ${topic}`,
-      );
-    });
+      newClient.on("message", (topic, message) => {
+        const payload = {
+          topic,
+          message: JSON.parse(message.toString()) as PayloadT,
+        };
+        setPayload(() => payload);
+        console.log(
+          `received message: ${message.toString()} from topic: ${topic}`,
+        );
+      });
 
-    clientRef.current = newClient;
-  };
+      clientRef.current = newClient;
+    },
+    [],
+  );
 
-  const mqttDisconnect = () => {
+  const mqttDisconnect = React.useCallback(() => {
     if (clientRef.current) {
       try {
         clientRef.current.end(false, () => {
@@ -55,63 +58,68 @@ export function useMQTT<PayloadT>() {
         console.log("disconnect error:", error);
       }
     }
-  };
+  }, []);
 
-  const mqttPublish = (context: {
-    topic: string;
-    qos: QoS;
-    payload: string | Buffer;
-  }) => {
-    if (clientRef.current) {
-      const { topic, qos, payload } = context;
-      clientRef.current.publish(
-        topic,
-        payload,
-        {
-          qos,
-        },
-        (error) => {
-          if (error) {
-            console.log("Publish error: ", error);
-          }
-        },
-      );
-    }
-  };
+  const mqttPublish = React.useCallback(
+    (context: { topic: string; qos: QoS; payload: string | Buffer }) => {
+      if (clientRef.current) {
+        const { topic, qos, payload } = context;
+        clientRef.current.publish(
+          topic,
+          payload,
+          {
+            qos,
+          },
+          (error) => {
+            if (error) {
+              console.log("Publish error: ", error);
+            }
+          },
+        );
+      }
+    },
+    [],
+  );
 
-  const mqttSub = (subscription: { topic: string; qos: QoS }) => {
-    if (clientRef.current) {
-      const { topic, qos } = subscription;
-      clientRef.current.subscribe(
-        topic,
-        {
-          qos,
-        },
-        (error) => {
+  const mqttSub = React.useCallback(
+    (subscription: { topic: string; qos: QoS }) => {
+      if (clientRef.current) {
+        const { topic, qos } = subscription;
+        clientRef.current.subscribe(
+          topic,
+          {
+            qos,
+          },
+          (error) => {
+            if (error) {
+              console.log("Subscribe to topics error", error);
+              return;
+            }
+            console.log(`Subscribe to topics: ${topic}`);
+            setIsSubed(true);
+          },
+        );
+      }
+    },
+    [],
+  );
+
+  const mqttUnSub = React.useCallback(
+    (subscription: { topic: string; qos: QoS }) => {
+      if (clientRef.current) {
+        const { topic } = subscription;
+        clientRef.current.unsubscribe(topic, (error) => {
           if (error) {
-            console.log("Subscribe to topics error", error);
+            console.log("Unsubscribe error", error);
             return;
           }
-          console.log(`Subscribe to topics: ${topic}`);
-          setIsSubed(true);
-        },
-      );
-    }
-  };
-
-  const mqttUnSub = (subscription: { topic: string; qos: QoS }) => {
-    if (clientRef.current) {
-      const { topic } = subscription;
-      clientRef.current.unsubscribe(topic, (error) => {
-        if (error) {
-          console.log("Unsubscribe error", error);
-          return;
-        }
-        console.log(`unsubscribed topic: ${topic}`);
-        setIsSubed(false);
-      });
-    }
-  };
+          console.log(`unsubscribed topic: ${topic}`);
+          setIsSubed(false);
+        });
+      }
+    },
+    [],
+  );
 
   React.useEffect(() => {
     return () => {

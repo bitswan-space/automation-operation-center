@@ -1,11 +1,6 @@
 import React from "react";
-import { getMQTTConfig } from "@/server/queries/mqtt";
+import { useActiveMQTTBroker } from "@/context/MQTTBrokerProvider";
 import { useMQTT } from "./useMQTT";
-import { useQuery } from "@tanstack/react-query";
-
-interface MQTTConfig {
-  url: string;
-}
 
 type UseMQTTRequestResponseArgs<ResponseT> = {
   requestTopic: string;
@@ -18,28 +13,22 @@ type UseMQTTRequestResponseArgs<ResponseT> = {
 export function useMQTTRequestResponse<ResponseT>({
   requestTopic,
   responseTopic,
-  requestMessage,
-  onMessage, // infiniteSubscription = false,
+  requestMessage, // infiniteSubscription = false,
 }: UseMQTTRequestResponseArgs<ResponseT>) {
   const { mqttConnect, mqttSub, payload, mqttPublish } = useMQTT<
     ResponseT & { remaining_subscription_count?: number }
   >();
 
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [response, setResponse] = React.useState<ResponseT | null>(null);
-  const [error, setError] = React.useState<Error | null>(null);
+  const activeMQTTBroker = useActiveMQTTBroker();
 
-  // Use refs to store stable references to functions
-  const mqttConnectRef = React.useRef(mqttConnect);
-  const mqttSubRef = React.useRef(mqttSub);
-  const mqttPublishRef = React.useRef(mqttPublish);
-  const onMessageRef = React.useRef(onMessage);
+  const defaultRequest = React.useMemo(() => {
+    return { count: 1 };
+  }, []);
 
-  useQuery<MQTTConfig>({
-    queryKey: ["mqttConfig"],
-    queryFn: getMQTTConfig,
-    onSuccess: (mqttConfig) => {
-      mqttConnectRef.current(mqttConfig.url, {
+  React.useEffect(() => {
+    console.log("useffect", activeMQTTBroker);
+    if (activeMQTTBroker) {
+      mqttConnect(activeMQTTBroker.url, {
         clientId: "bitswan-poc" + Math.random().toString(16).substring(2, 8),
         clean: true,
         reconnectPeriod: 1000,
@@ -48,38 +37,34 @@ export function useMQTTRequestResponse<ResponseT>({
         password: "randompassword",
       });
 
-      const req = { count: 1 };
-
-      mqttPublishRef.current({
+      mqttPublish({
         topic: requestTopic,
-        payload: JSON.stringify(requestMessage) ?? JSON.stringify(req),
+        payload:
+          JSON.stringify(requestMessage) ?? JSON.stringify(defaultRequest),
         qos: 0,
       });
 
-      mqttSubRef.current({
+      mqttSub({
         topic: responseTopic,
         qos: 0,
       });
-    },
-  });
-
-  React.useEffect(() => {
-    if (payload) {
-      setIsLoading(false);
-      try {
-        const parsedPayload = payload.message;
-        setResponse(parsedPayload);
-        onMessageRef.current?.(parsedPayload);
-      } catch (err) {
-        setError(new Error("Failed to parse payload"));
-        setIsLoading(false);
-      }
     }
-  }, [payload]);
+  }, [
+    activeMQTTBroker,
+    defaultRequest,
+    mqttConnect,
+    mqttPublish,
+    mqttSub,
+    requestMessage,
+    requestTopic,
+    responseTopic,
+  ]);
+
+  const isLoading = !payload;
+  const response = payload?.message;
 
   return {
     response,
     isLoading,
-    error,
   };
 }

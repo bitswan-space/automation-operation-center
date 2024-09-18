@@ -188,18 +188,21 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
     count: number;
   };
 
-  useMQTTRequestResponse<EventResponse>({
+  const requestMessage = React.useMemo(() => {
+    return { count: 5 };
+  }, []);
+
+  const { response: event } = useMQTTRequestResponse<EventResponse>({
     requestTopic: pipelineEventsRequestTopic,
     responseTopic: pipelineEventsResponseTopic,
-    requestMessage: {
-      count: 1,
-    },
-    onMessage: (response) => {
-      if (!pauseStreamRef.current) {
-        setComponentEvents((events) => [response, ...events]);
-      }
-    },
+    requestMessage: requestMessage,
   });
+
+  React.useEffect(() => {
+    if (event && !pauseStreamRef.current) {
+      setComponentEvents((prevEvents) => [...prevEvents, event]);
+    }
+  }, [event]);
 
   return (
     <Card className="w-[800px] rounded-sm border border-neutral-200 shadow-md">

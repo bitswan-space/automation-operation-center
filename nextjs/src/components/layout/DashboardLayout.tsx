@@ -1,24 +1,22 @@
 import SideNavBar, { MobileNavSheet } from "./SideNavBar";
 
 import Image from "next/image";
-import { SideBarContext } from "@/context/sideBarContext";
+import { MQTTBrokerProvider } from "@/context/MQTTBrokerProvider";
+import React from "react";
+import { SideBarContextProvider } from "@/context/SideBarContextProvider";
 import { Toaster } from "../ui/sonner";
 import clsx from "clsx";
-import { useDynamicSidebar } from "./hooks";
-import { useState } from "react";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 function DashboardLayout({ children }: LayoutProps) {
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
-
-  const { sideBarItems } = useDynamicSidebar();
+  const [isExpanded, setIsExpanded] = React.useState<boolean>(false);
 
   return (
-    sideBarItems && (
-      <SideBarContext.Provider value={sideBarItems}>
+    <MQTTBrokerProvider>
+      <SideBarContextProvider>
         <div className="font-strawford flex h-full min-h-screen flex-col bg-stone-100">
           <div className="flex flex-grow">
             <div className="fixed hidden h-screen bg-stone-200 md:block">
@@ -48,8 +46,8 @@ function DashboardLayout({ children }: LayoutProps) {
             <Toaster />
           </div>
         </div>
-      </SideBarContext.Provider>
-    )
+      </SideBarContextProvider>
+    </MQTTBrokerProvider>
   );
 }
 

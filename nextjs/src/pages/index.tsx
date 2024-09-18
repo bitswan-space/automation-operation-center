@@ -3,7 +3,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { type NextPageWithLayout } from "./_app";
 import { type ReactElement } from "react";
 import { TitleBar } from "@/components/layout/TitleBar";
-import { SideBarContext } from "@/context/sideBarContext";
+import { SideBarContext } from "@/context/SideBarContextProvider";
 import { type DynamicSidebarItem } from "@/types/sidebar";
 import React from "react";
 import clsx from "clsx";

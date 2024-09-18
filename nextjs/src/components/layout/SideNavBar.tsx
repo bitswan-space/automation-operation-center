@@ -13,7 +13,7 @@ import {
   SheetTrigger,
 } from "../ui/sheet";
 import React from "react";
-import { SideBarContext } from "@/context/sideBarContext";
+import { SideBarContext } from "@/context/SideBarContextProvider";
 import { Skeleton } from "../ui/skeleton";
 import Link from "next/link";
 import { handleError } from "@/utils/errors";
