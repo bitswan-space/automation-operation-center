@@ -7,6 +7,7 @@ import {
   type ColumnFiltersState,
   type SortingState,
   type VisibilityState,
+  createColumnHelper,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -26,85 +27,47 @@ import {
 import { Button } from "@/components/ui/button";
 
 import { Input } from "@/components/ui/input";
-import { Badge } from "../ui/badge";
-import { GroupComboBoxSelector } from "../groups/GroupComboBoxSelector";
+import { Trash2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
-const data: User[] = [
+const data: Group[] = [
   {
-    id: "m5gr84i9",
-    name: "Kenny Lee",
-    groups: [
-      {
-        name: "Management",
-        color: "#1d4ed8",
-      },
-      {
-        name: "HR",
-        color: "#d97706",
-      },
-      {
-        name: "Support",
-        color: "#15803d",
-      },
-    ],
-    email: "ken99@yahoo.com",
+    id: "1",
+    name: "Management",
+    color: "#1d4ed8",
   },
   {
-    id: "3u1reuv4",
-    name: "Abel Lee",
-    groups: [
-      {
-        name: "Admin",
-        color: "#6d28d9",
-      },
-    ],
-    email: "Abe45@gmail.com",
+    id: "2",
+    name: "HR",
+    color: "#d97706",
   },
   {
-    id: "derv1ws0",
-    name: "Monserrat Lee",
-    groups: [
-      {
-        name: "HR",
-        color: "#d97706",
-      },
-      {
-        name: "Support",
-        color: "#15803d",
-      },
-    ],
-    email: "Monserrat44@gmail.com",
+    id: "3",
+    name: "Support",
+    color: "#15803d",
   },
   {
-    id: "5kma53ae",
-    name: "Silas Lee",
-    groups: [
-      {
-        name: "Management",
-        color: "#1d4ed8",
-      },
-      {
-        name: "Admin",
-        color: "#6d28d9",
-      },
-    ],
-    email: "Silas22@gmail.com",
+    id: "4",
+    name: "Admin",
+    color: "#6d28d9",
   },
 ];
 
 type Group = {
+  id: string;
   name: string;
   color: string;
 };
 
-export type User = {
-  id: string;
-  name: string;
-  groups: Group[];
-  email: string;
-};
+const columnHelper = createColumnHelper<Group>();
 
-export const columns: ColumnDef<User>[] = [
+export const columns: ColumnDef<Group>[] = [
   {
     accessorKey: "name",
     header: () => <div className="p-2 px-6 text-left font-semibold">Name</div>,
@@ -113,42 +76,30 @@ export const columns: ColumnDef<User>[] = [
     ),
   },
   {
-    accessorKey: "email",
-    header: () => <div className="font-semibold">Email</div>,
-    cell: ({ row }) => <div>{row.getValue("email")}</div>,
+    accessorKey: "color",
+    header: () => <div className="font-semibold">Color</div>,
+    cell: ({ row }) => (
+      <div
+        className="h-4 w-4 rounded-full"
+        style={{
+          backgroundColor: row.getValue("color"),
+        }}
+      ></div>
+    ),
   },
-  {
-    accessorKey: "groups",
-    header: () => <div className="font-semibold">Groups</div>,
-    cell: ({ row }) => {
-      const groups = row.original.groups;
-
-      return (
-        <div className="flex max-w-3xl flex-wrap gap-2 ">
-          {groups.map((group, index) => {
-            return (
-              <Badge
-                key={index}
-                variant={"outline"}
-                className={`border-[${group.color}] bg-[${group.color}]/10 text-[${group.color}]`}
-                style={{
-                  borderColor: group.color,
-                  backgroundColor: `${group.color}1A`,
-                  color: group.color,
-                }}
-              >
-                {group.name}
-              </Badge>
-            );
-          })}
-          <GroupComboBoxSelector />
-        </div>
-      );
-    },
-  },
+  columnHelper.display({
+    id: "select",
+    cell: () => (
+      <div className="flex justify-end px-4 text-end">
+        <Trash2 size={20} className="text-neutral-500" />
+      </div>
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  }),
 ];
 
-export function UserDetailTable() {
+export function GroupDetailTable() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -176,12 +127,34 @@ export function UserDetailTable() {
     },
   });
 
+  const groupColors = ["#1d4ed8", "#d97706", "#15803d", "#6d28d9"];
+
   return (
     <div className="w-full">
       <div className="flex items-center gap-4 py-4">
-        <Input placeholder="Team member email " className="max-w-xs" />
+        <Input placeholder="Group name" className="max-w-xs" />
+        <Select>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Group color" />
+          </SelectTrigger>
+          <SelectContent>
+            {groupColors.map((color) => (
+              <SelectItem value={color} key={color}>
+                <div className="flex gap-2">
+                  <div
+                    className="h-4 w-4 rounded-full"
+                    style={{
+                      backgroundColor: color,
+                    }}
+                  ></div>
+                  <div>{color}</div>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Button className="bg-blue-600 px-16 hover:bg-blue-700/80">
-          Invite
+          Create Group
         </Button>
       </div>
       <div className="rounded-md border">

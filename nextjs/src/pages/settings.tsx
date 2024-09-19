@@ -5,12 +5,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import React from "react";
 import { TitleBar } from "../components/layout/TitleBar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Network, ServerCog, Users } from "lucide-react";
+import { Network, ServerCog, Ungroup, Users } from "lucide-react";
 import { CreateGitopsForm } from "../components/gitops/CreateGitopsForm";
 import { GitopsList } from "../components/gitops/GitopsList";
 import { CreateMQTTBrokerForm } from "@/components/mqtt-brokers/CreateMQTTBrokerForm";
 import { MQTTBrokersList } from "@/components/mqtt-brokers/MQTTBrokersList";
 import { UserDetailTable } from "@/components/users/UserDetailTable";
+import { GroupDetailTable } from "@/components/groups/GroupDetailTable";
 
 const SettingsPage: NextPageWithLayout = () => {
   return (
@@ -30,6 +31,9 @@ const SettingsPage: NextPageWithLayout = () => {
                 <TabsTrigger value="users">
                   <Users size={20} className="mr-2" /> Users
                 </TabsTrigger>
+                <TabsTrigger value="groups">
+                  <Ungroup size={20} className="mr-2" /> Groups
+                </TabsTrigger>
                 <TabsTrigger value="gitops">
                   <ServerCog size={20} className="mr-2" /> Gitops
                 </TabsTrigger>
@@ -37,9 +41,15 @@ const SettingsPage: NextPageWithLayout = () => {
                   <Network size={20} className="mr-2" /> Brokers
                 </TabsTrigger>
               </TabsList>
+
               <TabsContent value="users">
                 <div className="w-full">
                   <UserDetailTable />
+                </div>
+              </TabsContent>
+              <TabsContent value="groups">
+                <div className="w-full">
+                  <GroupDetailTable />
                 </div>
               </TabsContent>
               <TabsContent value="gitops">
