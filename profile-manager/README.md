@@ -1,5 +1,7 @@
-# Container Discovery Service
+# Bitswan Profile Manager
 Service which is listening on MQTT topics of CDS agents and merge the topologies to one topology of all running pipelines. The service is also managing dynamic navigation menu in POC using attached JSON file.
+
+TODO: Can also be used to create configurable "profiles" which only include certain pipelines/automations and sidebar items. This is bitswan AOC's main access controll mechanism.
 
 ## Dependencies
 - MQTT Broker (Mosquitto)
