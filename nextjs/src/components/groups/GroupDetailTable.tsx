@@ -27,35 +27,35 @@ import {
 import { Button } from "@/components/ui/button";
 
 import { Input } from "@/components/ui/input";
-import { Trash2 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
+import { PenLine, Trash2 } from "lucide-react";
+import { CreateGroupFormSheet } from "./CreateGroupFormSheet";
+import { Badge } from "../ui/badge";
+import { Separator } from "../ui/separator";
 
 const data: Group[] = [
   {
     id: "1",
     name: "Management",
     color: "#1d4ed8",
+    broker: "test-broker",
   },
   {
     id: "2",
     name: "HR",
     color: "#d97706",
+    broker: "test-broker",
   },
   {
     id: "3",
     name: "Support",
     color: "#15803d",
+    broker: "test-broker",
   },
   {
     id: "4",
     name: "Admin",
     color: "#6d28d9",
+    broker: "test-broker",
   },
 ];
 
@@ -63,6 +63,7 @@ type Group = {
   id: string;
   name: string;
   color: string;
+  broker: string;
 };
 
 const columnHelper = createColumnHelper<Group>();
@@ -70,14 +71,23 @@ const columnHelper = createColumnHelper<Group>();
 export const columns: ColumnDef<Group>[] = [
   {
     accessorKey: "name",
-    header: () => <div className="p-2 px-6 text-left font-semibold">Name</div>,
+    header: () => <div className="p-2 px-6 font-bold">Name</div>,
     cell: ({ row }) => (
       <div className="p-2 px-6 capitalize">{row.getValue("name")}</div>
     ),
   },
   {
+    accessorKey: "broker",
+    header: () => <div className="p-2 px-6 font-bold">Broker</div>,
+    cell: ({ row }) => (
+      <Badge variant={"outline"} className="font-mono">
+        {row.getValue("broker")}
+      </Badge>
+    ),
+  },
+  {
     accessorKey: "color",
-    header: () => <div className="font-semibold">Color</div>,
+    header: () => <div className="font-bold">Color</div>,
     cell: ({ row }) => (
       <div
         className="h-4 w-4 rounded-full"
@@ -90,7 +100,9 @@ export const columns: ColumnDef<Group>[] = [
   columnHelper.display({
     id: "select",
     cell: () => (
-      <div className="flex justify-end px-4 text-end">
+      <div className="flex justify-end gap-2 px-4 text-end">
+        <PenLine size={20} className="text-neutral-500" />
+        <Separator orientation="vertical" className="h-4 w-px" />
         <Trash2 size={20} className="text-neutral-500" />
       </div>
     ),
@@ -127,35 +139,12 @@ export function GroupDetailTable() {
     },
   });
 
-  const groupColors = ["#1d4ed8", "#d97706", "#15803d", "#6d28d9"];
-
   return (
     <div className="w-full">
-      <div className="flex items-center gap-4 py-4">
-        <Input placeholder="Group name" className="max-w-xs" />
-        <Select>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Group color" />
-          </SelectTrigger>
-          <SelectContent>
-            {groupColors.map((color) => (
-              <SelectItem value={color} key={color}>
-                <div className="flex gap-2">
-                  <div
-                    className="h-4 w-4 rounded-full"
-                    style={{
-                      backgroundColor: color,
-                    }}
-                  ></div>
-                  <div>{color}</div>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button className="bg-blue-600 px-16 hover:bg-blue-700/80">
-          Create Group
-        </Button>
+      <div className="flex items-center justify-between gap-4 py-4">
+        <Input placeholder="Search groups..." className="max-w-xs" />
+
+        <CreateGroupFormSheet />
       </div>
       <div className="rounded-md border">
         <Table>
