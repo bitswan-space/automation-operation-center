@@ -34,7 +34,11 @@ import React from "react";
 import { Skeleton } from "../ui/skeleton";
 import { Textarea } from "../ui/textarea";
 import { USER_GROUPS_QUERY_KEY } from "@/shared/constants";
-import { createUserGroup } from "./groupsHooks";
+import {
+  createUserGroup,
+  updateUserGroup,
+  type UserGroup,
+} from "./groupsHooks";
 import { useForm } from "react-hook-form";
 import { useMQTTBrokers } from "../mqtt-brokers/hooks/useMQTTBrokers";
 import { useSession } from "next-auth/react";
@@ -50,7 +54,14 @@ export const CreateGroupFormSchema = z.object({
   tag_color: z.string().optional(),
 });
 
-export function CreateGroupFormSheet() {
+type CreateGroupFormSheetProps = {
+  trigger: React.ReactNode;
+  group?: UserGroup;
+};
+
+export function CreateGroupFormSheet(props: CreateGroupFormSheetProps) {
+  const { trigger, group } = props;
+
   const { data: session } = useSession();
   const queryClient = useQueryClient();
 
@@ -62,9 +73,31 @@ export function CreateGroupFormSheet() {
   const form = useForm<z.infer<typeof CreateGroupFormSchema>>({
     resolver: zodResolver(CreateGroupFormSchema),
     defaultValues: {
-      name: "",
-      description: "",
-      tag_color: "#aabbcc",
+      name: group?.name ?? "",
+      description: group?.description ?? "",
+      tag_color: group?.tag_color ?? "#aabbcc",
+      broker: group?.broker.id,
+    },
+  });
+
+  const invalidateUserGroupsQuery = () => {
+    queryClient
+      .invalidateQueries({
+        queryKey: [USER_GROUPS_QUERY_KEY],
+      })
+      .then(() => {
+        console.log("Invalidated user-groups query");
+      })
+      .catch((error) => {
+        console.error("Error invalidating user-groups query", error);
+      });
+  };
+
+  const updateUserGroupMutation = useMutation({
+    mutationFn: updateUserGroup,
+    onSuccess: () => {
+      console.log("User group updated");
+      invalidateUserGroupsQuery();
     },
   });
 
@@ -72,22 +105,21 @@ export function CreateGroupFormSheet() {
     mutationFn: createUserGroup,
     onSuccess: () => {
       console.log("User group created");
-      queryClient
-        .invalidateQueries({
-          queryKey: [USER_GROUPS_QUERY_KEY],
-        })
-        .then(() => {
-          console.log("Invalidated user-groups query");
-        })
-        .catch((error) => {
-          console.error("Error invalidating user-groups query", error);
-        });
+      invalidateUserGroupsQuery();
     },
   });
 
   function onSubmit(values: z.infer<typeof CreateGroupFormSchema>) {
     console.log("submitting");
 
+    if (group) {
+      updateUserGroupMutation.mutate({
+        accessToken: accessToken ?? "",
+        id: group.id,
+        userGroup: values,
+      });
+      return;
+    }
     // Call the create MQTTBroker mutation
     createUserGroupMutation.mutate({
       accessToken: accessToken ?? "",
@@ -95,15 +127,14 @@ export function CreateGroupFormSheet() {
     });
   }
 
-  const isLoading = createUserGroupMutation.isLoading || isLoadingMQTTBrokers;
+  const isLoading =
+    createUserGroupMutation.isLoading ||
+    isLoadingMQTTBrokers ||
+    updateUserGroupMutation.isLoading;
 
   return (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button className="bg-blue-600 hover:bg-blue-700/80">
-          Create Group
-        </Button>
-      </SheetTrigger>
+      <SheetTrigger asChild>{trigger}</SheetTrigger>
       <SheetContent className="min-w-full space-y-2 p-4 md:min-w-[500px]">
         <SheetHeader>
           <SheetTitle>Create Group</SheetTitle>

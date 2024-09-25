@@ -29,13 +29,22 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "../ui/badge";
 import { GroupComboBoxSelector } from "../groups/GroupComboBoxSelector";
 import { type OrgUser, useOrgUsers } from "./usersHooks";
+import {
+  removeMemberFromGroup,
+  useUserGroups,
+  type UserGroup,
+} from "../groups/groupsHooks";
+import { Loader2, X } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ORG_USERS_QUERY_KEY } from "@/shared/constants";
 
 export const columns: ColumnDef<OrgUser>[] = [
   {
     accessorKey: "username",
     header: () => <div className="p-2 px-6 text-left font-semibold">Name</div>,
     cell: ({ row }) => (
-      <div className="p-2 px-6 capitalize">{row.getValue("username")}</div>
+      <div className="p-2 px-6">{row.getValue("username")}</div>
     ),
   },
   {
@@ -48,28 +57,9 @@ export const columns: ColumnDef<OrgUser>[] = [
     header: () => <div className="font-semibold">Groups</div>,
     cell: ({ row }) => {
       const groups = row.original.groups;
+      const userId = row.original.id;
 
-      return (
-        <div className="flex max-w-3xl flex-wrap gap-2 ">
-          {groups.map((group) => {
-            return (
-              <Badge
-                key={group.id}
-                variant={"outline"}
-                className={`border-[${group.color}] bg-[${group.color}]/10 text-[${group.color}]`}
-                style={{
-                  borderColor: group.color,
-                  backgroundColor: `${group.color}1A`,
-                  color: group.color,
-                }}
-              >
-                {group.name}
-              </Badge>
-            );
-          })}
-          <GroupComboBoxSelector />
-        </div>
-      );
+      return <GroupBadgeList groups={groups} userId={userId} />;
     },
   },
 ];
@@ -183,6 +173,92 @@ export function UserDetailTable() {
           </Button>
         </div>
       </div>
+    </div>
+  );
+}
+
+type GroupBadgeListProps = {
+  groups: UserGroup[];
+  userId: string;
+};
+
+function GroupBadgeList(props: GroupBadgeListProps) {
+  const { groups: userGroups, userId } = props;
+  const { data: allOrgGroups } = useUserGroups();
+
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  const accessToken = session?.access_token;
+
+  const removeMemberFromGroupMutation = useMutation({
+    mutationFn: removeMemberFromGroup,
+    onSuccess: () => {
+      console.log("User group updated");
+      queryClient
+        .invalidateQueries({
+          queryKey: [ORG_USERS_QUERY_KEY],
+        })
+        .then(() => {
+          console.log("Invalidated org-users query");
+        })
+        .catch((error) => {
+          console.error("Error invalidating org-users query", error);
+        });
+    },
+  });
+
+  const unselectedGroups = React.useMemo(() => {
+    if (userGroups.length === 0) return allOrgGroups?.results;
+    return allOrgGroups?.results?.filter((orgGroup) =>
+      userGroups.find((userGroup) => orgGroup.id !== userGroup.id),
+    );
+  }, [allOrgGroups?.results, userGroups]);
+
+  console.log("unselectedGroups", unselectedGroups);
+  console.log("allOrgGroups", allOrgGroups);
+  console.log("userGroups", userGroups);
+
+  const onRemoveGroupClick = (groupId?: string) => {
+    console.log("remove group", groupId);
+    removeMemberFromGroupMutation.mutate({
+      accessToken: accessToken ?? "",
+      userId: userId,
+      groupId: groupId ?? "",
+    });
+  };
+
+  const isLoading = removeMemberFromGroupMutation.isLoading;
+  return (
+    <div className="flex max-w-3xl flex-wrap gap-2 ">
+      {userGroups.map((group) => {
+        return (
+          <Badge
+            key={group.id}
+            variant={"outline"}
+            className={`border-[${group.tag_color}] bg-[${group.tag_color}]/10 text-[${group.tag_color}] flex gap-2`}
+            style={{
+              borderColor: group.tag_color,
+              backgroundColor: `${group.tag_color}1A`,
+              color: group.tag_color,
+            }}
+          >
+            <span>{group.name}</span>
+            <button
+              className="cursor-pointer"
+              onClick={() => onRemoveGroupClick(group.id)}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <X className="h-4 w-4 " />
+              )}
+            </button>
+          </Badge>
+        );
+      })}
+      <GroupComboBoxSelector groups={unselectedGroups ?? []} userId={userId} />
     </div>
   );
 }

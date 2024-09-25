@@ -45,22 +45,22 @@ export const columns: ColumnDef<UserGroup>[] = [
     cell: ({ row }) => <div className="p-2 px-6">{row.getValue("name")}</div>,
   },
   {
-    accessorKey: "broker",
+    accessorKey: "broker.name",
     header: () => <div className="p-2 px-6 font-bold">Broker</div>,
     cell: ({ row }) => (
       <Badge variant={"outline"} className="font-mono">
-        {row.getValue("broker")}
+        {row.getValue("broker_name")}
       </Badge>
     ),
   },
   {
-    accessorKey: "color",
+    accessorKey: "tag_color",
     header: () => <div className="font-bold">Color</div>,
     cell: ({ row }) => (
       <div
         className="h-4 w-4 rounded-full"
         style={{
-          backgroundColor: row.getValue("color"),
+          backgroundColor: row.getValue("tag_color"),
         }}
       ></div>
     ),
@@ -69,7 +69,7 @@ export const columns: ColumnDef<UserGroup>[] = [
     id: "select",
     cell: ({ row }) => {
       const id = row.original.id;
-      return <GroupActions id={id} />;
+      return <GroupActions id={id} group={row.original} />;
     },
     enableSorting: false,
     enableHiding: false,
@@ -78,16 +78,6 @@ export const columns: ColumnDef<UserGroup>[] = [
 
 export function GroupDetailTable() {
   const { data: userGroups, isLoading } = useUserGroups();
-
-  const userGroupsData = React.useMemo(
-    () =>
-      userGroups?.results?.map((userGroup) => ({
-        ...userGroup,
-        color: userGroup.attributes.tag_color?.[0] ?? "#aabbcc",
-        broker: "test-broker",
-      })) ?? [],
-    [userGroups],
-  );
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -98,7 +88,7 @@ export function GroupDetailTable() {
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
-    data: userGroupsData,
+    data: userGroups?.results ?? [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -121,7 +111,13 @@ export function GroupDetailTable() {
       <div className="flex items-center justify-between gap-4 py-4">
         <Input placeholder="Search groups..." className="max-w-xs" />
 
-        <CreateGroupFormSheet />
+        <CreateGroupFormSheet
+          trigger={
+            <Button className="bg-blue-600 hover:bg-blue-700/80">
+              Create Group
+            </Button>
+          }
+        />
       </div>
       {isLoading && (
         <div className="flex h-60 w-full items-center justify-center rounded-md border border-neutral-200 bg-neutral-100 p-4 text-center">
@@ -211,10 +207,11 @@ export function GroupDetailTable() {
 
 type GroupActionProps = {
   id: string;
+  group: UserGroup;
 };
 
 function GroupActions(props: GroupActionProps) {
-  const { id } = props;
+  const { id, group } = props;
   const { data: session } = useSession();
   const queryClient = useQueryClient();
 
@@ -247,9 +244,14 @@ function GroupActions(props: GroupActionProps) {
   const isLoading = deleteUserGroupMutation.isLoading;
   return (
     <div className="flex justify-end gap-2 px-4 text-end">
-      <Button variant={"ghost"} onClick={() => console.log("edit")}>
-        <PenLine size={20} className="text-neutral-500" />
-      </Button>
+      <CreateGroupFormSheet
+        trigger={
+          <Button variant={"ghost"} onClick={() => console.log("edit")}>
+            <PenLine size={20} className="text-neutral-500" />
+          </Button>
+        }
+        group={group}
+      />
       <Separator orientation="vertical" className="h-8 w-px" />
       <Button
         variant={"ghost"}

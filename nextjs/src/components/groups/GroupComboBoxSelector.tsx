@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { Check, Plus } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -18,14 +18,54 @@ import {
 } from "@/components/ui/popover";
 
 import { Badge } from "../ui/badge";
-import { cn } from "@/lib/utils";
-import { useUserGroups } from "./groupsHooks";
+import { addMemberToGroup, type UserGroup } from "./groupsHooks";
+import { useSession } from "next-auth/react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ORG_USERS_QUERY_KEY } from "@/shared/constants";
 
-export function GroupComboBoxSelector() {
-  const { data: userGroups } = useUserGroups();
+type GroupComboBoxSelectorProps = {
+  groups?: UserGroup[];
+  userId: string;
+};
+
+export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
+  const { groups, userId } = props;
+
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  const accessToken = session?.access_token;
 
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
+
+  const addMemberToGroupMutation = useMutation({
+    mutationFn: addMemberToGroup,
+    onSuccess: () => {
+      console.log("User group updated");
+      queryClient
+        .invalidateQueries({
+          queryKey: [ORG_USERS_QUERY_KEY],
+        })
+        .then(() => {
+          console.log("Invalidated org-users query");
+        })
+        .catch((error) => {
+          console.error("Error invalidating org-users query", error);
+        });
+
+      setOpen(false);
+    },
+  });
+
+  const handleAddMemberClick = (groupId?: string) => {
+    addMemberToGroupMutation.mutate({
+      accessToken: accessToken ?? "",
+      userId: userId,
+      groupId: groupId ?? "",
+    });
+  };
+
+  const isLoading = addMemberToGroupMutation.isLoading;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -43,21 +83,17 @@ export function GroupComboBoxSelector() {
           <CommandList>
             <CommandEmpty>No group found.</CommandEmpty>
             <CommandGroup>
-              {userGroups?.results?.map((group) => (
+              {groups?.map((group) => (
                 <CommandItem
                   key={group.id}
                   value={group.id}
                   onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue);
-                    setOpen(false);
+                    handleAddMemberClick(currentValue);
                   }}
                 >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === group.id ? "opacity-100" : "opacity-0",
-                    )}
-                  />
+                  {isLoading && (
+                    <Loader2 size={20} className="mr-2 h-4 w-4 animate-spin" />
+                  )}
                   {group.name}
                 </CommandItem>
               ))}

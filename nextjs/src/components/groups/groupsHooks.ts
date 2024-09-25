@@ -5,25 +5,21 @@ import { useSession } from "next-auth/react";
 import { BASE_API_URL, USER_GROUPS_QUERY_KEY } from "@/shared/constants";
 import { type CreateGroupFormSchema } from "./CreateGroupFormSheet";
 import { type z } from "zod";
-
-type RawUserGroup = {
-  name: string;
-  id: string;
-  attributes: Record<string, string[]>;
-};
+import { type MQTTBroker } from "../mqtt-brokers/hooks/useMQTTBrokers";
 
 export type UserGroup = {
   name: string;
   id: string;
-  color: string;
-  broker: string;
+  tag_color: string;
+  broker: MQTTBroker;
+  description: string;
 };
 
 export type UserGroupsListResponse = {
   count: number;
   next: string | null;
   previous: string | null;
-  results: RawUserGroup[];
+  results: UserGroup[];
 };
 
 export const fetchUserGroups = (
@@ -59,9 +55,9 @@ export const useUserGroups = () => {
 export const createUserGroup = (params: {
   accessToken: string;
   userGroup: z.infer<typeof CreateGroupFormSchema>;
-}): Promise<RawUserGroup> => {
+}): Promise<UserGroup> => {
   return axios
-    .post<RawUserGroup>(
+    .post<UserGroup>(
       `${BASE_API_URL}/user-groups/`,
       { ...params.userGroup },
       {
@@ -87,9 +83,9 @@ export const updateUserGroup = (params: {
   accessToken: string;
   id: string;
   userGroup: z.infer<typeof CreateGroupFormSchema>;
-}): Promise<RawUserGroup> => {
+}): Promise<UserGroup> => {
   return axios
-    .put<RawUserGroup>(
+    .put<UserGroup>(
       `${BASE_API_URL}/user-groups/${params.id}/`,
       { ...params.userGroup },
       {
@@ -99,4 +95,40 @@ export const updateUserGroup = (params: {
       },
     )
     .then((response) => response.data);
+};
+
+export const addMemberToGroup = (params: {
+  accessToken: string;
+  groupId: string;
+  userId: string;
+}): Promise<UserGroup> => {
+  return axios
+    .post<UserGroup>(
+      `${BASE_API_URL}/user-groups/${params.groupId}/add_member/`,
+      { user_id: params.userId },
+      {
+        headers: {
+          Authorization: `Bearer ${params.accessToken}`,
+        },
+      },
+    )
+    .then((response) => response.data);
+};
+
+export const removeMemberFromGroup = (params: {
+  accessToken: string;
+  groupId: string;
+  userId: string;
+}) => {
+  return axios
+    .post(
+      `${BASE_API_URL}/user-groups/${params.groupId}/remove_member/`,
+      { user_id: params.userId },
+      {
+        headers: {
+          Authorization: `Bearer ${params.accessToken}`,
+        },
+      },
+    )
+    .then();
 };
