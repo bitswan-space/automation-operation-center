@@ -7,7 +7,7 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
-import { Loader2, Workflow } from "lucide-react";
+import { Loader, Loader2, Workflow } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -25,6 +25,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { HexColorPicker } from "react-colorful";
@@ -32,8 +33,11 @@ import { Input } from "@/components/ui/input";
 import React from "react";
 import { Skeleton } from "../ui/skeleton";
 import { Textarea } from "../ui/textarea";
+import { USER_GROUPS_QUERY_KEY } from "@/shared/constants";
+import { createUserGroup } from "./groupsHooks";
 import { useForm } from "react-hook-form";
 import { useMQTTBrokers } from "../mqtt-brokers/hooks/useMQTTBrokers";
+import { useSession } from "next-auth/react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -43,20 +47,55 @@ export const CreateGroupFormSchema = z.object({
   }),
   description: z.string().optional(),
   broker: z.string().optional(),
-  color: z.string().optional(),
+  tag_color: z.string().optional(),
 });
 
 export function CreateGroupFormSheet() {
-  const { data: mqttBrokers, isLoading } = useMQTTBrokers();
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  const accessToken = session?.access_token;
+
+  const { data: mqttBrokers, isLoading: isLoadingMQTTBrokers } =
+    useMQTTBrokers();
 
   const form = useForm<z.infer<typeof CreateGroupFormSchema>>({
     resolver: zodResolver(CreateGroupFormSchema),
     defaultValues: {
       name: "",
       description: "",
-      color: "#aabbcc",
+      tag_color: "#aabbcc",
     },
   });
+
+  const createUserGroupMutation = useMutation({
+    mutationFn: createUserGroup,
+    onSuccess: () => {
+      console.log("User group created");
+      queryClient
+        .invalidateQueries({
+          queryKey: [USER_GROUPS_QUERY_KEY],
+        })
+        .then(() => {
+          console.log("Invalidated user-groups query");
+        })
+        .catch((error) => {
+          console.error("Error invalidating user-groups query", error);
+        });
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof CreateGroupFormSchema>) {
+    console.log("submitting");
+
+    // Call the create MQTTBroker mutation
+    createUserGroupMutation.mutate({
+      accessToken: accessToken ?? "",
+      userGroup: values,
+    });
+  }
+
+  const isLoading = createUserGroupMutation.isLoading || isLoadingMQTTBrokers;
 
   return (
     <Sheet>
@@ -73,7 +112,7 @@ export function CreateGroupFormSheet() {
           </SheetDescription>
         </SheetHeader>
         <Form {...form}>
-          <form action="">
+          <form onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}>
             <div className="grid gap-4 py-4">
               <FormField
                 control={form.control}
@@ -137,7 +176,7 @@ export function CreateGroupFormSheet() {
                         <SelectGroup>
                           <SelectLabel>
                             <div>Active mqtt brokers</div>
-                            {isLoading && (
+                            {isLoadingMQTTBrokers && (
                               <Skeleton className="mt-2 h-10 w-full" />
                             )}
                             {mqttBrokers?.results?.length === 0 && (
@@ -167,7 +206,7 @@ export function CreateGroupFormSheet() {
 
               <FormField
                 control={form.control}
-                name="color"
+                name="tag_color"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tag Color:</FormLabel>
@@ -178,7 +217,12 @@ export function CreateGroupFormSheet() {
                           onChange={field.onChange}
                           className="w-full"
                         />
-                        <div className="mt-2 text-lg font-medium text-neutral-500 underline">
+                        <div
+                          className={`mt-2 text-lg font-medium  underline `}
+                          style={{
+                            color: field.value,
+                          }}
+                        >
                           {field.value}
                         </div>
                       </div>
@@ -194,8 +238,17 @@ export function CreateGroupFormSheet() {
             </div>
 
             <div className="flex justify-end">
-              <Button type="submit" className="bg-blue-600">
+              <Button
+                type="submit"
+                className="bg-blue-600"
+                disabled={isLoading}
+              >
                 Save changes
+                {isLoading && (
+                  <span>
+                    <Loader size={20} className="ml-2 animate-spin" />
+                  </span>
+                )}
               </Button>
             </div>
           </form>

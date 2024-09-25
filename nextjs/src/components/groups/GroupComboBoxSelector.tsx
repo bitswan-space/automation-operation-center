@@ -19,27 +19,11 @@ import {
 
 import { Badge } from "../ui/badge";
 import { cn } from "@/lib/utils";
-
-const frameworks = [
-  {
-    value: "management",
-    label: "Management",
-  },
-  {
-    value: "hr",
-    label: "HR",
-  },
-  {
-    value: "admin",
-    label: "Admin",
-  },
-  {
-    value: "suport",
-    label: "Support",
-  },
-];
+import { useUserGroups } from "./groupsHooks";
 
 export function GroupComboBoxSelector() {
+  const { data: userGroups } = useUserGroups();
+
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState("");
 
@@ -57,12 +41,12 @@ export function GroupComboBoxSelector() {
         <Command>
           <CommandInput placeholder="Search groups..." />
           <CommandList>
-            <CommandEmpty>No framework found.</CommandEmpty>
+            <CommandEmpty>No group found.</CommandEmpty>
             <CommandGroup>
-              {frameworks.map((framework) => (
+              {userGroups?.results?.map((group) => (
                 <CommandItem
-                  key={framework.value}
-                  value={framework.value}
+                  key={group.id}
+                  value={group.id}
                   onSelect={(currentValue) => {
                     setValue(currentValue === value ? "" : currentValue);
                     setOpen(false);
@@ -71,10 +55,10 @@ export function GroupComboBoxSelector() {
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === framework.value ? "opacity-100" : "opacity-0",
+                      value === group.id ? "opacity-100" : "opacity-0",
                     )}
                   />
-                  {framework.label}
+                  {group.name}
                 </CommandItem>
               ))}
             </CommandGroup>

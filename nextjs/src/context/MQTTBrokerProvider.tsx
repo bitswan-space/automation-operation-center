@@ -1,8 +1,8 @@
+import React from "react";
 import {
   useMQTTBrokers,
   type MQTTBroker,
 } from "@/components/mqtt-brokers/hooks/useMQTTBrokers";
-import React from "react";
 
 export const MQTTBrokerContext = React.createContext<MQTTBroker | undefined>(
   {} as unknown as MQTTBroker,
@@ -27,8 +27,10 @@ export function useActiveMQTTBroker() {
 export function MQTTBrokerProvider({
   children,
 }: React.PropsWithChildren<unknown>) {
+  const broker = useMQTTBrokerSource();
+
   return (
-    <MQTTBrokerContext.Provider value={useMQTTBrokerSource()}>
+    <MQTTBrokerContext.Provider value={broker}>
       {children}
     </MQTTBrokerContext.Provider>
   );

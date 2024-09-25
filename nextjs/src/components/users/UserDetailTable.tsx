@@ -28,88 +28,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "../ui/badge";
 import { GroupComboBoxSelector } from "../groups/GroupComboBoxSelector";
+import { type OrgUser, useOrgUsers } from "./usersHooks";
 
-const data: User[] = [
+export const columns: ColumnDef<OrgUser>[] = [
   {
-    id: "m5gr84i9",
-    name: "Kenny Lee",
-    groups: [
-      {
-        name: "Management",
-        color: "#1d4ed8",
-      },
-      {
-        name: "HR",
-        color: "#d97706",
-      },
-      {
-        name: "Support",
-        color: "#15803d",
-      },
-    ],
-    email: "ken99@yahoo.com",
-  },
-  {
-    id: "3u1reuv4",
-    name: "Abel Lee",
-    groups: [
-      {
-        name: "Admin",
-        color: "#6d28d9",
-      },
-    ],
-    email: "Abe45@gmail.com",
-  },
-  {
-    id: "derv1ws0",
-    name: "Monserrat Lee",
-    groups: [
-      {
-        name: "HR",
-        color: "#d97706",
-      },
-      {
-        name: "Support",
-        color: "#15803d",
-      },
-    ],
-    email: "Monserrat44@gmail.com",
-  },
-  {
-    id: "5kma53ae",
-    name: "Silas Lee",
-    groups: [
-      {
-        name: "Management",
-        color: "#1d4ed8",
-      },
-      {
-        name: "Admin",
-        color: "#6d28d9",
-      },
-    ],
-    email: "Silas22@gmail.com",
-  },
-];
-
-type Group = {
-  name: string;
-  color: string;
-};
-
-export type User = {
-  id: string;
-  name: string;
-  groups: Group[];
-  email: string;
-};
-
-export const columns: ColumnDef<User>[] = [
-  {
-    accessorKey: "name",
+    accessorKey: "username",
     header: () => <div className="p-2 px-6 text-left font-semibold">Name</div>,
     cell: ({ row }) => (
-      <div className="p-2 px-6 capitalize">{row.getValue("name")}</div>
+      <div className="p-2 px-6 capitalize">{row.getValue("username")}</div>
     ),
   },
   {
@@ -125,10 +51,10 @@ export const columns: ColumnDef<User>[] = [
 
       return (
         <div className="flex max-w-3xl flex-wrap gap-2 ">
-          {groups.map((group, index) => {
+          {groups.map((group) => {
             return (
               <Badge
-                key={index}
+                key={group.id}
                 variant={"outline"}
                 className={`border-[${group.color}] bg-[${group.color}]/10 text-[${group.color}]`}
                 style={{
@@ -149,6 +75,9 @@ export const columns: ColumnDef<User>[] = [
 ];
 
 export function UserDetailTable() {
+  const { data: orgUsers } = useOrgUsers();
+  console.log("orgUsers", orgUsers);
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -158,7 +87,7 @@ export function UserDetailTable() {
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
-    data,
+    data: orgUsers?.results ?? [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
