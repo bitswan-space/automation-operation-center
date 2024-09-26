@@ -37,6 +37,7 @@ export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
   const accessToken = session?.access_token;
 
   const [open, setOpen] = React.useState(false);
+  const [value, setValue] = React.useState("");
 
   const addMemberToGroupMutation = useMutation({
     mutationFn: addMemberToGroup,
@@ -53,11 +54,13 @@ export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
           console.error("Error invalidating org-users query", error);
         });
 
+      setValue("");
       setOpen(false);
     },
   });
 
   const handleAddMemberClick = (groupId?: string) => {
+    setValue(groupId ?? "");
     addMemberToGroupMutation.mutate({
       accessToken: accessToken ?? "",
       userId: userId,
@@ -69,13 +72,15 @@ export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger>
-        <Badge
-          variant={"outline"}
-          className="border-dashed border-neutral-900 bg-neutral-100"
-        >
-          Add <Plus className="ml-2 h-4 w-4" />
-        </Badge>
+      <PopoverTrigger asChild>
+        <button>
+          <Badge
+            variant={"outline"}
+            className="border-dashed border-neutral-900 bg-neutral-100"
+          >
+            Add <Plus className="ml-2 h-4 w-4" />
+          </Badge>
+        </button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
         <Command>
@@ -91,7 +96,7 @@ export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
                     handleAddMemberClick(currentValue);
                   }}
                 >
-                  {isLoading && (
+                  {isLoading && value === group.id && (
                     <Loader2 size={20} className="mr-2 h-4 w-4 animate-spin" />
                   )}
                   {group.name}
