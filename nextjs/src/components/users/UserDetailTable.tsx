@@ -459,6 +459,16 @@ function UserActions(props: UserActionProps) {
         duration: 5000,
       });
     },
+
+    onError: (error: AxiosError) => {
+      console.error("Error deleting user", error);
+      const errorMessage = (error.response?.data as { error: string })?.error;
+      if (errorMessage) {
+        toast.error(errorMessage, {
+          duration: 5000,
+        });
+      }
+    },
   });
 
   const handleDeleteClick = () => {
