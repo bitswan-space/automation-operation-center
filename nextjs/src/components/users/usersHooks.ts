@@ -8,6 +8,7 @@ export type OrgUser = {
   name: string;
   id: string;
   email: string;
+  verified: boolean;
   groups: UserGroup[];
 };
 
@@ -47,3 +48,27 @@ export const useOrgUsers = () => {
     enabled: !!accessToken,
   });
 };
+
+export const inviteUser = (params: { accessToken: string; email: string }) => {
+  return axios
+    .post(
+      `${BASE_API_URL}/org-users/invite/`,
+      { email: params.email },
+      {
+        headers: {
+          Authorization: `Bearer ${params.accessToken}`,
+        },
+      },
+    )
+    .then();
+};
+
+export const deleteUser = (params: {
+  apiToken: string;
+  id: string;
+}): Promise<void> =>
+  axios.delete(`${BASE_API_URL}/org-users/${params.id}`, {
+    headers: {
+      Authorization: `Bearer ${params.apiToken}`,
+    },
+  });

@@ -66,7 +66,7 @@ export const columns: ColumnDef<UserGroup>[] = [
     ),
   },
   columnHelper.display({
-    id: "select",
+    id: "actions",
     cell: ({ row }) => {
       const id = row.original.id;
       return <GroupActions id={id} group={row.original} />;
@@ -79,6 +79,11 @@ export const columns: ColumnDef<UserGroup>[] = [
 export function GroupDetailTable() {
   const { data: userGroups, isLoading } = useUserGroups();
 
+  const userGroupsData = React.useMemo(
+    () => userGroups?.results ?? [],
+    [userGroups],
+  );
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -88,7 +93,7 @@ export function GroupDetailTable() {
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
-    data: userGroups?.results ?? [],
+    data: userGroupsData,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
