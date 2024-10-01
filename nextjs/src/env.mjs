@@ -37,6 +37,9 @@ export const env = createEnv({
     // MQTT
     MQTT_URL: z.string().url(),
     CDS_API_URL: z.string().url(),
+
+    // EMQX
+    EMQX_JWT_SECRET: z.string().min(1),
   },
 
   /**
@@ -88,6 +91,9 @@ export const env = createEnv({
     // AoC Backend
     NEXT_PUBLIC_BITSWAN_BACKEND_API_URL:
       process.env.NEXT_PUBLIC_BITSWAN_BACKEND_API_URL,
+
+    // EMQX
+    EMQX_JWT_SECRET: process.env.EMQX_JWT_SECRET,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.

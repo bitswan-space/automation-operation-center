@@ -439,6 +439,7 @@ function UserActions(props: UserActionProps) {
   const queryClient = useQueryClient();
 
   const accessToken = session?.access_token;
+  const activeUserId = session?.user?.id;
 
   const deleteUserGroupMutation = useMutation({
     mutationFn: deleteUser,
@@ -479,12 +480,13 @@ function UserActions(props: UserActionProps) {
   };
 
   const isLoading = deleteUserGroupMutation.isLoading;
+  const isCurrentUser = activeUserId === id;
   return (
     <div className="flex justify-end gap-2 px-4 text-end">
       <Button
         variant={"ghost"}
         onClick={handleDeleteClick}
-        disabled={isLoading}
+        disabled={isLoading || isCurrentUser}
       >
         {isLoading ? (
           <Loader2 size={20} className="mr-2 animate-spin" />

@@ -1,6 +1,26 @@
-import { useDynamicSidebar } from "@/components/layout/hooks";
-import { type DynamicSidebarItem } from "@/types/sidebar";
+import { useMQTTRequestResponse } from "@/shared/hooks/useMQTTRequestResponse";
+import {
+  type DynamicSidebarResponse,
+  type DynamicSidebarItem,
+} from "@/types/sidebar";
 import React from "react";
+
+export const useDynamicSidebar = () => {
+  const { response: sidebarRes } =
+    useMQTTRequestResponse<DynamicSidebarResponse>({
+      requestTopic: "/topology/subscribe",
+      responseTopic: "/topology",
+    });
+
+  const sideBarItems = Object.entries(sidebarRes?.topology ?? {}).reduce(
+    (acc, v) => {
+      return [...acc, v[1] as DynamicSidebarItem];
+    },
+    [] as DynamicSidebarItem[],
+  );
+
+  return { sideBarItems };
+};
 
 export const SideBarContext = React.createContext<DynamicSidebarItem[] | null>(
   null,

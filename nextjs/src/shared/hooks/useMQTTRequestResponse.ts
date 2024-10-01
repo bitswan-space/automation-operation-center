@@ -1,6 +1,8 @@
 import React from "react";
 import { useActiveMQTTBroker } from "@/context/MQTTBrokerProvider";
 import { useMQTT } from "./useMQTT";
+import { useQuery } from "@tanstack/react-query";
+import { type EMQXJWTResponse } from "@/pages/api/mqtt-jwt";
 
 type UseMQTTRequestResponseArgs<ResponseT> = {
   requestTopic: string;
@@ -25,16 +27,33 @@ export function useMQTTRequestResponse<ResponseT>({
     return { count: 1 };
   }, []);
 
+  const { data: jwtToken } = useQuery({
+    queryKey: ["jwt", activeMQTTBroker?.username],
+    enabled: !!activeMQTTBroker,
+    queryFn: async () => {
+      const response = await fetch("/api/mqtt-jwt", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: activeMQTTBroker?.username ?? "",
+        }),
+      });
+      const data = (await response.json()) as EMQXJWTResponse;
+      return data.token;
+    },
+  });
+
   React.useEffect(() => {
-    console.log("useffect", activeMQTTBroker);
-    if (activeMQTTBroker) {
+    if (activeMQTTBroker && jwtToken) {
       mqttConnect(activeMQTTBroker.url, {
         clientId: "bitswan-poc" + Math.random().toString(16).substring(2, 8),
         clean: true,
         reconnectPeriod: 1000,
         connectTimeout: 30 * 1000,
-        username: "test",
-        password: "randompassword",
+        username: activeMQTTBroker?.username ?? "",
+        password: jwtToken,
       });
 
       mqttPublish({
@@ -52,6 +71,7 @@ export function useMQTTRequestResponse<ResponseT>({
   }, [
     activeMQTTBroker,
     defaultRequest,
+    jwtToken,
     mqttConnect,
     mqttPublish,
     mqttSub,
