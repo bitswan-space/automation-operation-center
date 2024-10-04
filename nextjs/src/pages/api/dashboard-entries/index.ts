@@ -13,7 +13,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<DashboardEntryListResponse>,
 ) {
-  const session = await getServerAuthSession();
+  const session = await getServerAuthSession(req, res);
 
   if (req.method === "GET") {
     const response = await axios.get<DashboardEntryListResponse>(

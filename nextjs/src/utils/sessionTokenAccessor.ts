@@ -1,3 +1,5 @@
+import { type NextApiRequest, type NextApiResponse } from "next";
+
 import { getServerAuthSession } from "@/server/auth";
 
 export async function getAccessToken() {
@@ -10,8 +12,8 @@ export async function getAccessToken() {
   return null;
 }
 
-export async function getIdToken() {
-  const session = await getServerAuthSession();
+export async function getIdToken(req: NextApiRequest, res: NextApiResponse) {
+  const session = await getServerAuthSession(req, res);
 
   if (session) {
     const idTokenDecrypted = session.id_token;

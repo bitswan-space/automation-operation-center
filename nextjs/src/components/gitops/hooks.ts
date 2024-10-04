@@ -2,7 +2,6 @@ import axios, { type AxiosError } from "axios";
 
 import { useQuery } from "@tanstack/react-query";
 import { signIn, useSession } from "next-auth/react";
-import { env } from "@/env.mjs";
 import { BASE_API_URL } from "@/shared/constants";
 
 type Gitops = {

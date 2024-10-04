@@ -1,11 +1,15 @@
 import { signIn, useSession } from "next-auth/react";
 
-export default function Signin() {
+import React from "react";
+
+export default function SigninPage() {
   const { data: session } = useSession();
 
-  if (!session) {
-    void signIn("keycloak", { callbackUrl: "/" });
-  }
+  React.useEffect(() => {
+    if (!session) {
+      void signIn("keycloak", { callbackUrl: "/" });
+    }
+  }, [session]);
 
   return <div></div>;
 }

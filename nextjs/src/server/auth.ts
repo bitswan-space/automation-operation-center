@@ -9,6 +9,11 @@ import KeycloakProvider, {
 } from "next-auth/providers/keycloak";
 import { type OAuthConfig } from "next-auth/providers/oauth";
 import { env } from "@/env.mjs";
+import {
+  type GetServerSidePropsContext,
+  type NextApiRequest,
+  type NextApiResponse,
+} from "next";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -188,4 +193,9 @@ export const authOptions: NextAuthOptions = {
  *
  * @see https://next-auth.js.org/configuration/nextjs
  */
-export const getServerAuthSession = () => getServerSession(authOptions);
+export const getServerAuthSession = (
+  ...args:
+    | [GetServerSidePropsContext["req"], GetServerSidePropsContext["res"]]
+    | [NextApiRequest, NextApiResponse]
+    | []
+) => getServerSession(...args, authOptions);

@@ -8,7 +8,7 @@ import { getIdToken } from "@/utils/sessionTokenAccessor";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
-    const session = await getServerAuthSession();
+    const session = await getServerAuthSession(req, res);
 
     if (!session) {
       return res.status(401).json({ error: "Not authenticated" });
@@ -18,7 +18,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const KEYCLOAK_POST_LOGOUT_REDIRECT_URI =
       env.KEYCLOAK_POST_LOGOUT_REDIRECT_URI;
 
-    const idToken = await getIdToken();
+    const idToken = await getIdToken(req, res);
     const url = `${KEYCLOAK_END_SESSION_URL}?id_token_hint=${idToken}&post_logout_redirect_uri=${KEYCLOAK_POST_LOGOUT_REDIRECT_URI}`;
 
     try {

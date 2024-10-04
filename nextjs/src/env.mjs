@@ -25,8 +25,6 @@ export const env = createEnv({
     INFLUXDB_TOKEN: z.string().min(1),
     INFLUXDB_ORG: z.string().min(1),
     INFLUXDB_BUCKET: z.string().min(1),
-    INFLUXDB_USERNAME: z.string().min(1),
-    INFLUXDB_PASSWORD: z.string().min(1),
 
     // KEYCLOAK
     KEYCLOAK_CLIENT_SECRET: z.string().min(1),
@@ -38,8 +36,6 @@ export const env = createEnv({
 
     // MQTT
     MQTT_URL: z.string().url(),
-    CCS_CONFIG_KEY: z.string().min(1),
-    PREPARE_MQTT_SERVICE_URL: z.string().url(),
     CDS_API_URL: z.string().url(),
   },
 
@@ -71,8 +67,6 @@ export const env = createEnv({
     INFLUXDB_TOKEN: process.env.INFLUXDB_TOKEN,
     INFLUXDB_ORG: process.env.INFLUXDB_ORG,
     INFLUXDB_BUCKET: process.env.INFLUXDB_BUCKET,
-    INFLUXDB_USERNAME: process.env.INFLUXDB_USERNAME,
-    INFLUXDB_PASSWORD: process.env.INFLUXDB_PASSWORD,
 
     // KEYCLOAK
     KEYCLOAK_CLIENT_SECRET: process.env.KEYCLOAK_CLIENT_SECRET,
@@ -85,12 +79,13 @@ export const env = createEnv({
 
     // MQTT
     MQTT_URL: process.env.MQTT_URL,
-    CCS_CONFIG_KEY: process.env.CCS_CONFIG_KEY,
-    PREPARE_MQTT_SERVICE_URL: process.env.PREPARE_MQTT_SERVICE_URL,
     CDS_API_URL: process.env.CDS_API_URL,
+
     NEXT_PUBLIC_NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_COMMIT_HASH: process.env.NEXT_PUBLIC_COMMIT_HASH,
     NEXT_PUBLIC_BUILD_NO: process.env.NEXT_PUBLIC_BUILD_NO,
+
+    // AoC Backend
     NEXT_PUBLIC_BITSWAN_BACKEND_API_URL:
       process.env.NEXT_PUBLIC_BITSWAN_BACKEND_API_URL,
   },
