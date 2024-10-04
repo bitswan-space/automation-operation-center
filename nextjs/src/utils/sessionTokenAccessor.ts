@@ -1,8 +1,7 @@
-import { type ServerAuthSessionCtx, getServerAuthSession } from "@/server/auth";
+import { getServerAuthSession } from "@/server/auth";
 
-
-export async function getAccessToken(ctx: ServerAuthSessionCtx) {
-  const session = await getServerAuthSession(ctx);
+export async function getAccessToken() {
+  const session = await getServerAuthSession();
 
   if (session) {
     const accessTokenDecrypted = session.access_token;
@@ -11,8 +10,8 @@ export async function getAccessToken(ctx: ServerAuthSessionCtx) {
   return null;
 }
 
-export async function getIdToken(ctx: ServerAuthSessionCtx) {
-  const session = await getServerAuthSession(ctx);
+export async function getIdToken() {
+  const session = await getServerAuthSession();
 
   if (session) {
     const idTokenDecrypted = session.id_token;

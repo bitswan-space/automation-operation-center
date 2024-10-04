@@ -13,7 +13,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<DashboardEntryListResponse>,
 ) {
-  const session = await getServerAuthSession({ req, res });
+  const session = await getServerAuthSession();
 
   if (req.method === "PUT") {
     const { id } = req.query;
