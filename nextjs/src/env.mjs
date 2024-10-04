@@ -35,7 +35,6 @@ export const env = createEnv({
     KEYCLOAK_POST_LOGOUT_REDIRECT_URI: z.string().url(),
 
     // MQTT
-    MQTT_URL: z.string().url(),
     CDS_API_URL: z.string().url(),
 
     // EMQX
@@ -81,7 +80,6 @@ export const env = createEnv({
       process.env.KEYCLOAK_POST_LOGOUT_REDIRECT_URI,
 
     // MQTT
-    MQTT_URL: process.env.MQTT_URL,
     CDS_API_URL: process.env.CDS_API_URL,
 
     NEXT_PUBLIC_NODE_ENV: process.env.NODE_ENV,
