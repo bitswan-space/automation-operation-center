@@ -5,14 +5,13 @@ import { useSession } from "next-auth/react";
 import { BASE_API_URL, USER_GROUPS_QUERY_KEY } from "@/shared/constants";
 import { type CreateGroupFormSchema } from "./CreateGroupFormSheet";
 import { type z } from "zod";
-import { type MQTTBroker } from "../mqtt-brokers/hooks/useMQTTBrokers";
 
 export type UserGroup = {
   name: string;
   id: string;
   tag_color: string;
-  broker: MQTTBroker;
   description: string;
+  active: boolean;
 };
 
 export type UserGroupsListResponse = {
@@ -82,7 +81,12 @@ export const deleteUserGroup = (params: {
 export const updateUserGroup = (params: {
   accessToken: string;
   id: string;
-  userGroup: z.infer<typeof CreateGroupFormSchema>;
+  userGroup: {
+    name?: string;
+    description?: string;
+    tag_color?: string;
+    active?: boolean;
+  };
 }): Promise<UserGroup> => {
   return axios
     .put<UserGroup>(

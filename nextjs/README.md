@@ -17,7 +17,6 @@ A dynamic React-based (Next.js) dashboard for monitoring Pipelines and Worklows 
 * Running Keycloak Instance (Authentication)
 * Running AOC Django Backend Instance
 
-
 ## Architecture
 
 ![Architecture Diagram](https://cdn.discordapp.com/attachments/1199407607694250088/1291692858147082323/image.png?ex=67010637&is=66ffb4b7&hm=23750d4cbd86e59e956ed66b4735357143260b97cdc871f0939714db206c33f2&)

@@ -7,16 +7,7 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
-import { Loader, Loader2, Workflow } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
+import { Loader } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -31,7 +22,6 @@ import { Button } from "@/components/ui/button";
 import { HexColorPicker } from "react-colorful";
 import { Input } from "@/components/ui/input";
 import React from "react";
-import { Skeleton } from "../ui/skeleton";
 import { Textarea } from "../ui/textarea";
 import { USER_GROUPS_QUERY_KEY } from "@/shared/constants";
 import {
@@ -40,7 +30,6 @@ import {
   type UserGroup,
 } from "./groupsHooks";
 import { useForm } from "react-hook-form";
-import { useMQTTBrokers } from "../mqtt-brokers/hooks/useMQTTBrokers";
 import { useSession } from "next-auth/react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -67,16 +56,12 @@ export function CreateGroupFormSheet(props: CreateGroupFormSheetProps) {
 
   const accessToken = session?.access_token;
 
-  const { data: mqttBrokers, isLoading: isLoadingMQTTBrokers } =
-    useMQTTBrokers();
-
   const form = useForm<z.infer<typeof CreateGroupFormSchema>>({
     resolver: zodResolver(CreateGroupFormSchema),
     defaultValues: {
       name: group?.name ?? "",
       description: group?.description ?? "",
       tag_color: group?.tag_color ?? "#aabbcc",
-      broker: group?.broker.id,
     },
   });
 
@@ -128,9 +113,7 @@ export function CreateGroupFormSheet(props: CreateGroupFormSheetProps) {
   }
 
   const isLoading =
-    createUserGroupMutation.isLoading ||
-    isLoadingMQTTBrokers ||
-    updateUserGroupMutation.isLoading;
+    createUserGroupMutation.isLoading || updateUserGroupMutation.isLoading;
 
   return (
     <Sheet>
@@ -168,69 +151,6 @@ export function CreateGroupFormSheet(props: CreateGroupFormSheetProps) {
                       <Textarea placeholder="Group description" {...field} />
                     </FormControl>
                     <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="broker"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Broker:</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="w-full bg-neutral-100">
-                          <div className="flex items-center gap-2">
-                            {isLoading ? (
-                              <Loader2
-                                size={20}
-                                className="mr-2 animate-spin"
-                              />
-                            ) : (
-                              <Workflow
-                                size={20}
-                                strokeWidth={2.0}
-                                className="mr-2 text-neutral-600"
-                              />
-                            )}
-                            <SelectValue
-                              placeholder="Select mqtt broker"
-                              className="font-medium"
-                            />
-                          </div>
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>
-                            <div>Active mqtt brokers</div>
-                            {isLoadingMQTTBrokers && (
-                              <Skeleton className="mt-2 h-10 w-full" />
-                            )}
-                            {mqttBrokers?.results?.length === 0 && (
-                              <div className="mt-2 flex h-16 flex-col items-center justify-center gap-2 rounded border border-dashed">
-                                <div className="text-center text-sm font-normal text-neutral-500">
-                                  No mqtt brokers found
-                                </div>
-                              </div>
-                            )}
-                          </SelectLabel>
-                          {mqttBrokers?.results?.map((broker) => (
-                            <SelectItem key={broker.id} value={broker.id}>
-                              {broker.name}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-
-                    <FormMessage />
-                    <FormDescription>
-                      Select the mqtt broker you want to use for this group.
-                    </FormDescription>
                   </FormItem>
                 )}
               />

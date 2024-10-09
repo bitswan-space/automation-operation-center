@@ -29,7 +29,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, PenLine, Trash2 } from "lucide-react";
 import { CreateGroupFormSheet } from "./CreateGroupFormSheet";
-import { Badge } from "../ui/badge";
 import { Separator } from "../ui/separator";
 import { deleteUserGroup, type UserGroup, useUserGroups } from "./groupsHooks";
 import { useSession } from "next-auth/react";
@@ -43,15 +42,6 @@ export const columns: ColumnDef<UserGroup>[] = [
     accessorKey: "name",
     header: () => <div className="p-2 px-6 font-bold">Name</div>,
     cell: ({ row }) => <div className="p-2 px-6">{row.getValue("name")}</div>,
-  },
-  {
-    accessorKey: "broker.name",
-    header: () => <div className="p-2 px-6 font-bold">Broker</div>,
-    cell: ({ row }) => (
-      <Badge variant={"outline"} className="font-mono">
-        {row.getValue("broker_name")}
-      </Badge>
-    ),
   },
   {
     accessorKey: "tag_color",

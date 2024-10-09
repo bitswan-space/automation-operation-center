@@ -1,7 +1,7 @@
 import SideNavBar, { MobileNavSheet } from "./SideNavBar";
 
 import Image from "next/image";
-import { MQTTBrokerProvider } from "@/context/MQTTBrokerProvider";
+import { MQTTUserProvider } from "@/context/MQTTBrokerProvider";
 import React from "react";
 import { SideBarContextProvider } from "@/context/SideBarContextProvider";
 import { Toaster } from "../ui/sonner";
@@ -15,7 +15,7 @@ function DashboardLayout({ children }: LayoutProps) {
   const [isExpanded, setIsExpanded] = React.useState<boolean>(false);
 
   return (
-    <MQTTBrokerProvider>
+    <MQTTUserProvider>
       <SideBarContextProvider>
         <div className="font-strawford flex h-full min-h-screen flex-col bg-stone-100">
           <div className="flex flex-grow">
@@ -47,7 +47,7 @@ function DashboardLayout({ children }: LayoutProps) {
           </div>
         </div>
       </SideBarContextProvider>
-    </MQTTBrokerProvider>
+    </MQTTUserProvider>
   );
 }
 

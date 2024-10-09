@@ -39,6 +39,7 @@ export const env = createEnv({
 
     // EMQX
     EMQX_JWT_SECRET: z.string().min(1),
+    EMQX_MQTT_URL: z.string(),
   },
 
   /**
@@ -92,6 +93,7 @@ export const env = createEnv({
 
     // EMQX
     EMQX_JWT_SECRET: process.env.EMQX_JWT_SECRET,
+    EMQX_MQTT_URL: process.env.EMQX_MQTT_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.

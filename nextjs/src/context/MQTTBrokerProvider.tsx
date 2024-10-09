@@ -1,37 +1,34 @@
 import React from "react";
-import {
-  useMQTTBrokers,
-  type MQTTBroker,
-} from "@/components/mqtt-brokers/hooks/useMQTTBrokers";
+import { type UserGroup, useUserGroups } from "@/components/groups/groupsHooks";
 
-export const MQTTBrokerContext = React.createContext<MQTTBroker | undefined>(
-  {} as unknown as MQTTBroker,
+export const MQTTUserContext = React.createContext<UserGroup | undefined>(
+  {} as unknown as UserGroup,
 );
 
 export function useMQTTBrokerSource() {
-  const { data: mqttBrokers } = useMQTTBrokers();
+  const { data: orgGroups } = useUserGroups();
 
-  const currentActiveMQTTBroker = mqttBrokers?.results?.find(
+  const currentActiveMQTTUser = orgGroups?.results?.find(
     (broker) => broker.active,
   );
 
-  return currentActiveMQTTBroker;
+  return currentActiveMQTTUser;
 }
 
-export function useActiveMQTTBroker() {
-  const context = React.useContext(MQTTBrokerContext);
+export function useActiveMQTTUser() {
+  const context = React.useContext(MQTTUserContext);
 
   return context;
 }
 
-export function MQTTBrokerProvider({
+export function MQTTUserProvider({
   children,
 }: React.PropsWithChildren<unknown>) {
   const broker = useMQTTBrokerSource();
 
   return (
-    <MQTTBrokerContext.Provider value={broker}>
+    <MQTTUserContext.Provider value={broker}>
       {children}
-    </MQTTBrokerContext.Provider>
+    </MQTTUserContext.Provider>
   );
 }

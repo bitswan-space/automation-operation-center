@@ -1,8 +1,13 @@
 import React from "react";
-import { useActiveMQTTBroker } from "@/context/MQTTBrokerProvider";
 import { useMQTT } from "./useMQTT";
 import { useQuery } from "@tanstack/react-query";
-import { type EMQXJWTResponse } from "@/pages/api/mqtt-jwt";
+import { type EMQXJWTResponse } from "@/pages/api/mqtt/jwt";
+import { getMQTTConfig } from "@/server/queries/mqtt";
+import { useLocalStorage } from "@uidotdev/usehooks";
+import {
+  ACTIVE_MQTT_USER_STORAGE_KEY,
+  MQTT_CONFIG_QUERY_KEY,
+} from "../constants";
 
 type UseMQTTRequestResponseArgs<ResponseT> = {
   requestTopic: string;
@@ -15,29 +20,38 @@ type UseMQTTRequestResponseArgs<ResponseT> = {
 export function useMQTTRequestResponse<ResponseT>({
   requestTopic,
   responseTopic,
-  requestMessage, // infiniteSubscription = false,
+  requestMessage,
+  // infiniteSubscription = false,
 }: UseMQTTRequestResponseArgs<ResponseT>) {
   const { mqttConnect, mqttSub, payload, mqttPublish } = useMQTT<
     ResponseT & { remaining_subscription_count?: number }
   >();
 
-  const activeMQTTBroker = useActiveMQTTBroker();
+  const [activeMQTTUser] = useLocalStorage<string>(
+    ACTIVE_MQTT_USER_STORAGE_KEY,
+  );
 
   const defaultRequest = React.useMemo(() => {
     return { count: 1 };
   }, []);
 
+  const { data: mqttConfig } = useQuery({
+    queryKey: [MQTT_CONFIG_QUERY_KEY],
+    queryFn: getMQTTConfig,
+    enabled: !!activeMQTTUser,
+  });
+
   const { data: jwtToken } = useQuery({
-    queryKey: ["jwt", activeMQTTBroker?.username],
-    enabled: !!activeMQTTBroker,
+    queryKey: ["jwt", activeMQTTUser],
+    enabled: !!activeMQTTUser,
     queryFn: async () => {
-      const response = await fetch("/api/mqtt-jwt", {
+      const response = await fetch("/api/mqtt/jwt", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: activeMQTTBroker?.username ?? "",
+          username: activeMQTTUser ?? "",
         }),
       });
       const data = (await response.json()) as EMQXJWTResponse;
@@ -46,13 +60,13 @@ export function useMQTTRequestResponse<ResponseT>({
   });
 
   React.useEffect(() => {
-    if (activeMQTTBroker && jwtToken) {
-      mqttConnect(activeMQTTBroker.url, {
+    if (activeMQTTUser && jwtToken && mqttConfig) {
+      mqttConnect(mqttConfig.url, {
         clientId: "bitswan-poc" + Math.random().toString(16).substring(2, 8),
         clean: true,
         reconnectPeriod: 1000,
         connectTimeout: 30 * 1000,
-        username: activeMQTTBroker?.username ?? "",
+        username: activeMQTTUser ?? "",
         password: jwtToken,
       });
 
@@ -69,9 +83,10 @@ export function useMQTTRequestResponse<ResponseT>({
       });
     }
   }, [
-    activeMQTTBroker,
+    activeMQTTUser,
     defaultRequest,
     jwtToken,
+    mqttConfig,
     mqttConnect,
     mqttPublish,
     mqttSub,

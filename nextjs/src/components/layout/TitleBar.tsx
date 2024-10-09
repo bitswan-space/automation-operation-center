@@ -10,7 +10,7 @@ import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import clsx from "clsx";
 import { handleError } from "@/utils/errors";
-import { MQTTBrokerSelector } from "../mqtt-brokers/MQTTBrokerSelector";
+import { MQTTUserSelector } from "../groups/MQTTUserSelector";
 
 interface TitleBarProps {
   title: ReactNode;
@@ -71,7 +71,7 @@ export function TitleBar(props: Readonly<TitleBarProps>) {
           {status === "authenticated" && session && (
             <div className="flex gap-4 pr-2">
               <div className="my-auto">
-                <MQTTBrokerSelector />
+                <MQTTUserSelector />
               </div>
               <div className="hidden gap-1">
                 <BellDot size={25} className="my-auto" />
