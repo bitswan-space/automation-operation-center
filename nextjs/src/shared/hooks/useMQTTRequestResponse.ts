@@ -3,11 +3,11 @@ import { useMQTT } from "./useMQTT";
 import { useQuery } from "@tanstack/react-query";
 import { type EMQXJWTResponse } from "@/pages/api/mqtt/jwt";
 import { getMQTTConfig } from "@/server/queries/mqtt";
-import { useLocalStorage } from "@uidotdev/usehooks";
 import {
   ACTIVE_MQTT_USER_STORAGE_KEY,
   MQTT_CONFIG_QUERY_KEY,
 } from "../constants";
+import useLocalStorageState from "ahooks/lib/useLocalStorageState";
 
 type UseMQTTRequestResponseArgs<ResponseT> = {
   requestTopic: string;
@@ -27,10 +27,6 @@ export function useMQTTRequestResponse<ResponseT>({
     ResponseT & { remaining_subscription_count?: number }
   >();
 
-  const [activeMQTTUser] = useLocalStorage<string>(
-    ACTIVE_MQTT_USER_STORAGE_KEY,
-  );
-
   const defaultRequest = React.useMemo(() => {
     return { count: 1 };
   }, []);
@@ -38,8 +34,14 @@ export function useMQTTRequestResponse<ResponseT>({
   const { data: mqttConfig } = useQuery({
     queryKey: [MQTT_CONFIG_QUERY_KEY],
     queryFn: getMQTTConfig,
-    enabled: !!activeMQTTUser,
   });
+
+  const [activeMQTTUser] = useLocalStorageState<string | undefined>(
+    ACTIVE_MQTT_USER_STORAGE_KEY,
+    {
+      listenStorageChange: true,
+    },
+  );
 
   const { data: jwtToken } = useQuery({
     queryKey: ["jwt", activeMQTTUser],

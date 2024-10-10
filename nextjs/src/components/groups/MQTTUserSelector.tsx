@@ -1,3 +1,4 @@
+import { Loader2, Workflow } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -11,17 +12,18 @@ import {
 import { ACTIVE_MQTT_USER_STORAGE_KEY } from "@/shared/constants";
 import React from "react";
 import { Skeleton } from "../ui/skeleton";
-import { Workflow } from "lucide-react";
-import { useLocalStorage } from "@uidotdev/usehooks";
+import useLocalStorageState from "ahooks/lib/useLocalStorageState";
 import { useUserGroups } from "./groupsHooks";
 
 export function MQTTUserSelector() {
   const { data: orgGroups, isLoading } = useUserGroups();
 
-  const [activeMQTTUser, saveActiveMQTTUser] = useLocalStorage(
-    ACTIVE_MQTT_USER_STORAGE_KEY,
-    orgGroups?.results?.[0]?.id ?? "",
-  );
+  const [activeMQTTUser, saveActiveMQTTUser] = useLocalStorageState<
+    string | undefined
+  >(ACTIVE_MQTT_USER_STORAGE_KEY, {
+    defaultValue: orgGroups?.results?.[0]?.id ?? "",
+    listenStorageChange: true,
+  });
 
   const handleActiveMQTTUserChange = (orgGroupId: string) => {
     void saveActiveMQTTUser(orgGroupId);
@@ -34,13 +36,15 @@ export function MQTTUserSelector() {
     >
       <SelectTrigger className="w-[250px] bg-neutral-100">
         <div className="flex items-center gap-2">
-          {
+          {isLoading ? (
+            <Loader2 size={20} className="mr-2 animate-spin" />
+          ) : (
             <Workflow
               size={20}
               strokeWidth={2.0}
               className="mr-2 text-neutral-600"
             />
-          }
+          )}
           <SelectValue
             placeholder="Select mqtt user"
             defaultValue={activeMQTTUser ?? undefined}
