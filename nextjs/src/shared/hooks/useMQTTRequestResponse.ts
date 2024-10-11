@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { type EMQXJWTResponse } from "@/pages/api/mqtt/jwt";
 import { getMQTTConfig } from "@/server/queries/mqtt";
 import {
-  ACTIVE_MQTT_USER_STORAGE_KEY,
+  ACTIVE_MQTT_PROFILE_STORAGE_KEY,
   MQTT_CONFIG_QUERY_KEY,
 } from "../constants";
 import useLocalStorageState from "ahooks/lib/useLocalStorageState";
@@ -36,16 +36,16 @@ export function useMQTTRequestResponse<ResponseT>({
     queryFn: getMQTTConfig,
   });
 
-  const [activeMQTTUser] = useLocalStorageState<string | undefined>(
-    ACTIVE_MQTT_USER_STORAGE_KEY,
+  const [activeMQTTProfile] = useLocalStorageState<string | undefined>(
+    ACTIVE_MQTT_PROFILE_STORAGE_KEY,
     {
       listenStorageChange: true,
     },
   );
 
   const { data: jwtToken } = useQuery({
-    queryKey: ["jwt", activeMQTTUser],
-    enabled: !!activeMQTTUser,
+    queryKey: ["jwt", activeMQTTProfile],
+    enabled: !!activeMQTTProfile,
     queryFn: async () => {
       const response = await fetch("/api/mqtt/jwt", {
         method: "POST",
@@ -53,7 +53,7 @@ export function useMQTTRequestResponse<ResponseT>({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: activeMQTTUser ?? "",
+          username: activeMQTTProfile ?? "",
         }),
       });
       const data = (await response.json()) as EMQXJWTResponse;
@@ -62,13 +62,13 @@ export function useMQTTRequestResponse<ResponseT>({
   });
 
   React.useEffect(() => {
-    if (activeMQTTUser && jwtToken && mqttConfig) {
+    if (activeMQTTProfile && jwtToken && mqttConfig) {
       mqttConnect(mqttConfig.url, {
         clientId: "bitswan-poc" + Math.random().toString(16).substring(2, 8),
         clean: true,
         reconnectPeriod: 1000,
         connectTimeout: 30 * 1000,
-        username: activeMQTTUser ?? "",
+        username: activeMQTTProfile ?? "",
         password: jwtToken,
       });
 
@@ -85,7 +85,7 @@ export function useMQTTRequestResponse<ResponseT>({
       });
     }
   }, [
-    activeMQTTUser,
+    activeMQTTProfile,
     defaultRequest,
     jwtToken,
     mqttConfig,

@@ -9,29 +9,29 @@ import {
   SelectValue,
 } from "../ui/select";
 
-import { ACTIVE_MQTT_USER_STORAGE_KEY } from "@/shared/constants";
+import { ACTIVE_MQTT_PROFILE_STORAGE_KEY } from "@/shared/constants";
 import React from "react";
 import { Skeleton } from "../ui/skeleton";
 import useLocalStorageState from "ahooks/lib/useLocalStorageState";
-import { useUserGroups } from "./groupsHooks";
+import { useMQTTProfileList } from "./groupsHooks";
 
-export function MQTTUserSelector() {
-  const { data: orgGroups, isLoading } = useUserGroups();
+export function MQTTProfileSelector() {
+  const { data: mqttProfiles, isLoading } = useMQTTProfileList();
 
-  const [activeMQTTUser, saveActiveMQTTUser] = useLocalStorageState<
+  const [activeMQTTProfile, saveActiveMQTTProfile] = useLocalStorageState<
     string | undefined
-  >(ACTIVE_MQTT_USER_STORAGE_KEY, {
-    defaultValue: orgGroups?.results?.[0]?.id ?? "",
+  >(ACTIVE_MQTT_PROFILE_STORAGE_KEY, {
+    defaultValue: mqttProfiles?.results?.[0]?.id ?? "",
     listenStorageChange: true,
   });
 
   const handleActiveMQTTUserChange = (orgGroupId: string) => {
-    void saveActiveMQTTUser(orgGroupId);
+    void saveActiveMQTTProfile(orgGroupId);
   };
 
   return (
     <Select
-      value={activeMQTTUser ?? undefined}
+      value={activeMQTTProfile ?? undefined}
       onValueChange={handleActiveMQTTUserChange}
     >
       <SelectTrigger className="w-[250px] bg-neutral-100">
@@ -47,7 +47,7 @@ export function MQTTUserSelector() {
           )}
           <SelectValue
             placeholder="Select mqtt user"
-            defaultValue={activeMQTTUser ?? undefined}
+            defaultValue={activeMQTTProfile ?? undefined}
             className="font-medium"
           />
         </div>
@@ -55,17 +55,17 @@ export function MQTTUserSelector() {
       <SelectContent>
         <SelectGroup>
           <SelectLabel>
-            <div>Active mqtt users</div>
+            <div>MQTT profiles</div>
             {isLoading && <Skeleton className="mt-2 h-10 w-full" />}
-            {orgGroups?.results?.length === 0 && (
+            {mqttProfiles?.results?.length === 0 && (
               <div className="mt-2 flex h-16 flex-col items-center justify-center gap-2 rounded border border-dashed">
                 <div className="text-center text-sm font-normal text-neutral-500">
-                  No mqtt brokers found
+                  No mqtt profiles found
                 </div>
               </div>
             )}
           </SelectLabel>
-          {orgGroups?.results?.map((orgGroup) => (
+          {mqttProfiles?.results?.map((orgGroup) => (
             <SelectItem key={orgGroup.id} value={orgGroup.id}>
               {orgGroup.name}
             </SelectItem>

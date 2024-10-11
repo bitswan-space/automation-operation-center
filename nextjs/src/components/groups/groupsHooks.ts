@@ -2,7 +2,11 @@ import axios, { type AxiosError } from "axios";
 
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
-import { BASE_API_URL, USER_GROUPS_QUERY_KEY } from "@/shared/constants";
+import {
+  BASE_API_URL,
+  MQTT_PROFILE_QUERY_KEY,
+  USER_GROUPS_QUERY_KEY,
+} from "@/shared/constants";
 import { type CreateGroupFormSchema } from "./CreateGroupFormSheet";
 import { type z } from "zod";
 
@@ -135,4 +139,47 @@ export const removeMemberFromGroup = (params: {
       },
     )
     .then();
+};
+
+type MQTTProfile = {
+  id: string;
+  name: string;
+  isAdmin: string;
+};
+
+type MQTTProfileListResponse = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: MQTTProfile[];
+};
+
+export const fetchMQTTProfileList = (
+  apiToken?: string,
+  onSuccess?: (data: MQTTProfileListResponse) => void,
+): Promise<MQTTProfileListResponse> =>
+  axios
+    .get<MQTTProfileListResponse>(`${BASE_API_URL}/user-groups/mqtt_profiles`, {
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    })
+    .then((response) => {
+      onSuccess?.(response.data);
+      return response.data;
+    })
+    .catch((error: AxiosError) => {
+      throw error;
+    });
+
+export const useMQTTProfileList = () => {
+  const { data: session } = useSession();
+
+  const accessToken = session?.access_token;
+
+  return useQuery({
+    queryKey: [MQTT_PROFILE_QUERY_KEY, accessToken],
+    queryFn: () => fetchMQTTProfileList(accessToken),
+    enabled: !!accessToken,
+  });
 };
