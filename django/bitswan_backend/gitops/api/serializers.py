@@ -26,7 +26,7 @@ class GitopsSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        logging.info("Creating new Gitops instance.")
+        logger.info("Creating new Gitops instance.")
         secret_key = generate_secret()
 
         return Gitops.objects.create(secret_key=secret_key, **validated_data)

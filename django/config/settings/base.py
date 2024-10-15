@@ -93,6 +93,7 @@ LOCAL_APPS = [
     "bitswan_backend.gitops",
     "bitswan_backend.brokers",
     "bitswan_backend.deployments",
+    "bitswan_backend.dashboard_hub",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -328,7 +329,7 @@ SOCIALACCOUNT_FORMS = {"signup": "bitswan_backend.users.forms.UserSocialSignupFo
 # django-rest-framework - https://www.django-rest-framework.org/api-guide/settings/
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "bitswan_backend.core.authentication.KeycloakAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
