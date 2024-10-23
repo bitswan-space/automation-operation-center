@@ -8,5 +8,7 @@
 
 config/
 data/
+caddy_config
+caddy_data
 grafana_data/
 node_red_data/

@@ -1,7 +1,11 @@
 #!/bin/sh
 
-read -p "Enter the platform domain (e.g., http://localhost:3000): " PLATFORM_DOMAIN
-read -p "Enter the keycloak domain (e.g., http://localhost:9090): " KEYCLOAK_DOMAIN
+read -p "Enter the platform domain (default: http://localhost:3000): " PLATFORM_DOMAIN #example
+read -p "Enter the keycloak domain (default: http://keycloak.platform.local): " KEYCLOAK_DOMAIN #example auth
+PLATFORM_DOMAIN=${PLATFORM_DOMAIN:-"http://localhost:3000"}
+KEYCLOAK_DOMAIN=${KEYCLOAK_DOMAIN:-"http://keycloak.platform.local"}
+echo $PLATFORM_DOMAIN
+echo $KEYCLOAK_DOMAIN
 
 # if docker.env does not exist create it from the template
 if [ ! -f .env ]; then
@@ -25,6 +29,8 @@ fi
 ./env/filter_vars.sh .env.temp env/pipeline-vars .pipeline.env
 ./env/filter_vars.sh .env.temp env/keycloak-vars .keycloak.env
 ./env/filter_vars.sh .env.temp env/operations_centre-vars .operations_centre.env
+# Give POC a URL to keycloak its client can access
+sed -i "s|http.*keycloak:8080|$KEYCLOAK_DOMAIN|g" .operations_centre.env
 ./env/filter_vars.sh .env.temp env/influxdb-vars .influxdb.env
 ./env/filter_vars.sh .env.temp env/postgres-vars .postgres.env
 ./env/filter_vars.sh .env.temp env/discovery-vars .discovery_service.env

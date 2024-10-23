@@ -9,22 +9,23 @@ DOCKER_INFLUXDB_INIT_BUCKET="pipeline-metrics"
 INFLUXDB_USERNAME="pipeline-operations-centre"
 DOCKER_INFLUXDB_INIT_USERNAME="pipeline-operations-centre"
 
+# POSTGRES
+POSTGRES_USER=postgres
 
 # KEYCLOAK
 KEYCLOAK_ADMIN="admin"
 KEYCLOAK_CLIENT_ID="bitswan-admin-dashboard"
 KEYCLOAK_REFRESH_URL="http://keycloak:8080/realms/master/protocol/openid-connect/token"
 
-KEYCLOAK_ISSUER="https://keycloak.bitswan.space/realms/master"
+KEYCLOAK_ISSUER="https://keycloak:8080/realms/master"
 KEYCLOAK_END_SESSION_URL="https://keycloak.bitswan.space/realms/master/protocol/openid-connect/logout"
 KEYCLOAK_POST_LOGOUT_REDIRECT_URI="https://poc.bitswan.space"
 KEYCLOAK_FRONTEND_URL="https://keycloak.bitswan.space/"
 KEYCLOAK_ADMIN_URL="https://keycloak.bitswan.space/"
-KC_HOSTNAME_URL=https://keycloak.bitswan.space/
+KC_HOSTNAME_URL="https://keycloak.bitswan.space/"
 
 PROXY_ADDRESS_FORWARDING=true
 KC_PROXY=edge
-KEYCLOAK_ISSUER="http://keycloak:8080/realms/master"
 
 KC_DB=postgres
 DB_ADDR=postgres

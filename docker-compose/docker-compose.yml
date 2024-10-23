@@ -9,6 +9,26 @@ volumes:
   postgres-keycloak-data:
 
 services:
+  caddy:
+    image: caddy:latest
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy_data:/data
+      - ./caddy_config:/config
+    environment:
+      - DOMAIN="http://platform.local"
+    networks:
+      default:
+        aliases:
+          - 'platform.local'
+          - 'poc.platform.local'
+          - 'influx.platform.local'
+          - 'keycloak.platform.local'
+
   influxdb:
     image: influxdb:2.0
     restart: always
@@ -83,3 +103,7 @@ services:
       - ./cds/discovery_service.yaml:/conf/config.yaml:r
       - ./cds/navigation_menu.json:/conf/navigation_menu.json
       - ./cds/navigation_schema.json:/conf/navigation_schema.json:r
+
+networks:
+  default:
+    external: false

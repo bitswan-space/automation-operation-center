@@ -21,7 +21,7 @@ Note that the given keycloak endpoint must be accessible to the POC from both th
 127.0.0.1	poc.platform.local
 127.0.0.1	influx.platform.local
 ```
-Caddy is used to forward requests to `keycloak.platform.local` from the browser to `keycloak:8080`.
+Caddy is used to forward requests to `keycloak.platform.local` from the browser to `keycloak:8080`. If you are using a different domain than `platform.local`, set the `DOMAIN` environment variable to it in `docker-compose.yml` under `caddy`, as well as changing the `Caddyfile`.
 
 Next, run the containers
 
