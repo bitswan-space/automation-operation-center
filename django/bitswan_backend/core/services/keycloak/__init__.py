@@ -1,3 +1,4 @@
+import json
 import logging
 
 from django.conf import settings
@@ -141,6 +142,11 @@ class KeycloakService:
                     iter(group["attributes"].get("description", [])),
                     None,
                 ),
+                "nav_items": next(
+                    iter(group["attributes"].get("nav_items", [])),
+                    None,
+                )
+                or [],
             }
             for group in org_groups
         ]
@@ -180,6 +186,11 @@ class KeycloakService:
             "id": org_group["id"],
             "name": org_group["name"],
             "tag_color": next(iter(org_group["attributes"].get("tag_color", [])), None),
+            "nav_items": next(
+                iter(org_group["attributes"].get("nav_items", [])),
+                None,
+            )
+            or [],
             "description": next(
                 iter(org_group["attributes"].get("description", [])),
                 None,
@@ -268,6 +279,12 @@ class KeycloakService:
                     "id": f"{org_id}_group_{group['id']}_admin",
                     "name": group["name"],
                     "is_admin": True,
+                    "nav_items": (
+                        json.loads(group.get("nav_items", "[]"))
+                        if isinstance(group.get("nav_items"), str)
+                        else group.get("nav_items", [])
+                    ),
+                    "group_id": group["id"],
                 }
                 for group in org_groups
             ]
@@ -288,6 +305,8 @@ class KeycloakService:
                 "id": f"{org_id}_group_{group['id']}",
                 "name": group["name"],
                 "is_admin": False,
+                "nav_items": group.get("nav_items", []),
+                "group_id": group["id"],
             }
             for group in org_group_user_memberships
         ]

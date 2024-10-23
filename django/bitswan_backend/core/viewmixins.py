@@ -71,7 +71,9 @@ class KeycloakMixin:
         Helper method to get a Keycloak group
         """
 
-        return self.keycloak.get_org_group(group_id=group_id)
+        org_group = self.keycloak.get_org_group(group_id=group_id)
+        logger.info("Got org group when updating: %s", org_group)
+        return org_group
 
     def update_org_group(self, group_id, name, attributes):
         """
