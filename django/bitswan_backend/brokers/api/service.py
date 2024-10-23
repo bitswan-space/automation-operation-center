@@ -6,7 +6,7 @@ class GroupNavigationService:
         try:
             navigation = GroupNavigation.objects.get(group_id=group_id)
         except GroupNavigation.DoesNotExist:
-            navigation = GroupNavigation.objects.create(group_id=group_id, nav_items=[])
+            navigation = GroupNavigation.objects.create(group_id=group_id)
         return navigation
 
     def update_navigation(self, group_id, nav_items):

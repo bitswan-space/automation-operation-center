@@ -121,9 +121,9 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
             mqtt_profiles = self.get_org_group_mqtt_profiles()
 
             for profile in mqtt_profiles:
-                profile["nav_items"] = self.group_nav_service.get_navigation(
+                profile["nav_items"] = self.group_nav_service.get_or_create_navigation(
                     group_id=profile["group_id"],
-                )
+                ).nav_items
 
             paginator = self.pagination_class()
             paginated_mqtt_profiles = paginator.paginate_queryset(
