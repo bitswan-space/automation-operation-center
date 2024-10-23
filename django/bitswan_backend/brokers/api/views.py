@@ -14,12 +14,14 @@ from bitswan_backend.brokers.api.serializers import MqttProfileSerializer
 from bitswan_backend.brokers.api.serializers import OrgUserSerializeer
 from bitswan_backend.brokers.api.serializers import UpdateUserGroupSerializer
 from bitswan_backend.brokers.api.serializers import UserGroupSerializer
+from bitswan_backend.brokers.api.service import GroupNavigationService
 from bitswan_backend.core.pagination import DefaultPagination
 from bitswan_backend.core.viewmixins import KeycloakMixin
 
 
 class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
     pagination_class = DefaultPagination
+    group_nav_service = GroupNavigationService()
 
     def list(self, request):
         try:
@@ -59,8 +61,12 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
             )
 
     def update(self, request, pk=None):
-        # Retrieve the existing group data
         existing_group = self.get_org_group(pk)
+
+        navigation = self.group_nav_service.get_or_create_navigation(group_id=pk)
+
+        existing_group["nav_items"] = navigation.nav_items
+
         if not existing_group:
             return Response(
                 {"error": "Group not found."},
@@ -113,6 +119,12 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
     def mqtt_profiles(self, request):
         try:
             mqtt_profiles = self.get_org_group_mqtt_profiles()
+
+            for profile in mqtt_profiles:
+                profile["nav_items"] = self.group_nav_service.get_navigation(
+                    group_id=profile["group_id"],
+                )
+
             paginator = self.pagination_class()
             paginated_mqtt_profiles = paginator.paginate_queryset(
                 mqtt_profiles,

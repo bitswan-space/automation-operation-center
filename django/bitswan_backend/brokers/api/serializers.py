@@ -7,6 +7,8 @@ from rest_framework import exceptions
 from rest_framework import serializers
 from rest_framework import status
 
+from bitswan_backend.brokers.api.service import GroupNavigationService
+
 logger = logging.getLogger(__name__)
 
 
@@ -31,7 +33,6 @@ class CreateUserGroupSerializer(serializers.Serializer):
     name = serializers.CharField(required=True)
     tag_color = serializers.CharField(required=False)
     description = serializers.CharField(required=False, allow_blank=True)
-    nav_items = serializers.JSONField(required=False)
 
     class Meta:
         fields = ["id", "name", "tag_color", "description"]
@@ -48,7 +49,6 @@ class CreateUserGroupSerializer(serializers.Serializer):
                 attributes={
                     "tag_color": [validated_data.get("tag_color")],
                     "description": [validated_data.get("description")],
-                    "nav_items": [validated_data.get("nav_items", [])],
                 },
             )
 
@@ -95,7 +95,6 @@ class UpdateUserGroupSerializer(serializers.Serializer):
         group_id = str(instance["id"])
 
         try:
-            # Extract fields, defaulting to the existing instance values
             name = validated_data.get("name", instance["name"])
             tag_color = validated_data.get("tag_color", instance.get("tag_color"))
             description = validated_data.get("description", instance.get("description"))
@@ -105,20 +104,14 @@ class UpdateUserGroupSerializer(serializers.Serializer):
             if nav_items is None:
                 nav_items = []
 
-            logger.info("nav_items: %s", nav_items)
+            group_nav_service = GroupNavigationService()
+            group_nav_service.update_navigation(group_id, nav_items)
 
-            nav_items_str = json.dumps(nav_items or [])
-
-            logger.info("nav_items_str: %s", nav_items_str)
-
-            # Prepare attributes with null handling
             attributes = {
                 "tag_color": [tag_color] if tag_color is not None else [],
                 "description": [description] if description is not None else [],
-                "nav_items": [nav_items_str] if nav_items_str else [],
             }
 
-            # Call the Keycloak API to update the group
             view.update_org_group(
                 group_id=group_id,
                 name=name,
@@ -127,7 +120,6 @@ class UpdateUserGroupSerializer(serializers.Serializer):
 
             logger.info("Updated UserGroup instance with ID: %s", group_id)
 
-            # Return the updated group details
             updated_group = {
                 "id": group_id,
                 "name": name,
