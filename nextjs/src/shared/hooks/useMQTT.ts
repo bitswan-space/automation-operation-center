@@ -36,9 +36,9 @@ export function useMQTT<PayloadT>() {
           message: JSON.parse(message.toString()) as PayloadT,
         };
         setPayload(() => payload);
-        console.log(
-          `received message: ${message.toString()} from topic: ${topic}`,
-        );
+        // console.log(
+        //   `received message: ${message.toString()} from topic: ${topic}`,
+        // );
       });
 
       clientRef.current = newClient;
@@ -74,6 +74,7 @@ export function useMQTT<PayloadT>() {
             if (error) {
               console.log("Publish error: ", error);
             }
+            console.log(`Published to topic: ${topic}`);
           },
         );
       }

@@ -413,7 +413,7 @@ function UserInviteForm({}) {
           />
 
           <Button
-            className="mb-auto bg-blue-600 px-16 hover:bg-blue-700/80"
+            className="mb-auto bg-blue-600 hover:bg-blue-700/80"
             disabled={isLoading}
           >
             Invite{" "}

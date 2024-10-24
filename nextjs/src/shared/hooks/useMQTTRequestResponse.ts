@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { useMQTT } from "./useMQTT";
 import { useQuery } from "@tanstack/react-query";
@@ -8,6 +10,7 @@ import {
   MQTT_CONFIG_QUERY_KEY,
 } from "../constants";
 import useLocalStorageState from "ahooks/lib/useLocalStorageState";
+import { type MQTTProfile } from "@/components/groups/groupsHooks";
 
 type UseMQTTRequestResponseArgs<ResponseT> = {
   requestTopic: string;
@@ -36,7 +39,7 @@ export function useMQTTRequestResponse<ResponseT>({
     queryFn: getMQTTConfig,
   });
 
-  const [activeMQTTProfile] = useLocalStorageState<string | undefined>(
+  const [activeMQTTProfile] = useLocalStorageState<MQTTProfile | undefined>(
     ACTIVE_MQTT_PROFILE_STORAGE_KEY,
     {
       listenStorageChange: true,
@@ -66,9 +69,9 @@ export function useMQTTRequestResponse<ResponseT>({
       mqttConnect(mqttConfig.url, {
         clientId: "bitswan-poc" + Math.random().toString(16).substring(2, 8),
         clean: true,
-        reconnectPeriod: 1000,
+        reconnectPeriod: 100000,
         connectTimeout: 30 * 1000,
-        username: activeMQTTProfile ?? "",
+        username: activeMQTTProfile?.id ?? "",
         password: jwtToken,
       });
 

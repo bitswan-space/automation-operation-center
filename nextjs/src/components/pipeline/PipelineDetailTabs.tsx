@@ -57,7 +57,7 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
       value={selectedTab}
       className="h-full w-full"
     >
-      <TabsList className="grid grid-cols-2 bg-neutral-200 md:w-[400px]">
+      <TabsList className="grid grid-cols-2 bg-neutral-300 md:w-[400px]">
         <TabsTrigger
           value="summary"
           className=""
@@ -81,9 +81,9 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
       <TabsContent value="scheme" className="h-5/6">
         <Card className="h-full rounded-md">
           <CardHeader>
-            <CardTitle className="text-xl">Topology</CardTitle>
+            <CardTitle>Topology</CardTitle>
           </CardHeader>
-          <CardContent className="h-5/6 w-full space-y-2">
+          <CardContent className="h-5/6 w-full space-y-2 p-2">
             <PipelineTopologyDisplay
               initialNodes={transformTopologyToFlowNodes(
                 pipelineTopology ?? [],

@@ -1,3 +1,5 @@
+"use client";
+
 import { AlertCircle } from "lucide-react";
 import { GitopsListItem } from "./GitopsListItem";
 import React from "react";

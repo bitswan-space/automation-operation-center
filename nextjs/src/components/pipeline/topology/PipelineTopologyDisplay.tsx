@@ -10,6 +10,7 @@ import ReactFlow, {
   useNodesState,
   useEdgesState,
   SelectionMode,
+  BackgroundVariant,
 } from "reactflow";
 
 import React, { useCallback } from "react";
@@ -103,7 +104,7 @@ export const PipelineTopologyDisplay = (
   return (
     <div
       style={{
-        height: "100%",
+        height: "60vh",
         width: "100%",
       }}
     >
@@ -120,7 +121,7 @@ export const PipelineTopologyDisplay = (
         panOnDrag={panOnDrag}
         selectionMode={SelectionMode.Partial}
       >
-        <Background />
+        <Background variant={BackgroundVariant.Dots} gap={10} size={1} />
         <Controls />
       </ReactFlow>
     </div>

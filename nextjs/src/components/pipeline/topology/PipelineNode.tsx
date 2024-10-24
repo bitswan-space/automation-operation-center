@@ -1,3 +1,5 @@
+"use client";
+
 import {
   BarChartBig,
   Braces,
@@ -33,13 +35,13 @@ import clsx from "clsx";
 
 import { SiApachekafka, SiJavascript } from "react-icons/si";
 import { jsonTreeTheme, outputSampleJSON } from "@/utils/jsonTree";
-import { useRouter } from "next/router";
 
 import { joinIDsWithDelimiter } from "@/utils/pipelineUtils";
 import { epochToFormattedTime } from "@/utils/time";
 import { useClipboard } from "use-clipboard-copy";
 import { handleError } from "@/utils/errors";
 import { useMQTTRequestResponse } from "@/shared/hooks/useMQTTRequestResponse";
+import { usePathname, useRouter } from "next/navigation";
 
 type Section = "stats" | "properties" | "data";
 type PipelineNodeActionType =
@@ -133,7 +135,7 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
   } = data;
 
   const router = useRouter();
-  const currentPath = router.asPath;
+  const currentPath = usePathname();
 
   const initialState: PipelineNodeState = {
     expandedSections: [],
@@ -238,14 +240,9 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
                   onClick={() => {
                     if (settingNextLevel) return;
 
-                    router
-                      .push(`${currentPath}/${nodeID}`)
-                      .then(() => {
-                        setSettingNextLevel(true);
-                      })
-                      .catch((error: Error) =>
-                        handleError(error, "Failed to navigate"),
-                      );
+                    router.push(`${currentPath}/${nodeID}`);
+
+                    setSettingNextLevel(true);
                   }}
                 >
                   {settingNextLevel ? (

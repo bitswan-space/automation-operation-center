@@ -20,10 +20,7 @@ function DashboardLayout({ children }: LayoutProps) {
         <div className="font-strawford flex h-full min-h-screen flex-col bg-stone-100">
           <div className="flex flex-grow">
             <div className="fixed hidden h-screen bg-stone-200 md:block">
-              <SideNavBar
-                expanded={isExpanded}
-                onExpand={() => setIsExpanded(!isExpanded)}
-              />
+              <SideNavBar />
             </div>
             <main
               className={clsx("h-full flex-grow overflow-auto", {

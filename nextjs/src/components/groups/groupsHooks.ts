@@ -9,6 +9,7 @@ import {
 } from "@/shared/constants";
 import { type CreateGroupFormSchema } from "./CreateGroupFormSheet";
 import { type z } from "zod";
+import { type RawNavItem } from "../layout/Sidebar/utils/NavItems";
 
 export type UserGroup = {
   name: string;
@@ -90,6 +91,7 @@ export const updateUserGroup = (params: {
     description?: string;
     tag_color?: string;
     active?: boolean;
+    nav_items?: RawNavItem[];
   };
 }): Promise<UserGroup> => {
   return axios
@@ -141,10 +143,12 @@ export const removeMemberFromGroup = (params: {
     .then();
 };
 
-type MQTTProfile = {
+export type MQTTProfile = {
   id: string;
   name: string;
+  group_id: string;
   isAdmin: string;
+  nav_items: RawNavItem[];
 };
 
 type MQTTProfileListResponse = {
@@ -178,7 +182,7 @@ export const useMQTTProfileList = () => {
   const accessToken = session?.access_token;
 
   return useQuery({
-    queryKey: [MQTT_PROFILE_QUERY_KEY, accessToken],
+    queryKey: [MQTT_PROFILE_QUERY_KEY],
     queryFn: () => fetchMQTTProfileList(accessToken),
     enabled: !!accessToken,
   });

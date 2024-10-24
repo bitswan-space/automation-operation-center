@@ -1,6 +1,5 @@
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import { type NextPageWithLayout } from "../_app";
-import { type ReactElement } from "react";
+"use client";
+
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,15 +7,17 @@ import React from "react";
 import { PipelineDataTable } from "@/components/pipeline/PipelineDataTable";
 import { PipelineDataCard } from "@/components/pipeline/PipelineDataCard";
 
-import { TitleBar } from "../../components/layout/TitleBar";
 import { type PipelineWithStats } from "@/types";
 import { usePipelinesWithStats } from "@/components/pipeline/hooks/usePipelinesWithStats";
+import { TitleBar } from "@/components/layout/TitleBar";
 
-const DashboardPage: NextPageWithLayout = () => {
+const DashboardPage = () => {
   const { pipelinesWithStats: pipelines } = usePipelinesWithStats();
 
+  console.log("pipelines", pipelines);
+
   return (
-    <div className="p-4 lg:p-8">
+    <div className="w-full">
       <h1 className="text-2xl font-bold text-stone-700 md:hidden">
         Pipeline Containers
       </h1>
@@ -45,10 +46,6 @@ const DashboardPage: NextPageWithLayout = () => {
       </div>
     </div>
   );
-};
-
-DashboardPage.getLayout = function getLayout(page: ReactElement) {
-  return <DashboardLayout>{page}</DashboardLayout>;
 };
 
 export default DashboardPage;

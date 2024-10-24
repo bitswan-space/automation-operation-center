@@ -7,7 +7,7 @@ export default function SigninPage() {
 
   React.useEffect(() => {
     if (!session) {
-      void signIn("keycloak", { callbackUrl: "/" });
+      void signIn("keycloak", { callbackUrl: "/dashboard" });
     }
   }, [session]);
 

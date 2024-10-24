@@ -1,4 +1,5 @@
 import { Loader2, Workflow } from "lucide-react";
+import { type MQTTProfile, useMQTTProfileList } from "./groupsHooks";
 import {
   Select,
   SelectContent,
@@ -13,25 +14,26 @@ import { ACTIVE_MQTT_PROFILE_STORAGE_KEY } from "@/shared/constants";
 import React from "react";
 import { Skeleton } from "../ui/skeleton";
 import useLocalStorageState from "ahooks/lib/useLocalStorageState";
-import { useMQTTProfileList } from "./groupsHooks";
 
 export function MQTTProfileSelector() {
   const { data: mqttProfiles, isLoading } = useMQTTProfileList();
 
   const [activeMQTTProfile, saveActiveMQTTProfile] = useLocalStorageState<
-    string | undefined
+    MQTTProfile | undefined
   >(ACTIVE_MQTT_PROFILE_STORAGE_KEY, {
-    defaultValue: mqttProfiles?.results?.[0]?.id ?? "",
+    defaultValue: mqttProfiles?.results?.[0],
     listenStorageChange: true,
   });
 
   const handleActiveMQTTUserChange = (orgGroupId: string) => {
-    void saveActiveMQTTProfile(orgGroupId);
+    void saveActiveMQTTProfile(
+      mqttProfiles?.results?.find((profile) => profile.id === orgGroupId),
+    );
   };
 
   return (
     <Select
-      value={activeMQTTProfile ?? undefined}
+      value={activeMQTTProfile?.id ?? undefined}
       onValueChange={handleActiveMQTTUserChange}
     >
       <SelectTrigger className="w-[250px] bg-neutral-100">
@@ -47,7 +49,7 @@ export function MQTTProfileSelector() {
           )}
           <SelectValue
             placeholder="Select mqtt user"
-            defaultValue={activeMQTTProfile ?? undefined}
+            defaultValue={activeMQTTProfile?.id ?? undefined}
             className="font-medium"
           />
         </div>

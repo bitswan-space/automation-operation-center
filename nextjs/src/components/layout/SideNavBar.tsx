@@ -1,3 +1,5 @@
+"use client";
+
 import { LogOut, ChevronRight, Menu, Settings } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -21,13 +23,8 @@ import { type DynamicSidebarItem } from "@/types/sidebar";
 import { env } from "@/env.mjs";
 import { keyCloakSessionLogOut } from "@/utils/keycloak";
 
-interface SideNavBarProps {
-  expanded: boolean;
-  onExpand: () => void;
-}
-
-const SideNavBar = (props: SideNavBarProps) => {
-  const { expanded, onExpand } = props;
+const SideNavBar = () => {
+  const [expanded, setExpanded] = React.useState<boolean>(false);
 
   const handleSignOut = () => {
     keyCloakSessionLogOut()
@@ -44,7 +41,7 @@ const SideNavBar = (props: SideNavBarProps) => {
   };
 
   const handleExpand = () => {
-    onExpand();
+    setExpanded(!expanded);
   };
 
   return (
@@ -84,7 +81,7 @@ const SideNavBar = (props: SideNavBarProps) => {
           })}
         >
           <div className="mb-8 w-full space-y-4">
-            <Link href={"/settings"} className="w-full">
+            <Link href={"/dashboard/settings"} className="w-full">
               <Button
                 variant={"ghost"}
                 size={"lg"}

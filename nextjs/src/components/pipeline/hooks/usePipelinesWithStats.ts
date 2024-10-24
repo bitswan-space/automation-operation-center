@@ -1,3 +1,5 @@
+"use client";
+
 import type {
   ContainerServiceTopologyResponse,
   PipelineTopology,
@@ -18,6 +20,8 @@ export const usePipelinesWithStats = (): {
       requestTopic: `/c/running-pipelines/topology/subscribe`,
       responseTopic: `/c/running-pipelines/topology`,
     });
+
+  console.log("containerServiceTopology", containerServiceTopology);
 
   const pipelines: (PipelineTopology & { _key: string })[] = React.useMemo(
     () =>

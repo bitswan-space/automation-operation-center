@@ -1,3 +1,5 @@
+"use client";
+
 import { useMQTTRequestResponse } from "@/shared/hooks/useMQTTRequestResponse";
 import {
   type DynamicSidebarResponse,

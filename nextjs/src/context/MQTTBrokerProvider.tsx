@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { type UserGroup, useUserGroups } from "@/components/groups/groupsHooks";
 

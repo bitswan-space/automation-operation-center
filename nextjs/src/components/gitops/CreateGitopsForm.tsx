@@ -1,3 +1,5 @@
+"use client";
+
 import { CheckCheck, Copy } from "lucide-react";
 import {
   Form,
