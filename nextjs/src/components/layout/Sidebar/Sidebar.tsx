@@ -32,6 +32,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import clsx from "clsx";
 import dynamic from "next/dynamic";
 import { env } from "@/env.mjs";
+import { useSession } from "next-auth/react";
 
 const NavTreeView = dynamic(() => import("./NavTreeView"), {
   ssr: false,
@@ -44,6 +45,14 @@ const NavTreeView = dynamic(() => import("./NavTreeView"), {
 
 export function AppSidebar() {
   const { open } = useSidebar();
+
+  const { data: session, status } = useSession();
+
+  const getInitials = (name: string) => {
+    const [firstName, lastName] = name.split(" ");
+    return `${firstName?.charAt(0) ?? ""}${lastName?.charAt(0) ?? ""}`;
+  };
+
   return (
     <Sidebar className="dark" collapsible="icon">
       <SidebarHeader>
@@ -128,14 +137,16 @@ export function AppSidebar() {
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
                     <AvatarImage src={"#"} alt={"Mike Farad"} />
-                    <AvatarFallback className="rounded-lg">MF</AvatarFallback>
+                    <AvatarFallback className="rounded-lg">
+                      {getInitials(session?.user.name ?? "")}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">
-                      {"Mike Farad"}
+                      {session?.user.name}
                     </span>
                     <span className="truncate text-xs">
-                      {"mike@example.com"}
+                      {session?.user.email}
                     </span>
                   </div>
                   <ChevronsUpDown className="ml-auto size-4" />
@@ -151,14 +162,16 @@ export function AppSidebar() {
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg">
                       <AvatarImage src={"#"} alt={"Mike Farad"} />
-                      <AvatarFallback className="rounded-lg">MF</AvatarFallback>
+                      <AvatarFallback className="rounded-lg">
+                        {getInitials(session?.user.name ?? "")}
+                      </AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-semibold">
-                        {"Mike Farad"}
+                        {session?.user.name}
                       </span>
                       <span className="truncate text-xs">
-                        {"mike@example.com"}
+                        {session?.user.email}
                       </span>
                     </div>
                   </div>

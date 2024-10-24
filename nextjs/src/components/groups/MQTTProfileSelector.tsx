@@ -1,5 +1,9 @@
 import { Loader2, Workflow } from "lucide-react";
-import { type MQTTProfile, useMQTTProfileList } from "./groupsHooks";
+import {
+  type MQTTProfile,
+  MQTTProfileListResponse,
+  useMQTTProfileList,
+} from "./groupsHooks";
 import {
   Select,
   SelectContent,
@@ -15,7 +19,13 @@ import React from "react";
 import { Skeleton } from "../ui/skeleton";
 import useLocalStorageState from "ahooks/lib/useLocalStorageState";
 
-export function MQTTProfileSelector() {
+type MQTTProfileSelectorProps = {
+  mqttProfiles?: MQTTProfileListResponse;
+};
+
+export default function MQTTProfileSelector(
+  props: Readonly<MQTTProfileSelectorProps>,
+) {
   const { data: mqttProfiles, isLoading } = useMQTTProfileList();
 
   const [activeMQTTProfile, saveActiveMQTTProfile] = useLocalStorageState<
@@ -39,7 +49,10 @@ export function MQTTProfileSelector() {
       <SelectTrigger className="w-[250px] bg-neutral-100">
         <div className="flex items-center gap-2">
           {isLoading ? (
-            <Loader2 size={20} className="mr-2 animate-spin" />
+            <span className="flex">
+              <Loader2 size={20} className="mr-2 animate-spin" />
+              <span>Loading profiles...</span>
+            </span>
           ) : (
             <Workflow
               size={20}
@@ -48,7 +61,7 @@ export function MQTTProfileSelector() {
             />
           )}
           <SelectValue
-            placeholder="Select mqtt user"
+            placeholder={!isLoading && "Select mqtt user"}
             defaultValue={activeMQTTProfile?.id ?? undefined}
             className="font-medium"
           />

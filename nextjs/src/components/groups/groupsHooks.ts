@@ -151,7 +151,7 @@ export type MQTTProfile = {
   nav_items: RawNavItem[];
 };
 
-type MQTTProfileListResponse = {
+export type MQTTProfileListResponse = {
   count: number;
   next: string | null;
   previous: string | null;
