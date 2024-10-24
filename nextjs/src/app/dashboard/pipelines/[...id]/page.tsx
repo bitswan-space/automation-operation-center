@@ -8,10 +8,6 @@ import { formatPipelineName } from "@/utils/pipelineUtils";
 import { splitArrayUpToElementAndJoin } from "@/utils/arrays";
 import { usePipelinesWithStats } from "@/components/pipeline/hooks/usePipelinesWithStats";
 
-interface PipelineDetailPageProps {
-  id: string | string[];
-}
-
 const PipelineDetailPage = ({ params }: { params: { id: string[] } }) => {
   const { pipelinesWithStats: pipelines } = usePipelinesWithStats();
 

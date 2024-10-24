@@ -46,7 +46,7 @@ const NavTreeView = dynamic(() => import("./NavTreeView"), {
 export function AppSidebar() {
   const { open } = useSidebar();
 
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
 
   const getInitials = (name: string) => {
     const [firstName, lastName] = name.split(" ");
@@ -196,42 +196,5 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  );
-}
-
-export type BuildTagsProps = {
-  expanded: boolean;
-};
-
-function BuildTags(props: Readonly<BuildTagsProps>) {
-  const { expanded } = props;
-
-  return (
-    <div
-      className={clsx(
-        "flex w-full flex-col justify-center space-y-3 pl-6 font-mono text-[8px] md:pl-0",
-      )}
-    >
-      <div
-        className={clsx("space-y-0.5", {
-          "flex gap-1 pl-2 md:justify-start": expanded,
-        })}
-      >
-        <div className="font-bold">Commit Hash:</div>
-        <div className="text-neutral-500 underline">
-          #{env.NEXT_PUBLIC_COMMIT_HASH.substring(0, 6)}
-        </div>
-      </div>
-      <div
-        className={clsx("space-y-0.5", {
-          "flex gap-1 pl-2 md:justify-start": expanded,
-        })}
-      >
-        <div className="font-bold">Build No:</div>
-        <div className="text-neutral-500 underline">
-          {env.NEXT_PUBLIC_BUILD_NO}
-        </div>
-      </div>
-    </div>
   );
 }

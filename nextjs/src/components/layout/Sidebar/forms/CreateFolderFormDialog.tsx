@@ -16,12 +16,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { NavItem, getLastId } from "../utils/NavItems";
+import { type NavItem, getLastId } from "../utils/NavItems";
 
 import { Button } from "@/components/ui/button";
 import { Folder } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { NodeModel } from "@minoru/react-dnd-treeview";
+import { type NodeModel } from "@minoru/react-dnd-treeview";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";

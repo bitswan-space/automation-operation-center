@@ -12,7 +12,7 @@ interface LayoutProps {
 }
 
 function DashboardLayout({ children }: LayoutProps) {
-  const [isExpanded, setIsExpanded] = React.useState<boolean>(false);
+  const [isExpanded] = React.useState<boolean>(false);
 
   return (
     <MQTTUserProvider>

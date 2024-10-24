@@ -3,12 +3,12 @@ ARG COMMIT_HASH
 
 ##### DEPENDENCIES
 
-FROM --platform=linux/amd64 node:18.12-alpine3.17 AS deps
+FROM --platform=linux/amd64 node:20-alpine AS deps
 
 ARG BUILD_NO
 ARG COMMIT_HASH
 
-RUN apk add --no-cache libc6-compat openssl1.1-compat
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
@@ -24,7 +24,7 @@ RUN \
 
 ##### BUILDER
 
-FROM --platform=linux/amd64 node:18.12-alpine3.17 AS builder
+FROM --platform=linux/amd64 node:20-alpine AS builder
 
 ARG BUILD_NO
 ARG COMMIT_HASH
@@ -33,7 +33,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ENV NEXT_PUBLIC_MQTT_URL wss://mqtt.bitswan.space
+ENV NEXT_PUBLIC_MQTT_URL=wss://mqtt.bitswan.space
 ENV NEXT_PUBLIC_COMMIT_HASH=${COMMIT_HASH}
 ENV NEXT_PUBLIC_BUILD_NO=${BUILD_NO}
 ENV NEXT_PUBLIC_BITSWAN_BACKEND_API_URL=https://backend.bitswan.space
@@ -49,7 +49,7 @@ RUN \
 
 ##### RUNNER
 
-FROM --platform=linux/amd64 node:18.12-alpine3.17 AS runner
+FROM --platform=linux/amd64 gcr.io/distroless/nodejs20-debian12 AS runner
 
 ARG BUILD_NO
 ARG COMMIT_HASH
@@ -60,13 +60,11 @@ ENV NODE_ENV production
 
 # ENV NEXT_TELEMETRY_DISABLED 1
 
-ENV NEXT_PUBLIC_MQTT_URL wss://mqtt.bitswan.space
+ENV NEXT_PUBLIC_MQTT_URL=wss://mqtt.bitswan.space
 ENV NEXT_PUBLIC_COMMIT_HASH=${COMMIT_HASH}
 ENV NEXT_PUBLIC_BUILD_NO=${BUILD_NO}
 ENV NEXT_PUBLIC_BITSWAN_BACKEND_API_URL=https://backend.bitswan.space
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/next.config.mjs ./
 COPY --from=builder /app/public ./public
@@ -75,8 +73,7 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-USER nextjs
 EXPOSE 3000
 ENV PORT 3000
 
-CMD ["node", "server.js"]
+CMD ["server.js"]

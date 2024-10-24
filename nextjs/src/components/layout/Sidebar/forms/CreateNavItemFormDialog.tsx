@@ -16,7 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { NavItem, getLastId } from "../utils/NavItems";
+import { type NavItem, getLastId } from "../utils/NavItems";
 import {
   Select,
   SelectContent,
@@ -30,7 +30,7 @@ import { DynamicIcon } from "../DynamicIcon";
 import { IconSelector } from "./IconSelector";
 import { Input } from "../../../ui/input";
 import { LayoutList } from "lucide-react";
-import { NodeModel } from "@minoru/react-dnd-treeview";
+import { type NodeModel } from "@minoru/react-dnd-treeview";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";

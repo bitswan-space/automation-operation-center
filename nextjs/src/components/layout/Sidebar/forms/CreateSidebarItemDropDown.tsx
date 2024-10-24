@@ -21,8 +21,8 @@ import {
 
 import { CreateFolderFormDialog } from "./CreateFolderFormDialog";
 import { CreateNavItemFormDialog } from "./CreateNavItemFormDialog";
-import { NavItem } from "../utils/NavItems";
-import { NodeModel } from "@minoru/react-dnd-treeview";
+import { type NavItem } from "../utils/NavItems";
+import { type NodeModel } from "@minoru/react-dnd-treeview";
 import React from "react";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
 

@@ -1,7 +1,6 @@
 import { Loader2, Workflow } from "lucide-react";
 import {
   type MQTTProfile,
-  MQTTProfileListResponse,
   useMQTTProfileList,
 } from "./groupsHooks";
 import {
@@ -19,12 +18,8 @@ import React from "react";
 import { Skeleton } from "../ui/skeleton";
 import useLocalStorageState from "ahooks/lib/useLocalStorageState";
 
-type MQTTProfileSelectorProps = {
-  mqttProfiles?: MQTTProfileListResponse;
-};
 
 export default function MQTTProfileSelector(
-  props: Readonly<MQTTProfileSelectorProps>,
 ) {
   const { data: mqttProfiles, isLoading } = useMQTTProfileList();
 
