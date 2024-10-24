@@ -10,6 +10,10 @@ http://keycloak.platform.local {
     }
 }
 
+mqtt.platform.local {
+       reverse_proxy emqx:8083
+}
+
 http://influx.platform.local {
        reverse_proxy influxdb:8086
 }
@@ -20,8 +24,4 @@ http://poc.platform.local {
 
 http://portainer.platform.local {
       reverse_proxy portainer:9000
-}
-
-http://mqtt.platform.local {
-    reverse_proxy mosquitto:9001
 }

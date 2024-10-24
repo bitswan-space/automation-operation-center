@@ -53,18 +53,16 @@ services:
       - "9000:9000"
       - "9443:9443"
 
-  mosquitto:
-    image: eclipse-mosquitto
-    container_name: mosquitto
+  emqx:
+    image: emqx:latest
+    container_name: emqx
     restart: always
-    # network_mode: host
-    volumes:
-      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-      - mosquitto_data:/mosquitto/data
-      - mosquitto_log:/mosquitto/log
+#    volumes:
     ports:
+      - "18083:18083"
       - "1883:1883"
-      - "9001:9001"
+    environment:
+      - EMQX_DASHBOARD__DEFAULT_PASSWORD="foo"
 
   keycloak:
     image: public.registry.bitswan.space/bitswan/bitswan-keycloak:sha256_3c9b17e2d24021c65c8f51d692fabc1d5de76018b031783d3d306ddac79397f0

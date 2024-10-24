@@ -12,7 +12,7 @@ services:
     environment:
       - DEPLOYMENT_ID=example-pipeline-1
     env_file:
-      - ../pipeline.env
+      - ../.pipeline.env
     volumes:
       - ./conf-1.conf:/conf/pipeline.conf:rw
       - /tmp/example-pipeline-data/:/data:rw
@@ -23,7 +23,7 @@ services:
     environment:
       - DEPLOYMENT_ID=example-pipeline-2
     env_file:
-      - ../pipeline.env
+      - ../.pipeline.env
     volumes:
       - ./conf-2.conf:/conf/pipeline.conf:rw
       - /tmp/example-pipeline-data/:/data:rw
@@ -34,7 +34,7 @@ services:
     environment:
       - DEPLOYMENT_ID=example-pipeline-3
     env_file:
-      - ../pipeline.env
+      - ../.pipeline.env
     volumes:
       - ./conf-3.conf:/conf/pipeline.conf:rw
       - /tmp/example-pipeline-data/:/data:rw

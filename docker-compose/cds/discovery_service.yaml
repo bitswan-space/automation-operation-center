@@ -1,4 +1,4 @@
-mqtt-broker-url: mqtt://mosquitto:1883
+mqtt-broker-url: mqtt://emqx:1883
 mqtt-containers-pub: /c/running-pipelines/topology
 mqtt-topology-topics: [
   "/c/hetzner-1/running-pipelines/topology",
