@@ -373,8 +373,12 @@ KEYCLOAK_SERVER_URL = os.environ.get("KEYCLOAK_SERVER_URL")
 
 AUTH_SECRET_KEY = os.environ.get("AUTH_SECRET_KEY")
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:8000",
-    "http://localhost:9090",
-]
+CORS_ALLOWED_ORIGINS = env.list(
+    "CORS_ALLOWED_ORIGINS",
+    default=[
+        "http://localhost:3000",
+        "http://localhost:8000",
+        "http://localhost:9090",
+        "https://poc.bitswan.space",
+    ],
+)
