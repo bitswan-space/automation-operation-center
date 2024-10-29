@@ -22,6 +22,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
+import Link from "next/link";
 
 export default function NavTreeView() {
   const { sidebarItems, setSidebarItems } = useSidebarItems();
@@ -142,6 +143,13 @@ export const SideNavTreeItem = (props: SideNavTreeItemProps) => {
 
   const getMarginLeft = () => (open ? depth * 10 : 0);
 
+  const getLinkHref = () => {
+    if (node.data?.type === "external-link") {
+      return node.data?.href ?? "#";
+    }
+    return "#";
+  };
+
   if (!node.droppable) {
     return (
       <SidebarMenuItem
@@ -150,15 +158,17 @@ export const SideNavTreeItem = (props: SideNavTreeItemProps) => {
           marginInlineStart: getMarginLeft(),
         }}
       >
-        <SidebarMenuButton>
-          {editMode && open && (
-            <div className="my-auto cursor-grab">
-              <GripVertical size={16} className="my-auto text-neutral-500" />
-            </div>
-          )}
-          {node.data?.icon}
-          {node.text}
-        </SidebarMenuButton>
+        <Link href={getLinkHref()} target="_blank" rel="noopener noreferrer">
+          <SidebarMenuButton>
+            {editMode && open && (
+              <div className="my-auto cursor-grab">
+                <GripVertical size={16} className="my-auto text-neutral-500" />
+              </div>
+            )}
+            {node.data?.icon}
+            {node.text}
+          </SidebarMenuButton>
+        </Link>
         {editMode && (
           <SidebarItemActions
             type={node.data?.type ?? ""}
