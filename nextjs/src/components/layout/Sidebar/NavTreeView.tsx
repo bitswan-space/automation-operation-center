@@ -23,6 +23,12 @@ import {
 } from "@/components/ui/sidebar";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
 import Link from "next/link";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function NavTreeView() {
   const { sidebarItems, setSidebarItems } = useSidebarItems();
@@ -159,15 +165,29 @@ export const SideNavTreeItem = (props: SideNavTreeItemProps) => {
         }}
       >
         <Link href={getLinkHref()} target="_blank" rel="noopener noreferrer">
-          <SidebarMenuButton>
-            {editMode && open && (
-              <div className="my-auto cursor-grab">
-                <GripVertical size={16} className="my-auto text-neutral-500" />
-              </div>
-            )}
-            {node.data?.icon}
-            {node.text}
-          </SidebarMenuButton>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <SidebarMenuButton title={node.text}>
+                  {editMode && open && (
+                    <div className="my-auto cursor-grab">
+                      <GripVertical
+                        size={16}
+                        className="my-auto text-neutral-500"
+                      />
+                    </div>
+                  )}
+                  {node.data?.icon}
+                  {node.text}
+                </SidebarMenuButton>
+              </TooltipTrigger>
+              {!open && (
+                <TooltipContent side="right">
+                  <p>{node.text}</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
         </Link>
         {editMode && (
           <SidebarItemActions
@@ -187,22 +207,36 @@ export const SideNavTreeItem = (props: SideNavTreeItemProps) => {
         marginInlineStart: getMarginLeft(),
       }}
     >
-      <SidebarMenuButton>
-        {editMode && open && (
-          <div className="my-auto cursor-grab">
-            <GripVertical size={16} className="my-auto text-neutral-500" />
-          </div>
-        )}
-        <ChevronRight
-          size={24}
-          onClick={onToggle}
-          className={clsx(
-            "duration-250 transition-transform",
-            isOpen && "rotate-[90deg]",
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <SidebarMenuButton>
+              {editMode && open && (
+                <div className="my-auto cursor-grab">
+                  <GripVertical
+                    size={16}
+                    className="my-auto text-neutral-500"
+                  />
+                </div>
+              )}
+              <ChevronRight
+                size={24}
+                onClick={onToggle}
+                className={clsx(
+                  "duration-250 transition-transform",
+                  isOpen && "rotate-[90deg]",
+                )}
+              />
+              {node.text}
+            </SidebarMenuButton>
+          </TooltipTrigger>
+          {!open && (
+            <TooltipContent side="right">
+              <p>{node.text}</p>
+            </TooltipContent>
           )}
-        />
-        {node.text}
-      </SidebarMenuButton>
+        </Tooltip>
+      </TooltipProvider>
       {editMode && (
         <SidebarItemActions
           type={node.data?.type ?? ""}
