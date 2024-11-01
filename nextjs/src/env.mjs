@@ -33,6 +33,7 @@ export const env = createEnv({
     KEYCLOAK_REFRESH_URL: z.string().url(),
     KEYCLOAK_END_SESSION_URL: z.string().url(),
     KEYCLOAK_POST_LOGOUT_REDIRECT_URI: z.string().url(),
+    NODE_TLS_REJECT_UNAUTHORIZED: z.string().min(1),
 
     // MQTT
     CDS_API_URL: z.string().url(),
@@ -62,6 +63,7 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    NODE_TLS_REJECT_UNAUTHORIZED: process.env.NODE_TLS_REJECT_UNAUTHORIZED,
 
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
 

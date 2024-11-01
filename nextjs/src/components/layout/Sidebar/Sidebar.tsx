@@ -24,6 +24,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { signOut, useSession } from "next-auth/react";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -32,7 +33,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import clsx from "clsx";
 import dynamic from "next/dynamic";
 import { env } from "@/env.mjs";
-import { useSession } from "next-auth/react";
+import { handleError } from "@/utils/errors";
+import { keyCloakSessionLogOut } from "@/utils/keycloak";
 
 const NavTreeView = dynamic(() => import("./NavTreeView"), {
   ssr: false,
@@ -47,6 +49,20 @@ export function AppSidebar() {
   const { open } = useSidebar();
 
   const { data: session } = useSession();
+
+  const handleSignOut = () => {
+    keyCloakSessionLogOut()
+      .then((_) => {
+        signOut({ callbackUrl: "/dashboard" })
+          .then((res) => console.info(res))
+          .catch((error: Error) => {
+            handleError(error, "Failed to sign out");
+          });
+      })
+      .catch((error: Error) => {
+        handleError(error, "Failed to end Keycloak session");
+      });
+  };
 
   const getInitials = (name: string) => {
     const [firstName, lastName] = name.split(" ");
@@ -186,7 +202,7 @@ export function AppSidebar() {
                   </Link>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut size={16} className="mr-2" />
                   Log out
                 </DropdownMenuItem>

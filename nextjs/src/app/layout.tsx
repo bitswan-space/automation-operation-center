@@ -6,6 +6,7 @@ import { GeistSans } from "geist/font/sans";
 
 import { type Metadata } from "next";
 import FlowProvider from "@/context/ReactFlowProvider";
+import NextAuthProvider from "@/context/NextAuthProvider";
 
 export const metadata: Metadata = {
   title: "Bitswan A.O.C",
@@ -17,14 +18,16 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <ReactQueryProvider>
-      <FlowProvider>
-        <html lang="en" className={`${GeistSans.variable} bg-neutral-200/50`}>
-          <body className="">
-            <main>{children}</main>
-          </body>
-        </html>
-      </FlowProvider>
-    </ReactQueryProvider>
+    <NextAuthProvider>
+      <ReactQueryProvider>
+        <FlowProvider>
+          <html lang="en" className={`${GeistSans.variable} bg-neutral-200/50`}>
+            <body className="">
+              <main>{children}</main>
+            </body>
+          </html>
+        </FlowProvider>
+      </ReactQueryProvider>
+    </NextAuthProvider>
   );
 }

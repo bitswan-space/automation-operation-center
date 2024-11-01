@@ -8,28 +8,21 @@ import {
 } from "@/components/ui/sidebar";
 
 import { AppSidebar } from "@/components/layout/Sidebar/Sidebar";
-import NextAuthProvider from "@/context/NextAuthProvider";
+import AuthCheck from "@/components/auth/auth-check";
 import { SideBarContextProvider } from "@/context/SideBarContextProvider";
 import { SidebarItemsProvider } from "@/context/SideBarItemsProvider";
 import { Toaster } from "sonner";
-import { getServerAuthSession } from "@/server/auth";
-import { redirect } from "next/navigation";
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerAuthSession();
-
-  if (!session) {
-    redirect("/api/auth/signin");
-  }
   return (
-    <NextAuthProvider>
-      <SideBarContextProvider>
-        <SidebarProvider>
-          <SidebarItemsProvider>
+    <SideBarContextProvider>
+      <SidebarProvider>
+        <SidebarItemsProvider>
+          <AuthCheck>
             {/* Sidebar */}
             <AppSidebar />
             <SidebarRail />
@@ -40,9 +33,9 @@ export default async function DashboardLayout({
               </div>
             </SidebarInset>
             <Toaster />
-          </SidebarItemsProvider>
-        </SidebarProvider>
-      </SideBarContextProvider>
-    </NextAuthProvider>
+          </AuthCheck>
+        </SidebarItemsProvider>
+      </SidebarProvider>
+    </SideBarContextProvider>
   );
 }
