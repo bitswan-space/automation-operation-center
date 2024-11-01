@@ -22,6 +22,7 @@ import { addMemberToGroup, type UserGroup } from "./groupsHooks";
 import { useSession } from "next-auth/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ORG_USERS_QUERY_KEY } from "@/shared/constants";
+import { canMutateUsers } from "@/lib/permissions";
 
 type GroupComboBoxSelectorProps = {
   groups?: UserGroup[];
@@ -69,10 +70,11 @@ export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
   };
 
   const isLoading = addMemberToGroupMutation.isLoading;
+  const hasPerms = canMutateUsers(session);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+      <PopoverTrigger asChild disabled={!hasPerms}>
         <button>
           <Badge
             variant={"outline"}

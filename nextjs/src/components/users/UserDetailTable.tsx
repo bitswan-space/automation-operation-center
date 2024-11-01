@@ -57,6 +57,7 @@ import {
 import { type AxiosError } from "axios";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { canMutateUsers } from "@/lib/permissions";
 
 const columnHelper = createColumnHelper<OrgUser>();
 export const columns: ColumnDef<OrgUser>[] = [
@@ -104,6 +105,8 @@ export const columns: ColumnDef<OrgUser>[] = [
 
 export function UserDetailTable() {
   const { data: orgUsers, isLoading, isError } = useOrgUsers();
+  const { data: session } = useSession();
+  const hasPerms = canMutateUsers(session);
 
   const orgUsersData = React.useMemo(() => orgUsers?.results ?? [], [orgUsers]);
 
@@ -136,7 +139,7 @@ export function UserDetailTable() {
 
   return (
     <div className="w-full">
-      <UserInviteForm />
+      {hasPerms && <UserInviteForm />}
       {isError && (
         <div className="flex h-60 w-full items-center justify-center rounded-md border border-neutral-200 bg-neutral-100 p-4 text-center">
           <div className="flex flex-col items-center justify-between gap-4 py-4">
@@ -236,6 +239,8 @@ type GroupBadgeListProps = {
 
 function GroupBadgeList(props: GroupBadgeListProps) {
   const { groups, userId } = props;
+
+  const { data: session } = useSession();
   const { data: allOrgGroups } = useUserGroups();
 
   const userGroups = React.useMemo(() => {
@@ -250,12 +255,17 @@ function GroupBadgeList(props: GroupBadgeListProps) {
     );
   }, [allOrgGroups?.results, userGroups]);
 
+  const hasPerms = canMutateUsers(session);
+
   return (
     <div className="flex max-w-3xl flex-wrap gap-2 ">
       {userGroups.map((group) => {
         return <UserGroupBadge group={group} key={group.id} userId={userId} />;
       })}
-      <GroupComboBoxSelector groups={unselectedGroups} userId={userId} />
+
+      {hasPerms && (
+        <GroupComboBoxSelector groups={unselectedGroups} userId={userId} />
+      )}
     </div>
   );
 }
@@ -299,6 +309,7 @@ function UserGroupBadge(props: UserGroupBadgeProps) {
   };
 
   const isLoading = removeMemberFromGroupMutation.isLoading;
+  const hasPerms = canMutateUsers(session);
 
   return (
     <Badge
@@ -311,17 +322,19 @@ function UserGroupBadge(props: UserGroupBadgeProps) {
       }}
     >
       <span>{group.name}</span>
-      <button
-        className="cursor-pointer"
-        onClick={() => onRemoveGroupClick(group.id)}
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <X className="h-4 w-4 " />
-        )}
-      </button>
+      {hasPerms && (
+        <button
+          className="cursor-pointer"
+          onClick={() => onRemoveGroupClick(group.id)}
+          disabled={isLoading || !hasPerms}
+        >
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <X className="h-4 w-4 " />
+          )}
+        </button>
+      )}
     </Badge>
   );
 }
@@ -441,6 +454,8 @@ function UserActions(props: UserActionProps) {
   const accessToken = session?.access_token;
   const activeUserId = session?.user?.id;
 
+  const hasPerms = canMutateUsers(session);
+
   const deleteUserGroupMutation = useMutation({
     mutationFn: deleteUser,
     onSuccess: () => {
@@ -483,17 +498,19 @@ function UserActions(props: UserActionProps) {
   const isCurrentUser = activeUserId === id;
   return (
     <div className="flex justify-end gap-2 px-4 text-end">
-      <Button
-        variant={"ghost"}
-        onClick={handleDeleteClick}
-        disabled={isLoading || isCurrentUser}
-      >
-        {isLoading ? (
-          <Loader2 size={20} className="mr-2 animate-spin" />
-        ) : (
-          <Trash2 size={20} className="text-neutral-500" />
-        )}
-      </Button>
+      {hasPerms && (
+        <Button
+          variant={"ghost"}
+          onClick={handleDeleteClick}
+          disabled={isLoading || isCurrentUser || !hasPerms}
+        >
+          {isLoading ? (
+            <Loader2 size={20} className="mr-2 animate-spin" />
+          ) : (
+            <Trash2 size={20} className="text-neutral-500" />
+          )}
+        </Button>
+      )}
     </div>
   );
 }

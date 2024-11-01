@@ -1,11 +1,27 @@
-export function isUserAdmin(userID: string) {
-  return true;
+import { type Session } from "next-auth";
+
+export function isUserAdmin(session: Session | null) {
+  return session?.user.group_membership?.some((membership) =>
+    membership.toLowerCase().endsWith("/admin"),
+  );
 }
 
-export function canMutateGroups(userID: string) {
-  return isUserAdmin(userID);
+export function canSeeSettingsPage(session: Session | null) {
+  return isUserAdmin(session);
 }
 
-export function canMutateSidebarItems(userID: string) {
-  return isUserAdmin(userID);
+export function canMutateGroups(session: Session | null) {
+  return isUserAdmin(session);
+}
+
+export function canMutateGitops(session: Session | null) {
+  return isUserAdmin(session);
+}
+
+export function canMutateUsers(session: Session | null) {
+  return isUserAdmin(session);
+}
+
+export function canMutateSidebarItems(session: Session | null) {
+  return isUserAdmin(session);
 }

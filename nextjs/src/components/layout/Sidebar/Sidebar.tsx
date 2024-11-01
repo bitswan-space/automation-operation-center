@@ -30,9 +30,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import clsx from "clsx";
 import dynamic from "next/dynamic";
-import { env } from "@/env.mjs";
 import { handleError } from "@/utils/errors";
 import { keyCloakSessionLogOut } from "@/utils/keycloak";
 

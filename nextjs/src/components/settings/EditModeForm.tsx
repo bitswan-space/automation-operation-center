@@ -18,6 +18,7 @@ import { useSession } from "next-auth/react";
 import { useSidebar } from "../ui/sidebar";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
 import { type AxiosError } from "axios";
+import { canMutateSidebarItems } from "@/lib/permissions";
 
 export function SwitchForm() {
   const { editMode, setEditMode } = useSidebar();
@@ -74,6 +75,7 @@ export function SwitchForm() {
     });
   };
 
+  const hasPerms = canMutateSidebarItems(session);
   const isLoading = saveOrgGroupSidebarMutation.isLoading;
 
   return (
@@ -90,12 +92,19 @@ export function SwitchForm() {
               </div>
             </div>
 
-            <Switch checked={editMode} onCheckedChange={setEditMode} />
+            <Switch
+              checked={editMode}
+              onCheckedChange={setEditMode}
+              disabled={!hasPerms}
+            />
           </div>
         </div>
       </div>
       <div className="text-end">
-        <Button onClick={handleSave} disabled={!editMode || isLoading}>
+        <Button
+          onClick={handleSave}
+          disabled={!editMode || isLoading || !hasPerms}
+        >
           {isLoading ? "Saving..." : "Save"}
         </Button>
       </div>

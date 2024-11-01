@@ -27,9 +27,14 @@ declare module "next-auth" {
     access_token: string;
     user: {
       id: string;
+      group_membership: string[];
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
+  }
+  interface Profile {
+    group_membership?: string[];
+    // Add other custom properties as needed
   }
 }
 
@@ -127,10 +132,11 @@ export const authOptions: NextAuthOptions = {
       access_token: token.access_token,
       user: {
         ...session.user,
+        group_membership: token.group_membership ?? [],
         id: token.sub,
       },
     }),
-    jwt: ({ token, user, account }) => {
+    jwt: ({ token, user, account, profile }) => {
       // Initial sign in
       if (account && user) {
         // Add access_token, refresh_token and expirations to the token right after signin
@@ -140,6 +146,7 @@ export const authOptions: NextAuthOptions = {
         token.expires_at = account.expires_at ?? 0;
         token.user = user;
         token.provider = account.provider;
+        token.group_membership = profile?.group_membership ?? [];
         return token;
       }
 
