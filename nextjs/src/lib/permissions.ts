@@ -1,3 +1,5 @@
+"use client";
+
 import { type Session } from "next-auth";
 
 export function isUserAdmin(session: Session | null) {

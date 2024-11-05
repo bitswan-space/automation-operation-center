@@ -10,8 +10,6 @@ export default function SignIn() {
   const searchParams = useSearchParams();
   const { status } = useSession();
 
-  console.log("status", status);
-
   const callbackUrl = searchParams?.get("callbackUrl") ?? "/dashboard";
   const error = searchParams?.get("error");
 
@@ -44,9 +42,5 @@ export default function SignIn() {
     );
   }
 
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="animate-pulse">Loading...</div>
-    </div>
-  );
+  return <div className="animate-pulse">Loading...</div>;
 }
