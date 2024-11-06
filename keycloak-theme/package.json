@@ -1,0 +1,98 @@
+{
+    "name": "keycloakify-starter",
+    "homepage": "https://starter.keycloakify.dev",
+    "version": "4.8.2",
+    "description": "A starter/demo project for keycloakify",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/codegouvfr/keycloakify-starter.git"
+    },
+    "scripts": {
+        "postinstall": "copy-keycloak-resources-to-public",
+        "start": "react-scripts start",
+        "build": "react-scripts build",
+        "build-keycloak-theme": "yarn build && keycloakify",
+        "storybook": "start-storybook -p 6006"
+    },
+    "keycloakify": {
+        "extraThemeProperties": [
+            "foo=bar"
+        ],
+        "extraThemeNames": [
+            "keycloakify-starter-variant-1"
+        ]
+    },
+    "author": "u/garronej",
+    "license": "MIT",
+    "keywords": [],
+    "dependencies": {
+        "@radix-ui/react-icons": "^1.3.0",
+        "@radix-ui/react-slot": "^1.0.2",
+        "class-variance-authority": "^0.7.0",
+        "clsx": "^2.0.0",
+        "evt": "^2.4.15",
+        "oidc-spa": "^2.0.2",
+        "keycloakify": "^8.2.1",
+        "lucide-react": "^0.284.0",
+        "powerhooks": "^0.26.8",
+        "react": "18.1.0",
+        "react-dom": "18.1.0",
+        "tailwind-merge": "^1.14.0",
+        "tailwindcss-animate": "^1.0.7",
+        "tsafe": "^1.6.0"
+    },
+    "devDependencies": {
+        "@storybook/addon-actions": "^6.5.16",
+        "@storybook/addon-essentials": "^6.5.16",
+        "@storybook/addon-interactions": "^6.5.16",
+        "@storybook/addon-links": "^6.5.16",
+        "@storybook/addon-postcss": "^2.0.0",
+        "@storybook/builder-webpack5": "^6.5.16",
+        "@storybook/manager-webpack5": "^6.5.16",
+        "@storybook/node-logger": "^6.5.16",
+        "@storybook/preset-create-react-app": "^4.1.2",
+        "@storybook/react": "^6.5.16",
+        "@storybook/testing-library": "^0.0.13",
+        "@types/node": "^15.3.1",
+        "@types/react": "18.0.9",
+        "@types/react-dom": "18.0.4",
+        "autoprefixer": "^10.4.16",
+        "postcss": "^8.4.31",
+        "react-scripts": "5.0.1",
+        "tailwindcss": "^3.3.3",
+        "typescript": "~4.7.0"
+    },
+    "eslintConfig": {
+        "extends": [
+            "react-app",
+            "react-app/jest"
+        ],
+        "rules": {
+            "react-hooks/exhaustive-deps": "off",
+            "@typescript-eslint/no-redeclare": "off",
+            "no-labels": "off"
+        },
+        "overrides": [
+            {
+                "files": [
+                    "**/*.stories.*"
+                ],
+                "rules": {
+                    "import/no-anonymous-default-export": "off"
+                }
+            }
+        ]
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    }
+}

@@ -1,0 +1,16 @@
+.my-color {
+  color: #fafafa;
+  background-color: #262626;
+}
+
+.my-font {
+  /* font-family: "Work Sans"; */
+}
+
+.my-root-class {
+  background-color: #262626;
+}
+
+.my-root-class body {
+  background: #262626 no-repeat center center fixed;
+}

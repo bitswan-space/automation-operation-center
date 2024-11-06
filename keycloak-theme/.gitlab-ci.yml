@@ -1,0 +1,6 @@
+variables:
+  DOCKER_IMAGE: bitswan-keycloak
+
+include:
+  - project: 'LibertyAces/Product/bitswanmonorepo'
+    file: 'cicd/docker-build-public.yml'
