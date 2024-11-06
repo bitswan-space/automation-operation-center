@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aoc-cli"
+version = "0.1.0"
+description = "Command line tool for AOC environment setup"
+requires-python = ">=3.10"
+authors = [
+    {name = "LibertyAces Ltd.", email = "support@bitswan.space"},
+]
+dependencies = []
+
+[project.scripts]
+aoc-cli = "aoc_cli.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["aoc_cli"]
