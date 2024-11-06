@@ -1,0 +1,27 @@
+http://platform.local {
+    reverse_proxy pipeline-operation-centre:3000
+}
+
+http://keycloak.platform.local {
+        reverse_proxy keycloak:8080 {
+        # header_up Host {host}
+        # header_up X-Forwarded-Proto {scheme}
+        # header_up X-Forwarded-Host {host}
+    }
+}
+
+mqtt.platform.local {
+       reverse_proxy emqx:8083
+}
+
+http://influx.platform.local {
+       reverse_proxy influxdb:8086
+}
+
+http://poc.platform.local {
+      reverse_proxy pipeline-operation-centre:3000
+}
+
+http://portainer.platform.local {
+      reverse_proxy portainer:9000
+}

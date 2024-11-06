@@ -1,0 +1,114 @@
+version: "3.0"
+
+volumes:
+  portainer_data:
+  influx_data:
+  influx_config:
+  mosquitto_data:
+  mosquitto_log:
+  postgres-keycloak-data:
+  emqx_data:
+
+services:
+  caddy:
+    image: caddy:latest
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy_data:/data
+      - ./caddy_config:/config
+    environment:
+      - DOMAIN="http://platform.local"
+    networks:
+      default:
+        aliases:
+          - "platform.local"
+          - "poc.platform.local"
+          - "influx.platform.local"
+          - "keycloak.platform.local"
+
+  influxdb:
+    image: influxdb:2.0
+    restart: always
+    ports:
+      - "8086:8086"
+    volumes:
+      - influx_data:/var/lib/influxdb2
+      - influx_config:/etc/influxdb2
+    env_file:
+      - .influxdb.env
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    volumes:
+      - portainer_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+    restart: always
+    ports:
+      - "9000:9000"
+      - "9443:9443"
+
+  emqx:
+    image: emqx:latest
+    container_name: emqx
+    restart: always
+    #    volumes:
+    ports:
+      - "1883:1883"
+      - "8083:8083"
+      - "8084:8084"
+      - "8883:8883"
+      - "18083:18083"
+    environment:
+      - EMQX_DASHBOARD__DEFAULT_PASSWORD="foo"
+    volumes:
+      - emqx_data:/opt/emqx/data
+
+
+  keycloak:
+    image: public.registry.bitswan.space/bitswan/bitswan-keycloak:sha256_3c9b17e2d24021c65c8f51d692fabc1d5de76018b031783d3d306ddac79397f0
+    restart: always
+    ports:
+      - "9090:8080"
+    env_file:
+      - .keycloak.env
+    command: start-dev
+
+  postgres:
+    image: postgres:12-bullseye
+    restart: always
+    volumes:
+      - postgres-keycloak-data:/var/lib/postgresql/data
+    env_file: .postgres.env
+
+  mailhog:
+    image: mailhog/mailhog
+    restart: always
+    ports:
+      - "8025:8025" # Web UI
+      - "1025:1025" # SMTP server
+
+  pipeline-operation-centre:
+    restart: always
+    image: bitswan/pipeline-operations-centre:2024-11508863466-git-7dc4450
+    env_file: .operations_centre.env
+    ports:
+      - "3000:3000"
+
+  container-discovery-service:
+    restart: always
+    image: bitswan/cds:2024-9110528378-git-2a4182a
+    volumes:
+      - ./cds/discovery_service.yaml:/conf/config.yaml:r
+      - ./cds/navigation_menu.json:/conf/navigation_menu.json
+      - ./cds/navigation_schema.json:/conf/navigation_schema.json:r
+
+networks:
+  default:
+    external: false
