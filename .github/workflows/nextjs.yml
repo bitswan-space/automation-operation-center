@@ -38,6 +38,8 @@ jobs:
         id: context
 
       - name: Build and Push
+        run: |
+          chmod +x nextjs/build_and_push.sh
+          ./nextjs/build_and_push.sh "./nextjs"
         env:
           BUILD_NO: ${{ steps.context.outputs.job_id }}
-        run: bash 'nextjs/build_and_push.sh'

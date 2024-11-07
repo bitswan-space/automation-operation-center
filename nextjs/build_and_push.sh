@@ -1,13 +1,24 @@
 #!/bin/bash
 
-# Get Year and Commit Hash
+# Usage: ./build_and_push.sh <context_path>
+
+# Check if context path argument is provided
+if [ -z "$1" ]; then
+  echo "Error: No build context path provided."
+  echo "Usage: ./build_and_push.sh <context_path>"
+  exit 1
+fi
+
+# Set variables
+CONTEXT_PATH="$1"
 YEAR=$(date +%Y)
 COMMIT_HASH=$(git rev-parse --short HEAD)
 IMAGE_TAG="bitswan/pipeline-operations-centre"
 
-# Build and push Docker images
-docker build -t $IMAGE_TAG:latest -t $IMAGE_TAG:$YEAR-${GITHUB_RUN_ID}-git-$COMMIT_HASH --build-arg COMMIT_HASH=$COMMIT_HASH --build-arg BUILD_NO=$BUILD_NO .
+# Build Docker images with specified context path
+docker build -t $IMAGE_TAG:latest -t $IMAGE_TAG:$YEAR-${GITHUB_RUN_ID}-git-$COMMIT_HASH --build-arg COMMIT_HASH=$COMMIT_HASH --build-arg BUILD_NO=$BUILD_NO "$CONTEXT_PATH"
 
+# Push Docker images
 docker push $IMAGE_TAG:latest
 docker push $IMAGE_TAG:$YEAR-${GITHUB_RUN_ID}-git-$COMMIT_HASH
 
