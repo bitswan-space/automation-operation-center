@@ -6,6 +6,7 @@ on:
     tags: ["v*"]
     paths:
       - "nextjs/**"
+      - ".github/workflows/nextjs.yml"
 
 jobs:
   build-and-push-staging:
