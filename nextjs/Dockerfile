@@ -49,7 +49,7 @@ RUN \
 
 ##### RUNNER
 
-FROM --platform=linux/amd64 gcr.io/distroless/nodejs20-debian12 AS runner
+FROM --platform=linux/amd64 node:20-alpine AS runner
 
 ARG BUILD_NO
 ARG COMMIT_HASH
@@ -76,4 +76,4 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 EXPOSE 3000
 ENV PORT 3000
 
-CMD ["server.js"]
+CMD ["node", "server.js"]
