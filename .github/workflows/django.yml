@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "django/**"
+      - ".github/workflows/django.yml"
 
 jobs:
   lint:
