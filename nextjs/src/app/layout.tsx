@@ -6,7 +6,8 @@ import { GeistSans } from "geist/font/sans";
 
 import { type Metadata } from "next";
 import FlowProvider from "@/context/ReactFlowProvider";
-import NextAuthProvider from "@/context/NextAuthProvider";
+import SessionProvider from "@/context/NextAuthProvider";
+import { getServerAuthSession } from "@/server/auth";
 
 export const metadata: Metadata = {
   title: "Bitswan A.O.C",
@@ -14,11 +15,12 @@ export const metadata: Metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const session = await getServerAuthSession();
   return (
-    <NextAuthProvider>
+    <SessionProvider session={session}>
       <ReactQueryProvider>
         <FlowProvider>
           <html lang="en" className={`${GeistSans.variable} bg-neutral-200/50`}>
@@ -28,6 +30,6 @@ export default function RootLayout({
           </html>
         </FlowProvider>
       </ReactQueryProvider>
-    </NextAuthProvider>
+    </SessionProvider>
   );
 }
