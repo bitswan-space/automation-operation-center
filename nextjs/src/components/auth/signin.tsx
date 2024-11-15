@@ -22,7 +22,7 @@ export default function SignIn() {
     if (status === "unauthenticated") {
       signIn("keycloak", {
         callbackUrl,
-        // redirect: true,
+        redirect: true,
       })
         .then((res) => {
           console.log("signin success", res);
