@@ -37,23 +37,30 @@ export function useSidebarItems() {
   if (!context) {
     throw new Error("useSidebar must be used within a SidebarItemsProvider");
   }
-
   return context;
 }
 
 export function SidebarItemsProvider({
   children,
 }: React.PropsWithChildren<unknown>) {
-  const sidebarItems = useSidebarItemsSource();
+  // Get the initial items
+  const sourceItems = useSidebarItemsSource();
 
-  const [_sidebarItemsState, _setSidebarItemsState] =
-    React.useState<NodeModel<NavItem>[]>(sidebarItems);
+  // Use one state instead of updating based on source changes
+  const [sidebarItemsState, setSidebarItemsState] = React.useState<
+    NodeModel<NavItem>[]
+  >(() => sourceItems);
 
-  const sidebarItemsState = _sidebarItemsState;
-
+  // Only update state when source items actually change
   React.useEffect(() => {
-    _setSidebarItemsState(sidebarItems);
-  }, [sidebarItems]);
+    setSidebarItemsState((prevItems) => {
+      // Optional: Add deep comparison if needed
+      if (JSON.stringify(prevItems) !== JSON.stringify(sourceItems)) {
+        return sourceItems;
+      }
+      return prevItems;
+    });
+  }, [sourceItems]);
 
   const deserializedNavItems = React.useMemo(
     () => deserializeNavItems(sidebarItemsState),
@@ -61,14 +68,14 @@ export function SidebarItemsProvider({
   );
 
   const setSidebarItems = React.useCallback((items: NodeModel<NavItem>[]) => {
-    _setSidebarItemsState(items);
+    setSidebarItemsState(items);
   }, []);
 
   const contextValue = React.useMemo(
     () => ({
       sidebarItems: sidebarItemsState,
-      setSidebarItems: setSidebarItems,
-      deserializedNavItems: deserializedNavItems,
+      setSidebarItems,
+      deserializedNavItems,
     }),
     [sidebarItemsState, setSidebarItems, deserializedNavItems],
   );

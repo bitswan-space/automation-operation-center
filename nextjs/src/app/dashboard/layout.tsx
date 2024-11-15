@@ -12,12 +12,20 @@ import AuthCheck from "@/components/auth/auth-check";
 import { SideBarContextProvider } from "@/context/SideBarContextProvider";
 import { SidebarItemsProvider } from "@/context/SideBarItemsProvider";
 import { Toaster } from "sonner";
+import { getServerAuthSession } from "@/server/auth";
+import { redirect } from "next/navigation";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getServerAuthSession();
+  console.log("session", session);
+  if (!session) {
+    redirect("/api/auth/signin");
+  }
+
   return (
     <SideBarContextProvider>
       <SidebarProvider>
