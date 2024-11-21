@@ -145,6 +145,7 @@ def update_hosts(args):
         "keycloak.platform.local",
         "mqtt.platform.local",
         "portainer.platform.local",
+        "editor.platform.local",
         "emqx.platform.local",
     ]
 
