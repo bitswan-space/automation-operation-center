@@ -41,7 +41,7 @@ jobs:
       - name: Build and Push Image for Staging with Staging and Unique Tags
         id: build
         env:
-          IMAGE_TAG: bitswan/pipeline-operations-centre
+          IMAGE_TAG: bitswan/automation-operations-centre
           YEAR: ${{ env.year }}
           COMMIT_HASH: ${{ env.commit_hash }}
           BUILD_NO: ${{ github.run_id }}
@@ -75,7 +75,7 @@ jobs:
 
       - name: Tag and Push as Latest
         env:
-          IMAGE_TAG: bitswan/pipeline-operations-centre
+          IMAGE_TAG: bitswan/automation-operations-centre
         run: |
           # Tag the image as 'latest' for production and push
           docker pull $IMAGE_TAG:staging
