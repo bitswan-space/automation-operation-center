@@ -1,3 +1,0 @@
-mqtt-broker-url: mqtt://emqx:1883
-polling-interval: 10
-topology-topic: /c/hetzner-1/running-pipelines/topology

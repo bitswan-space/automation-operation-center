@@ -22,7 +22,7 @@ func Init() error {
 	logger.Info.Printf("Schema file: %s", cfg.NavigationSchemaFile)
 	schemaLoader = gojsonschema.NewReferenceLoader("file://" + cfg.NavigationSchemaFile)
 	opts.AddBroker(cfg.MQTTBrokerUrl)
-	clientID := fmt.Sprintf("cds-%d", rand.Intn(10000))
+	clientID := fmt.Sprintf("profile-manager-%d", rand.Intn(10000))
 	opts.SetClientID(clientID)
 	opts.SetAutoReconnect(true)
 	opts.SetConnectRetry(true)

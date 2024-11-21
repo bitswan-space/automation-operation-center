@@ -2,12 +2,12 @@ NEXTAUTH_URL="https://poc.bitswan.space/"
 
 INFLUXDB_URL="http://influxdb:8086/"
 
-INFLUXDB_ORG="pipeline-operations-centre"
-DOCKER_INFLUXDB_INIT_ORG="pipeline-operations-centre"
+INFLUXDB_ORG="automation-operations-centre"
+DOCKER_INFLUXDB_INIT_ORG="automation-operations-centre"
 INFLUXDB_BUCKET="pipeline-metrics"
 DOCKER_INFLUXDB_INIT_BUCKET="pipeline-metrics"
-INFLUXDB_USERNAME="pipeline-operations-centre"
-DOCKER_INFLUXDB_INIT_USERNAME="pipeline-operations-centre"
+INFLUXDB_USERNAME="automation-operations-centre"
+DOCKER_INFLUXDB_INIT_USERNAME="automation-operations-centre"
 
 # POSTGRES
 POSTGRES_USER=postgres
@@ -33,9 +33,5 @@ KC_DB_URL_HOST=postgres
 KC_DB_URL_DATABASE=postgres
 KC_DB_USERNAME=postgres
 
-#Portainer
-PORTAINER_BASE_URL="http://portainer:9000/"
-
 # MQTT
-MQTT_URL="mqtt://mosquito:1883"
-PREPARE_MQTT_SERVICE_URL="http://container-config-service:8080/trigger"
+EMQX_MQTT_URL="mqtt://emqx:1883"
