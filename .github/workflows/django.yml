@@ -1,7 +1,9 @@
-name: CI Pipeline
+name: BitSwan Backend Build and Push
 
 on:
   push:
+    branches: [main]
+    tags: ["v*"]
     paths:
       - "django/**"
       - ".github/workflows/django.yml"

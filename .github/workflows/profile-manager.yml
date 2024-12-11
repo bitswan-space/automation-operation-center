@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: BitSwan Profile Manager Build and Push
 
 on:
   push:

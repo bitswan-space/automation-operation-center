@@ -1,4 +1,4 @@
-name: Nextjs CI/CD Pipeline
+name: AOC UI Build and Push
 
 on:
   push:
