@@ -8,6 +8,9 @@ volumes:
   mosquitto_log:
   postgres-keycloak-data:
   emqx_data:
+  bitswan_backend_production_postgres_data: {}
+  bitswan_backend_production_postgres_data_backups: {}
+  production_traefik: {}
 
 services:
   caddy:
@@ -107,6 +110,92 @@ services:
       - ./cds/discovery_service.yaml:/conf/config.yaml:r
       - ./cds/navigation_menu.json:/conf/navigation_menu.json
       - ./cds/navigation_schema.json:/conf/navigation_schema.json:r
+
+  django: &django
+    image: public.registry.bitswan.space/bitswan/bitswan-backend-production-django:sha256_11c8f3fe5c63525425f4d59efa9eb30d54fac1ccd1f292a2f17c058444a667d3
+    container_name: bitswan_backend_production_django
+    depends_on:
+      - bitswan-backend-postgres
+      - redis
+    env_file:
+      - ./.envs/.django.env
+      - ./.envs/.postgres.env
+    ports:
+      - 5000:5000
+    command: /start
+
+  bitswan-backend-postgres:
+    image: public.registry.bitswan.space/bitswan/bitswan-backend-production-postgres:sha256_c08c45c1319c67503a8d3c88a78a5f2a646e436325b0603666812d17bf5e783a
+    # container_name: bitswan_backend_production_postgres
+    volumes:
+      - bitswan_backend_production_postgres_data:/var/lib/postgresql/data
+      - bitswan_backend_production_postgres_data_backups:/backups
+    env_file:
+      - ./.envs/.postgres.env
+
+  traefik:
+    image: traefik:v2.11.0
+    container_name: bitswan_backend_production_traefik
+    depends_on:
+      - django
+    volumes:
+      - production_traefik:/etc/traefik/acme
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/traefik/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - /etc/traefik/config/:/etc/traefik/conf/
+    restart: unless-stopped
+    ports:
+      - "1080:80"
+      - "1443:443"
+
+  redis:
+    image: docker.io/redis:6
+    # container_name: bitswan_backend_production_redis
+
+  celeryworker:
+    <<: *django
+    container_name: bitswan_backend_production_celeryworker
+    ports:
+      - 5003:5000
+    command: /start-celeryworker
+
+  celerybeat:
+    <<: *django
+    container_name: bitswan_backend_production_celerybeat
+    ports:
+      - 5002:5000
+    command: /start-celerybeat
+
+  flower:
+    <<: *django
+    container_name: bitswan_backend_production_flower
+    command: /start-flower
+    ports:
+      - 5555:5555
+
+  awscli:
+    image: public.registry.bitswan.space/bitswan/bitswan-backend-production-awscli:sha256_833417c17e30a1681099caa3b06a2c820da5c268ec01602fb9b349c2e51d4b37
+    container_name: bitswan_backend_production_awscli
+    env_file:
+      - .envs/.django.env
+    volumes:
+      - bitswan_backend_production_postgres_data_backups:/backups:z
+
+  rathole:
+    image: rapiz1/rathole:latest
+    container_name: bitswan_backend_production_rathole
+    command: --server /app/server.toml
+    ports:
+      - 2333:2333
+    volumes:
+      - /etc/rathole/server.toml:/app/server.toml
+
+  traefik-forward-auth:
+    image: thomseddon/traefik-forward-auth:latest
+    container_name: bitswan_backend_production_traefik_forward_auth
+    restart: always
+    env_file:
+      - .envs/.traefik-forward-auth.env
 
 networks:
   default:
