@@ -30,8 +30,8 @@ jobs:
         env:
           PRE_COMMIT_HOME: ${{ github.workspace }}/.cache/pre-commit
         run: |
-        cd django
-        pre-commit run --show-diff-on-failure --color=always --all-files
+          cd django
+          pre-commit run --show-diff-on-failure --color=always --all-files
 
   build:
     name: Build Docker Images
