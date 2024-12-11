@@ -112,7 +112,7 @@ services:
       - ./profile-manager/navigation_schema.json:/conf/navigation_schema.json:r
 
   bitswan-backend:
-    image: public.registry.bitswan.space/bitswan/bitswan-backend-production-django:sha256_11c8f3fe5c63525425f4d59efa9eb30d54fac1ccd1f292a2f17c058444a667d3s
+    image: bitswan/bitswan-backend:2024-12279082742-git-b86a560
     depends_on:
       - bitswan-backend-postgres
     restart: always
