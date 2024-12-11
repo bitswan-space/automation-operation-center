@@ -8,6 +8,10 @@ volumes:
   mosquitto_log:
   postgres-keycloak-data:
   emqx_data:
+  bitswan_backend_production_postgres_data: {}
+  bitswan_backend_production_postgres_data_backups: {}
+  production_traefik: {}
+  bitswan-editor-data:
 
 services:
   caddy:
@@ -58,7 +62,6 @@ services:
     image: emqx:latest
     container_name: emqx
     restart: always
-    #    volumes:
     ports:
       - "1883:1883"
       - "8083:8083"
@@ -71,7 +74,7 @@ services:
       - emqx_data:/opt/emqx/data
 
   keycloak:
-    image: public.registry.bitswan.space/bitswan/bitswan-keycloak:sha256_3c9b17e2d24021c65c8f51d692fabc1d5de76018b031783d3d306ddac79397f0
+    image: bitswan/bitswan-keycloak:2024-9110295480-git-d7a8e49
     restart: always
     ports:
       - "9090:8080"
@@ -84,30 +87,55 @@ services:
     restart: always
     volumes:
       - postgres-keycloak-data:/var/lib/postgresql/data
-    env_file: .postgres.env
+    env_file: .keycloak-postgres.env
 
-  mailhog:
-    image: mailhog/mailhog
-    restart: always
-    ports:
-      - "8025:8025" # Web UI
-      - "1025:1025" # SMTP server
+  # mailhog:
+  #   image: mailhog/mailhog
+  #   restart: always
+  #   ports:
+  #     - "8025:8025" # Web UI
+  #     - "1025:1025" # SMTP server
 
-  pipeline-operation-centre:
+  automation-operation-centre:
     restart: always
-    image: bitswan/pipeline-operations-centre:2024-11508863466-git-7dc4450
-    env_file: .operations_centre.env
+    image: bitswan/automation-operations-centre:2024-11950867795-git-5ff440c
+    env_file: .aoc.env
     ports:
       - "3000:3000"
 
-  container-discovery-service:
+  profile-manager:
     restart: always
-    image: bitswan/cds:2024-9110528378-git-2a4182a
+    image: bitswan/profile-manager:2024-11950867793-git-5ff440c
     volumes:
-      - ./cds/discovery_service.yaml:/conf/config.yaml:r
-      - ./cds/navigation_menu.json:/conf/navigation_menu.json
-      - ./cds/navigation_schema.json:/conf/navigation_schema.json:r
+      - ./profile-manager/discovery_service.yaml:/conf/config.yaml:r
+      - ./profile-manager/navigation_menu.json:/conf/navigation_menu.json
+      - ./profile-manager/navigation_schema.json:/conf/navigation_schema.json:r
+
+  bitswan-backend:
+    image: public.registry.bitswan.space/bitswan/bitswan-backend-production-django:sha256_11c8f3fe5c63525425f4d59efa9eb30d54fac1ccd1f292a2f17c058444a667d3s
+    depends_on:
+      - bitswan-backend-postgres
+    restart: always
+    networks:
+      - bitswan_network
+    env_file:
+      - .bitswan-backend.env
+      - .bitswan-backend-postgres.env
+    ports:
+      - 5000:5000
+    command: /start
+
+  bitswan-backend-postgres:
+    image: postgres:15-bullseye
+    restart: always
+    networks:
+      - bitswan_network
+    volumes:
+      - bitswan_backend_production_postgres_data:/var/lib/postgresql/data
+      - bitswan_backend_production_postgres_data_backups:/backups
+    env_file:
+      - .bitswan-backend-postgres.env
 
 networks:
-  default:
+  bitswan_network:
     external: false
