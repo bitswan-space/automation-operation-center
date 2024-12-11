@@ -23,13 +23,13 @@ navigation-schema-file: /conf/navigation_schema.json
 ```
 ### Docker-compose
 ```yaml
-  container-discovery-service:
+  profile-manager:
     restart: always
     image: <image_url>
     env_file:
-      - .discovery_service.env
+      - .profile-manager.env
     volumes:
-      - ./discover_service.yaml:/conf/config.yaml:r
+      - ./profile-manager.yaml:/conf/config.yaml:r
       - ./navigation_menu.json:/conf/navigation_menu.json
       - ./navigation_schema.json:/conf/navigation_schema.json
 ```
