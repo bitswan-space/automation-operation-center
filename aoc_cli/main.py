@@ -78,15 +78,23 @@ def setup(args):
 
             # Generate and append passwords
             with open(".env.temp", "a") as f:
-                postgres_password = generate_secret()
+                keycloak_postgres_password = generate_secret()
+                backend_postgres_password = generate_secret()
                 influxdb_password = generate_secret()
 
-                f.write(f"POSTGRES_PASSWORD={postgres_password}\n")
-                f.write(f"KC_DB_PASSWORD={postgres_password}\n")
+                f.write(f"POSTGRES_PASSWORD={backend_postgres_password}\n")
+                f.write(f"KC_DB_PASSWORD={keycloak_postgres_password}\n")
                 f.write(f"INFLUXDB_PASSWORD={influxdb_password}\n")
                 f.write(f"DOCKER_INFLUXDB_INIT_PASSWORD={influxdb_password}\n")
                 f.write(f"NEXTAUTH_SECRET={generate_secret()}\n")
                 f.write(f"KEYCLOAK_ADMIN_PASSWORD={generate_secret()}\n")
+                f.write(f"DJANGO_SECRET_KEY={generate_secret()}\n")
+                f.write(f"DJANGO_ADMIN_URL={generate_secret()}/\n")
+                f.write(f"AUTH_SECRET_KEY={generate_secret()}\n")
+
+            with open(".keycloak-postgres.temp", "a") as f:
+                f.write(f"POSTGRES_PASSWORD={keycloak_postgres_password}\n")
+                f.write("POSTGRES_USER=postgres\n")
 
             # Filter variables for different components
             filter_vars(".env.temp", "env/pipeline-vars", ".pipeline.env")
@@ -97,10 +105,17 @@ def setup(args):
             replace_in_file(".aoc.env", "http.*keycloak:8080", keycloak_domain)
 
             filter_vars(".env.temp", "env/influxdb-vars", ".influxdb.env")
-            filter_vars(".env.temp", "env/postgres-vars", ".postgres.env")
+            filter_vars(
+                ".env.temp", "env/postgres-vars", ".bitswan-backend-postgres.env"
+            )
+            filter_vars(".env.temp", "env/backend-vars", ".bitswan-backend.env")
+            filter_vars(
+                ".keycloak-postgres.temp", "env/postgres-vars", ".keycloak-postgres.env"
+            )
 
             # Clean up
             os.remove(".env.temp")
+            os.remove(".keycloak-postgres.temp")
 
         # Print final instructions
         print(

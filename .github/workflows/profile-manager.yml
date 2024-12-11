@@ -28,4 +28,9 @@ jobs:
         echo "::set-output name=commit_hash::$(git rev-parse --short HEAD)"
 
     - name: Build and Push
-      run: bash build_and_push.sh
+      env:
+        IMAGE_TAG: "bitswan/profile-manager"
+        DOCKER_FILE: "./Dockerfile"
+      run: |
+        cd profile-manager
+        bash ../build_and_push.sh

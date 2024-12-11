@@ -8,6 +8,9 @@ volumes:
   mosquitto_log:
   postgres-keycloak-data:
   emqx_data:
+  bitswan_backend_production_postgres_data: {}
+  bitswan_backend_production_postgres_data_backups: {}
+  production_traefik: {}
   bitswan-editor-data:
 
 services:
@@ -84,7 +87,7 @@ services:
     restart: always
     volumes:
       - postgres-keycloak-data:/var/lib/postgresql/data
-    env_file: .postgres.env
+    env_file: .keycloak-postgres.env
 
   # mailhog:
   #   image: mailhog/mailhog
@@ -108,6 +111,31 @@ services:
       - ./profile-manager/navigation_menu.json:/conf/navigation_menu.json
       - ./profile-manager/navigation_schema.json:/conf/navigation_schema.json:r
 
+  bitswan-backend:
+    image: public.registry.bitswan.space/bitswan/bitswan-backend-production-django:sha256_11c8f3fe5c63525425f4d59efa9eb30d54fac1ccd1f292a2f17c058444a667d3s
+    depends_on:
+      - bitswan-backend-postgres
+    restart: always
+    networks:
+      - bitswan_network
+    env_file:
+      - .bitswan-backend.env
+      - .bitswan-backend-postgres.env
+    ports:
+      - 5000:5000
+    command: /start
+
+  bitswan-backend-postgres:
+    image: postgres:15-bullseye
+    restart: always
+    networks:
+      - bitswan_network
+    volumes:
+      - bitswan_backend_production_postgres_data:/var/lib/postgresql/data
+      - bitswan_backend_production_postgres_data_backups:/backups
+    env_file:
+      - .bitswan-backend-postgres.env
+
 networks:
-  default:
+  bitswan_network:
     external: false
