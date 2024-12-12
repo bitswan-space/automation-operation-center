@@ -63,6 +63,7 @@ const MainHomePage: NextPageWithLayout = () => {
                 ></div>
               }
               title={item.properties.name}
+              type={item.properties.link.type}
               url={getURLFromType(item.properties.link.type, item)}
             />
           ))}
@@ -82,15 +83,16 @@ type PanelActionCardProps = {
   title: string;
   icon: React.ReactNode;
   url: string;
+  type: string;
 };
 
 function PanelActionCard(props: PanelActionCardProps) {
-  const { title, icon, url } = props;
+  const { title, icon, url, type } = props;
 
   return (
     <Card className="h-40 rounded-md border-neutral-300 shadow-sm hover:cursor-pointer">
       <CardContent className="h-full pt-4">
-        <Link href={url}>
+        <Link href={url} target={type === "external-link" ? "_blank": ""}>
           <div className="my-auto flex h-full flex-col justify-center gap-3 pt-4 text-center">
             <div className=" mx-auto text-blue-600">{icon}</div>
             <div className="mx-auto flex  gap-2 align-bottom">
