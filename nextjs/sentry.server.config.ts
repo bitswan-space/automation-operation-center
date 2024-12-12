@@ -8,7 +8,7 @@ import { env } from "@/env.mjs";
 
 if (env.NODE_ENV !== "development") {
   Sentry.init({
-    dsn: "https://e9351390f57d66bb500a622c38484d68@o4506314595106816.ingest.sentry.io/4506716077686784",
+    dsn: "https://e9351390f57d66bb500a622c38484d68@o4506314595106816.ingest.us.sentry.io/4506716077686784",
 
     // Adjust this value in production, or use tracesSampler for greater control
     tracesSampleRate: 1,

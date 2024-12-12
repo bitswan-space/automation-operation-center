@@ -25,7 +25,7 @@ export default withSentryConfig(
 
       // Suppresses source map uploading logs during build
       silent: true,
-      org: "libertyaces-ltd",
+      org: "wingsdata-sro",
       project: "javascript-nextjs",
     },
     {
@@ -60,7 +60,7 @@ export default withSentryConfig(
 
     // Suppresses source map uploading logs during build
     silent: true,
-    org: "libertyaces-ltd",
+    org: "wingsdata-sro",
     project: "javascript-nextjs",
   },
   {
