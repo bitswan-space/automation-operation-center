@@ -10,10 +10,13 @@ requires-python = ">=3.10"
 authors = [
     {name = "LibertyAces Ltd.", email = "support@bitswan.space"},
 ]
-dependencies = []
+dependencies = [
+  "PyYAML==6.0.2",
+]
 
 [project.scripts]
 aoc-cli = "aoc_cli.main:main"
+
 
 [tool.hatch.build.targets.wheel]
 packages = ["aoc_cli"]

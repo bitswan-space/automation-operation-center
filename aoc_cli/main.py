@@ -10,112 +10,142 @@ import fileinput
 import sys
 from pathlib import Path
 
+influxdb_vars = {
+    "INFLUXDB_URL",
+    "DOCKER_INFLUXDB_INIT_ORG",
+    "DOCKER_INFLUXDB_INIT_BUCKET",
+    "DOCKER_INFLUXDB_INIT_USERNAME",
+    "DOCKER_INFLUXDB_INIT_PASSWORD",
+}
+
+keycloak_vars = {
+    "KC_DB_PASSWORD",
+    "KEYCLOAK_ADMIN_PASSWORD",
+    "KEYCLOAK_ADMIN",
+    "KEYCLOAK_CLIENT_ID",
+    "KEYCLOAK_REFRESH_URL",
+    "KC_HOSTNAME_URL",
+    "PROXY_ADDRESS_FORWARDING",
+    "KC_PROXY",
+    "KEYCLOAK_ISSUER",
+    "KC_DB",
+    "DB_ADDR",
+    "KC_DB_URL_HOST",
+    "KC_DB_URL_DATABASE",
+    "KC_DB_USERNAME",
+    "KC_DB_PASSWORD",
+}
+
+operations_centre_vars = {
+    "NEXTAUTH_URL",
+    "NEXTAUTH_SECRET",
+    "INFLUXDB_URL",
+    "INFLUXDB_ORG",
+    "INFLUXDB_BUCKET",
+    "INFLUXDB_USERNAME",
+    "INFLUXDB_PASSWORD",
+    "KEYCLOAK_ISSUER",
+    "KEYCLOAK_END_SESSION_URL",
+    "KEYCLOAK_POST_LOGOUT_REDIRECT_URI",
+    "KEYCLOAK_FRONTEND_URL",
+    "KEYCLOAK_ADMIN_URL",
+    "KEYCLOAK_REFRESH_URL",
+    "KEYCLOAK_CLIENT_ID",
+    "PORTAINER_BASE_URL",
+    "NEXT_PUBLIC_MQTT_URL",
+    "PREPARE_MQTT_SERVICE_URL",
+    "CCS_CONFIG_KEY",
+}
+
+postgres_vars = {
+    "POSTGRES_USER",
+    "POSTGRES_PASSWORD",
+}
+
+emqx_vars = {
+    "EMQX_DASHBOARD__DEFAULT_PASSWORD",
+}
+
+
+def get_var_defaults(domain="bitswan.space", protocol="https"):
+    if protocol not in ["http", "https"]:
+        raise ValueError("Protocol must be either 'http' or 'https'")
+
+    return {
+        "NEXTAUTH_URL": f"{protocol}://poc.{domain}/",
+        "INFLUXDB_URL": "http://influxdb:8086/",
+        "INFLUXDB_ORG": "pipeline-operations-centre",
+        "DOCKER_INFLUXDB_INIT_ORG": "pipeline-operations-centre",
+        "INFLUXDB_BUCKET": "pipeline-metrics",
+        "DOCKER_INFLUXDB_INIT_BUCKET": "pipeline-metrics",
+        "INFLUXDB_USERNAME": "pipeline-operations-centre",
+        "DOCKER_INFLUXDB_INIT_USERNAME": "pipeline-operations-centre",
+        "POSTGRES_USER": "postgres",
+        "KEYCLOAK_ADMIN": "admin",
+        "KEYCLOAK_CLIENT_ID": "bitswan-admin-dashboard",
+        "KEYCLOAK_REFRESH_URL": "http://keycloak:8080/realms/master/protocol/openid-connect/token",
+        "KEYCLOAK_ISSUER": "https://keycloak:8080/realms/master",
+        "KEYCLOAK_END_SESSION_URL": f"{protocol}://keycloak.{domain}/realms/master/protocol/openid-connect/logout",
+        "KEYCLOAK_POST_LOGOUT_REDIRECT_URI": f"{protocol}://poc.{domain}",
+        "KEYCLOAK_FRONTEND_URL": f"{protocol}://keycloak.{domain}/",
+        "KEYCLOAK_ADMIN_URL": f"{protocol}://keycloak.{domain}/",
+        "KC_HOSTNAME_URL": f"{protocol}://keycloak.{domain}/",
+        "PROXY_ADDRESS_FORWARDING": "true",
+        "KC_PROXY": "edge",
+        "KC_DB": "postgres",
+        "DB_ADDR": "postgres",
+        "KC_DB_URL_HOST": "postgres",
+        "KC_DB_URL_DATABASE": "postgres",
+        "KC_DB_USERNAME": "postgres",
+        "PORTAINER_BASE_URL": "http://portainer:9000/",
+        "MQTT_URL": "mqtt://mosquito:1883",
+        "PREPARE_MQTT_SERVICE_URL": "http://container-config-service:8080/trigger",
+        "NEXT_PUBLIC_MQTT_URL": f"{protocol}://mqtt.{domain}/",
+    }
+
+
+def write_env_file(env_vars: dict, keys: dict, env_file: Path):
+    """
+    Select keys from the env_vars dict and write them as a Docker compatible .env file
+    """
+    with open(env_file, "w") as f:
+        for key in keys:
+            f.write(f"{key}={env_vars[key]}\n")
+
 
 def generate_secret():
     """Generate a random secret similar to mcookie"""
     return secrets.token_hex(16)
 
 
-def replace_in_file(filename, old_str, new_str):
-    """Replace string in file"""
-    with fileinput.FileInput(filename, inplace=True) as file:
-        for line in file:
-            print(line.replace(old_str, new_str), end="")
-
-
-def filter_vars(source_file, vars_file, output_file):
-    """Filter variables from source file based on vars file content"""
-    if not os.path.exists(vars_file):
-        print(f"Warning: {vars_file} does not exist")
-        return
-
-    # Read variables to filter
-    with open(vars_file, "r") as f:
-        filter_vars = set(line.strip() for line in f if line.strip())
-
-    # Read source file and write matching lines to output
-    with open(source_file, "r") as src, open(output_file, "w") as dst:
-        for line in src:
-            var_name = line.split("=")[0].strip() if "=" in line else ""
-            if var_name in filter_vars:
-                dst.write(line)
-
-
 def setup(args):
     """Setup command implementation"""
     dry = args.dry
-    # Get user input with defaults
-    platform_domain = input(
-        f"Enter the platform domain (default: {args.platform_domain}): "
-    ).strip()
-    keycloak_domain = input(
-        f"Enter the keycloak domain (default: {args.keycloak_domain}): "
-    ).strip()
 
     # Use defaults if no input provided
-    platform_domain = platform_domain or args.platform_domain
-    keycloak_domain = keycloak_domain or args.keycloak_domain
-
-    print(platform_domain)
-    print(keycloak_domain)
 
     # Create .env from template if it doesn't exist
     if not os.path.exists(".env"):
-        # Ensure env/template exists
-        if not os.path.exists("env/template"):
-            print("Error: env/template file not found")
-            return 1
+
+        vars = get_var_defaults()
+        vars["POSTGRES_PASSWORD"] = generate_secret()
+        vars["KC_DB_PASSWORD"] = vars["POSTGRES_PASSWORD"]
+        vars["INFLUXDB_PASSWORD"] = generate_secret()
+        vars["DOCKER_INFLUXDB_INIT_PASSWORD"] = vars["INFLUXDB_PASSWORD"]
+        vars["NEXTAUTH_SECRET"] = generate_secret()
+        vars["KEYCLOAK_ADMIN_PASSWORD"] = generate_secret()
+        vars["CCS_CONFIG_KEY"] = generate_secret()
+        vars["EMQX_DASHBOARD__DEFAULT_PASSWORD"] = generate_secret()
 
         # Copy template to temporary file
         if not dry:
-            shutil.copy("env/template", ".env.temp")
-
-            # Replace domains
-            replace_in_file(
-                ".env.temp", "https://keycloak.bitswan.space", keycloak_domain
+            write_env_file(vars, keycloak_vars, "docker-compose/.keycloak.env")
+            write_env_file(
+                vars, operations_centre_vars, "docker-compose/.operations-centre.env"
             )
-            replace_in_file(".env.temp", "https://poc.bitswan.space", platform_domain)
-
-            # Generate and append passwords
-            with open(".env.temp", "a") as f:
-                keycloak_postgres_password = generate_secret()
-                backend_postgres_password = generate_secret()
-                influxdb_password = generate_secret()
-
-                f.write(f"POSTGRES_PASSWORD={backend_postgres_password}\n")
-                f.write(f"KC_DB_PASSWORD={keycloak_postgres_password}\n")
-                f.write(f"INFLUXDB_PASSWORD={influxdb_password}\n")
-                f.write(f"DOCKER_INFLUXDB_INIT_PASSWORD={influxdb_password}\n")
-                f.write(f"NEXTAUTH_SECRET={generate_secret()}\n")
-                f.write(f"KEYCLOAK_ADMIN_PASSWORD={generate_secret()}\n")
-                f.write(f"DJANGO_SECRET_KEY={generate_secret()}\n")
-                f.write(f"DJANGO_ADMIN_URL={generate_secret()}/\n")
-                f.write(f"AUTH_SECRET_KEY={generate_secret()}\n")
-
-            with open(".keycloak-postgres.temp", "a") as f:
-                f.write(f"POSTGRES_PASSWORD={keycloak_postgres_password}\n")
-                f.write("POSTGRES_USER=postgres\n")
-
-            # Filter variables for different components
-            filter_vars(".env.temp", "env/pipeline-vars", ".pipeline.env")
-            filter_vars(".env.temp", "env/keycloak-vars", ".keycloak.env")
-            filter_vars(".env.temp", "env/aoc-vars", ".aoc.env")
-
-            # Update keycloak URL in operations centre env
-            replace_in_file(".aoc.env", "http.*keycloak:8080", keycloak_domain)
-
-            filter_vars(".env.temp", "env/influxdb-vars", ".influxdb.env")
-            filter_vars(
-                ".env.temp", "env/postgres-vars", ".bitswan-backend-postgres.env"
-            )
-            filter_vars(".env.temp", "env/backend-vars", ".bitswan-backend.env")
-            filter_vars(
-                ".keycloak-postgres.temp", "env/postgres-vars", ".keycloak-postgres.env"
-            )
-
-            # Clean up
-            os.remove(".env.temp")
-            os.remove(".keycloak-postgres.temp")
+            write_env_file(vars, postgres_vars, "docker-compose/.postgres.env")
+            write_env_file(vars, influxdb_vars, "docker-compose/.influxdb.env")
+            write_env_file(vars, emqx_vars, "docker-compose/.emqx.env")
 
         # Print final instructions
         print(
@@ -216,14 +246,14 @@ def main():
         "setup", help="Setup environment configuration"
     )
     setup_parser.add_argument(
-        "--platform-domain",
-        default="http://localhost:3000",
-        help="Platform domain (default: %(default)s)",
+        "--domain",
+        default="platform.local",
+        help="Domain where the platform will be accessed (default: %(default))",
     )
     setup_parser.add_argument(
-        "--keycloak-domain",
-        default="http://keycloak.platform.local",
-        help="Keycloak domain (default: %(default)s)",
+        "--protocol",
+        default="http",
+        help="Protocol to use for platform access (default: %(default))",
     )
     setup_parser.add_argument("--dry", action="store_true", help="Dry run")
 

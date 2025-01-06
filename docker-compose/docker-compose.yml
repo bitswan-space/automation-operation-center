@@ -37,8 +37,6 @@ services:
   influxdb:
     image: influxdb:2.0
     restart: always
-    ports:
-      - "8086:8086"
     volumes:
       - influx_data:/var/lib/influxdb2
       - influx_config:/etc/influxdb2
@@ -54,9 +52,6 @@ services:
       - portainer_data:/data
       - /var/run/docker.sock:/var/run/docker.sock:rw
     restart: always
-    ports:
-      - "9000:9000"
-      - "9443:9443"
 
   emqx:
     image: emqx:latest
@@ -70,14 +65,14 @@ services:
       - "18083:18083"
     environment:
       - EMQX_DASHBOARD__DEFAULT_PASSWORD="foo"
+    env_file:
+      - .emqx.env
     volumes:
       - emqx_data:/opt/emqx/data
 
   keycloak:
     image: bitswan/bitswan-keycloak:2024-9110295480-git-d7a8e49
     restart: always
-    ports:
-      - "9090:8080"
     env_file:
       - .keycloak.env
     command: start-dev
@@ -89,12 +84,9 @@ services:
       - postgres-keycloak-data:/var/lib/postgresql/data
     env_file: .keycloak-postgres.env
 
-  # mailhog:
-  #   image: mailhog/mailhog
-  #   restart: always
-  #   ports:
-  #     - "8025:8025" # Web UI
-  #     - "1025:1025" # SMTP server
+  mailhog:
+    image: mailhog/mailhog
+    restart: always
 
   automation-operation-centre:
     restart: always
