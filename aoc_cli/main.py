@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
 import argparse
-from datetime import datetime
 import os
 import platform
 import secrets
 import shutil
-import fileinput
 import sys
+from datetime import datetime
 from pathlib import Path
 
 influxdb_vars = {
@@ -62,6 +61,12 @@ postgres_vars = {
     "POSTGRES_PASSWORD",
 }
 
+django_backend_vars = {
+    "DJANGO_SECRET_KEY",
+    "DJANGO_ADMIN_URL",
+    "AUTH_SECRET_KEY",
+}
+
 emqx_vars = {
     "EMQX_DASHBOARD__DEFAULT_PASSWORD",
 }
@@ -101,6 +106,7 @@ def get_var_defaults(domain="bitswan.space", protocol="https"):
         "MQTT_URL": "mqtt://mosquito:1883",
         "PREPARE_MQTT_SERVICE_URL": "http://container-config-service:8080/trigger",
         "NEXT_PUBLIC_MQTT_URL": f"{protocol}://mqtt.{domain}/",
+        "DJANGO_ADMIN_URL": f"{protocol}://poc.{domain}/admin/",
     }
 
 
@@ -136,6 +142,8 @@ def setup(args):
         vars["KEYCLOAK_ADMIN_PASSWORD"] = generate_secret()
         vars["CCS_CONFIG_KEY"] = generate_secret()
         vars["EMQX_DASHBOARD__DEFAULT_PASSWORD"] = generate_secret()
+        vars["DJANGO_SECRET_KEY"] = generate_secret()
+        vars["AUTH_SECRET_KEY"] = generate_secret()
 
         # Copy template to temporary file
         if not dry:
@@ -145,6 +153,7 @@ def setup(args):
             )
             write_env_file(vars, postgres_vars, "docker-compose/.postgres.env")
             write_env_file(vars, influxdb_vars, "docker-compose/.influxdb.env")
+            write_env_file(vars, django_backend_vars, "docker-compose/.django.env")
             write_env_file(vars, emqx_vars, "docker-compose/.emqx.env")
 
         # Print final instructions

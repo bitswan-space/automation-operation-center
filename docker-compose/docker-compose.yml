@@ -63,8 +63,6 @@ services:
       - "8084:8084"
       - "8883:8883"
       - "18083:18083"
-    environment:
-      - EMQX_DASHBOARD__DEFAULT_PASSWORD="foo"
     env_file:
       - .emqx.env
     volumes:
