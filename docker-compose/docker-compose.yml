@@ -89,7 +89,7 @@ services:
   automation-operation-centre:
     restart: always
     image: bitswan/automation-operations-centre:2024-11950867795-git-5ff440c
-    env_file: .aoc.env
+    env_file: .operations-centre.env
     ports:
       - "3000:3000"
 
