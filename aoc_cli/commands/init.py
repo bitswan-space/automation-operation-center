@@ -176,4 +176,3 @@ def add_subparser(subparsers):
         help="Password for the admin user (default: %(default)s)",
     )
     parser.set_defaults(func=InitCommand().execute)
-    parser.set_defaults(func=InitCommand().execute)
