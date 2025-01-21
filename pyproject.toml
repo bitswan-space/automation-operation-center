@@ -7,15 +7,16 @@ name = "aoc-cli"
 version = "0.1.0"
 description = "Command line tool for AOC environment setup"
 requires-python = ">=3.10"
-authors = [
-    {name = "LibertyAces Ltd.", email = "support@bitswan.space"},
-]
+authors = [{ name = "LibertyAces Ltd.", email = "support@bitswan.space" }]
 dependencies = [
   "PyYAML==6.0.2",
+  "python-keycloak==5.1.1",
+  "requests==2.32.3",
+  "influxdb-client==1.48.0",
 ]
 
 [project.scripts]
-aoc-cli = "aoc_cli.main:main"
+aoc = "aoc_cli.main:main"
 
 
 [tool.hatch.build.targets.wheel]

@@ -3,7 +3,7 @@
 import argparse
 import sys
 
-from aoc_cli.commands import hosts, setup
+from aoc_cli.commands import hosts, init
 
 
 def main():
@@ -12,9 +12,8 @@ def main():
     )
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-    # Add commands
-    setup.add_subparser(subparsers)
     hosts.add_subparser(subparsers)
+    init.add_subparser(subparsers)
 
     args = parser.parse_args()
     if hasattr(args, "func"):
