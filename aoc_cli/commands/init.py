@@ -2,6 +2,7 @@ import shutil
 import subprocess
 from pathlib import Path
 from typing import Dict
+import json
 
 from aoc_cli.config import Environment, InitConfig, Protocol
 from aoc_cli.config.services import Services
@@ -32,7 +33,7 @@ class InitCommand:
         self.setup_keycloak(config)
         self.setup_influxdb(config)
 
-        self.cleanup()
+        self.cleanup(config)
         print("Aoc initialized successfully!")
 
     def create_aoc_directory(self, config: InitConfig) -> None:
@@ -84,11 +85,11 @@ class InitCommand:
         )
         caddy.start()
 
-    def cleanup(self) -> None:
+    def cleanup(self, config) -> None:
         print("Cleaning up...")
         subprocess.run(
             ["docker-compose", "down"],
-            cwd=Path.home() / ".aoc",
+            cwd=config.aoc_dir,
             check=True,
         )
 
@@ -118,7 +119,17 @@ class InitCommand:
         vars = get_var_defaults(
             config,
         )
-        vars = self.generate_secrets(vars)
+        # If config.aoc_dir / "secrets.json" exists then load the secrets from there
+        # otherwise generate new secrets and save them to the file.
+        secrets_file = config.aoc_dir / "secrets.json"
+        if secrets_file.exists():
+            with open(secrets_file, "r") as f:
+                secrets = json.load(f)
+                vars.update(secrets)
+        else:
+            vars = self.generate_secrets(vars)
+            with open(secrets_file, "w") as f:
+                json.dump(vars, f)
 
         for service in [
             Services.INFLUXDB,
