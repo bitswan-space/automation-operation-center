@@ -35,6 +35,8 @@ class InitCommand:
 
         self.cleanup(config)
         print("Aoc initialized successfully!")
+        print(f"You can launch the aoc by going to {config.aoc_dir} and running `docker-compose up`")
+        print(f"Access the AOC at the url {config.protocol.value}://aoc.{config.domain}")
 
     def create_aoc_directory(self, config: InitConfig) -> None:
         config.aoc_dir.mkdir(parents=True, exist_ok=True)
