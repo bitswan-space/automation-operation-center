@@ -27,10 +27,10 @@ class InitConfig:
         return f"{self.protocol.value}://{subdomain}.{self.domain}"
 
 
-INFLUXDB_ENV_FILE = ".influxdb.env"
-KEYCLOAK_ENV_FILE = ".keycloak.env"
-KEYCLOAK_DB_ENV_FILE = ".keycloak-postgres.env"
-BITSWAN_DB_ENV_FILE = ".bitswan-backend-postgres.env"
-BITSWAN_BACKEND_ENV_FILE = ".bitswan-backend.env"
-OPERATIONS_CENTRE_ENV_FILE = ".operations-centre.env"
-EMQX_ENV_FILE = ".emqx.env"
+INFLUXDB_ENV_FILE = "influxdb.env"
+KEYCLOAK_ENV_FILE = "keycloak.env"
+KEYCLOAK_DB_ENV_FILE = "keycloak-postgres.env"
+BITSWAN_DB_ENV_FILE = "bitswan-backend-postgres.env"
+BITSWAN_BACKEND_ENV_FILE = "bitswan-backend.env"
+OPERATIONS_CENTRE_ENV_FILE = "operations-centre.env"
+EMQX_ENV_FILE = "emqx.env"

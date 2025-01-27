@@ -57,7 +57,7 @@ def write_env_file(
     aoc_dir: Path,
 ) -> None:
     """Write environment variables to a file, mapping variables if needed"""
-    env_file = aoc_dir / ".envs" / Path(service.env_file_path)
+    env_file = aoc_dir / "envs" / Path(service.env_file_path)
     env_file.parent.mkdir(parents=True, exist_ok=True)
 
     with open(env_file, "w") as f:
