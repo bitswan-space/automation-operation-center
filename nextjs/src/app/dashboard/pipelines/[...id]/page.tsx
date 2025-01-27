@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { PipelineDetailTabs } from "@/components/pipeline/PipelineDetailTabs";
-import React from "react";
+import React, { use } from "react";
 import { TitleBar } from "@/components/layout/TitleBar";
 import { formatPipelineName } from "@/utils/pipelineUtils";
 import { splitArrayUpToElementAndJoin } from "@/utils/arrays";
 import { usePipelinesWithStats } from "@/components/pipeline/hooks/usePipelinesWithStats";
 
-const PipelineDetailPage = ({ params }: { params: { id: string[] } }) => {
+const PipelineDetailPage = (props: { params: Promise<{ id: string[] }> }) => {
+  const params = use(props.params);
   const { pipelinesWithStats: pipelines } = usePipelinesWithStats();
 
   const pipeline = pipelines.find((p) => p._key === params.id?.[0]);

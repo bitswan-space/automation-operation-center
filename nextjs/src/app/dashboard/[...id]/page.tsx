@@ -10,16 +10,17 @@ import {
 } from "@/components/ui/breadcrumb";
 
 import PanelItemsSection from "@/components/home/PanelItemsSection";
-import React from "react";
+import React, { use } from "react";
 import { TitleBar } from "@/components/layout/TitleBar";
 import { useRouter } from "next/navigation";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
 
-export default function DahboardNestedPage({
-  params,
-}: {
-  params: { id: string[] };
-}) {
+export default function DahboardNestedPage(
+  props: {
+    params: Promise<{ id: string[] }>;
+  }
+) {
+  const params = use(props.params);
   const { deserializedNavItems } = useSidebarItems();
   const router = useRouter();
 

@@ -142,9 +142,7 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
     pinnedSections: [],
   };
 
-  const [state, dispatch] = React.useReducer<
-    (state: PipelineNodeState, action: PipelineNodeAction) => PipelineNodeState
-  >(reducer, initialState);
+  const [state, dispatch] = React.useReducer(reducer, initialState);
 
   const getIconFromType = (type: string): React.ReactElement => {
     return typeIconMap[type]?.icon ?? <Layers size={28} />;
