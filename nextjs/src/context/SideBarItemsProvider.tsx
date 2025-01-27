@@ -11,6 +11,7 @@ import {
 import useLocalStorageState from "ahooks/lib/useLocalStorageState";
 import { type MQTTProfile } from "@/components/groups/groupsHooks";
 import { ACTIVE_MQTT_PROFILE_STORAGE_KEY } from "@/shared/constants";
+import isEqual from "lodash.isEqual";
 
 type SidebarItemsContext = {
   sidebarItems: NodeModel<NavItem>[];
@@ -55,7 +56,7 @@ export function SidebarItemsProvider({
   React.useEffect(() => {
     setSidebarItemsState((prevItems) => {
       // Optional: Add deep comparison if needed
-      if (JSON.stringify(prevItems) !== JSON.stringify(sourceItems)) {
+      if (!isEqual(prevItems, sourceItems)) {
         return sourceItems;
       }
       return prevItems;
