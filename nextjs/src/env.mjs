@@ -40,6 +40,9 @@ export const env = createEnv({
     // EMQX
     EMQX_JWT_SECRET: z.string().min(1),
     EMQX_MQTT_URL: z.string(),
+
+    // Bitswan Backend
+    BITSWAN_BACKEND_API_URL: z.string().url(),
   },
 
   /**
@@ -90,6 +93,7 @@ export const env = createEnv({
     // AoC Backend
     NEXT_PUBLIC_BITSWAN_BACKEND_API_URL:
       process.env.NEXT_PUBLIC_BITSWAN_BACKEND_API_URL,
+    BITSWAN_BACKEND_API_URL: process.env.BITSWAN_BACKEND_API_URL,
 
     // EMQX
     EMQX_JWT_SECRET: process.env.EMQX_JWT_SECRET,
