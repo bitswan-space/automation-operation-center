@@ -1,24 +1,29 @@
 "use server";
 
-import axios, { AxiosError } from "axios";
-
 import { BITSWAN_BACKEND_API_URL } from ".";
 import { GitopsListResponse } from "@/components/gitops/hooks";
-import { auth } from "../auth";
+import { Session } from "next-auth";
+import { unstable_cache as cache } from "next/cache";
+import { signOut } from "../auth";
 
-export const fetchGitopsList = async (): Promise<GitopsListResponse> => {
-  const session = await auth();
+export const fetchGitopsList = cache(
+  async (session: Session | null) => {
+    if (!session) {
+      signOut();
+    }
 
-  const apiToken = session?.access_token;
+    const apiToken = session?.access_token;
 
-  return axios
-    .get<GitopsListResponse>(`${BITSWAN_BACKEND_API_URL}/gitops`, {
+    const data = await fetch(`${BITSWAN_BACKEND_API_URL}/gitops`, {
       headers: {
         Authorization: `Bearer ${apiToken}`,
       },
-    })
-    .then((response) => response.data)
-    .catch((error: AxiosError) => {
-      throw error;
     });
-};
+
+    return (await data.json()) as GitopsListResponse;
+  },
+  [],
+  {
+    tags: ["gitops"],
+  },
+);

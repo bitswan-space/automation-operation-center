@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import GitopsDisplay from "../gitops/GitopsDisplay";
 import { GitopsListResponse } from "../gitops/hooks";
 import { GroupDetailTable } from "../groups/GroupDetailTable";
-import { OrgUsersListResponse } from "../users/usersHooks";
+import { OrgUsersListResponse } from "@/server/actions/users";
 import React from "react";
 import { SwitchForm } from "./EditModeForm";
 import { UserDetailTable } from "../users/UserDetailTable";
