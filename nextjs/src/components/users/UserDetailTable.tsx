@@ -28,33 +28,20 @@ import {
 
 import { Button } from "@/components/ui/button";
 
-import { Input } from "@/components/ui/input";
 import { Badge } from "../ui/badge";
-import {
-  deleteUser,
-  inviteUser,
-  type OrgUser,
-  OrgUsersListResponse,
-} from "./usersHooks";
+
 import { UserGroupsListResponse, type UserGroup } from "../groups/groupsHooks";
-import { Loader, Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ORG_USERS_QUERY_KEY } from "@/shared/constants";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "../ui/form";
-import { type AxiosError } from "axios";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 import { canMutateUsers } from "@/lib/permissions";
+import { UserInviteForm } from "./UserInviteForm";
+import {
+  deleteUserAction,
+  DeleteUserActionState,
+  OrgUser,
+  OrgUsersListResponse,
+} from "@/server/actions/users";
 
 type OrgUserFull = OrgUser & { nonMemberGroups: UserGroup[] };
 
@@ -239,178 +226,40 @@ export function UserDetailTable(props: UserDetailTableProps) {
   );
 }
 
-const UserInviteFormSchema = z.object({
-  email: z.string().email(),
-});
-
-function UserInviteForm({}) {
-  const { data: session } = useSession();
-  const queryClient = useQueryClient();
-
-  const accessToken = session?.access_token;
-
-  const form = useForm<z.infer<typeof UserInviteFormSchema>>({
-    resolver: zodResolver(UserInviteFormSchema),
-    defaultValues: {
-      email: "",
-    },
-  });
-
-  const invalidateOrgUsersQuery = () => {
-    queryClient
-      .invalidateQueries({
-        queryKey: [ORG_USERS_QUERY_KEY],
-      })
-      .then(() => {
-        console.log("Invalidated org-users query");
-      })
-      .catch((error) => {
-        console.error("Error invalidating org-users query", error);
-      });
-  };
-
-  const inviteUserMutation = useMutation({
-    mutationFn: inviteUser,
-    onSuccess: () => {
-      console.log("User invited");
-      invalidateOrgUsersQuery();
-
-      toast.success("User invited", {
-        duration: 5000,
-      });
-    },
-    onError: (error: AxiosError) => {
-      console.error("Error inviting user", error);
-      const errorMessage = (error.response?.data as { error: string })?.error;
-      if (errorMessage) {
-        form.setError("email", { type: "manual", message: errorMessage });
-      }
-    },
-  });
-
-  function onSubmit(values: z.infer<typeof UserInviteFormSchema>) {
-    console.log("submitting");
-    console.log(values);
-
-    inviteUserMutation.mutate({
-      accessToken: accessToken ?? "",
-      email: values.email,
-    });
-  }
-
-  const isLoading = inviteUserMutation.isPending;
-
-  return (
-    <Form {...form}>
-      <form onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}>
-        <div className="flex items-center gap-4 py-4">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem className="max-w-sm flex-1">
-                <FormControl>
-                  <Input
-                    placeholder="Team member email "
-                    className="w-full"
-                    {...field}
-                  />
-                </FormControl>
-                {form.formState.errors.email?.message && (
-                  <FormMessage>
-                    {form.formState.errors.email?.message}
-                  </FormMessage>
-                )}
-              </FormItem>
-            )}
-          />
-
-          <Button
-            className="mb-auto bg-blue-600 hover:bg-blue-700/80"
-            disabled={isLoading}
-          >
-            Invite{" "}
-            {isLoading && (
-              <span>
-                <Loader size={20} className="ml-2 animate-spin" />
-              </span>
-            )}
-          </Button>
-        </div>
-      </form>
-    </Form>
-  );
-}
-
 type UserActionProps = {
   id: string;
 };
 
 function UserActions(props: UserActionProps) {
   const { id } = props;
-  const { data: session } = useSession();
-  const queryClient = useQueryClient();
 
-  const accessToken = session?.access_token;
+  const [, formAction, isPending] = React.useActionState<
+    DeleteUserActionState,
+    FormData
+  >(deleteUserAction, {});
+
+  const { data: session } = useSession();
+
   const activeUserId = session?.user?.id;
 
-  const hasPerms = canMutateUsers(session);
+  const hasPerms = canMutateUsers(session) && activeUserId !== id;
 
-  const deleteUserGroupMutation = useMutation({
-    mutationFn: deleteUser,
-    onSuccess: () => {
-      console.log("Org user deleted");
-      queryClient
-        .invalidateQueries({
-          queryKey: [ORG_USERS_QUERY_KEY],
-        })
-        .then(() => {
-          console.log("Invalidated org-users query");
-        })
-        .catch((error) => {
-          console.error("Error invalidating org-users query", error);
-        });
-
-      toast.success("User deleted", {
-        duration: 5000,
-      });
-    },
-
-    onError: (error: AxiosError) => {
-      console.error("Error deleting user", error);
-      const errorMessage = (error.response?.data as { error: string })?.error;
-      if (errorMessage) {
-        toast.error(errorMessage, {
-          duration: 5000,
-        });
-      }
-    },
-  });
-
-  const handleDeleteClick = () => {
-    deleteUserGroupMutation.mutate({
-      apiToken: accessToken ?? "",
-      id: id,
-    });
-  };
-
-  const isLoading = deleteUserGroupMutation.isPending;
-  const isCurrentUser = activeUserId === id;
   return (
-    <div className="flex justify-end gap-2 px-4 text-end">
+    <form action={formAction} className="flex justify-end gap-2 px-4 text-end">
+      <input type="hidden" name="id" defaultValue={id} />
       {hasPerms && (
         <Button
           variant={"ghost"}
-          onClick={handleDeleteClick}
-          disabled={isLoading || isCurrentUser || !hasPerms}
+          type="submit"
+          disabled={isPending || !hasPerms}
         >
-          {isLoading ? (
+          {isPending ? (
             <Loader2 size={20} className="mr-2 animate-spin" />
           ) : (
             <Trash2 size={20} className="text-neutral-500" />
           )}
         </Button>
       )}
-    </div>
+    </form>
   );
 }
