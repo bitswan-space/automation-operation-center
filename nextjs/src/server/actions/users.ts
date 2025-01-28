@@ -1,11 +1,11 @@
 "use server";
 
 import { auth, signOut } from "../auth";
+import { unstable_cache as cache, revalidateTag } from "next/cache";
 
 import { BITSWAN_BACKEND_API_URL } from ".";
 import { Session } from "next-auth";
 import { UserGroup } from "@/components/groups/groupsHooks";
-import { unstable_cache as cache } from "next/cache";
 import { z } from "zod";
 
 export type OrgUser = {
@@ -22,6 +22,8 @@ export type OrgUsersListResponse = {
   previous: string | null;
   results: OrgUser[];
 };
+
+const USERS_CACHE_KEY = "org-users";
 
 export const fetchOrgUsers = cache(
   async (session: Session | null) => {
@@ -41,7 +43,7 @@ export const fetchOrgUsers = cache(
   },
   [],
   {
-    tags: ["org-users"],
+    tags: [USERS_CACHE_KEY],
   },
 );
 
@@ -59,6 +61,19 @@ export const inviteUser = async (email: string) => {
     body: JSON.stringify({
       email: email,
     }),
+  });
+};
+
+const deleteUser = async (id: string) => {
+  const session = await auth();
+
+  const apiToken = session?.access_token;
+
+  fetch(`${BITSWAN_BACKEND_API_URL}/org-users/${id}/`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${apiToken}`,
+    },
   });
 };
 
@@ -100,6 +115,8 @@ export const inviteUserAction = async (
     };
   });
 
+  revalidateTag(USERS_CACHE_KEY);
+
   return {
     status: "success",
     data: {
@@ -109,29 +126,17 @@ export const inviteUserAction = async (
   };
 };
 
-const deleteUser = async (id: string) => {
-  const session = await auth();
-
-  const apiToken = session?.access_token;
-
-  fetch(`${BITSWAN_BACKEND_API_URL}/org-users/${id}/`, {
-    method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${apiToken}`,
-    },
-  });
-};
-
 export type DeleteUserActionState = {
   errors?: { id?: string[] };
   message?: string;
   data?: { id: string };
+  status?: "success" | "error";
 };
 
 export const deleteUserAction = async (
   state: DeleteUserActionState,
   formData: FormData,
-) => {
+): Promise<DeleteUserActionState> => {
   const validatedFields = await z
     .object({
       id: z.string(),
@@ -143,6 +148,8 @@ export const deleteUserAction = async (
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
+      message: "Error deleting user",
+      status: "error",
     };
   }
 
@@ -153,14 +160,19 @@ export const deleteUserAction = async (
     return {
       errors: {
         id: [(error as Error).message],
+        message: "Error deleting user",
+        status: "error",
       },
     };
   });
+
+  revalidateTag(USERS_CACHE_KEY);
 
   return {
     data: {
       id: id,
     },
     message: "User deleted",
+    status: "success",
   };
 };
