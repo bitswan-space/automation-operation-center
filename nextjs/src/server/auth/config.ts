@@ -1,19 +1,10 @@
-import {
-  getServerSession,
-  type DefaultSession,
-  type NextAuthOptions,
-} from "next-auth";
 import { type DefaultJWT, type JWT } from "next-auth/jwt";
 import KeycloakProvider, {
   type KeycloakProfile,
 } from "next-auth/providers/keycloak";
-import { type OAuthConfig } from "next-auth/providers/oauth";
+import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import { env } from "@/env.mjs";
-import {
-  type GetServerSidePropsContext,
-  type NextApiRequest,
-  type NextApiResponse,
-} from "next";
+import { type OAuthConfig } from "next-auth/providers";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -125,7 +116,7 @@ const refreshAccessToken = async (token: JWT) => {
  *
  * @see https://next-auth.js.org/configuration/options
  */
-export const authOptions: NextAuthOptions = {
+export const authConfig = {
   callbacks: {
     session: ({ session, token }) => ({
       ...session,
@@ -158,17 +149,20 @@ export const authOptions: NextAuthOptions = {
     },
   },
   events: {
-    async signOut({ token }: { token: JWT }) {
-      if (token.provider === "keycloak") {
+    async signOut(message) {
+      if (!("token" in message)) return;
+      const { token } = message;
+
+      if (token?.provider === "keycloak") {
         const issuerUrl = (
-          authOptions.providers.find(
+          authConfig.providers.find(
             (p) => p.id === "keycloak",
           ) as OAuthConfig<KeycloakProfile>
         ).options!.issuer!;
         const logOutUrl = new URL(
           `${issuerUrl}/protocol/openid-connect/logout`,
         );
-        logOutUrl.searchParams.set("id_token_hint", token.id_token);
+        logOutUrl.searchParams.set("id_token_hint", token?.id_token);
         await fetch(logOutUrl);
       }
     },
@@ -194,16 +188,4 @@ export const authOptions: NextAuthOptions = {
     signIn: "/auth/signin",
   },
   debug: env.NODE_ENV === "development",
-};
-
-/**
- * Wrapper for `getServerSession` so that you don't need to import the `authOptions` in every file.
- *
- * @see https://next-auth.js.org/configuration/nextjs
- */
-export const getServerAuthSession = (
-  ...args:
-    | [GetServerSidePropsContext["req"], GetServerSidePropsContext["res"]]
-    | [NextApiRequest, NextApiResponse]
-    | []
-) => getServerSession(...args, authOptions);
+} satisfies NextAuthConfig;

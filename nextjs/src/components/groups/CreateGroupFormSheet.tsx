@@ -51,6 +51,27 @@ type CreateGroupFormSheetProps = {
 export function CreateGroupFormSheet(props: CreateGroupFormSheetProps) {
   const { trigger, group } = props;
 
+  return (
+    <Sheet>
+      <SheetTrigger asChild>{trigger}</SheetTrigger>
+      <SheetContent className="min-w-full space-y-2 p-4 md:min-w-[500px]">
+        <SheetHeader>
+          <SheetTitle>Create Group</SheetTitle>
+          <SheetDescription>
+            Make changes to your group here. Click save when youre done.
+          </SheetDescription>
+        </SheetHeader>
+        <CreateGroupForm group={group} />
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+type CreateGroupFormProps = {
+  group?: UserGroup;
+};
+function CreateGroupForm(props: CreateGroupFormProps) {
+  const { group } = props;
   const { data: session } = useSession();
   const queryClient = useQueryClient();
 
@@ -113,98 +134,82 @@ export function CreateGroupFormSheet(props: CreateGroupFormSheetProps) {
   }
 
   const isLoading =
-    createUserGroupMutation.isLoading || updateUserGroupMutation.isLoading;
-
+    createUserGroupMutation.isPending || updateUserGroupMutation.isPending;
   return (
-    <Sheet>
-      <SheetTrigger asChild>{trigger}</SheetTrigger>
-      <SheetContent className="min-w-full space-y-2 p-4 md:min-w-[500px]">
-        <SheetHeader>
-          <SheetTitle>Create Group</SheetTitle>
-          <SheetDescription>
-            Make changes to your group here. Click save when youre done.
-          </SheetDescription>
-        </SheetHeader>
-        <Form {...form}>
-          <form onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}>
-            <div className="grid gap-4 py-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name:</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Group name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description:</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Group description" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+    <Form {...form}>
+      <form onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}>
+        <div className="grid gap-4 py-4">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Name:</FormLabel>
+                <FormControl>
+                  <Input placeholder="Group name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description:</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Group description" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-              <FormField
-                control={form.control}
-                name="tag_color"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tag Color:</FormLabel>
-                    <FormControl>
-                      <div>
-                        <HexColorPicker
-                          color={field.value}
-                          onChange={field.onChange}
-                          className="w-full"
-                        />
-                        <div
-                          className={`mt-2 text-lg font-medium  underline `}
-                          style={{
-                            color: field.value,
-                          }}
-                        >
-                          {field.value}
-                        </div>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                    <FormDescription>
-                      You can use any color you want. This will be used to color
-                      the group tags .
-                    </FormDescription>
-                  </FormItem>
-                )}
-              />
-            </div>
+          <FormField
+            control={form.control}
+            name="tag_color"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tag Color:</FormLabel>
+                <FormControl>
+                  <div>
+                    <HexColorPicker
+                      color={field.value}
+                      onChange={field.onChange}
+                      className="w-full"
+                    />
+                    <div
+                      className={`mt-2 text-lg font-medium underline`}
+                      style={{
+                        color: field.value,
+                      }}
+                    >
+                      {field.value}
+                    </div>
+                  </div>
+                </FormControl>
+                <FormMessage />
+                <FormDescription>
+                  You can use any color you want. This will be used to color the
+                  group tags .
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+        </div>
 
-            <div className="flex justify-end">
-              <Button
-                type="submit"
-                className="bg-blue-600"
-                disabled={isLoading}
-              >
-                Save changes
-                {isLoading && (
-                  <span>
-                    <Loader size={20} className="ml-2 animate-spin" />
-                  </span>
-                )}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </SheetContent>
-    </Sheet>
+        <div className="flex justify-end">
+          <Button type="submit" className="bg-blue-600" disabled={isLoading}>
+            Save changes
+            {isLoading && (
+              <span>
+                <Loader size={20} className="ml-2 animate-spin" />
+              </span>
+            )}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }

@@ -6,12 +6,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 export default function SignIn() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const { status } = useSession();
 
-  const callbackUrl = searchParams?.get("callbackUrl") ?? "/dashboard";
-  const error = searchParams?.get("error");
+  const callbackUrl = "/dashboard";
+  const error = searchParams?.get("error") as string;
+
+  const router = useRouter();
+
+  const { status } = useSession();
 
   useEffect(() => {
     if (status === "authenticated") {

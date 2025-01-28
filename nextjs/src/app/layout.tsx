@@ -6,8 +6,8 @@ import { GeistSans } from "geist/font/sans";
 
 import { type Metadata } from "next";
 import FlowProvider from "@/context/ReactFlowProvider";
-import SessionProvider from "@/context/NextAuthProvider";
-import { getServerAuthSession } from "@/server/auth";
+import { SessionProvider } from "next-auth/react";
+import { auth } from "@/server/auth";
 
 export const metadata: Metadata = {
   title: "Bitswan A.O.C",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const session = await getServerAuthSession();
+  const session = await auth();
   return (
     <SessionProvider session={session}>
       <ReactQueryProvider>

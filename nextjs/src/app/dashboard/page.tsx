@@ -1,13 +1,8 @@
-"use client";
-
 import PanelItemsSection from "@/components/home/PanelItemsSection";
 import React from "react";
 import { TitleBar } from "@/components/layout/TitleBar";
-import { useSidebarItems } from "@/context/SideBarItemsProvider";
 
 export default function DahboardHomePage() {
-  const { deserializedNavItems: sidebarItems } = useSidebarItems();
-
   return (
     <div className="w-full">
       <h1 className="text-2xl font-bold text-neutral-700 md:hidden">
@@ -30,7 +25,7 @@ export default function DahboardHomePage() {
       </div>
 
       <div className="mx-auto mt-6 flex flex-col gap-8">
-        <PanelItemsSection sidebarItems={sidebarItems} showDefaultItems/>
+        <PanelItemsSection showDefaultItems />
       </div>
     </div>
   );

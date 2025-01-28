@@ -1,3 +1,5 @@
+"use client";
+
 import axios, { type AxiosError } from "axios";
 
 import { useQuery } from "@tanstack/react-query";
