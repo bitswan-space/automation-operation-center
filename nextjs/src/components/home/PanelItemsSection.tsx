@@ -7,14 +7,15 @@ import PanelItemCard from "./PanelItemCard";
 import { RawNavItem } from "../layout/Sidebar/utils/NavItems";
 import React from "react";
 import { usePathname } from "next/navigation";
+import { useSidebarItems } from "@/context/SideBarItemsProvider";
 
 type PanelItemsSectionProps = {
-  sidebarItems: RawNavItem[];
   showDefaultItems?: boolean;
 };
 
 export default function PanelItemsSection(props: PanelItemsSectionProps) {
-  const { sidebarItems, showDefaultItems = false } = props;
+  const { deserializedNavItems: sidebarItems } = useSidebarItems();
+  const { showDefaultItems = false } = props;
 
   const pathname = usePathname();
 

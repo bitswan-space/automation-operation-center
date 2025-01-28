@@ -1,3 +1,5 @@
+"use client";
+
 import { Loader2, Workflow } from "lucide-react";
 import { type MQTTProfile, useMQTTProfileList } from "./groupsHooks";
 import {
@@ -52,12 +54,12 @@ export default function MQTTProfileSelector() {
           )}
           <SelectValue
             placeholder={!isLoading && "Select profile"}
-            defaultValue={activeMQTTProfile?.id ?? undefined}
+            defaultValue={activeMQTTProfile?.id}
             className="font-medium"
           />
         </div>
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="bg-neutral-100">
         <SelectGroup>
           <SelectLabel>
             <div>MQTT profiles</div>

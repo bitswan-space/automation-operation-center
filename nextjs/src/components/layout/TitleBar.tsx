@@ -1,17 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
-import React, { type ReactNode } from "react";
+import React, { Suspense, type ReactNode } from "react";
 
 import clsx from "clsx";
 import dynamic from "next/dynamic";
 
 import { Skeleton } from "../ui/skeleton";
 
-const MQTTProfileSelector = dynamic(
-  () => import("../groups/MQTTProfileSelector"),
-  {
-    loading: () => <Skeleton className="h-10 w-60" />,
-  },
-);
+import MQTTProfileSelector from "../groups/MQTTProfileSelector";
 
 interface TitleBarProps {
   title: ReactNode;
@@ -30,13 +25,15 @@ export function TitleBar(props: Readonly<TitleBarProps>) {
         )}
       >
         <CardContent className="flex justify-between px-5 py-4 align-middle">
-          <h1 className="text-3xl font-bold text-neutral-700 dark:text-neutral-200 md:text-2xl">
+          <h1 className="text-3xl font-bold text-neutral-700 md:text-2xl dark:text-neutral-200">
             {title}
           </h1>
 
           <div className="flex gap-4 pr-2">
             <div className="my-auto w-full">
-              <MQTTProfileSelector />
+              <Suspense fallback={<Skeleton className="h-10 w-60" />}>
+                <MQTTProfileSelector />
+              </Suspense>
             </div>
           </div>
         </CardContent>
