@@ -28,36 +28,6 @@ export type UserGroupsListResponse = {
   results: UserGroup[];
 };
 
-export const fetchUserGroups = (
-  apiToken?: string,
-  onSuccess?: (data: UserGroupsListResponse) => void,
-): Promise<UserGroupsListResponse> =>
-  axios
-    .get<UserGroupsListResponse>(`${BASE_API_URL}/user-groups`, {
-      headers: {
-        Authorization: `Bearer ${apiToken}`,
-      },
-    })
-    .then((response) => {
-      onSuccess?.(response.data);
-      return response.data;
-    })
-    .catch((error: AxiosError) => {
-      throw error;
-    });
-
-export const useUserGroups = () => {
-  const { data: session } = useSession();
-
-  const accessToken = session?.access_token;
-
-  return useQuery({
-    queryKey: [USER_GROUPS_QUERY_KEY, accessToken],
-    queryFn: () => fetchUserGroups(accessToken),
-    enabled: !!accessToken,
-  });
-};
-
 export const createUserGroup = (params: {
   accessToken: string;
   userGroup: z.infer<typeof CreateGroupFormSchema>;

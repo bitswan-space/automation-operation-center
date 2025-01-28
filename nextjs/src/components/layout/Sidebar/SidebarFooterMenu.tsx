@@ -25,8 +25,6 @@ type SidebarFooterMenuProps = {
 export const SidebarFooterMenu = (props: SidebarFooterMenuProps) => {
   const { name, email } = props;
 
-  console.log("props", props);
-
   const handleSignOut = () => {
     keyCloakSessionLogOut()
       .then((_) => {

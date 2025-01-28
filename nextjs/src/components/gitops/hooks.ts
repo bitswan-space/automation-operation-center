@@ -17,7 +17,7 @@ type GitopsCreateResponse = {
   name: string;
 };
 
-type GitopsListResponse = {
+export type GitopsListResponse = {
   count: number;
   next: string | null;
   previous: string | null;

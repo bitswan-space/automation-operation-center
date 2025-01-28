@@ -30,7 +30,11 @@ import { Input } from "@/components/ui/input";
 import { Loader2, PenLine, Trash2 } from "lucide-react";
 import { CreateGroupFormSheet } from "./CreateGroupFormSheet";
 import { Separator } from "../ui/separator";
-import { deleteUserGroup, type UserGroup, useUserGroups } from "./groupsHooks";
+import {
+  deleteUserGroup,
+  type UserGroup,
+  UserGroupsListResponse,
+} from "./groupsHooks";
 import { useSession } from "next-auth/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { USER_GROUPS_QUERY_KEY } from "@/shared/constants";
@@ -67,8 +71,13 @@ export const columns: ColumnDef<UserGroup>[] = [
   }),
 ];
 
-export function GroupDetailTable() {
-  const { data: userGroups, isLoading } = useUserGroups();
+type GroupDetailTableProps = {
+  userGroups?: UserGroupsListResponse;
+};
+
+export function GroupDetailTable(props: GroupDetailTableProps) {
+  const { userGroups } = props;
+
   const { data: session } = useSession();
 
   const hasPerms = canMutateGroups(session);
@@ -123,17 +132,8 @@ export function GroupDetailTable() {
           />
         )}
       </div>
-      {isLoading && (
-        <div className="flex h-60 w-full items-center justify-center rounded-md border border-neutral-200 bg-neutral-100 p-4 text-center">
-          <div className="flex flex-col items-center justify-between gap-4 py-4">
-            <Loader2 size={20} className="mr-2 animate-spin" />
-            <div className="text-sm text-neutral-500">
-              Loading user groups...
-            </div>
-          </div>
-        </div>
-      )}
-      {!isLoading && userGroups && (
+
+      {userGroups && (
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -247,7 +247,7 @@ function GroupActions(props: GroupActionProps) {
     });
   };
 
-  const isLoading = deleteUserGroupMutation.isLoading;
+  const isLoading = deleteUserGroupMutation.isPending;
   return (
     hasPerms && (
       <div className="flex justify-end gap-2 px-4 text-end">
