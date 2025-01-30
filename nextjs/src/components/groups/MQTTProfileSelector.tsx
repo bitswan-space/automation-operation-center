@@ -1,7 +1,10 @@
 "use client";
 
 import { Loader2, Workflow } from "lucide-react";
-import { type MQTTProfile, useMQTTProfileList } from "./groupsHooks";
+import {
+  MQTTProfile,
+  MQTTProfileListResponse,
+} from "@/server/actions/mqtt-profiles";
 import {
   Select,
   SelectContent,
@@ -14,11 +17,14 @@ import {
 
 import { ACTIVE_MQTT_PROFILE_STORAGE_KEY } from "@/shared/constants";
 import React from "react";
-import { Skeleton } from "../ui/skeleton";
 import useLocalStorageState from "ahooks/lib/useLocalStorageState";
 
-export default function MQTTProfileSelector() {
-  const { data: mqttProfiles, isLoading } = useMQTTProfileList();
+type MQTTProfileSelectorProps = {
+  mqttProfiles?: MQTTProfileListResponse;
+};
+
+export default function MQTTProfileSelector(props: MQTTProfileSelectorProps) {
+  const { mqttProfiles } = props;
 
   const [activeMQTTProfile, saveActiveMQTTProfile] = useLocalStorageState<
     MQTTProfile | undefined
@@ -40,20 +46,14 @@ export default function MQTTProfileSelector() {
     >
       <SelectTrigger className="w-[280px] bg-neutral-100">
         <div className="flex items-center gap-2">
-          {isLoading ? (
-            <span className="flex">
-              <Loader2 size={20} className="mr-2 animate-spin" />
-              <span>Loading profiles...</span>
-            </span>
-          ) : (
-            <Workflow
-              size={20}
-              strokeWidth={2.0}
-              className="mr-2 text-neutral-600"
-            />
-          )}
+          <Workflow
+            size={20}
+            strokeWidth={2.0}
+            className="mr-2 text-neutral-600"
+          />
+
           <SelectValue
-            placeholder={!isLoading && "Select profile"}
+            placeholder={"Select profile"}
             defaultValue={activeMQTTProfile?.id}
             className="font-medium"
           />
@@ -63,7 +63,6 @@ export default function MQTTProfileSelector() {
         <SelectGroup>
           <SelectLabel>
             <div>MQTT profiles</div>
-            {isLoading && <Skeleton className="mt-2 h-10 w-full" />}
             {mqttProfiles?.results?.length === 0 && (
               <div className="mt-2 flex h-16 flex-col items-center justify-center gap-2 rounded border border-dashed">
                 <div className="text-center text-sm font-normal text-neutral-500">

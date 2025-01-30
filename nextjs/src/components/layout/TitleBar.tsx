@@ -2,19 +2,23 @@ import { Card, CardContent } from "@/components/ui/card";
 import React, { Suspense, type ReactNode } from "react";
 
 import clsx from "clsx";
-import dynamic from "next/dynamic";
 
 import { Skeleton } from "../ui/skeleton";
 
 import MQTTProfileSelector from "../groups/MQTTProfileSelector";
+import { fetchMQTTProfiles } from "@/server/actions/mqtt-profiles";
+import { auth } from "@/server/auth";
 
 interface TitleBarProps {
   title: ReactNode;
   className?: string;
 }
 
-export function TitleBar(props: Readonly<TitleBarProps>) {
+export async function TitleBar(props: Readonly<TitleBarProps>) {
   const { title, className } = props;
+
+  const session = await auth();
+  const mqttProfiles = await fetchMQTTProfiles(session);
 
   return (
     <div className={clsx("hidden md:block", className)}>
@@ -25,14 +29,14 @@ export function TitleBar(props: Readonly<TitleBarProps>) {
         )}
       >
         <CardContent className="flex justify-between px-5 py-4 align-middle">
-          <h1 className="text-3xl font-bold text-neutral-700 md:text-2xl dark:text-neutral-200">
+          <h1 className="text-3xl font-bold text-neutral-700 dark:text-neutral-200 md:text-2xl">
             {title}
           </h1>
 
           <div className="flex gap-4 pr-2">
             <div className="my-auto w-full">
               <Suspense fallback={<Skeleton className="h-10 w-60" />}>
-                <MQTTProfileSelector />
+                <MQTTProfileSelector mqttProfiles={mqttProfiles} />
               </Suspense>
             </div>
           </div>

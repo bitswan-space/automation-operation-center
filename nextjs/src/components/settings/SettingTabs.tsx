@@ -8,7 +8,7 @@ import { OrgUsersListResponse } from "@/server/actions/users";
 import React from "react";
 import { SwitchForm } from "./EditModeForm";
 import { UserDetailTable } from "../users/UserDetailTable";
-import { UserGroupsListResponse } from "../groups/groupsHooks";
+import { UserGroupsListResponse } from "@/server/actions/groups";
 
 type SettingTabsProps = {
   groupsList?: UserGroupsListResponse;

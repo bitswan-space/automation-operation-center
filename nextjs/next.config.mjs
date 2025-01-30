@@ -14,6 +14,11 @@ const config = {
     defaultLocale: "en",
   },
   output: "standalone",
+  logging: {
+    fetches: {
+      fullUrl: true,
+    },
+  },
 };
 
 export default withSentryConfig(config, {

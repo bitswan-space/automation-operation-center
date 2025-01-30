@@ -1,6 +1,6 @@
 "use server";
 
-import { BITSWAN_BACKEND_API_URL } from ".";
+import { BITSWAN_BACKEND_API_URL } from "./shared";
 import { GitopsListResponse } from "@/components/gitops/hooks";
 import { Session } from "next-auth";
 import { unstable_cache as cache } from "next/cache";
