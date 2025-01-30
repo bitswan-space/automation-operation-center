@@ -64,7 +64,7 @@ export function CreateGitopsForm() {
     });
   }
 
-  const isLoading = createGitopsMutation.isLoading;
+  const isLoading = createGitopsMutation.isPending;
 
   console.log("CreateGitopsForm", createGitopsMutation.data);
   return (
@@ -126,7 +126,7 @@ function TokenDisplay(props: Readonly<TokenDisplayProps>) {
         Gitops successfuly setup. Copy gitops token below and store securely:
       </div>
       <div className="flex justify-between">
-        <div className="rounded-md  bg-neutral-50 px-4 py-1 text-sm">
+        <div className="rounded-md bg-neutral-50 px-4 py-1 text-sm">
           {token}
         </div>
         <div className="flex gap-4">
