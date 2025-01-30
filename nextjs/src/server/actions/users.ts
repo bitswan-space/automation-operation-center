@@ -1,11 +1,11 @@
 "use server";
 
+import { ActionState, BITSWAN_BACKEND_API_URL } from "./shared";
 import { auth, signOut } from "../auth";
 import { unstable_cache as cache, revalidateTag } from "next/cache";
 
-import { BITSWAN_BACKEND_API_URL } from ".";
 import { Session } from "next-auth";
-import { UserGroup } from "@/components/groups/groupsHooks";
+import { UserGroup } from "./groups";
 import { z } from "zod";
 
 export type OrgUser = {
@@ -81,12 +81,7 @@ const UserInviteFormSchema = z.object({
   email: z.string().email(),
 });
 
-export type UserInviteFormActionState = {
-  errors?: { email?: string[] };
-  message?: string;
-  data?: { email: string };
-  status?: "success" | "error";
-};
+export type UserInviteFormActionState = ActionState<{ email: string }>;
 
 export const inviteUserAction = async (
   state: UserInviteFormActionState,
@@ -126,12 +121,7 @@ export const inviteUserAction = async (
   };
 };
 
-export type DeleteUserActionState = {
-  errors?: { id?: string[] };
-  message?: string;
-  data?: { id: string };
-  status?: "success" | "error";
-};
+export type DeleteUserActionState = ActionState<{ id: string }>;
 
 export const deleteUserAction = async (
   state: DeleteUserActionState,

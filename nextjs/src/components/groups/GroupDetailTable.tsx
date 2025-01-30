@@ -30,15 +30,16 @@ import { Input } from "@/components/ui/input";
 import { Loader2, PenLine, Trash2 } from "lucide-react";
 import { CreateGroupFormSheet } from "./CreateGroupFormSheet";
 import { Separator } from "../ui/separator";
-import {
-  deleteUserGroup,
-  type UserGroup,
-  UserGroupsListResponse,
-} from "./groupsHooks";
+
 import { useSession } from "next-auth/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { USER_GROUPS_QUERY_KEY } from "@/shared/constants";
 import { canMutateGroups } from "@/lib/permissions";
+
+import {
+  deleteOrgGroupAction,
+  DeleteOrgGroupFormActionState,
+  UserGroup,
+  UserGroupsListResponse,
+} from "@/server/actions/groups";
 
 const columnHelper = createColumnHelper<UserGroup>();
 
@@ -216,38 +217,15 @@ type GroupActionProps = {
 
 function GroupActions(props: GroupActionProps) {
   const { id, group } = props;
+
   const { data: session } = useSession();
-  const queryClient = useQueryClient();
-
-  const accessToken = session?.access_token;
-
   const hasPerms = canMutateGroups(session);
 
-  const deleteUserGroupMutation = useMutation({
-    mutationFn: deleteUserGroup,
-    onSuccess: () => {
-      console.log("User group deleted");
-      queryClient
-        .invalidateQueries({
-          queryKey: [USER_GROUPS_QUERY_KEY],
-        })
-        .then(() => {
-          console.log("Invalidated user-groups query");
-        })
-        .catch((error) => {
-          console.error("Error invalidating user-groups query", error);
-        });
-    },
-  });
+  const [, formAction, isPending] = React.useActionState<
+    DeleteOrgGroupFormActionState,
+    FormData
+  >(deleteOrgGroupAction, {});
 
-  const handleDeleteClick = () => {
-    deleteUserGroupMutation.mutate({
-      apiToken: accessToken ?? "",
-      id: id,
-    });
-  };
-
-  const isLoading = deleteUserGroupMutation.isPending;
   return (
     hasPerms && (
       <div className="flex justify-end gap-2 px-4 text-end">
@@ -260,13 +238,16 @@ function GroupActions(props: GroupActionProps) {
           group={group}
         />
         <Separator orientation="vertical" className="h-8 w-px" />
-        <Button
-          variant={"ghost"}
-          onClick={handleDeleteClick}
-          disabled={isLoading || !hasPerms}
-        >
-          <Trash2 size={20} className="text-neutral-500" />
-        </Button>
+        <form action={formAction}>
+          <Button variant={"ghost"} disabled={isPending || !hasPerms}>
+            <input type="hidden" name="id" defaultValue={id} />
+            {isPending ? (
+              <Loader2 size={20} className="animate-spin" />
+            ) : (
+              <Trash2 size={20} className="text-neutral-500" />
+            )}
+          </Button>
+        </form>
       </div>
     )
   );

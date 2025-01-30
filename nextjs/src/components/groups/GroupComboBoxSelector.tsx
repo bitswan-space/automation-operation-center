@@ -2,7 +2,11 @@
 
 import * as React from "react";
 
-import { Loader2, Plus } from "lucide-react";
+import {
+  AddMemberToGroupFormActionState,
+  UserGroup,
+  addMemberToGroupAction,
+} from "@/server/actions/groups";
 import {
   Command,
   CommandEmpty,
@@ -11,6 +15,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { Loader2, Plus } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -18,11 +23,8 @@ import {
 } from "@/components/ui/popover";
 
 import { Badge } from "../ui/badge";
-import { addMemberToGroup, type UserGroup } from "./groupsHooks";
-import { useSession } from "next-auth/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ORG_USERS_QUERY_KEY } from "@/shared/constants";
 import { canMutateUsers } from "@/lib/permissions";
+import { useSession } from "next-auth/react";
 
 type GroupComboBoxSelectorProps = {
   groups?: UserGroup[];
@@ -33,44 +35,20 @@ export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
   const { groups, userId } = props;
 
   const { data: session } = useSession();
-  const queryClient = useQueryClient();
-
-  const accessToken = session?.access_token;
+  const hasPerms = canMutateUsers(session);
 
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState("");
 
-  const addMemberToGroupMutation = useMutation({
-    mutationFn: addMemberToGroup,
-    onSuccess: () => {
-      console.log("User group updated");
-      queryClient
-        .invalidateQueries({
-          queryKey: [ORG_USERS_QUERY_KEY],
-        })
-        .then(() => {
-          console.log("Invalidated org-users query");
-        })
-        .catch((error) => {
-          console.error("Error invalidating org-users query", error);
-        });
-
-      setValue("");
-      setOpen(false);
-    },
-  });
-
-  const handleAddMemberClick = (groupId?: string) => {
+  const onAddMemberClick = (groupId?: string) => {
     setValue(groupId ?? "");
-    addMemberToGroupMutation.mutate({
-      accessToken: accessToken ?? "",
-      userId: userId,
-      groupId: groupId ?? "",
-    });
+    setOpen(true);
   };
 
-  const isLoading = addMemberToGroupMutation.isLoading;
-  const hasPerms = canMutateUsers(session);
+  const onSuccess = () => {
+    setOpen(false);
+    setValue("");
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -94,14 +72,14 @@ export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
                 <CommandItem
                   key={group.id}
                   value={group.id}
-                  onSelect={(currentValue) => {
-                    handleAddMemberClick(currentValue);
-                  }}
+                  onSelect={onAddMemberClick}
                 >
-                  {isLoading && value === group.id && (
-                    <Loader2 size={20} className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  {group.name}
+                  <AddMemberButton
+                    group={group}
+                    userId={userId}
+                    value={value}
+                    onSuccess={onSuccess}
+                  />
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -111,3 +89,38 @@ export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
     </Popover>
   );
 }
+
+type AddMemberButtonProps = {
+  group: UserGroup;
+  userId: string;
+  value: string;
+  onSuccess?: () => void;
+};
+
+const AddMemberButton = (props: AddMemberButtonProps) => {
+  const { group, userId, value, onSuccess } = props;
+
+  const [state, formAction, isPending] = React.useActionState<
+    AddMemberToGroupFormActionState,
+    FormData
+  >(addMemberToGroupAction, {});
+
+  React.useEffect(() => {
+    if (state.status === "success") {
+      onSuccess?.();
+    }
+  }, [isPending]);
+
+  return (
+    <form action={formAction}>
+      <input type="hidden" name="userId" defaultValue={userId} />
+      <input type="hidden" name="groupId" defaultValue={group.id} />
+      <button>
+        {isPending && value === group.id && (
+          <Loader2 size={20} className="mr-2 h-4 w-4 animate-spin" />
+        )}
+        {group.name}
+      </button>
+    </form>
+  );
+};

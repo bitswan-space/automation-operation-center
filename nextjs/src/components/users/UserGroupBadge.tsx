@@ -1,11 +1,15 @@
 "use client";
 
+import * as React from "react";
+
 import { Loader2, X } from "lucide-react";
-import { UserGroup, removeMemberFromGroup } from "../groups/groupsHooks";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  RemoveMemberFromGroupFormActionState,
+  UserGroup,
+  removeMemberFromGroupAction,
+} from "@/server/actions/groups";
 
 import { Badge } from "../ui/badge";
-import { ORG_USERS_QUERY_KEY } from "@/shared/constants";
 import { canMutateUsers } from "@/lib/permissions";
 import { useSession } from "next-auth/react";
 
@@ -18,36 +22,12 @@ export function UserGroupBadge(props: UserGroupBadgeProps) {
   const { group, userId } = props;
 
   const { data: session } = useSession();
-  const queryClient = useQueryClient();
 
-  const accessToken = session?.access_token;
+  const [, formAction, isPending] = React.useActionState<
+    RemoveMemberFromGroupFormActionState,
+    FormData
+  >(removeMemberFromGroupAction, {});
 
-  const removeMemberFromGroupMutation = useMutation({
-    mutationFn: removeMemberFromGroup,
-    onSuccess: () => {
-      console.log("User group updated");
-      queryClient
-        .invalidateQueries({
-          queryKey: [ORG_USERS_QUERY_KEY],
-        })
-        .then(() => {
-          console.log("Invalidated org-users query");
-        })
-        .catch((error) => {
-          console.error("Error invalidating org-users query", error);
-        });
-    },
-  });
-
-  const onRemoveGroupClick = (groupId?: string) => {
-    removeMemberFromGroupMutation.mutate({
-      accessToken: accessToken ?? "",
-      userId: userId,
-      groupId: groupId ?? "",
-    });
-  };
-
-  const isLoading = removeMemberFromGroupMutation.isPending;
   const hasPerms = canMutateUsers(session);
 
   return (
@@ -62,17 +42,31 @@ export function UserGroupBadge(props: UserGroupBadgeProps) {
     >
       <span>{group.name}</span>
       {hasPerms && (
-        <button
-          className="cursor-pointer"
-          onClick={() => onRemoveGroupClick(group.id)}
-          disabled={isLoading || !hasPerms}
-        >
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <X className="h-4 w-4" />
-          )}
-        </button>
+        <form action={formAction}>
+          <input
+            type="hidden"
+            name="userId"
+            defaultValue={userId}
+            className="hidden"
+          />
+          <input
+            type="hidden"
+            name="groupId"
+            defaultValue={group.id}
+            className="hidden"
+          />
+          <button
+            className="cursor-pointer"
+            type="submit"
+            disabled={isPending || !hasPerms}
+          >
+            {isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <X className="h-4 w-4" />
+            )}
+          </button>
+        </form>
       )}
     </Badge>
   );

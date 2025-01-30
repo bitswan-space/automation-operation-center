@@ -30,7 +30,6 @@ import { Button } from "@/components/ui/button";
 
 import { Badge } from "../ui/badge";
 
-import { UserGroupsListResponse, type UserGroup } from "../groups/groupsHooks";
 import { Loader2, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
@@ -42,6 +41,7 @@ import {
   OrgUser,
   OrgUsersListResponse,
 } from "@/server/actions/users";
+import { UserGroup, UserGroupsListResponse } from "@/server/actions/groups";
 
 type OrgUserFull = OrgUser & { nonMemberGroups: UserGroup[] };
 
