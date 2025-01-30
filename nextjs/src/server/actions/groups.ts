@@ -137,6 +137,7 @@ const CreateOrUpdateGroupFormSchema = z.object({
   }),
   description: z.string().optional(),
   tag_color: z.string().optional(),
+  nav_items: z.array(z.object({})).optional(),
 });
 
 export type CreateOrUpdateOrgGroupFormActionState = ActionState<
@@ -153,6 +154,7 @@ export const createOrUpdateOrgGroupAction = async (
     description: formData.get("description") as string,
     broker: formData.get("broker") as string,
     tag_color: formData.get("tag_color") as string,
+    nav_items: JSON.parse(formData.get("nav_items") as string),
   });
 
   if (!validatedFields.success) {
@@ -170,8 +172,17 @@ export const createOrUpdateOrgGroupAction = async (
   const description = validatedFields.data.description;
   const tag_color = validatedFields.data.tag_color;
 
+  // Only passed during update
+  const nav_items = validatedFields.data.nav_items;
+
   if (validatedFields.data.id) {
-    const res = await updateOrgGroup({ id, name, description, tag_color });
+    const res = await updateOrgGroup({
+      id,
+      name,
+      description,
+      tag_color,
+      nav_items,
+    });
 
     if (!res.ok) {
       return {

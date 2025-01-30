@@ -1,10 +1,7 @@
 "use client";
 
-import axios, { type AxiosError } from "axios";
-
-import { useQuery } from "@tanstack/react-query";
-import { signIn, useSession } from "next-auth/react";
 import { BASE_API_URL } from "@/shared/constants";
+import axios from "axios";
 
 type Gitops = {
   name: string;
@@ -23,25 +20,6 @@ export type GitopsListResponse = {
   previous: string | null;
   results: Gitops[];
 };
-
-export const fetchGitopsList = (
-  apiToken?: string,
-): Promise<GitopsListResponse> =>
-  axios
-    .get<GitopsListResponse>(`${BASE_API_URL}/gitops`, {
-      headers: {
-        Authorization: `Bearer ${apiToken}`,
-      },
-    })
-    .then((response) => response.data)
-    .catch((error: AxiosError) => {
-      if (error.response?.status === 403) {
-        console.error("Unauthorized");
-        void signIn("keycloak");
-      }
-
-      throw error;
-    });
 
 export const createGitops = (params: {
   apiToken: string;
@@ -86,15 +64,3 @@ export const deleteGitops = (params: {
       Authorization: `Bearer ${params.apiToken}`,
     },
   });
-
-export const useGitopsList = () => {
-  const { data: session } = useSession();
-
-  const encryptedAccessToken = session?.access_token;
-
-  return useQuery({
-    queryKey: ["gitops", encryptedAccessToken],
-    queryFn: () => fetchGitopsList(encryptedAccessToken),
-    enabled: !!encryptedAccessToken,
-  });
-};
