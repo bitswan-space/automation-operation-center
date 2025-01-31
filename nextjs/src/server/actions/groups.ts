@@ -165,8 +165,6 @@ export const createOrUpdateOrgGroupAction = async (
     };
   }
 
-  console.log("validatedFields", validatedFields);
-
   const id = validatedFields.data.id;
   const name = validatedFields.data.name;
   const description = validatedFields.data.description;
