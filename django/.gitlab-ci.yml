@@ -48,9 +48,9 @@ build docker:
     - TAG=$YEAR-$CI_PIPELINE_IID-git-$COMMIT_HASH
     - aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin $DOCKER_REGISTRY
 
-    - SERVICES=("django" "postgres" "awscli")
-    - CONTEXTS=("./compose/production/django" "./compose/production/postgres" "./compose/production/aws")
-    - IMAGES=("bitswan-backend-production-django" "bitswan-backend-production-postgres" "bitswan-backend-production-awscli")
+    - SERVICES=("django" "postgres")
+    - CONTEXTS=("./compose/production/django" "./compose/production/postgres")
+    - IMAGES=("bitswan-backend-production-django" "bitswan-backend-production-postgres")
     - USAGE_MESSAGES=""
 
     - |
