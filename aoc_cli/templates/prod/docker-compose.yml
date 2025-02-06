@@ -42,7 +42,7 @@ services:
       - influx_data:/var/lib/influxdb2
       - influx_config:/etc/influxdb2
     env_file:
-      - .envs/.influxdb.env
+      - envs/influxdb.env
     environment:
       - DOCKER_INFLUXDB_INIT_MODE=setup
 
@@ -65,7 +65,7 @@ services:
       - "8883:8883"
       - "18083:18083"
     env_file:
-      - .envs/.emqx.env
+      - envs/emqx.env
     volumes:
       - emqx_data:/opt/emqx/data
 
@@ -76,7 +76,7 @@ services:
     ports:
       - "10000:8080"
     env_file:
-      - .envs/.keycloak.env
+      - envs/keycloak.env
     command: start-dev
 
   postgres:
@@ -85,7 +85,7 @@ services:
     container_name: aoc-postgres
     volumes:
       - postgres-keycloak-data:/var/lib/postgresql/data
-    env_file: .envs/.keycloak-postgres.env
+    env_file: envs/keycloak-postgres.env
 
   automation-operation-centre:
     restart: always
@@ -93,7 +93,7 @@ services:
       - influxdb
       - bitswan-backend
     image: bitswan/automation-operations-centre:2025-13179935756-git-a70f881
-    env_file: .envs/.operations-centre.env
+    env_file: envs/operations-centre.env
     ports:
       - "3000:3000"
 
@@ -113,8 +113,8 @@ services:
     networks:
       - bitswan_network
     env_file:
-      - .envs/.bitswan-backend.env
-      - .envs/.bitswan-backend-postgres.env
+      - envs/bitswan-backend.env
+      - envs/bitswan-backend-postgres.env
     ports:
       - 5000:5000
     command: /start
@@ -128,7 +128,7 @@ services:
       - bitswan_backend_production_postgres_data:/var/lib/postgresql/data
       - bitswan_backend_production_postgres_data_backups:/backups
     env_file:
-      - .envs/.bitswan-backend-postgres.env
+      - envs/bitswan-backend-postgres.env
 
 networks:
   bitswan_network:
