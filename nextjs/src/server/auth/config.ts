@@ -3,8 +3,9 @@ import KeycloakProvider, {
   type KeycloakProfile,
 } from "next-auth/providers/keycloak";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
-import { env } from "@/env.mjs";
+
 import { type OAuthConfig } from "next-auth/providers";
+import { env } from "@/env.mjs";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`

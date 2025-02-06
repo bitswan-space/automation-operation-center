@@ -2,13 +2,14 @@ import { ServerCog, Settings, Ungroup, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 import GitopsDisplay from "../gitops/GitopsDisplay";
-import { GitopsListResponse } from "../gitops/hooks";
+
 import { GroupDetailTable } from "../groups/GroupDetailTable";
-import { OrgUsersListResponse } from "@/server/actions/users";
+import { type OrgUsersListResponse } from "@/server/actions/users";
 import React from "react";
 import { SwitchForm } from "./EditModeForm";
 import { UserDetailTable } from "../users/UserDetailTable";
-import { UserGroupsListResponse } from "@/server/actions/groups";
+import { type UserGroupsListResponse } from "@/server/actions/groups";
+import { type GitopsListResponse } from "@/server/actions/gitops";
 
 type SettingTabsProps = {
   groupsList?: UserGroupsListResponse;

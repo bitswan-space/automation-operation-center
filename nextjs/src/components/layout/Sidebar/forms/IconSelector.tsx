@@ -31,7 +31,7 @@ export const IconSelector = ({
       ([, iconSet]) =>
         Object.entries(iconSet).map(([iconName, component]) => ({
           name: iconName,
-          component: component as IconType,
+          component: component,
         })),
     );
   }, []);

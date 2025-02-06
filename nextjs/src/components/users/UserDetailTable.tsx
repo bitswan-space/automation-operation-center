@@ -37,11 +37,14 @@ import { canMutateUsers } from "@/lib/permissions";
 import { UserInviteForm } from "./UserInviteForm";
 import {
   deleteUserAction,
-  DeleteUserActionState,
-  OrgUser,
-  OrgUsersListResponse,
+  type DeleteUserActionState,
+  type OrgUser,
+  type OrgUsersListResponse,
 } from "@/server/actions/users";
-import { UserGroup, UserGroupsListResponse } from "@/server/actions/groups";
+import {
+  type UserGroup,
+  type UserGroupsListResponse,
+} from "@/server/actions/groups";
 
 type OrgUserFull = OrgUser & { nonMemberGroups: UserGroup[] };
 

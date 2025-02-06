@@ -1,11 +1,12 @@
 "use server";
 
-import { ActionState, BITSWAN_BACKEND_API_URL } from "./shared";
+import { type ActionState, BITSWAN_BACKEND_API_URL } from "./shared";
 import { auth, signOut } from "../auth";
 import { unstable_cache as cache, revalidateTag } from "next/cache";
 
-import { Session } from "next-auth";
+import { type Session } from "next-auth";
 import { z } from "zod";
+import { type RawNavItem } from "@/components/layout/Sidebar/utils/NavItems";
 
 const ORG_GROUPS_CACHE_KEY = "org-groups";
 
@@ -25,7 +26,7 @@ export type UserGroupsListResponse = {
 
 export const fetchOrgGroups = cache(async (session: Session | null) => {
   if (!session) {
-    signOut();
+    await signOut();
   }
 
   const apiToken = session?.access_token;
@@ -154,7 +155,7 @@ export const createOrUpdateOrgGroupAction = async (
     description: formData.get("description") as string,
     broker: formData.get("broker") as string,
     tag_color: formData.get("tag_color") as string,
-    nav_items: JSON.parse(formData.get("nav_items") as string),
+    nav_items: JSON.parse(formData.get("nav_items") as string) as RawNavItem[],
   });
 
   if (!validatedFields.success) {

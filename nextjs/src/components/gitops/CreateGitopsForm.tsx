@@ -2,7 +2,7 @@
 
 import { CheckCheck, Copy } from "lucide-react";
 import {
-  CreateGitopsActionState,
+  type CreateGitopsActionState,
   createGitopsAction,
 } from "@/server/actions/gitops";
 import { HelpCircle, Loader } from "lucide-react";

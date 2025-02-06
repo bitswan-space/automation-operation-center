@@ -4,7 +4,6 @@ import React from "react";
 import { SettingTabs } from "./../../../components/settings/SettingTabs";
 import { TitleBar } from "@/components/layout/TitleBar";
 import { auth } from "@/server/auth";
-import { cacheTag } from "next/dist/server/use-cache/cache-tag";
 import { fetchGitopsList } from "@/server/actions/gitops";
 import { fetchOrgGroups } from "@/server/actions/groups";
 import { fetchOrgUsers } from "@/server/actions/users";

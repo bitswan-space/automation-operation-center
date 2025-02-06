@@ -36,9 +36,9 @@ import { canMutateGroups } from "@/lib/permissions";
 
 import {
   deleteOrgGroupAction,
-  DeleteOrgGroupFormActionState,
-  UserGroup,
-  UserGroupsListResponse,
+  type DeleteOrgGroupFormActionState,
+  type UserGroup,
+  type UserGroupsListResponse,
 } from "@/server/actions/groups";
 
 const columnHelper = createColumnHelper<UserGroup>();

@@ -1,5 +1,5 @@
 import { env } from "@/env.mjs";
-import { getServerAuthSession } from "@/server/auth";
+import { auth } from "@/server/auth";
 import {
   type DashboardEntryListResponse,
   type DashboardEntryUpdateRequest,
@@ -13,7 +13,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<DashboardEntryListResponse>,
 ) {
-  const session = await getServerAuthSession();
+  const session = await auth();
 
   if (req.method === "PUT") {
     const { id } = req.query;

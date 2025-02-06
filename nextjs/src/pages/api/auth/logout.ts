@@ -2,13 +2,12 @@
 
 import { type NextApiRequest, type NextApiResponse } from "next";
 
-import { getServerAuthSession } from "@/server/auth";
 import { env } from "@/env.mjs";
-import { getIdToken } from "@/utils/sessionTokenAccessor";
+import { auth } from "@/server/auth";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
-    const session = await getServerAuthSession(req, res);
+    const session = await auth();
 
     if (!session) {
       return res.status(401).json({ error: "Not authenticated" });
@@ -18,7 +17,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const KEYCLOAK_POST_LOGOUT_REDIRECT_URI =
       env.KEYCLOAK_POST_LOGOUT_REDIRECT_URI;
 
-    const idToken = await getIdToken(req, res);
+    const idToken = session.id_token;
     const url = `${KEYCLOAK_END_SESSION_URL}?id_token_hint=${idToken}&post_logout_redirect_uri=${KEYCLOAK_POST_LOGOUT_REDIRECT_URI}`;
 
     try {

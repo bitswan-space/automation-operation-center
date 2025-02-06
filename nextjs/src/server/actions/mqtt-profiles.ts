@@ -1,10 +1,11 @@
 "use server";
 
 import { BITSWAN_BACKEND_API_URL } from "./shared";
-import { RawNavItem } from "@/components/layout/Sidebar/utils/NavItems";
-import { Session } from "next-auth";
+
+import { type Session } from "next-auth";
 import { unstable_cache as cache } from "next/cache";
 import { signOut } from "../auth";
+import { type RawNavItem } from "@/components/layout/Sidebar/utils/NavItems";
 
 const MQTT_PROFILES_CACHE_KEY = "mqtt-profiles";
 
@@ -25,7 +26,7 @@ export type MQTTProfileListResponse = {
 export const fetchMQTTProfiles = cache(
   async (session: Session | null) => {
     if (!session) {
-      signOut();
+      await signOut();
     }
 
     const apiToken = session?.access_token;
@@ -43,9 +44,9 @@ export const fetchMQTTProfiles = cache(
       throw new Error("Error fetching MQTT profiles");
     }
 
-    const data = await res.json();
+    const data = (await res.json()) as MQTTProfileListResponse;
 
-    return data as MQTTProfileListResponse;
+    return data;
   },
   [],
   {

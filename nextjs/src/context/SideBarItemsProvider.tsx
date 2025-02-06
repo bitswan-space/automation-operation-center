@@ -12,7 +12,7 @@ import useLocalStorageState from "ahooks/lib/useLocalStorageState";
 
 import { ACTIVE_MQTT_PROFILE_STORAGE_KEY } from "@/shared/constants";
 import { stringify } from "flatted";
-import { MQTTProfile } from "@/server/actions/mqtt-profiles";
+import { type MQTTProfile } from "@/server/actions/mqtt-profiles";
 
 type SidebarItemsContext = {
   sidebarItems: NodeModel<NavItem>[];

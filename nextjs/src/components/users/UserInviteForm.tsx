@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import {
-  UserInviteFormActionState,
+  type UserInviteFormActionState,
   inviteUserAction,
 } from "@/server/actions/users";
 

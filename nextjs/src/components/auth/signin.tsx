@@ -9,7 +9,7 @@ export default function SignIn() {
   const searchParams = useSearchParams();
 
   const callbackUrl = "/dashboard";
-  const error = searchParams?.get("error") as string;
+  const error = searchParams?.get("error") as string | undefined;
 
   const router = useRouter();
 

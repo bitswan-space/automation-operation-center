@@ -10,7 +10,7 @@ import {
   MQTT_CONFIG_QUERY_KEY,
 } from "../constants";
 import useLocalStorageState from "ahooks/lib/useLocalStorageState";
-import { MQTTProfile } from "@/server/actions/mqtt-profiles";
+import { type MQTTProfile } from "@/server/actions/mqtt-profiles";
 
 type UseMQTTRequestResponseArgs<ResponseT> = {
   requestTopic: string;

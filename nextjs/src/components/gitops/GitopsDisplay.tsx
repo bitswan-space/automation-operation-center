@@ -2,7 +2,7 @@
 
 import { CreateGitopsForm } from "./CreateGitopsForm";
 import { GitopsList } from "./GitopsList";
-import { GitopsListResponse } from "./hooks";
+import { type GitopsListResponse } from "@/server/actions/gitops";
 import { canMutateGitops } from "@/lib/permissions";
 import { useSession } from "next-auth/react";
 

@@ -4,18 +4,21 @@ import { Braces } from "lucide-react";
 import { DynamicIcon } from "../layout/Sidebar/DynamicIcon";
 import { FaFolderOpen } from "react-icons/fa";
 import PanelItemCard from "./PanelItemCard";
-import { RawNavItem } from "../layout/Sidebar/utils/NavItems";
+import { type RawNavItem } from "../layout/Sidebar/utils/NavItems";
 import React from "react";
 import { usePathname } from "next/navigation";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
 
 type PanelItemsSectionProps = {
   showDefaultItems?: boolean;
+  sidebarItems?: RawNavItem[];
 };
 
 export default function PanelItemsSection(props: PanelItemsSectionProps) {
   const { deserializedNavItems: sidebarItems } = useSidebarItems();
   const { showDefaultItems = false } = props;
+
+  const sidebarItemsToUse = props.sidebarItems ?? sidebarItems;
 
   const pathname = usePathname();
 
@@ -38,7 +41,7 @@ export default function PanelItemsSection(props: PanelItemsSectionProps) {
           url={"/dashboard/pipelines"}
         />
       )}
-      {sidebarItems?.map((item) => (
+      {sidebarItemsToUse?.map((item) => (
         <PanelItemCard
           key={item.id + "card"}
           icon={

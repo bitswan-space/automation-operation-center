@@ -1,7 +1,7 @@
 import SignIn from "@/components/auth/signin";
 import { Suspense } from "react";
 
-export default async function SignInPage() {
+export default function SignInPage() {
   return (
     <div className="flex min-h-screen items-center justify-center">
       <Suspense fallback={<div className="animate-pulse">Loading...</div>}>

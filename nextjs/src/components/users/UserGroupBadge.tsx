@@ -4,8 +4,8 @@ import * as React from "react";
 
 import { Loader2, X } from "lucide-react";
 import {
-  RemoveMemberFromGroupFormActionState,
-  UserGroup,
+  type RemoveMemberFromGroupFormActionState,
+  type UserGroup,
   removeMemberFromGroupAction,
 } from "@/server/actions/groups";
 

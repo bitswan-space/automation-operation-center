@@ -1,9 +1,9 @@
 "use client";
 
-import { Loader2, Workflow } from "lucide-react";
+import { Workflow } from "lucide-react";
 import {
-  MQTTProfile,
-  MQTTProfileListResponse,
+  type MQTTProfile,
+  type MQTTProfileListResponse,
 } from "@/server/actions/mqtt-profiles";
 import {
   Select,

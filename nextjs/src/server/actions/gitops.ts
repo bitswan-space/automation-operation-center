@@ -1,10 +1,10 @@
 "use server";
 
-import { ActionState, BITSWAN_BACKEND_API_URL } from "./shared";
+import { type ActionState, BITSWAN_BACKEND_API_URL } from "./shared";
 import { auth, signOut } from "../auth";
 import { unstable_cache as cache, revalidateTag } from "next/cache";
 
-import { Session } from "next-auth";
+import { type Session } from "next-auth";
 import { z } from "zod";
 
 const GITOPS_CACHE_KEY = "gitops";
@@ -28,7 +28,7 @@ export type GitopsListResponse = {
 export const fetchGitopsList = cache(
   async (session: Session | null) => {
     if (!session) {
-      signOut();
+      await signOut();
     }
 
     const apiToken = session?.access_token;

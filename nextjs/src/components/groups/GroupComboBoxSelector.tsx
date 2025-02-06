@@ -3,8 +3,8 @@
 import * as React from "react";
 
 import {
-  AddMemberToGroupFormActionState,
-  UserGroup,
+  type AddMemberToGroupFormActionState,
+  type UserGroup,
   addMemberToGroupAction,
 } from "@/server/actions/groups";
 import {

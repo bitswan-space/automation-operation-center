@@ -14,7 +14,7 @@ import {
 
 import { Braces } from "lucide-react";
 import NavTreeView from "./NavTreeView";
-import { Session } from "next-auth";
+import { type Session } from "next-auth";
 import { SidebarFooterMenu } from "./SidebarFooterMenu";
 import { SidebarMenuLogo } from "./SidebarMenuLogo";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,7 +23,7 @@ type AppSidebarProps = {
   session?: Session | null;
 };
 
-export async function AppSidebar(props: AppSidebarProps) {
+export function AppSidebar(props: AppSidebarProps) {
   const { session } = props;
 
   return (

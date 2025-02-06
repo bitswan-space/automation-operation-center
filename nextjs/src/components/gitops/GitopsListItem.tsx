@@ -1,5 +1,5 @@
 import {
-  DeleteGitopsActionState,
+  type DeleteGitopsActionState,
   deleteGitopsAction,
 } from "@/server/actions/gitops";
 import { Loader, PenLine, Server, Trash2, X } from "lucide-react";

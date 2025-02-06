@@ -3,8 +3,8 @@
 import * as React from "react";
 
 import {
-  CreateOrUpdateOrgGroupFormActionState,
-  UserGroup,
+  type CreateOrUpdateOrgGroupFormActionState,
+  type UserGroup,
   createOrUpdateOrgGroupAction,
 } from "@/server/actions/groups";
 

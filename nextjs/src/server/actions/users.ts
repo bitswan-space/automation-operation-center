@@ -1,11 +1,11 @@
 "use server";
 
-import { ActionState, BITSWAN_BACKEND_API_URL } from "./shared";
+import { type ActionState, BITSWAN_BACKEND_API_URL } from "./shared";
 import { auth, signOut } from "../auth";
 import { unstable_cache as cache, revalidateTag } from "next/cache";
 
-import { Session } from "next-auth";
-import { UserGroup } from "./groups";
+import { type Session } from "next-auth";
+import { type UserGroup } from "./groups";
 import { z } from "zod";
 
 export type OrgUser = {
@@ -28,7 +28,7 @@ const USERS_CACHE_KEY = "org-users";
 export const fetchOrgUsers = cache(
   async (session: Session | null) => {
     if (!session) {
-      signOut();
+      await signOut();
     }
 
     const apiToken = session?.access_token;
@@ -52,7 +52,7 @@ export const inviteUser = async (email: string) => {
 
   const apiToken = session?.access_token;
 
-  fetch(`${BITSWAN_BACKEND_API_URL}/org-users/invite/`, {
+  await fetch(`${BITSWAN_BACKEND_API_URL}/org-users/invite/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -69,7 +69,7 @@ const deleteUser = async (id: string) => {
 
   const apiToken = session?.access_token;
 
-  fetch(`${BITSWAN_BACKEND_API_URL}/org-users/${id}/`, {
+  await fetch(`${BITSWAN_BACKEND_API_URL}/org-users/${id}/`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${apiToken}`,

@@ -1,5 +1,5 @@
 import {
-  CreateGitopsActionState,
+  type CreateGitopsActionState,
   createGitopsAction,
 } from "@/server/actions/gitops";
 

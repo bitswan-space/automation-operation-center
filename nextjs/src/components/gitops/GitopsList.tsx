@@ -2,7 +2,7 @@
 
 import { AlertCircle } from "lucide-react";
 import { GitopsListItem } from "./GitopsListItem";
-import { GitopsListResponse } from "./hooks";
+import { type GitopsListResponse } from "@/server/actions/gitops";
 import React from "react";
 
 type GitopsListProps = {

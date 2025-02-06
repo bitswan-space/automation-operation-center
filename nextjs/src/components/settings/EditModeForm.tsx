@@ -1,14 +1,14 @@
 "use client";
 
 import {
-  CreateOrUpdateOrgGroupFormActionState,
+  type CreateOrUpdateOrgGroupFormActionState,
   createOrUpdateOrgGroupAction,
 } from "@/server/actions/groups";
 
 import { ACTIVE_MQTT_PROFILE_STORAGE_KEY } from "@/shared/constants";
 import { Button } from "@/components/ui/button";
 import { Label } from "../ui/label";
-import { MQTTProfile } from "@/server/actions/mqtt-profiles";
+import { type MQTTProfile } from "@/server/actions/mqtt-profiles";
 import React from "react";
 import { Switch } from "@/components/ui/switch";
 import { canMutateSidebarItems } from "@/lib/permissions";
