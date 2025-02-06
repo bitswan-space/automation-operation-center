@@ -8,10 +8,7 @@ from sentry_sdk.integrations.logging import LoggingIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 
 from .base import *  # noqa: F403
-from .base import DATABASES
-from .base import INSTALLED_APPS
-from .base import SPECTACULAR_SETTINGS
-from .base import env
+from .base import DATABASES, INSTALLED_APPS, SPECTACULAR_SETTINGS, env
 
 # GENERAL
 # ------------------------------------------------------------------------------
@@ -65,6 +62,11 @@ SECURE_CONTENT_TYPE_NOSNIFF = env.bool(
     "DJANGO_SECURE_CONTENT_TYPE_NOSNIFF",
     default=True,
 )
+
+# STORAGES
+MEDIA_URL = "/media/"
+COLLECTFAST_STRATEGY = "collectfast.strategies.filesystem.FileSystemStrategy"
+STATIC_URL = "/static/"
 
 # EMAIL
 # ------------------------------------------------------------------------------
