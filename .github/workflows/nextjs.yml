@@ -2,7 +2,7 @@ name: AOC UI Build and Push
 
 on:
   push:
-    branches: [main]
+    branches: [main, new-cli] # TODO: Change to main
     tags: ["v*"]
     paths:
       - "nextjs/**"
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-and-push-staging:
-    if: github.ref_type == 'branch' && github.ref_name == 'main'
+    # if: github.ref_type == 'branch' && (github.ref_name == 'main' || github.ref_name == 'new-cli')
     runs-on: ubuntu-latest
     permissions:
       actions: read
