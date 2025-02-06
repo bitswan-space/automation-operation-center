@@ -107,12 +107,10 @@ services:
       - ./profile-manager/navigation_schema.json:/conf/navigation_schema.json:r
 
   bitswan-backend:
-    image: bitswan/bitswan-backend:2025-13176166606-git-a389579
+    image: bitswan/bitswan-backend:2025-13181820876-git-7040e55
     depends_on:
       - bitswan-backend-postgres
     restart: always
-    networks:
-      - bitswan_network
     env_file:
       - envs/bitswan-backend.env
       - envs/bitswan-backend-postgres.env
@@ -123,14 +121,8 @@ services:
   bitswan-backend-postgres:
     image: postgres:15-bullseye
     restart: always
-    networks:
-      - bitswan_network
     volumes:
       - bitswan_backend_production_postgres_data:/var/lib/postgresql/data
       - bitswan_backend_production_postgres_data_backups:/backups
     env_file:
       - envs/bitswan-backend-postgres.env
-
-networks:
-  bitswan_network:
-    external: false

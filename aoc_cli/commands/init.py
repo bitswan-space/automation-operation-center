@@ -1,8 +1,8 @@
+import json
 import shutil
 import subprocess
 from pathlib import Path
 from typing import Dict
-import json
 
 from aoc_cli.config import Environment, InitConfig, Protocol
 from aoc_cli.config.services import Services
@@ -35,8 +35,12 @@ class InitCommand:
 
         self.cleanup(config)
         print("Aoc initialized successfully!")
-        print(f"You can launch the aoc by going to {config.aoc_dir} and running `docker-compose up -d`")
-        print(f"Access the AOC at the url {config.protocol.value}://aoc.{config.domain}")
+        print(
+            f"You can launch the aoc by going to {config.aoc_dir} and running `docker-compose up -d`"
+        )
+        print(
+            f"Access the AOC at the url {config.protocol.value}://aoc.{config.domain}"
+        )
 
     def create_aoc_directory(self, config: InitConfig) -> None:
         config.aoc_dir.mkdir(parents=True, exist_ok=True)
@@ -101,7 +105,7 @@ class InitCommand:
             "KEYCLOAK_POSTGRES_PASSWORD": "KC_DB_PASSWORD",
             "BITSWAN_POSTGRES_PASSWORD": None,
             "INFLUXDB_PASSWORD": "DOCKER_INFLUXDB_INIT_PASSWORD",
-            "NEXTAUTH_SECRET": None,
+            "AUTH_SECRET": None,
             "KEYCLOAK_ADMIN_PASSWORD": None,
             "CCS_CONFIG_KEY": None,
             "EMQX_DASHBOARD__DEFAULT_PASSWORD": None,

@@ -142,7 +142,8 @@ class Services:
         name="operations-centre",
         env_vars={
             "NEXTAUTH_URL",
-            "NEXTAUTH_SECRET",
+            "AUTH_URL",
+            "AUTH_SECRET",
             "INFLUXDB_URL",
             "INFLUXDB_ORG",
             "INFLUXDB_BUCKET",

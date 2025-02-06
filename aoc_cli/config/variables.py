@@ -56,6 +56,7 @@ def get_var_defaults(
         "CDS_API_URL": f"{protocol}://aoc-cds-api:8080/api",
         "EMQX_JWT_SECRET": "test",
         "NEXTAUTH_URL": config.get_url("aoc"),
+        "AUTH_URL": config.get_url("aoc"),
         "KEYCLOAK_ADMIN": "admin",
         "KEYCLOAK_CLIENT_ID": "aoc-frontend",  # Probably needs to be set in keycloak service
         "KEYCLOAK_REFRESH_URL": f"{protocol}://keycloak.{domain}/realms/master/protocol/openid-connect/token",
@@ -69,7 +70,7 @@ def get_var_defaults(
         #
         "DJANGO_SETTINGS_MODULE": "config.settings.production",
         "DJANGO_ADMIN_URL": "j2ClKNry4Dqlt022mBiYza2z81afm5ou/",
-        "DJANGO_ALLOWED_HOSTS": f".{domain}",
+        "DJANGO_ALLOWED_HOSTS": f"api.{domain},bitswan-backend:5000,bitswan-backend",
         "DJANGO_SECURE_SSL_REDIRECT": "False",
         "DJANGO_SERVER_EMAIL": "",
         "DJANGO_ACCOUNT_ALLOW_REGISTRATION": "True",
