@@ -150,6 +150,7 @@ class Services:
             "INFLUXDB_TOKEN",
             "CDS_API_URL",
             "NEXT_PUBLIC_BITSWAN_BACKEND_API_URL",
+            "BITSWAN_BACKEND_API_URL",
             "EMQX_JWT_SECRET",
             "EMQX_MQTT_URL",
             "INFLUXDB_PASSWORD",

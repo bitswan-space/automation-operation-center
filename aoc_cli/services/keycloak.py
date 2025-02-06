@@ -69,10 +69,10 @@ class KeycloakService:
     def connect(self) -> None:
 
         username = get_env_value(
-            self.config.aoc_dir / ".envs" / KEYCLOAK_ENV_FILE, "KEYCLOAK_ADMIN"
+            self.config.aoc_dir / "envs" / KEYCLOAK_ENV_FILE, "KEYCLOAK_ADMIN"
         )
         password = get_env_value(
-            self.config.aoc_dir / ".envs" / KEYCLOAK_ENV_FILE, "KEYCLOAK_ADMIN_PASSWORD"
+            self.config.aoc_dir / "envs" / KEYCLOAK_ENV_FILE, "KEYCLOAK_ADMIN_PASSWORD"
         )
 
         self.keycloak_admin = KeycloakAdmin(
@@ -218,6 +218,6 @@ class KeycloakService:
         }
 
         for env_file, (env_var_label, client_name) in env_updates.items():
-            file_path = self.config.aoc_dir / ".envs" / env_file
+            file_path = self.config.aoc_dir / "envs" / env_file
             with open(file_path, "a") as f:
                 f.write(f"{env_var_label}={secret.get(client_name)}\n")

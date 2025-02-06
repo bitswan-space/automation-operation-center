@@ -1,4 +1,3 @@
-import os
 from typing import Dict
 
 from aoc_cli.config import InitConfig
@@ -66,6 +65,7 @@ def get_var_defaults(
         "KEYCLOAK_FRONTEND_URL": config.get_url("keycloak"),
         "KEYCLOAK_ADMIN_URL": config.get_url("keycloak"),
         "NEXT_PUBLIC_BITSWAN_BACKEND_API_URL": f"{protocol}://bitswan-backend:5000",
+        "BITSWAN_BACKEND_API_URL": f"{protocol}://bitswan-backend:5000",
         #
         "DJANGO_SETTINGS_MODULE": "config.settings.production",
         "DJANGO_ADMIN_URL": "j2ClKNry4Dqlt022mBiYza2z81afm5ou/",

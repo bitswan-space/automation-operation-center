@@ -28,19 +28,19 @@ class InfluxDBService:
 
         config_params = InfluxDBConfig(
             username=get_env_value(
-                config.aoc_dir / ".envs" / INFLUXDB_ENV_FILE,
+                config.aoc_dir / "envs" / INFLUXDB_ENV_FILE,
                 "DOCKER_INFLUXDB_INIT_USERNAME",
             ),
             password=get_env_value(
-                config.aoc_dir / ".envs" / INFLUXDB_ENV_FILE,
+                config.aoc_dir / "envs" / INFLUXDB_ENV_FILE,
                 "DOCKER_INFLUXDB_INIT_PASSWORD",
             ),
             org=get_env_value(
-                config.aoc_dir / ".envs" / INFLUXDB_ENV_FILE,
+                config.aoc_dir / "envs" / INFLUXDB_ENV_FILE,
                 "DOCKER_INFLUXDB_INIT_ORG",
             ),
             bucket=get_env_value(
-                config.aoc_dir / ".envs" / INFLUXDB_ENV_FILE,
+                config.aoc_dir / "envs" / INFLUXDB_ENV_FILE,
                 "DOCKER_INFLUXDB_INIT_BUCKET",
             ),
             aoc_dir=config.aoc_dir,
@@ -137,6 +137,6 @@ class InfluxDBService:
             self.client.close()
 
     def _update_envs_with_influxdb_token(self, secret: str) -> None:
-        file_path = self.config.aoc_dir / ".envs" / OPERATIONS_CENTRE_ENV_FILE
+        file_path = self.config.aoc_dir / "envs" / OPERATIONS_CENTRE_ENV_FILE
         with open(file_path, "a") as f:
             f.write(f"INFLUXDB_TOKEN={secret}\n")
