@@ -92,7 +92,7 @@ services:
     depends_on:
       - influxdb
       - bitswan-backend
-    image: bitswan/automation-operations-centre:2025-13179935756-git-a70f881
+    image: bitswan/automation-operations-centre:2025-13201229183-git-e27dda1
     env_file: envs/operations-centre.env
     ports:
       - "3000:3000"

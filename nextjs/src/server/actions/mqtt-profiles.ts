@@ -42,6 +42,7 @@ export const fetchMQTTProfiles = cache(
 
     if (!res.ok) {
       console.error("Error fetching MQTT profiles", res);
+      console.error("response", (await res.json()) as unknown);
 
       throw new Error("Error fetching MQTT profiles");
     }
