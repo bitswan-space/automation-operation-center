@@ -92,7 +92,7 @@ services:
     depends_on:
       - influxdb
       - bitswan-backend
-    image: bitswan/automation-operations-centre:2025-13201229183-git-e27dda1
+    image: bitswan/automation-operations-centre:2025-13211829792-git-65ce7c8
     env_file: envs/operations-centre.env
     ports:
       - "3000:3000"
@@ -106,7 +106,7 @@ services:
       - ./profile-manager/navigation_schema.json:/conf/navigation_schema.json:r
 
   bitswan-backend:
-    image: bitswan/bitswan-backend:2025-13181820876-git-7040e55
+    image: bitswan/bitswan-backend:2025-13211829799-git-65ce7c8
     depends_on:
       - bitswan-backend-postgres
     restart: always
