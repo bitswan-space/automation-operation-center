@@ -1,11 +1,9 @@
 import logging
 
-from django.conf import settings
-
 from bitswan_backend.core.utils import encryption
-from keycloak import KeycloakAdmin
-from keycloak import KeycloakOpenID
-from keycloak import KeycloakOpenIDConnection
+from keycloak import KeycloakAdmin, KeycloakOpenID, KeycloakOpenIDConnection
+
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -59,10 +57,23 @@ class KeycloakService:
         )
 
     def get_user_groups(self, user_id):
-        return self.keycloak_admin.get_user_groups(
-            user_id=user_id,
-            brief_representation=False,
-        )
+        try:
+            return self.keycloak_admin.get_user_groups(
+                user_id=user_id,
+                brief_representation=False,
+            )
+        except Exception:
+            logger.exception("Failed to get user groups:")
+            # Try to refresh token explicitly
+            token = self.keycloak.token(
+                grant_type=["client_credentials"],
+            )
+            self.keycloak_connection.token = token
+            # Retry the operation
+            return self.keycloak_admin.get_user_groups(
+                user_id=user_id,
+                brief_representation=False,
+            )
 
     def validate_token(self, decrypted_token):
         key = self.keycloak.public_key()
@@ -102,13 +113,21 @@ class KeycloakService:
         return user_info["sub"]
 
     def get_active_user_org(self, request):
-        user_info = self.get_claims(request)
-        user_id = user_info["sub"]
+        try:
+            user_info = self.get_claims(request)
+            user_id = user_info["sub"]
 
-        logger.info("Getting user groups for user: %s", user_id)
-        user_keycloak_groups = self.get_user_groups(user_id)
+            logger.info("Getting user groups for user: %s", user_id)
+            user_keycloak_groups = self.get_user_groups(user_id)
 
-        return self.get_first_group_id_of_type_org(user_keycloak_groups)
+            if not user_keycloak_groups:
+                logger.warning("No groups found for user: %s", user_id)
+                return None
+
+            return self.get_first_group_id_of_type_org(user_keycloak_groups)
+        except Exception:
+            logger.exception("Failed to get active user org:")
+            raise
 
     def get_org_by_id(self, org_id):
         return self.keycloak_admin.get_group(org_id)

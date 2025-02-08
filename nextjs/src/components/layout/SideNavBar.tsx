@@ -154,8 +154,8 @@ export function SideBarNavItem(props: Readonly<SideBarNavItemProps>) {
             active && !expanded,
           "ml-1 rounded-none p-6 text-neutral-50": !expanded && !active,
           "justify-start": expanded,
-          "bg-blue-700 text-white ": active && expanded,
-          "hidden ": hidden,
+          "bg-blue-700 text-white": active && expanded,
+          hidden: hidden,
         })}
       >
         <div
@@ -313,7 +313,7 @@ function BuildTags(props: Readonly<BuildTagsProps>) {
       >
         <div className="font-bold">Commit Hash:</div>
         <div className="text-neutral-500 underline">
-          #{env.NEXT_PUBLIC_COMMIT_HASH.substring(0, 6)}
+          #{env.NEXT_PUBLIC_COMMIT_HASH?.substring(0, 6)}
         </div>
       </div>
       <div

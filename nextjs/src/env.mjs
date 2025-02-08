@@ -52,8 +52,8 @@ export const env = createEnv({
    */
   client: {
     NEXT_PUBLIC_NODE_ENV: z.enum(["development", "test", "production"]),
-    NEXT_PUBLIC_COMMIT_HASH: z.string().min(1),
-    NEXT_PUBLIC_BUILD_NO: z.string().min(1),
+    NEXT_PUBLIC_COMMIT_HASH: z.string().optional(),
+    NEXT_PUBLIC_BUILD_NO: z.string().optional(),
   },
 
   /**

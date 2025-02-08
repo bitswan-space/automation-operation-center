@@ -212,7 +212,7 @@ class KeycloakService:
         env_updates = {
             OPERATIONS_CENTRE_ENV_FILE: ("KEYCLOAK_CLIENT_SECRET", "aoc-frontend"),
             BITSWAN_BACKEND_ENV_FILE: (
-                "DJANGO_KEYCLOAK_CLIENT_SECRET",
+                "KEYCLOAK_CLIENT_SECRET_KEY",
                 "bitswan-backend",
             ),
         }
