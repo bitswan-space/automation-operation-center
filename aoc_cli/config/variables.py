@@ -31,7 +31,7 @@ def get_var_defaults(
         "DOCKER_INFLUXDB_INIT_USERNAME": "pipeline-operations-centre",
         # Postgres defaults - using internal names for Keycloak and Bitswan backend postgres instances
         "KEYCLOAK_POSTGRES_USER": "postgres",
-        "KEYCLOAK_POSTGRES_DB": "keycloak",
+        "KEYCLOAK_POSTGRES_DB": "postgres",
         "KEYCLOAK_POSTGRES_HOST": "postgres",
         "KEYCLOAK_POSTGRES_PORT": "5432",
         "BITSWAN_POSTGRES_USER": "postgres",
