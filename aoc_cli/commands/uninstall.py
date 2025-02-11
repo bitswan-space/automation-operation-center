@@ -7,6 +7,10 @@ class UninstallCommand:
     def execute(self, args) -> None:
         aoc_dir = args.aoc_dir
 
+        if not aoc_dir.exists():
+            print(f"AOC is not installed at path {aoc_dir}")
+            return
+
         # Confirm uninstall
         if not (args.force or self._confirm_uninstall()):
             print("Uninstall cancelled.")
@@ -60,18 +64,14 @@ class UninstallCommand:
 
     def _remove_aoc_directory(self, aoc_dir: Path) -> None:
         try:
-            shutil.rmtree(aoc_dir, ignore_errors=True)
-        except Exception as e:
-            print(f"Warning: Failed to remove directory with standard permissions: {e}")
-            try:
-                # Attempt with sudo
-                subprocess.run(
-                    ["sudo", "rm", "-rf", str(aoc_dir)],
-                    check=True
-                )
-            except subprocess.CalledProcessError as e:
-                print(f"Error: Failed to remove directory even with sudo: {e}")
-                print("Please manually remove the ~/.aoc directory")
+            # Attempt with sudo
+            subprocess.run(
+                ["sudo", "rm", "-rf", str(aoc_dir)],
+                check=True
+            )
+        except subprocess.CalledProcessError as e:
+            print(f"Error: Failed to remove directory even with sudo: {e}")
+            print("Please manually remove the ~/.aoc directory")
 
 def add_subparser(subparsers):
     """Add the uninstall command to the main parser"""
