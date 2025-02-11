@@ -33,11 +33,8 @@ class InitCommand:
         self.setup_keycloak(config)
         self.setup_influxdb(config)
 
-        self.cleanup(config)
+        self.launch(config)
         print("Aoc initialized successfully!")
-        print(
-            f"You can launch the aoc by going to {config.aoc_dir} and running `docker-compose up -d`"
-        )
         print(
             f"Access the AOC at the url {config.protocol.value}://aoc.{config.domain}"
         )
@@ -91,10 +88,9 @@ class InitCommand:
         )
         caddy.start()
 
-    def cleanup(self, config) -> None:
-        print("Cleaning up...")
+    def launch(self, config) -> None:
         subprocess.run(
-            ["docker-compose", "down"],
+            ["docker-compose", "up", "-d"],
             cwd=config.aoc_dir,
             check=True,
         )
