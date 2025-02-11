@@ -66,12 +66,12 @@ class InfluxDBService:
         """Start the InfluxDB service using docker-compose"""
         print("Starting InfluxDB service...")
         subprocess.run(
-            ["docker-compose", "up", "-d", "influxdb"],
+            ["docker-compose", "up", "--quiet-pull", "-d", "influxdb"],
             cwd=self.config.aoc_dir,
             check=True,
         )
 
-    def wait_for_service(self, max_retries: int = 30, delay: int = 2) -> None:
+    def wait_for_service(self, max_retries: int = 30, delay: int = 10) -> None:
         """Wait for InfluxDB to be ready"""
         print("Waiting for InfluxDB to be ready...")
         for attempt in range(max_retries):

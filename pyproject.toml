@@ -13,10 +13,12 @@ dependencies = [
   "python-keycloak==5.1.1",
   "requests==2.32.3",
   "influxdb-client==1.48.0",
+  "click==8.1.8",
+  "python-dotenv==1.0.1",
 ]
 
 [project.scripts]
-aoc = "aoc_cli.main:main"
+aoc = "aoc_cli.aoc:cli"
 
 
 [tool.hatch.build.targets.wheel]

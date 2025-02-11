@@ -112,7 +112,7 @@ class KeycloakService:
         user_info = self.get_claims(request)
         return user_info["sub"]
 
-    def get_active_user_org(self, request):
+    def get_active_user_org(self, request) -> dict[str, any] | None:
         try:
             user_info = self.get_claims(request)
             user_id = user_info["sub"]
@@ -283,7 +283,7 @@ class KeycloakService:
 
     def get_org_group_mqtt_profiles(self, request):
         active_user_id = self.get_active_user(request)
-        org_id = self.get_active_user_org(request)["id"]
+        org_id = self.get_active_user_org(request).get("id")
         org_groups = self.get_org_groups(org_id=org_id)
 
         if self.is_admin(request):
@@ -321,7 +321,7 @@ class KeycloakService:
     def is_admin(self, request):
         active_user_id = self.get_active_user(request)
 
-        org_id = self.get_active_user_org(request)["id"]
+        org_id = self.get_active_user_org(request).get("id")
         org_groups = self.get_org_groups(org_id=org_id)
 
         user_group_memberships = self.keycloak_admin.get_user_groups(

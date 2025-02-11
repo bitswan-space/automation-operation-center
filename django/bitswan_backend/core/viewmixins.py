@@ -1,8 +1,8 @@
 import logging
 
-from django.template.defaultfilters import slugify
-
 from bitswan_backend.core.services.keycloak import KeycloakService
+
+from django.template.defaultfilters import slugify
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class KeycloakMixin:
         Helper method to get the Keycloak group ID
         """
 
-        org_id = self.keycloak.get_active_user_org(self.request)["id"]
+        org_id = self.keycloak.get_active_user_org(self.request).get("id")
         logger.info("Got user group: %s", org_id)
 
         return org_id
@@ -43,7 +43,7 @@ class KeycloakMixin:
         Helper method to get the Keycloak group ID
         """
 
-        org_id = self.keycloak.get_active_user_org(self.request)["id"]
+        org_id = self.keycloak.get_active_user_org(self.request).get("id")
 
         org_groups = self.keycloak.get_org_groups(org_id=org_id)
         logger.info("Got user org sub groups: %s", org_groups)
@@ -55,7 +55,7 @@ class KeycloakMixin:
         Helper method to create a new Keycloak group
         """
 
-        org_id = self.keycloak.get_active_user_org(self.request)["id"]
+        org_id = self.keycloak.get_active_user_org(self.request).get("id")
 
         org_group = self.keycloak.create_group(
             org_id=org_id,
@@ -104,7 +104,7 @@ class KeycloakMixin:
         Helper method to get the Keycloak group ID
         """
 
-        org_id = self.keycloak.get_active_user_org(self.request)["id"]
+        org_id = self.keycloak.get_active_user_org(self.request).get("id")
 
         return self.keycloak.get_org_users(org_id=org_id)
 
@@ -127,7 +127,7 @@ class KeycloakMixin:
         Helper method to invite a user to the org
         """
 
-        org_id = self.keycloak.get_active_user_org(self.request)["id"]
+        org_id = self.keycloak.get_active_user_org(self.request)
 
         self.keycloak.invite_user_to_org(email=email, org_id=org_id)
 

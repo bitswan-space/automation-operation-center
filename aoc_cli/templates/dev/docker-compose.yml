@@ -1,5 +1,3 @@
-version: "3.0"
-
 volumes:
   portainer_data:
   influx_data:

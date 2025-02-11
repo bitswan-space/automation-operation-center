@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import requests
-from keycloak import KeycloakAdmin
+from keycloak import KeycloakAdmin, KeycloakPostError
 
 from aoc_cli.config import (
     BITSWAN_BACKEND_ENV_FILE,
@@ -36,7 +36,6 @@ class KeycloakService:
         self.connect()
 
         client_secrets = self.create_clients()
-        print(f"keycloak secrets: {client_secrets}")
 
         self.initialize_admin_user()
 
@@ -45,7 +44,7 @@ class KeycloakService:
 
     def start_services(self) -> None:
         subprocess.run(
-            ["docker-compose", "up", "-d", "keycloak", "postgres"],
+            ["docker-compose", "up", "--quiet-pull", "-d", "keycloak", "postgres"],
             cwd=self.config.aoc_dir,
             check=True,
         )
@@ -142,9 +141,15 @@ class KeycloakService:
         client_secrets = {}
 
         for name, client_config in clients.items():
-
-            client_id = self.keycloak_admin.create_client(client_config)
-            print(f"Client ID: {client_id}")
+            try:
+                client_id = self.keycloak_admin.create_client(client_config)
+                print(f"Client ID: {client_id}")
+            except KeycloakPostError as e:
+                if e.response_code == 409:
+                    print(f"Client {name} already exists")
+                    continue
+                else:
+                    raise e
 
             service_account_user = self.keycloak_admin.get_client_service_account_user(
                 client_id
@@ -180,20 +185,28 @@ class KeycloakService:
         return client_secrets
 
     def initialize_admin_user(self) -> None:
-        user_id = self.keycloak_admin.create_user(
-            {
-                "username": self.config.admin_username,
-                "email": self.config.admin_username,
-                "enabled": True,
-                "credentials": [
-                    {
-                        "type": "password",
-                        "value": self.config.admin_password,
-                        "temporary": False,
-                    }
-                ],
-            }
-        )
+
+        try:
+            user_id = self.keycloak_admin.create_user(
+                {
+                    "username": self.config.admin_username,
+                    "email": self.config.admin_username,
+                    "enabled": True,
+                    "credentials": [
+                        {
+                            "type": "password",
+                            "value": self.config.admin_password,
+                            "temporary": False,
+                        }
+                    ],
+                }
+            )
+        except KeycloakPostError as e:
+            if e.response_code == 409:
+                print("Admin user already exists")
+                return
+            else:
+                raise e
 
         org_group_id = self.keycloak_admin.create_group(
             {"name": self.config.org_name, "attributes": {"type": ["org"]}}
@@ -220,4 +233,5 @@ class KeycloakService:
         for env_file, (env_var_label, client_name) in env_updates.items():
             file_path = self.config.aoc_dir / "envs" / env_file
             with open(file_path, "a") as f:
-                f.write(f"{env_var_label}={secret.get(client_name)}\n")
+                if client_name in secret:
+                    f.write(f"{env_var_label}={secret.get(client_name)}\n")
