@@ -57,9 +57,5 @@ aoc update-hosts
 ```
 aoc init \
   --env=dev \
-  --protocol=http \
-  --domain=platform.local \
-  --org-name="Example Org" \
-  --admin-email=admin@platform.local \
   --admin-password=randompassword
 ```
