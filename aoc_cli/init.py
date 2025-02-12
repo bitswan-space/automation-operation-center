@@ -7,8 +7,8 @@ from aoc_cli.aoc_config import (
     load_environment,
     validate_configurations,
 )
+from aoc_cli.commands.init import InitCommand
 from aoc_cli.config import Environment, InitConfig, Protocol
-from aoc_cli.handlers.init import InitHandler
 
 
 @click.command()
@@ -68,5 +68,5 @@ def init(
         org_name=configs.get("org_name"),
     )
 
-    handler = InitHandler(init_config)
+    handler = InitCommand(init_config)
     handler.execute()

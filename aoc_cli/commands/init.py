@@ -16,7 +16,7 @@ from aoc_cli.utils.env import write_env_file
 from aoc_cli.utils.secrets import generate_secret
 
 
-class InitHandler:
+class InitCommand:
     def __init__(self, config: InitConfig):
         self.config = config
 

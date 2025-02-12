@@ -1,6 +1,6 @@
 import click
 
-from aoc_cli.handlers.uninstall import UninstallCommand, UninstallCommandArgs
+from aoc_cli.commands.uninstall import UninstallCommand, UninstallCommandArgs
 
 
 @click.command()
