@@ -44,7 +44,7 @@ class KeycloakService:
 
     def start_services(self) -> None:
         subprocess.run(
-            ["docker-compose", "up", "--quiet-pull", "-d", "keycloak", "postgres"],
+            ["docker", "compose", "up", "--quiet-pull", "-d", "keycloak", "postgres"],
             cwd=self.config.aoc_dir,
             check=True,
         )

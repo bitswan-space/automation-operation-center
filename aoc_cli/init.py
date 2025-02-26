@@ -1,4 +1,5 @@
 from pathlib import Path
+import asyncio
 
 import click
 
@@ -37,6 +38,16 @@ def init(
     overwrite,
     **kwargs,
 ):
+    asyncio.run(_init_async(ctx, output_dir, env_file, overwrite, **kwargs))
+
+
+async def _init_async(
+    ctx,
+    output_dir: Path,
+    env_file,
+    overwrite,
+    **kwargs,
+):
     """Initialize the Automation Operations Center (AOC)."""
     click.echo("Initializing AoC...\n")
 
@@ -69,4 +80,4 @@ def init(
     )
 
     handler = InitCommand(init_config)
-    handler.execute()
+    await handler.execute()

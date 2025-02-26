@@ -66,7 +66,7 @@ class InfluxDBService:
         """Start the InfluxDB service using docker-compose"""
         print("Starting InfluxDB service...")
         subprocess.run(
-            ["docker-compose", "up", "--quiet-pull", "-d", "influxdb"],
+            ["docker", "compose", "up", "--quiet-pull", "-d", "influxdb"],
             cwd=self.config.aoc_dir,
             check=True,
         )

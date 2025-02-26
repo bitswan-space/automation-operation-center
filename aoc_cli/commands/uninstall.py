@@ -51,16 +51,16 @@ class UninstallCommand:
         try:
             if remove_volumes:
                 subprocess.run(
-                    ["docker-compose", "down", "-v"], cwd=aoc_dir, check=True
+                    ["docker", "compose", "down", "-v"], cwd=aoc_dir, check=True
                 )
             else:
-                subprocess.run(["docker-compose", "down"], cwd=aoc_dir, check=True)
+                subprocess.run(["docker", "compose", "down"], cwd=aoc_dir, check=True)
         except subprocess.CalledProcessError as e:
             print(f"Warning: Failed to stop services: {e}")
 
     def _remove_containers(self, aoc_dir: Path) -> None:
         try:
-            subprocess.run(["docker-compose", "rm"], cwd=aoc_dir, check=True)
+            subprocess.run(["docker", "compose", "rm"], cwd=aoc_dir, check=True)
         except subprocess.CalledProcessError as e:
             print(f"Warning: Failed to remove containers: {e}")
 

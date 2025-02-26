@@ -1,6 +1,7 @@
 import json
 import shutil
 import subprocess
+import asyncio
 from pathlib import Path
 from typing import Dict
 
@@ -20,19 +21,19 @@ class InitCommand:
     def __init__(self, config: InitConfig):
         self.config = config
 
-    def execute(self) -> None:
+    async def execute(self) -> None:
         if self.config.env.value == "prod" or self.config.env.value == "staging":
-            self.setup_production_or_staging_environment()
+            await self.setup_production_or_staging_environment()
         else:
-            self.setup_development_environment()
+            await self.setup_development_environment()
 
-    def setup_production_or_staging_environment(self) -> None:
+    async def setup_production_or_staging_environment(self) -> None:
         click.echo(f"Setting up {self.config.env.value} environment...")
 
         self.create_aoc_directory()
         self.copy_compose_file()
         self.setup_secrets()
-        self.setup_caddy()
+        await self.setup_caddy()
         self.setup_keycloak()
         self.setup_influxdb()
 
@@ -46,7 +47,7 @@ class InitCommand:
             f"Access the AOC at the url {self.config.protocol.value}://aoc.{self.config.domain}"
         )
 
-    def setup_development_environment(self) -> None:
+    async def setup_development_environment(self) -> None:
         click.echo("Setting up development environment...")
 
     def create_aoc_directory(self) -> None:
@@ -84,16 +85,16 @@ class InitCommand:
         influxdb = InfluxDBService(self.config)
         influxdb.setup()
 
-    def setup_caddy(self) -> None:
+    async def setup_caddy(self) -> None:
         print("Initializing Caddy")
 
         caddy = CaddyService(self.config)
-        caddy.initialize()
-        caddy.add_proxy(
+        await caddy.initialize()
+        await caddy.add_proxy(
             f"{self.config.protocol.value}://keycloak.{self.config.domain}",
             "aoc-keycloak:8080",
         )
-        caddy.add_proxy(
+        await caddy.add_proxy(
             f"{self.config.protocol.value}://aoc.{self.config.domain}",
             "automation-operation-centre:3000",
         )
@@ -101,7 +102,7 @@ class InitCommand:
 
     def cleanup(self) -> None:
         subprocess.run(
-            ["docker-compose", "down"],
+            ["docker", "compose", "down"],
             cwd=self.config.aoc_dir,
             check=True,
         )
