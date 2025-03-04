@@ -62,12 +62,3 @@ services:
     <<: *django
     image: bitswan_backend_production_flower
     command: /start-flower
-
-  awscli:
-    build:
-      context: .
-      dockerfile: ./compose/production/aws/Dockerfile
-    env_file:
-      - ./.envs/.production/.django
-    volumes:
-      - production_postgres_data_backups:/backups:z

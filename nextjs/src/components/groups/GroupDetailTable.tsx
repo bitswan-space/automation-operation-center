@@ -30,11 +30,16 @@ import { Input } from "@/components/ui/input";
 import { Loader2, PenLine, Trash2 } from "lucide-react";
 import { CreateGroupFormSheet } from "./CreateGroupFormSheet";
 import { Separator } from "../ui/separator";
-import { deleteUserGroup, type UserGroup, useUserGroups } from "./groupsHooks";
+
 import { useSession } from "next-auth/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { USER_GROUPS_QUERY_KEY } from "@/shared/constants";
 import { canMutateGroups } from "@/lib/permissions";
+
+import {
+  deleteOrgGroupAction,
+  type DeleteOrgGroupFormActionState,
+  type UserGroup,
+  type UserGroupsListResponse,
+} from "@/server/actions/groups";
 
 const columnHelper = createColumnHelper<UserGroup>();
 
@@ -67,8 +72,13 @@ export const columns: ColumnDef<UserGroup>[] = [
   }),
 ];
 
-export function GroupDetailTable() {
-  const { data: userGroups, isLoading } = useUserGroups();
+type GroupDetailTableProps = {
+  userGroups?: UserGroupsListResponse;
+};
+
+export function GroupDetailTable(props: GroupDetailTableProps) {
+  const { userGroups } = props;
+
   const { data: session } = useSession();
 
   const hasPerms = canMutateGroups(session);
@@ -123,17 +133,8 @@ export function GroupDetailTable() {
           />
         )}
       </div>
-      {isLoading && (
-        <div className="flex h-60 w-full items-center justify-center rounded-md border border-neutral-200 bg-neutral-100 p-4 text-center">
-          <div className="flex flex-col items-center justify-between gap-4 py-4">
-            <Loader2 size={20} className="mr-2 animate-spin" />
-            <div className="text-sm text-neutral-500">
-              Loading user groups...
-            </div>
-          </div>
-        </div>
-      )}
-      {!isLoading && userGroups && (
+
+      {userGroups && (
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -216,38 +217,15 @@ type GroupActionProps = {
 
 function GroupActions(props: GroupActionProps) {
   const { id, group } = props;
+
   const { data: session } = useSession();
-  const queryClient = useQueryClient();
-
-  const accessToken = session?.access_token;
-
   const hasPerms = canMutateGroups(session);
 
-  const deleteUserGroupMutation = useMutation({
-    mutationFn: deleteUserGroup,
-    onSuccess: () => {
-      console.log("User group deleted");
-      queryClient
-        .invalidateQueries({
-          queryKey: [USER_GROUPS_QUERY_KEY],
-        })
-        .then(() => {
-          console.log("Invalidated user-groups query");
-        })
-        .catch((error) => {
-          console.error("Error invalidating user-groups query", error);
-        });
-    },
-  });
+  const [, formAction, isPending] = React.useActionState<
+    DeleteOrgGroupFormActionState,
+    FormData
+  >(deleteOrgGroupAction, {});
 
-  const handleDeleteClick = () => {
-    deleteUserGroupMutation.mutate({
-      apiToken: accessToken ?? "",
-      id: id,
-    });
-  };
-
-  const isLoading = deleteUserGroupMutation.isLoading;
   return (
     hasPerms && (
       <div className="flex justify-end gap-2 px-4 text-end">
@@ -260,13 +238,16 @@ function GroupActions(props: GroupActionProps) {
           group={group}
         />
         <Separator orientation="vertical" className="h-8 w-px" />
-        <Button
-          variant={"ghost"}
-          onClick={handleDeleteClick}
-          disabled={isLoading || !hasPerms}
-        >
-          <Trash2 size={20} className="text-neutral-500" />
-        </Button>
+        <form action={formAction}>
+          <Button variant={"ghost"} disabled={isPending || !hasPerms}>
+            <input type="hidden" name="id" defaultValue={id} />
+            {isPending ? (
+              <Loader2 size={20} className="animate-spin" />
+            ) : (
+              <Trash2 size={20} className="text-neutral-500" />
+            )}
+          </Button>
+        </form>
       </div>
     )
   );

@@ -1,21 +1,12 @@
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "../ui/form";
+  type CreateGitopsActionState,
+  createGitopsAction,
+} from "@/server/actions/gitops";
+
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import React from "react";
-import { UpdateGitopsSchema } from "@/shared/schema/gitops";
-import { updateGitops } from "./hooks";
-import { useForm } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
-import { type z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader } from "lucide-react";
+import React from "react";
 
 type EditGitopsItemFormProps = {
   name: string;
@@ -27,67 +18,46 @@ type EditGitopsItemFormProps = {
 export function EditGitopsItemForm(props: Readonly<EditGitopsItemFormProps>) {
   const { id, name, onSuccessfulEdit, onSave } = props;
 
-  const { data: session } = useSession();
+  const [state, formAction, isPending] = React.useActionState<
+    CreateGitopsActionState,
+    FormData
+  >(createGitopsAction, {});
 
-  const accessToken = session?.access_token ?? "";
-
-  const updateGitopsMutation = useMutation({
-    mutationFn: updateGitops,
-    onMutate: () => {
+  // Code Smell: This needs to be refactored
+  React.useEffect(() => {
+    if (isPending) {
       onSave();
-    },
-    onSuccess: () => {
-      console.log("Gitops updated");
+    }
+  }, [isPending]);
+
+  React.useEffect(() => {
+    if (state.status === "success") {
       onSuccessfulEdit();
-    },
-  });
-
-  const form = useForm<z.infer<typeof UpdateGitopsSchema>>({
-    resolver: zodResolver(UpdateGitopsSchema),
-    defaultValues: {
-      gitopsName: name,
-    },
-  });
-
-  function onSubmit(values: z.infer<typeof UpdateGitopsSchema>) {
-    console.log(values);
-
-    updateGitopsMutation.mutate({
-      apiToken: accessToken,
-      name: values.gitopsName,
-      id: id,
-    });
-  }
-
-  const isLoading = updateGitopsMutation.isLoading;
+    }
+  }, [state]);
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}
-        className="my-auto flex w-full justify-end gap-4"
-      >
-        <FormField
-          control={form.control}
-          name="gitopsName"
-          render={({ field }) => (
-            <FormItem className="w-2/3">
-              <FormControl>
-                <Input {...field} className="w-full bg-white text-sm" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+    <form action={formAction} className="my-auto flex w-full justify-end gap-4">
+      <div className="w-2/3">
+        <Input hidden name="id" defaultValue={id} />
+        <Input
+          className="w-full bg-white text-sm"
+          name="name"
+          defaultValue={name}
         />
-        <Button type="submit" disabled={isLoading}>
-          Save
-          {isLoading && (
-            <span>
-              <Loader size={20} className="ml-2 animate-spin" />
-            </span>
-          )}
-        </Button>
-      </form>
-    </Form>
+        {state?.errors?.name && (
+          <p className="mb-1 text-xs text-red-400">{state.errors.name[0]}</p>
+        )}
+      </div>
+
+      <Button type="submit" disabled={isPending}>
+        Save
+        {isPending && (
+          <span>
+            <Loader size={20} className="ml-2 animate-spin" />
+          </span>
+        )}
+      </Button>
+    </form>
   );
 }

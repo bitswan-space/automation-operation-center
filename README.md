@@ -23,8 +23,39 @@ The Automation Operations Center (AOC) is a comprehensive web-based platform des
 pip install .
 ```
 
-2. Run the setup command
+2. Set up DNS
+
+Set up DNS for `*.example.com` or whatever domain you want to use to point to your server.
+You can also use a subdomain like `*.bitswan.example.com`
+
+3. Run the setup command
 
 ```bash
-aoc-cli setup
+aoc-cli init \
+  --domain=example.com \
+  --org-name="Example Org" \
+  --admin-email=admin@platform.local \
+  --admin-password=randompassword
+```
+
+## For local development
+
+1. Install the AOC CLI tool:
+
+```bash
+pip install .
+```
+
+2. Setup your hosts
+
+```
+aoc update-hosts
+```
+
+3. Initialize the AOC environment
+
+```
+aoc init \
+  --env=dev \
+  --admin-password=randompassword
 ```

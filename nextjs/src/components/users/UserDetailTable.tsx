@@ -1,5 +1,7 @@
 "use client";
 
+import { UserGroupsBadgeList } from "./UserGroupsBadgeList";
+
 import * as React from "react";
 
 import {
@@ -26,41 +28,28 @@ import {
 
 import { Button } from "@/components/ui/button";
 
-import { Input } from "@/components/ui/input";
 import { Badge } from "../ui/badge";
-import { GroupComboBoxSelector } from "../groups/GroupComboBoxSelector";
-import {
-  deleteUser,
-  inviteUser,
-  type OrgUser,
-  useOrgUsers,
-} from "./usersHooks";
-import {
-  removeMemberFromGroup,
-  useUserGroups,
-  type UserGroup,
-} from "../groups/groupsHooks";
-import { Loader, Loader2, Trash2, X, XCircle } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ORG_USERS_QUERY_KEY } from "@/shared/constants";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "../ui/form";
-import { type AxiosError } from "axios";
-import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-import { canMutateUsers } from "@/lib/permissions";
 
-const columnHelper = createColumnHelper<OrgUser>();
-export const columns: ColumnDef<OrgUser>[] = [
+import { Loader2, Trash2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { cn } from "@/lib/utils";
+import { canMutateUsers } from "@/lib/permissions";
+import { UserInviteForm } from "./UserInviteForm";
+import {
+  deleteUserAction,
+  type DeleteUserActionState,
+  type OrgUser,
+  type OrgUsersListResponse,
+} from "@/server/actions/users";
+import {
+  type UserGroup,
+  type UserGroupsListResponse,
+} from "@/server/actions/groups";
+
+type OrgUserFull = OrgUser & { nonMemberGroups: UserGroup[] };
+
+const columnHelper = createColumnHelper<OrgUserFull>();
+export const columns: ColumnDef<OrgUserFull>[] = [
   {
     accessorKey: "email",
     header: () => <div className="p-2 px-6 text-left font-semibold">Email</div>,
@@ -90,8 +79,15 @@ export const columns: ColumnDef<OrgUser>[] = [
     cell: ({ row }) => {
       const groups = row.original.groups;
       const userId = row.original.id;
+      const nonMemberGroups = row.original.nonMemberGroups;
 
-      return <GroupBadgeList groups={groups} userId={userId} />;
+      return (
+        <UserGroupsBadgeList
+          memberGroups={groups}
+          userId={userId}
+          nonMemberGroups={nonMemberGroups}
+        />
+      );
     },
   }),
   columnHelper.display({
@@ -103,12 +99,28 @@ export const columns: ColumnDef<OrgUser>[] = [
   }),
 ];
 
-export function UserDetailTable() {
-  const { data: orgUsers, isLoading, isError } = useOrgUsers();
+type UserDetailTableProps = {
+  usersList?: OrgUsersListResponse;
+  userGroups?: UserGroupsListResponse;
+};
+
+export function UserDetailTable(props: UserDetailTableProps) {
+  const { usersList: orgUsers, userGroups } = props;
+
   const { data: session } = useSession();
   const hasPerms = canMutateUsers(session);
 
-  const orgUsersData = React.useMemo(() => orgUsers?.results ?? [], [orgUsers]);
+  const orgUsersData = React.useMemo(
+    () =>
+      orgUsers?.results.map((user) => ({
+        ...user,
+        nonMemberGroups:
+          userGroups?.results.filter(
+            (group) => !user.groups.find((g) => g.id === group.id),
+          ) ?? [],
+      })) ?? [],
+    [orgUsers],
+  );
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -140,23 +152,8 @@ export function UserDetailTable() {
   return (
     <div className="w-full">
       {hasPerms && <UserInviteForm />}
-      {isError && (
-        <div className="flex h-60 w-full items-center justify-center rounded-md border border-neutral-200 bg-neutral-100 p-4 text-center">
-          <div className="flex flex-col items-center justify-between gap-4 py-4">
-            <XCircle size={40} className="mx-auto" />
-            <div className="text-sm text-neutral-500">Error fetching users</div>
-          </div>
-        </div>
-      )}
-      {isLoading && (
-        <div className="flex h-60 w-full items-center justify-center rounded-md border border-neutral-200 bg-neutral-100 p-4 text-center">
-          <div className="flex flex-col items-center justify-between gap-4 py-4">
-            <Loader2 size={20} className="mr-2 animate-spin" />
-            <div className="text-sm text-neutral-500">Loading users...</div>
-          </div>
-        </div>
-      )}
-      {!isLoading && !isError && orgUsersData && (
+
+      {orgUsersData && (
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -232,285 +229,40 @@ export function UserDetailTable() {
   );
 }
 
-type GroupBadgeListProps = {
-  groups: UserGroup[];
-  userId: string;
-};
-
-function GroupBadgeList(props: GroupBadgeListProps) {
-  const { groups, userId } = props;
-
-  const { data: session } = useSession();
-  const { data: allOrgGroups } = useUserGroups();
-
-  const userGroups = React.useMemo(() => {
-    return groups;
-  }, [groups]);
-
-  const unselectedGroups = React.useMemo(() => {
-    if (userGroups.length === 0) return allOrgGroups?.results;
-    return allOrgGroups?.results?.filter(
-      (orgGroup) =>
-        !userGroups.find((userGroup) => orgGroup.id === userGroup.id),
-    );
-  }, [allOrgGroups?.results, userGroups]);
-
-  const hasPerms = canMutateUsers(session);
-
-  return (
-    <div className="flex max-w-3xl flex-wrap gap-2 ">
-      {userGroups.map((group) => {
-        return <UserGroupBadge group={group} key={group.id} userId={userId} />;
-      })}
-
-      {hasPerms && (
-        <GroupComboBoxSelector groups={unselectedGroups} userId={userId} />
-      )}
-    </div>
-  );
-}
-
-type UserGroupBadgeProps = {
-  group: UserGroup;
-  userId: string;
-};
-
-function UserGroupBadge(props: UserGroupBadgeProps) {
-  const { group, userId } = props;
-
-  const { data: session } = useSession();
-  const queryClient = useQueryClient();
-
-  const accessToken = session?.access_token;
-
-  const removeMemberFromGroupMutation = useMutation({
-    mutationFn: removeMemberFromGroup,
-    onSuccess: () => {
-      console.log("User group updated");
-      queryClient
-        .invalidateQueries({
-          queryKey: [ORG_USERS_QUERY_KEY],
-        })
-        .then(() => {
-          console.log("Invalidated org-users query");
-        })
-        .catch((error) => {
-          console.error("Error invalidating org-users query", error);
-        });
-    },
-  });
-
-  const onRemoveGroupClick = (groupId?: string) => {
-    removeMemberFromGroupMutation.mutate({
-      accessToken: accessToken ?? "",
-      userId: userId,
-      groupId: groupId ?? "",
-    });
-  };
-
-  const isLoading = removeMemberFromGroupMutation.isLoading;
-  const hasPerms = canMutateUsers(session);
-
-  return (
-    <Badge
-      variant={"outline"}
-      className={`border-[${group.tag_color}] bg-[${group.tag_color}]/10 text-[${group.tag_color}] flex gap-2`}
-      style={{
-        borderColor: group.tag_color,
-        backgroundColor: `${group.tag_color}1A`,
-        color: group.tag_color,
-      }}
-    >
-      <span>{group.name}</span>
-      {hasPerms && (
-        <button
-          className="cursor-pointer"
-          onClick={() => onRemoveGroupClick(group.id)}
-          disabled={isLoading || !hasPerms}
-        >
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <X className="h-4 w-4 " />
-          )}
-        </button>
-      )}
-    </Badge>
-  );
-}
-
-const UserInviteFormSchema = z.object({
-  email: z.string().email(),
-});
-
-function UserInviteForm({}) {
-  const { data: session } = useSession();
-  const queryClient = useQueryClient();
-
-  const accessToken = session?.access_token;
-
-  const form = useForm<z.infer<typeof UserInviteFormSchema>>({
-    resolver: zodResolver(UserInviteFormSchema),
-    defaultValues: {
-      email: "",
-    },
-  });
-
-  const invalidateOrgUsersQuery = () => {
-    queryClient
-      .invalidateQueries({
-        queryKey: [ORG_USERS_QUERY_KEY],
-      })
-      .then(() => {
-        console.log("Invalidated org-users query");
-      })
-      .catch((error) => {
-        console.error("Error invalidating org-users query", error);
-      });
-  };
-
-  const inviteUserMutation = useMutation({
-    mutationFn: inviteUser,
-    onSuccess: () => {
-      console.log("User invited");
-      invalidateOrgUsersQuery();
-
-      toast.success("User invited", {
-        duration: 5000,
-      });
-    },
-    onError: (error: AxiosError) => {
-      console.error("Error inviting user", error);
-      const errorMessage = (error.response?.data as { error: string })?.error;
-      if (errorMessage) {
-        form.setError("email", { type: "manual", message: errorMessage });
-      }
-    },
-  });
-
-  function onSubmit(values: z.infer<typeof UserInviteFormSchema>) {
-    console.log("submitting");
-    console.log(values);
-
-    inviteUserMutation.mutate({
-      accessToken: accessToken ?? "",
-      email: values.email,
-    });
-  }
-
-  const isLoading = inviteUserMutation.isLoading;
-
-  return (
-    <Form {...form}>
-      <form onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}>
-        <div className="flex items-center gap-4 py-4">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem className="max-w-sm flex-1">
-                <FormControl>
-                  <Input
-                    placeholder="Team member email "
-                    className="w-full"
-                    {...field}
-                  />
-                </FormControl>
-                {form.formState.errors.email?.message && (
-                  <FormMessage>
-                    {form.formState.errors.email?.message}
-                  </FormMessage>
-                )}
-              </FormItem>
-            )}
-          />
-
-          <Button
-            className="mb-auto bg-blue-600 hover:bg-blue-700/80"
-            disabled={isLoading}
-          >
-            Invite{" "}
-            {isLoading && (
-              <span>
-                <Loader size={20} className="ml-2 animate-spin" />
-              </span>
-            )}
-          </Button>
-        </div>
-      </form>
-    </Form>
-  );
-}
-
 type UserActionProps = {
   id: string;
 };
 
 function UserActions(props: UserActionProps) {
   const { id } = props;
-  const { data: session } = useSession();
-  const queryClient = useQueryClient();
 
-  const accessToken = session?.access_token;
+  const [, formAction, isPending] = React.useActionState<
+    DeleteUserActionState,
+    FormData
+  >(deleteUserAction, {});
+
+  const { data: session } = useSession();
+
   const activeUserId = session?.user?.id;
 
-  const hasPerms = canMutateUsers(session);
+  const hasPerms = canMutateUsers(session) && activeUserId !== id;
 
-  const deleteUserGroupMutation = useMutation({
-    mutationFn: deleteUser,
-    onSuccess: () => {
-      console.log("Org user deleted");
-      queryClient
-        .invalidateQueries({
-          queryKey: [ORG_USERS_QUERY_KEY],
-        })
-        .then(() => {
-          console.log("Invalidated org-users query");
-        })
-        .catch((error) => {
-          console.error("Error invalidating org-users query", error);
-        });
-
-      toast.success("User deleted", {
-        duration: 5000,
-      });
-    },
-
-    onError: (error: AxiosError) => {
-      console.error("Error deleting user", error);
-      const errorMessage = (error.response?.data as { error: string })?.error;
-      if (errorMessage) {
-        toast.error(errorMessage, {
-          duration: 5000,
-        });
-      }
-    },
-  });
-
-  const handleDeleteClick = () => {
-    deleteUserGroupMutation.mutate({
-      apiToken: accessToken ?? "",
-      id: id,
-    });
-  };
-
-  const isLoading = deleteUserGroupMutation.isLoading;
-  const isCurrentUser = activeUserId === id;
   return (
-    <div className="flex justify-end gap-2 px-4 text-end">
+    <form action={formAction} className="flex justify-end gap-2 px-4 text-end">
+      <input type="hidden" name="id" defaultValue={id} />
       {hasPerms && (
         <Button
           variant={"ghost"}
-          onClick={handleDeleteClick}
-          disabled={isLoading || isCurrentUser || !hasPerms}
+          type="submit"
+          disabled={isPending || !hasPerms}
         >
-          {isLoading ? (
+          {isPending ? (
             <Loader2 size={20} className="mr-2 animate-spin" />
           ) : (
             <Trash2 size={20} className="text-neutral-500" />
           )}
         </Button>
       )}
-    </div>
+    </form>
   );
 }

@@ -4,41 +4,16 @@ volumes:
   portainer_data:
   influx_data:
   influx_config:
-  mosquitto_data:
-  mosquitto_log:
   postgres-keycloak-data:
   emqx_data:
   bitswan_backend_production_postgres_data: {}
   bitswan_backend_production_postgres_data_backups: {}
-  production_traefik: {}
   bitswan-editor-data:
 
 services:
-  caddy:
-    image: caddy:latest
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./caddy_data:/data
-      - ./caddy_config:/config
-    environment:
-      - DOMAIN="http://platform.local"
-    networks:
-      default:
-        aliases:
-          - "platform.local"
-          - "poc.platform.local"
-          - "influx.platform.local"
-          - "keycloak.platform.local"
-
   influxdb:
     image: influxdb:2.0
     restart: always
-    ports:
-      - "8086:8086"
     volumes:
       - influx_data:/var/lib/influxdb2
       - influx_config:/etc/influxdb2
@@ -54,9 +29,6 @@ services:
       - portainer_data:/data
       - /var/run/docker.sock:/var/run/docker.sock:rw
     restart: always
-    ports:
-      - "9000:9000"
-      - "9443:9443"
 
   emqx:
     image: emqx:latest
@@ -68,38 +40,36 @@ services:
       - "8084:8084"
       - "8883:8883"
       - "18083:18083"
-    environment:
-      - EMQX_DASHBOARD__DEFAULT_PASSWORD="foo"
+    env_file:
+      - .emqx.env
     volumes:
       - emqx_data:/opt/emqx/data
 
   keycloak:
     image: bitswan/bitswan-keycloak:2024-9110295480-git-d7a8e49
+    container_name: "aoc-keycloak"
     restart: always
-    ports:
-      - "9090:8080"
     env_file:
       - .keycloak.env
     command: start-dev
 
   postgres:
     image: postgres:12-bullseye
+    container_name: "aoc-keycloak-postgres"
     restart: always
     volumes:
       - postgres-keycloak-data:/var/lib/postgresql/data
     env_file: .keycloak-postgres.env
 
-  # mailhog:
-  #   image: mailhog/mailhog
-  #   restart: always
-  #   ports:
-  #     - "8025:8025" # Web UI
-  #     - "1025:1025" # SMTP server
+  mailhog:
+    image: mailhog/mailhog
+    restart: always
 
   automation-operation-centre:
+    container_name: "automation-operation-centre"
     restart: always
     image: bitswan/automation-operations-centre:2024-11950867795-git-5ff440c
-    env_file: .aoc.env
+    env_file: .operations-centre.env
     ports:
       - "3000:3000"
 

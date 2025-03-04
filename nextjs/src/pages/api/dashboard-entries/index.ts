@@ -1,5 +1,5 @@
 import { env } from "@/env.mjs";
-import { getServerAuthSession } from "@/server/auth";
+import { auth } from "@/server/auth";
 import axios from "axios";
 import {
   type DashboardEntryListResponse,
@@ -13,7 +13,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<DashboardEntryListResponse>,
 ) {
-  const session = await getServerAuthSession(req, res);
+  const session = await auth();
 
   if (req.method === "GET") {
     const response = await axios.get<DashboardEntryListResponse>(

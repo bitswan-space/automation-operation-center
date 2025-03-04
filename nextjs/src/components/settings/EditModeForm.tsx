@@ -1,34 +1,26 @@
 "use client";
 
 import {
-  ACTIVE_MQTT_PROFILE_STORAGE_KEY,
-  MQTT_PROFILE_QUERY_KEY,
-  ORG_USERS_QUERY_KEY,
-} from "@/shared/constants";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+  type CreateOrUpdateOrgGroupFormActionState,
+  createOrUpdateOrgGroupAction,
+} from "@/server/actions/groups";
 
+import { ACTIVE_MQTT_PROFILE_STORAGE_KEY } from "@/shared/constants";
 import { Button } from "@/components/ui/button";
 import { Label } from "../ui/label";
-import { updateUserGroup, type MQTTProfile } from "../groups/groupsHooks";
+import { type MQTTProfile } from "@/server/actions/mqtt-profiles";
 import React from "react";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "sonner";
+import { canMutateSidebarItems } from "@/lib/permissions";
 import useLocalStorageState from "ahooks/lib/useLocalStorageState";
 import { useSession } from "next-auth/react";
 import { useSidebar } from "../ui/sidebar";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
-import { type AxiosError } from "axios";
-import { canMutateSidebarItems } from "@/lib/permissions";
 
 export function SwitchForm() {
   const { editMode, setEditMode } = useSidebar();
 
   const { deserializedNavItems } = useSidebarItems();
-
-  const { data: session } = useSession();
-  const queryClient = useQueryClient();
-
-  const accessToken = session?.access_token;
 
   const [activeMQTTProfile] = useLocalStorageState<MQTTProfile | undefined>(
     ACTIVE_MQTT_PROFILE_STORAGE_KEY,
@@ -37,46 +29,14 @@ export function SwitchForm() {
     },
   );
 
-  const saveOrgGroupSidebarMutation = useMutation({
-    mutationFn: updateUserGroup,
-    onSuccess: async () => {
-      console.log("User group updated");
+  const { data: session } = useSession();
 
-      try {
-        await queryClient.invalidateQueries({
-          queryKey: [ORG_USERS_QUERY_KEY],
-        });
-
-        await queryClient.invalidateQueries({
-          queryKey: [MQTT_PROFILE_QUERY_KEY],
-        });
-
-        toast.success("Settings saved");
-      } catch (error) {
-        console.error("Error invalidating org-users and profile query", error);
-      }
-    },
-    onError: (error: AxiosError) => {
-      console.error("Error saving org-users", error);
-      const errorMessage = (error.response?.data as { error: string })?.error;
-      if (errorMessage) {
-        toast.error(errorMessage);
-      }
-    },
-  });
-
-  const handleSave = () => {
-    saveOrgGroupSidebarMutation.mutate({
-      accessToken: accessToken ?? "",
-      id: activeMQTTProfile?.group_id ?? "",
-      userGroup: {
-        nav_items: deserializedNavItems,
-      },
-    });
-  };
+  const [, formAction, isPending] = React.useActionState<
+    CreateOrUpdateOrgGroupFormActionState,
+    FormData
+  >(createOrUpdateOrgGroupAction, {});
 
   const hasPerms = canMutateSidebarItems(session);
-  const isLoading = saveOrgGroupSidebarMutation.isLoading;
 
   return (
     <div className="flex flex-col gap-4">
@@ -101,12 +61,21 @@ export function SwitchForm() {
         </div>
       </div>
       <div className="text-end">
-        <Button
-          onClick={handleSave}
-          disabled={!editMode || isLoading || !hasPerms}
-        >
-          {isLoading ? "Saving..." : "Save"}
-        </Button>
+        <form action={formAction}>
+          <input
+            name="groupId"
+            type="hidden"
+            defaultValue={activeMQTTProfile?.group_id}
+          />
+          <input
+            name="navItems"
+            type="hidden"
+            defaultValue={JSON.stringify(deserializedNavItems)}
+          />
+          <Button type="submit" disabled={!editMode || isPending || !hasPerms}>
+            {isPending ? "Saving..." : "Save"}
+          </Button>
+        </form>
       </div>
     </div>
   );

@@ -9,8 +9,10 @@ import {
   type NavItem,
 } from "@/components/layout/Sidebar/utils/NavItems";
 import useLocalStorageState from "ahooks/lib/useLocalStorageState";
-import { type MQTTProfile } from "@/components/groups/groupsHooks";
+
 import { ACTIVE_MQTT_PROFILE_STORAGE_KEY } from "@/shared/constants";
+import { stringify } from "flatted";
+import { type MQTTProfile } from "@/server/actions/mqtt-profiles";
 
 type SidebarItemsContext = {
   sidebarItems: NodeModel<NavItem>[];
@@ -55,7 +57,7 @@ export function SidebarItemsProvider({
   React.useEffect(() => {
     setSidebarItemsState((prevItems) => {
       // Optional: Add deep comparison if needed
-      if (JSON.stringify(prevItems) !== JSON.stringify(sourceItems)) {
+      if (stringify(prevItems) !== stringify(sourceItems)) {
         return sourceItems;
       }
       return prevItems;

@@ -14,6 +14,11 @@ const config = {
     defaultLocale: "en",
   },
   output: "standalone",
+  logging: {
+    fetches: {
+      fullUrl: true,
+    },
+  },
 };
 
 export default withSentryConfig(config, {
@@ -22,8 +27,8 @@ export default withSentryConfig(config, {
 
   // Suppresses source map uploading logs during build
   silent: true,
-  org: "libertyaces-ltd",
-  project: "javascript-nextjs",
+  org: "wingsdata-sro",
+  project: "pipeline-operations-center",
 
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
