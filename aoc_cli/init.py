@@ -15,6 +15,8 @@ from aoc_cli.config import Environment, InitConfig, Protocol
 @click.command()
 @click.argument(
     "output_dir",
+    required=False,
+    default=Path.home() / ".config" / "bitswan" / "aoc",
     type=click.Path(exists=False, writable=True, file_okay=False, resolve_path=True),
 )
 @click.option("--overwrite", is_flag=True, help="Overwrite existing files")
@@ -71,7 +73,7 @@ async def _init_async(
 
     init_config = InitConfig(
         env=Environment(configs.get("env")),
-        aoc_dir=Path(f"{output_dir}/aoc"),
+        aoc_dir=Path(output_dir),
         protocol=Protocol(configs.get("protocol")),
         domain=configs.get("domain"),
         admin_email=configs.get("admin_email"),

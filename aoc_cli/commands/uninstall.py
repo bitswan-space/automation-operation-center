@@ -5,9 +5,9 @@ from pathlib import Path
 
 @dataclass
 class UninstallCommandArgs:
-    force: bool
-    remove_data: bool
-    aoc_dir: Path
+    force: bool = False
+    remove_data: bool = False
+    aoc_dir: Path = Path.home() / ".config" / "bitswan" / "aoc"
 
 
 class UninstallCommand:
@@ -15,7 +15,7 @@ class UninstallCommand:
         self.args = args
 
     def execute(self) -> None:
-        aoc_dir = self.args.aoc_dir
+        aoc_dir = Path(self.args.aoc_dir)
 
         if not aoc_dir.exists():
             print(f"AOC is not installed at path {aoc_dir}")

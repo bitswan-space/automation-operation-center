@@ -5,6 +5,18 @@ import asyncio
 from aoc_cli.config import Environment, InitConfig
 
 
+async def caddy_delete_id(caddy_id):
+    while True:
+        async with aiohttp.ClientSession() as session:
+            resp = await session.delete(f"http://localhost:2019/id/{caddy_id}")
+            if resp.status == 404:
+                break
+            elif resp.status == 200:
+                print(f"Deleted route with ID {caddy_id}")
+            else:
+                raise f"Unknown Caddy API status! {resp.status}, response {resp.text}"
+
+
 class CaddyService:
     def __init__(self, config: InitConfig):
         self.config = config
@@ -24,6 +36,7 @@ class CaddyService:
         else:
             gitops_routes_url = "http://localhost:2019/config/apps/http/servers/srv0/routes"
             payload = {
+                "@id": domain,
                 "match": [{"host": [domain]}],
                 "handle": [{
                     "handler": "subroute",
@@ -36,6 +49,7 @@ class CaddyService:
                 }],
                 "terminal": True
             }
+            await caddy_delete_id(domain)
             async with aiohttp.ClientSession() as session:
                 async with session.post(gitops_routes_url, json=payload) as response:
                     response_text = await response.text()

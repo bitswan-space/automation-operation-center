@@ -16,7 +16,7 @@ class Protocol(Enum):
 @dataclass
 class InitConfig:
     env: Environment
-    aoc_dir: Path = Path.home() / ".aoc"
+    aoc_dir: Path = Path.home() / ".config" / "bitswan" / "aoc"
     domain: str = "platform.local"
     protocol: Protocol = Protocol.HTTP
     admin_email: str = "admin@platform.local"

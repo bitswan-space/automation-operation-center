@@ -9,18 +9,6 @@ volumes:
   bitswan-editor-data:
 
 services:
-  caddy:
-    image: caddy:latest
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./caddy_data:/data
-      - ./caddy_config:/config
-
-
   influxdb:
     image: influxdb:2.0
     restart: always
@@ -71,7 +59,7 @@ services:
   postgres:
     image: postgres:12-bullseye
     restart: always
-    container_name: aoc-postgres
+    container_name: aoc-keycloak-postgres
     volumes:
       - postgres-keycloak-data:/var/lib/postgresql/data
     env_file: envs/keycloak-postgres.env
@@ -92,6 +80,7 @@ services:
 
   bitswan-backend:
     image: bitswan/bitswan-backend:2025-13211829799-git-65ce7c8
+    container_name: bitswan-backend
     depends_on:
       - bitswan-backend-postgres
     restart: always
@@ -104,6 +93,7 @@ services:
 
   bitswan-backend-postgres:
     image: postgres:15-bullseye
+    container_name: bitswan-backend-postgres
     restart: always
     volumes:
       - bitswan_backend_production_postgres_data:/var/lib/postgresql/data

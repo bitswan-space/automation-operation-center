@@ -1,6 +1,7 @@
 import click
 
 from aoc_cli.init import init
+from aoc_cli.uninstall import uninstall
 
 
 @click.group()
@@ -11,3 +12,4 @@ def cli() -> None:
 
 
 cli.add_command(init)
+cli.add_command(uninstall)

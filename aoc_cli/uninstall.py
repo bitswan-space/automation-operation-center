@@ -2,7 +2,6 @@ import click
 
 from aoc_cli.commands.uninstall import UninstallCommand, UninstallCommandArgs
 
-
 @click.command()
 @click.option("--force", is_flag=True, help="Skip confirmation prompts")
 @click.option("--remove-data", is_flag=True, help="Remove all data as well")

@@ -32,7 +32,7 @@ def get_var_defaults(
         # Postgres defaults - using internal names for Keycloak and Bitswan backend postgres instances
         "KEYCLOAK_POSTGRES_USER": "postgres",
         "KEYCLOAK_POSTGRES_DB": "postgres",
-        "KEYCLOAK_POSTGRES_HOST": "postgres",
+        "KEYCLOAK_POSTGRES_HOST": "aoc-keycloak-postgres",
         "KEYCLOAK_POSTGRES_PORT": "5432",
         "BITSWAN_POSTGRES_USER": "postgres",
         "BITSWAN_POSTGRES_DB": "bitswan_backend",
@@ -45,7 +45,7 @@ def get_var_defaults(
         "KC_PROXY": "edge",
         "KC_DB": "postgres",
         "DB_ADDR": "postgres",
-        "KC_DB_URL_HOST": "postgres",
+        "KC_DB_URL_HOST": "aoc-keycloak-postgres",
         "KC_DB_URL_DATABASE": "postgres",
         "KC_DB_USERNAME": "postgres",
         "PORTAINER_BASE_URL": "http://aoc-portainer:9000/",
