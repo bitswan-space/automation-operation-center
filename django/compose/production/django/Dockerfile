@@ -71,13 +71,7 @@ RUN pip install --no-cache-dir --no-index --find-links=/wheels/ /wheels/* \
 # Script files
 COPY --chown=django:django ./compose/production/django/entrypoint /entrypoint
 COPY --chown=django:django ./compose/production/django/start /start
-COPY --chown=django:django ./compose/production/django/celery/worker/start /start-celeryworker
-COPY --chown=django:django ./compose/production/django/celery/beat/start /start-celerybeat
-COPY --chown=django:django ./compose/production/django/celery/flower/start /start-flower
 
-# Fix line endings and make scripts executable
-RUN sed -i 's/\r$//g' /entrypoint /start /start-celeryworker /start-celerybeat /start-flower \
-  && chmod +x /entrypoint /start /start-celeryworker /start-celerybeat /start-flower
 
 # copy application code to WORKDIR
 COPY --chown=django:django . ${APP_HOME}
@@ -89,7 +83,6 @@ USER django
 
 # Compile messages with required environment variables
 RUN DATABASE_URL="" \
-  CELERY_BROKER_URL="" \
   DJANGO_SETTINGS_MODULE="config.settings.test" \
   python manage.py compilemessages
 

@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 volumes:
   bitswan_backend_local_postgres_data: {}
@@ -7,7 +7,7 @@ volumes:
 services:
   django: &django
     build:
-      context: .
+      context: ../django
       dockerfile: ./compose/local/django/Dockerfile
     image: bitswan_backend_local_django
     container_name: bitswan_backend_local_django
@@ -25,13 +25,13 @@ services:
       - ./.envs/.local/.django.env
       - ./.envs/.local/.postgres.env
     ports:
-      - '8000:8000'
-      - '5678:5678'
+      - "8000:8000"
+      - "5678:5678"
     command: /start
 
   postgres:
     build:
-      context: .
+      context: ../django
       dockerfile: ./compose/production/postgres/Dockerfile
     image: bitswan_backend_production_postgres
     container_name: bitswan_backend_local_postgres
@@ -47,7 +47,7 @@ services:
     image: bitswan_backend_local_docs
     container_name: bitswan_backend_local_docs
     build:
-      context: .
+      context: ../django
       dockerfile: ./compose/local/docs/Dockerfile
     env_file:
       - ./.envs/.local/.django.env
@@ -56,47 +56,11 @@ services:
       - ./config:/app/config:z
       - ./bitswan_backend:/app/bitswan_backend:z
     ports:
-      - '9060:9000'
+      - "9060:9000"
     command: /start-docs
-
-  mailpit:
-    image: docker.io/axllent/mailpit:latest
-    container_name: bitswan_backend_local_mailpit
-    ports:
-      - "8026:8025"
 
   redis:
     image: docker.io/redis:6
     container_name: bitswan_backend_local_redis
     ports:
       - 6379:6379
-
-  rathole:
-    container_name: bitswan_backend_local_rathole
-    ports:
-      - 2333:2333
-    build:
-      context: .
-      dockerfile: ./compose/local/rathole/Dockerfile
-    image: local_rathole
-    volumes:
-      - ./compose/local/rathole/server.toml:/app/server.toml
-
-  traefik:
-    image: traefik:v2.11.0
-    container_name: bitswan_backend_local_traefik
-    ports:
-      - 80:80
-      - 8080:8080
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./compose/local/traefik/traefik.yaml:/etc/traefik/traefik.yaml:ro
-      - ./compose/local/traefik/config/:/etc/traefik/conf/
-    restart: unless-stopped
-
-  traefik-forward-auth:
-    image: thomseddon/traefik-forward-auth:latest
-    container_name: bitswan_backend_local_traefik_forward_auth
-    restart: always
-    env_file:
-      - ./.envs/.local/.traefik-forward-auth.env

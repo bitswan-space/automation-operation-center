@@ -47,18 +47,3 @@ services:
 
   redis:
     image: docker.io/redis:6
-
-  celeryworker:
-    <<: *django
-    image: bitswan_backend_production_celeryworker
-    command: /start-celeryworker
-
-  celerybeat:
-    <<: *django
-    image: bitswan_backend_production_celerybeat
-    command: /start-celerybeat
-
-  flower:
-    <<: *django
-    image: bitswan_backend_production_flower
-    command: /start-flower

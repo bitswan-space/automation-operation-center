@@ -8,7 +8,6 @@ variables:
   POSTGRES_PASSWORD: ''
   POSTGRES_DB: 'test_bitswan_backend'
   POSTGRES_HOST_AUTH_METHOD: trust
-  CELERY_BROKER_URL: 'redis://redis:6379/0'
   DOCKER_REGISTRY: public.ecr.aws/bitswan
   AWS_DEFAULT_REGION: us-east-1
   DOCKER_HOST: tcp://docker:2375
