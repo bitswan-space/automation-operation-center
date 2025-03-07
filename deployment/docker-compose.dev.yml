@@ -1,20 +1,25 @@
 version: "3"
 
 volumes:
-  bitswan_backend_local_postgres_data: {}
-  bitswan_backend_local_postgres_data_backups: {}
+  aoc_local_bitswan_backend_postgres_data: {}
+  aoc_local_bitswan_backend_postgres_data_backups: {}
+  aoc_local_portainer_data:
+  aoc_local_influx_data:
+  aoc_local_influx_config:
+  aoc_local_emqx_data:
+  aoc_local_keycloak_postgres_data: {}
+  aoc_local_keycloak_postgres_data_backups: {}
 
 services:
   django: &django
     build:
       context: ../django
       dockerfile: ./compose/local/django/Dockerfile
-    image: bitswan_backend_local_django
-    container_name: bitswan_backend_local_django
+    image: aoc_bitswan_backend_django
+    container_name: aoc_bitswan_backend_django
     depends_on:
       - postgres
       - redis
-      - mailpit
     volumes:
       - .:/app:z
       - ./compose/local/rathole/server.toml:/etc/rathole/rathole.toml:z
@@ -22,24 +27,39 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:rw
 
     env_file:
-      - ./.envs/.local/.django.env
-      - ./.envs/.local/.postgres.env
+      - envs/bitswan-backend.env
+      - envs/bitswan-backend-postgres.env
     ports:
       - "8000:8000"
       - "5678:5678"
     command: /start
 
-  postgres:
+  bitswan-backend-postgres:
     build:
-      context: ../django
-      dockerfile: ./compose/production/postgres/Dockerfile
-    image: bitswan_backend_production_postgres
-    container_name: bitswan_backend_local_postgres
+      context: .
+      dockerfile: ./postgres/Dockerfile
+    image: aoc_production_postgres
+    container_name: aoc-local-bitswan-backend-postgres
+    restart: always
     volumes:
-      - bitswan_backend_local_postgres_data:/var/lib/postgresql/data
-      - bitswan_backend_local_postgres_data_backups:/backups
+      - aoc_local_bitswan_backend_postgres_data:/var/lib/postgresql/data
+      - bitswan_backend_production_postgres_data_backups:/backups
     env_file:
-      - ./.envs/.local/.postgres.env
+      - envs/bitswan-backend-postgres.env
+    ports:
+      - 5432:5432
+
+  keycloak-postgres:
+    build:
+      context: .
+      dockerfile: ./postgres/Dockerfile
+    image: aoc_production_postgres
+    restart: always
+    container_name: aoc-local-keycloak-postgres
+    volumes:
+      - aoc_local_keycloak_postgres_data:/var/lib/postgresql/data
+      - aoc_local_keycloak_postgres_data_backups:/backups
+    env_file: envs/keycloak-postgres.env
     ports:
       - 5434:5432
 
@@ -50,7 +70,7 @@ services:
       context: ../django
       dockerfile: ./compose/local/docs/Dockerfile
     env_file:
-      - ./.envs/.local/.django.env
+      - envs/bitswan-backend.env
     volumes:
       - ./docs:/docs:z
       - ./config:/app/config:z
@@ -64,3 +84,54 @@ services:
     container_name: bitswan_backend_local_redis
     ports:
       - 6379:6379
+
+  influxdb:
+    image: influxdb:2.0
+    restart: always
+    container_name: aoc-local-influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - aoc_local_influx_data:/var/lib/influxdb2
+      - aoc_local_influx_config:/etc/influxdb2
+    env_file:
+      - envs/influxdb.env
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: aoc-local-portainer
+    volumes:
+      - aoc_local_portainer_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+    restart: always
+
+  emqx:
+    image: emqx:latest
+    container_name: aoc-local-emqx
+    restart: always
+    ports:
+      - "1883:1883"
+      - "8083:8083"
+      - "8084:8084"
+      - "8883:8883"
+      - "18083:18083"
+    env_file:
+      - envs/emqx.env
+    volumes:
+      - aoc_local_emqx_data:/opt/emqx/data
+
+  keycloak:
+    image: bitswan/bitswan-keycloak:2024-9110295480-git-d7a8e49
+    restart: always
+    container_name: aoc-local-keycloak
+    ports:
+      - "10000:8080"
+    env_file:
+      - envs/keycloak.env
+    command: start-dev
+
+  profile-manager:
+    restart: always
+    image: bitswan/profile-manager:2024-11950867793-git-5ff440c

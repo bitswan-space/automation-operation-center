@@ -15,9 +15,6 @@ entryPoints:
     # https
     address: ':443'
 
-  flower:
-    address: ':5555'
-
 certificatesResolvers:
   letsencrypt:
     # https://doc.traefik.io/traefik/https/acme/#lets-encrypt
