@@ -49,7 +49,7 @@ def get_var_defaults(
     keycloak_url = (
         f"{protocol}://keycloak.{domain}"
         if config.env == Environment.PROD
-        else "http://localhost:10000"
+        else "http://localhost:8080"
     )
 
     defaults = {
