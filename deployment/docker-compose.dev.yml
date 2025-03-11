@@ -11,7 +11,7 @@ volumes:
   aoc_local_keycloak_postgres_data_backups: {}
 
 services:
-  django: &django
+  django:
     build:
       context: ../django
       dockerfile: ./compose/local/django/Dockerfile

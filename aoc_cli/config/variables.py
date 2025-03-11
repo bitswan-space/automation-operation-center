@@ -68,7 +68,7 @@ def get_var_defaults(
         "BITSWAN_BACKEND_POSTGRES_PORT": "5432",
         "BITSWAN_BACKEND_POSTGRES_PASSWORD": "postgres",
         # ---  End of Postgres defaults
-        "KC_HOSTNAME_URL": f"http://aoc-{env_name}-keycloak:8080",
+        "KC_HOSTNAME_URL": keycloak_url,
         "PROXY_ADDRESS_FORWARDING": "true",
         "EMQX_MQTT_URL": emqx_url,
         "KC_PROXY": "edge",
