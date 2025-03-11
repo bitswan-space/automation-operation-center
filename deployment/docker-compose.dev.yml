@@ -16,6 +16,7 @@ services:
       context: ../django
       dockerfile: ./compose/local/django/Dockerfile
     container_name: aoc_bitswan_backend_django
+    restart: always
     depends_on:
       - bitswan-backend-postgres
       - redis
