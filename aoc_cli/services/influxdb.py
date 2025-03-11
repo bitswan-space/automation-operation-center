@@ -3,12 +3,15 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
+import click
 import requests
 from influxdb_client import InfluxDBClient
 
-from aoc_cli.config import InitConfig
+from aoc_cli.config import Environment, InitConfig
 from aoc_cli.config.services import INFLUXDB_ENV_FILE, OPERATIONS_CENTRE_ENV_FILE
+from aoc_cli.env_setup.utils import get_env_path
 from aoc_cli.utils.env import get_env_value
+from aoc_cli.utils.tools import get_aoc_working_directory
 
 
 @dataclass
@@ -25,22 +28,23 @@ class InfluxDBConfig:
 
 class InfluxDBService:
     def __init__(self, config: InitConfig):
-
+        """Initialize InfluxDB service"""
+        influx_db_env_path = get_env_path(config.env, INFLUXDB_ENV_FILE)
         config_params = InfluxDBConfig(
             username=get_env_value(
-                config.aoc_dir / "envs" / INFLUXDB_ENV_FILE,
+                influx_db_env_path,
                 "DOCKER_INFLUXDB_INIT_USERNAME",
             ),
             password=get_env_value(
-                config.aoc_dir / "envs" / INFLUXDB_ENV_FILE,
+                influx_db_env_path,
                 "DOCKER_INFLUXDB_INIT_PASSWORD",
             ),
             org=get_env_value(
-                config.aoc_dir / "envs" / INFLUXDB_ENV_FILE,
+                influx_db_env_path,
                 "DOCKER_INFLUXDB_INIT_ORG",
             ),
             bucket=get_env_value(
-                config.aoc_dir / "envs" / INFLUXDB_ENV_FILE,
+                influx_db_env_path,
                 "DOCKER_INFLUXDB_INIT_BUCKET",
             ),
             aoc_dir=config.aoc_dir,
@@ -49,6 +53,7 @@ class InfluxDBService:
             token_description="Token for AOC services",
         )
 
+        self.init_config = config
         self.config = config_params
         self.client = None
 
@@ -61,37 +66,45 @@ class InfluxDBService:
         self._update_envs_with_influxdb_token(influxdb_token["token"])
 
         self.cleanup()
+        click.echo("✓ InfluxDB setup complete")
 
     def start(self) -> None:
         """Start the InfluxDB service using docker-compose"""
-        print("Starting InfluxDB service...")
+        click.echo("Starting InfluxDB service...")
+        cwd = get_aoc_working_directory(self.init_config.env, self.init_config.aoc_dir)
         subprocess.run(
-            ["docker", "compose", "up", "--quiet-pull", "-d", "influxdb"],
-            cwd=self.config.aoc_dir,
+            [
+                "docker",
+                "compose",
+                "-f",
+                f"docker-compose.{self.init_config.env.value}.yml",
+                "up",
+                "-d",
+                "influxdb",
+            ],
+            cwd=cwd,
             check=True,
+            stdout=subprocess.DEVNULL,
         )
 
     def wait_for_service(self, max_retries: int = 30, delay: int = 10) -> None:
         """Wait for InfluxDB to be ready"""
-        print("Waiting for InfluxDB to be ready...")
+        click.echo("Waiting for InfluxDB to be ready...")
         for attempt in range(max_retries):
             try:
                 response = requests.get(f"{self.config.url}/health")
                 if response.status_code == 200:
-                    print("InfluxDB is ready")
+                    click.echo("InfluxDB is ready")
                     return
             except requests.RequestException:
                 if attempt < max_retries - 1:
-                    print(
-                        f"Attempt {attempt + 1}/{max_retries} - InfluxDB not ready yet"
-                    )
                     time.sleep(delay)
                 else:
                     raise TimeoutError("InfluxDB failed to start")
 
     def connect(self) -> None:
         """Connect to InfluxDB using setup token"""
-        print("Connecting to InfluxDB...")
+        click.echo("Connecting to InfluxDB...")
 
         self.client = InfluxDBClient(
             url=self.config.url,
@@ -100,17 +113,14 @@ class InfluxDBService:
             password=self.config.password,
         )
 
-        print("Connected to InfluxDB")
+        click.echo("Connected to InfluxDB")
 
     def create_token(self) -> dict:
         """Create a new token for AOC services"""
         self.connect()
-        print("Checking if token already exists")
-
         auth_api = self.client.authorizations_api()
 
         tokens = auth_api.find_authorizations()
-        print("Found tokens:", tokens)
 
         for token in tokens:
             if token.description == self.config.token_description:
@@ -123,12 +133,11 @@ class InfluxDBService:
                 "resource": {"type": "buckets"},
             },
         ]
-        print("Creating new token")
+
         auth = auth_api.create_authorization(
             org_id=self.client.org, permissions=permissions, authorization=tokens[0]
         )
 
-        print("Token created")
         return {"token": auth.token, "id": auth.id, "status": "created"}
 
     def cleanup(self) -> None:
@@ -137,6 +146,17 @@ class InfluxDBService:
             self.client.close()
 
     def _update_envs_with_influxdb_token(self, secret: str) -> None:
-        file_path = self.config.aoc_dir / "envs" / OPERATIONS_CENTRE_ENV_FILE
+        aoc_env_file = (
+            OPERATIONS_CENTRE_ENV_FILE
+            if self.init_config.env != Environment.DEV
+            else ".env"
+        )
+
+        file_path = get_env_path(
+            self.init_config.env,
+            aoc_env_file,
+            "local" if self.init_config.env == Environment.DEV else "docker",
+            "aoc",
+        )
         with open(file_path, "a") as f:
-            f.write(f"INFLUXDB_TOKEN={secret}\n")
+            f.write(f"\nINFLUXDB_TOKEN={secret}\n")

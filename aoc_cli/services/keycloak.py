@@ -3,6 +3,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
+import click
 import requests
 from keycloak import KeycloakAdmin, KeycloakPostError
 
@@ -10,8 +11,11 @@ from aoc_cli.config import (
     BITSWAN_BACKEND_ENV_FILE,
     KEYCLOAK_ENV_FILE,
     OPERATIONS_CENTRE_ENV_FILE,
+    Environment,
 )
+from aoc_cli.env_setup.utils import get_env_path
 from aoc_cli.utils.env import get_env_value
+from aoc_cli.utils.tools import get_aoc_working_directory
 
 
 @dataclass
@@ -23,6 +27,7 @@ class KeycloakConfig:
     server_url: str = "http://localhost:10000"
     verify: bool = False
     org_name: str = "Example Org"
+    env: Environment = Environment.DEV
 
 
 class KeycloakService:
@@ -40,24 +45,36 @@ class KeycloakService:
         self.initialize_admin_user()
 
         self._update_envs_with_keycloak_secret(client_secrets)
-        print("Keycloak setup complete")
+        click.echo("✓ Keycloak setup complete")
 
     def start_services(self) -> None:
+        cwd = get_aoc_working_directory(self.config.env, self.config.aoc_dir)
         subprocess.run(
-            ["docker", "compose", "up", "--quiet-pull", "-d", "keycloak", "postgres"],
-            cwd=self.config.aoc_dir,
+            [
+                "docker",
+                "compose",
+                "-f",
+                f"docker-compose.{self.config.env.value}.yml",
+                "up",
+                "-d",
+                "keycloak",
+                "keycloak-postgres",
+            ],
+            cwd=cwd,
             check=True,
+            shell=False,
+            stdout=subprocess.DEVNULL,
         )
 
     def wait_for_service(self, max_retries: int = 30, delay: int = 10) -> None:
-        print("Waiting for Keycloak to be ready...")
+        click.echo("Waiting for Keycloak to be ready...")
         for attempt in range(max_retries):
             try:
                 response = requests.get(
                     f"{self.config.server_url}/health", verify=self.config.verify
                 )
                 if response.status_code == 200:
-                    print("Keycloak is ready")
+                    click.print("Keycloak is ready")
                     return
             except requests.RequestException:
                 if attempt < max_retries - 1:
@@ -66,13 +83,9 @@ class KeycloakService:
                     raise TimeoutError("Keycloak failed to start")
 
     def connect(self) -> None:
-
-        username = get_env_value(
-            self.config.aoc_dir / "envs" / KEYCLOAK_ENV_FILE, "KEYCLOAK_ADMIN"
-        )
-        password = get_env_value(
-            self.config.aoc_dir / "envs" / KEYCLOAK_ENV_FILE, "KEYCLOAK_ADMIN_PASSWORD"
-        )
+        keycloak_env_path = get_env_path(self.config.env, KEYCLOAK_ENV_FILE)
+        username = get_env_value(keycloak_env_path, "KEYCLOAK_ADMIN")
+        password = get_env_value(keycloak_env_path, "KEYCLOAK_ADMIN_PASSWORD")
 
         self.keycloak_admin = KeycloakAdmin(
             server_url=self.config.server_url,
@@ -131,7 +144,6 @@ class KeycloakService:
 
         existing_clients = self.keycloak_admin.get_clients()
         client_ids = [client.get("id") for client in existing_clients]
-        print(f"Existing clients: {client_ids}")
 
         client_available_roles = {}
         for client_id in client_ids:
@@ -155,7 +167,6 @@ class KeycloakService:
                 client_id
             )
             service_account_user_id = service_account_user.get("id")
-            print(f"Service account user ID: {service_account_user_id}")
 
             # Group roles by client ID to minimize API calls
             roles_by_client = {}
@@ -173,7 +184,6 @@ class KeycloakService:
 
             # Assign roles grouped by client
             for container_client_id, roles in roles_by_client.items():
-                print(f"Assigning {len(roles)} roles from client {container_client_id}")
                 self.keycloak_admin.assign_client_role(
                     service_account_user_id, container_client_id, roles
                 )
@@ -203,7 +213,7 @@ class KeycloakService:
             )
         except KeycloakPostError as e:
             if e.response_code == 409:
-                print("Admin user already exists")
+                click.echo("Admin user already exists")
                 return
             else:
                 raise e
@@ -222,16 +232,44 @@ class KeycloakService:
         self.keycloak_admin.group_user_add(user_id, org_group_id)
 
     def _update_envs_with_keycloak_secret(self, secret: dict) -> None:
+        # FIXME: This should be made into some kind of method
+        aoc_env_file = (
+            OPERATIONS_CENTRE_ENV_FILE if self.config.env != Environment.DEV else ".env"
+        )
+
         env_updates = {
-            OPERATIONS_CENTRE_ENV_FILE: ("KEYCLOAK_CLIENT_SECRET", "aoc-frontend"),
+            aoc_env_file: (
+                "KEYCLOAK_CLIENT_SECRET",
+                "aoc-frontend",
+                "local" if self.config.env == Environment.DEV else "docker",
+                "aoc",
+            ),
             BITSWAN_BACKEND_ENV_FILE: (
                 "KEYCLOAK_CLIENT_SECRET_KEY",
+                "bitswan-backend",
+                "docker",
                 "bitswan-backend",
             ),
         }
 
-        for env_file, (env_var_label, client_name) in env_updates.items():
-            file_path = self.config.aoc_dir / "envs" / env_file
-            with open(file_path, "a") as f:
-                if client_name in secret:
-                    f.write(f"{env_var_label}={secret.get(client_name)}\n")
+        try:
+
+            for env_file, (
+                env_var_label,
+                client_name,
+                deployment_kind,
+                project_name,
+            ) in env_updates.items():
+
+                file_path = get_env_path(
+                    self.config.env,
+                    env_file=env_file,
+                    deployment_kind=deployment_kind,
+                    project_name=project_name,
+                )
+                click.echo(f"Updating {file_path}")
+                with open(file_path, "a") as f:
+                    if client_name in secret:
+                        f.write(f"\n{env_var_label}={secret.get(client_name)}\n")
+        except Exception as e:
+            click.echo(f"Error updating {env_file}: {e}")

@@ -18,12 +18,12 @@ services:
     image: aoc_bitswan_backend_django
     container_name: aoc_bitswan_backend_django
     depends_on:
-      - postgres
+      - bitswan-backend-postgres
       - redis
     volumes:
-      - .:/app:z
-      - ./compose/local/rathole/server.toml:/etc/rathole/rathole.toml:z
-      - ./compose/local/traefik/config/routes.yml:/etc/traefik/routes.yaml:z
+      - ../django:/app:z
+      - ../django/compose/local/rathole/server.toml:/etc/rathole/rathole.toml:z
+      - ../django/compose/local/traefik/config/routes.yml:/etc/traefik/routes.yaml:z
       - /var/run/docker.sock:/var/run/docker.sock:rw
 
     env_file:
@@ -38,12 +38,11 @@ services:
     build:
       context: .
       dockerfile: ./postgres/Dockerfile
-    image: aoc_production_postgres
     container_name: aoc-local-bitswan-backend-postgres
     restart: always
     volumes:
       - aoc_local_bitswan_backend_postgres_data:/var/lib/postgresql/data
-      - bitswan_backend_production_postgres_data_backups:/backups
+      - aoc_local_bitswan_backend_postgres_data_backups:/backups
     env_file:
       - envs/bitswan-backend-postgres.env
     ports:
@@ -53,7 +52,6 @@ services:
     build:
       context: .
       dockerfile: ./postgres/Dockerfile
-    image: aoc_production_postgres
     restart: always
     container_name: aoc-local-keycloak-postgres
     volumes:
@@ -128,6 +126,7 @@ services:
     container_name: aoc-local-keycloak
     ports:
       - "10000:8080"
+      - "8080:8080"
     env_file:
       - envs/keycloak.env
     command: start-dev
