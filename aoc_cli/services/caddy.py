@@ -1,6 +1,6 @@
 import subprocess
+
 import aiohttp
-import asyncio
 
 from aoc_cli.config import Environment, InitConfig
 
@@ -20,7 +20,9 @@ async def caddy_delete_id(caddy_id):
 class CaddyService:
     def __init__(self, config: InitConfig):
         self.config = config
-        self.outsourced = False #gets set to true in initialize when caddy admin is found
+        self.outsourced = (
+            False  # gets set to true in initialize when caddy admin is found
+        )
         self.caddyfile_path = None
 
     async def add_proxy(self, domain: str, target: str):
@@ -34,20 +36,28 @@ class CaddyService:
             with open(self.caddyfile_path, "a") as f:
                 f.write(config)
         else:
-            gitops_routes_url = "http://localhost:2019/config/apps/http/servers/srv0/routes"
+            gitops_routes_url = (
+                "http://localhost:2019/config/apps/http/servers/srv0/routes"
+            )
             payload = {
                 "@id": domain,
                 "match": [{"host": [domain]}],
-                "handle": [{
-                    "handler": "subroute",
-                    "routes": [{
-                        "handle": [{
-                            "handler": "reverse_proxy",
-                            "upstreams": [{"dial": target}]
-                        }]
-                    }]
-                }],
-                "terminal": True
+                "handle": [
+                    {
+                        "handler": "subroute",
+                        "routes": [
+                            {
+                                "handle": [
+                                    {
+                                        "handler": "reverse_proxy",
+                                        "upstreams": [{"dial": target}],
+                                    }
+                                ]
+                            }
+                        ],
+                    }
+                ],
+                "terminal": True,
             }
             await caddy_delete_id(domain)
             async with aiohttp.ClientSession() as session:
@@ -60,8 +70,10 @@ class CaddyService:
     async def initialize(self) -> None:
         async with aiohttp.ClientSession() as session:
             try:
-                resp = await (await session.get("http://localhost:2019/config", timeout=2)).json()
-                self.outsourced = bool(resp['admin'].get('listen'))
+                resp = await (
+                    await session.get("http://localhost:2019/config", timeout=2)
+                ).json()
+                self.outsourced = bool(resp["admin"].get("listen"))
                 print("Caddy with admin at port 2019 running. Using that instead")
             except:
                 self.outsourced = False

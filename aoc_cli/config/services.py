@@ -117,8 +117,6 @@ class Services:
             "SENTRY_DSN",
             "SENTRY_TRACES_SAMPLE_RATE",
             "REDIS_URL",
-            "CELERY_FLOWER_USER",
-            "CELERY_FLOWER_PASSWORD",
             "GITOPS_IDE_HOST",
             "RATHOLE_SERVER_HOST",
             "RATHOLE_CONFIG_PATH",

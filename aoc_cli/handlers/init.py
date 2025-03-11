@@ -1,20 +1,19 @@
 import json
 import shutil
 import subprocess
-import asyncio
 from pathlib import Path
 from typing import Dict
 
 import click
 
-from aoc_cli.config import InitConfig
-from aoc_cli.config.services import Services
+from aoc_cli.config import Environment, InitConfig
 from aoc_cli.config.variables import get_var_defaults
+from aoc_cli.env_setup.services import bootstrap_services
 from aoc_cli.services.caddy import CaddyService
 from aoc_cli.services.influxdb import InfluxDBService
 from aoc_cli.services.keycloak import KeycloakConfig, KeycloakService
-from aoc_cli.utils.env import write_env_file
 from aoc_cli.utils.secrets import generate_secret
+from aoc_cli.utils.tools import get_aoc_working_directory
 
 
 class InitCommand:
@@ -22,33 +21,57 @@ class InitCommand:
         self.config = config
 
     async def execute(self) -> None:
-        if self.config.env.value == "prod" or self.config.env.value == "staging":
-            await self.setup_production_or_staging_environment()
-        else:
-            await self.setup_development_environment()
+        await self.setup_environment()
 
-    async def setup_production_or_staging_environment(self) -> None:
-        click.echo(f"Setting up {self.config.env.value} environment...")
+    async def setup_environment(self) -> None:
+        if self.config.env == Environment.DEV:
+            self.create_aoc_directory()
+            self.copy_compose_file()
 
-        self.create_aoc_directory()
-        self.copy_compose_file()
         self.setup_secrets()
-        await self.setup_caddy()
-        self.setup_keycloak()
-        self.setup_influxdb()
+
+        keycloak_confirm = click.confirm(
+            "\n\nDo you want to setup Keycloak?", default=True, abort=True
+        )
+        if keycloak_confirm:
+            self.setup_keycloak()
+
+        influxdb_confirm = click.confirm(
+            "\n\nDo you want to setup InfluxDB?", default=True, abort=True
+        )
+        if influxdb_confirm:
+            self.setup_influxdb()
 
         self.cleanup()
 
+        aoc_working_dir = get_aoc_working_directory(
+            self.config.env, self.config.aoc_dir
+        )
         click.echo("AoC initialized successfully!")
-        click.echo(
-            f"You can launch the aoc by going to {self.config.aoc_dir} and running `docker-compose up -d`"
-        )
-        click.echo(
-            f"Access the AOC at the url {self.config.protocol.value}://aoc.{self.config.domain}"
-        )
 
-    async def setup_development_environment(self) -> None:
-        click.echo("Setting up development environment...")
+        if self.config.env == Environment.PROD:
+            click.echo(
+                f"You can launch the aoc by going to {aoc_working_dir} and running `docker-compose up -d`"
+            )
+
+        access_message = f"""
+        Access the AOC at the url {self.config.protocol.value}://aoc.{self.config.domain}"""
+
+        if self.config.env == Environment.DEV:
+            access_message = f"""
+        cd to {aoc_working_dir} and run:
+
+        docker compose -f ./deployment/docker-compose.{self.config.env.value}.yml up -d
+
+        cd to the nextjs directory and run:
+        pnpm dev
+
+        and
+
+        Access the AOC at the url http://localhost:3000
+        """
+
+        click.echo(access_message)
 
     def create_aoc_directory(self) -> None:
         self.config.aoc_dir.mkdir(parents=True, exist_ok=True)
@@ -67,13 +90,12 @@ class InitCommand:
         shutil.copy2(template_path, dest_path)
 
     def setup_keycloak(self) -> None:
-        print("Initializing Keycloak Client")
-
         keycloak_config = KeycloakConfig(
             admin_username=self.config.admin_email,
             admin_password=self.config.admin_password,
             aoc_dir=self.config.aoc_dir,
             org_name=self.config.org_name,
+            env=self.config.env,
         )
 
         keycloak = KeycloakService(keycloak_config)
@@ -101,17 +123,24 @@ class InitCommand:
         caddy.start()
 
     def cleanup(self) -> None:
+        cwd = get_aoc_working_directory(self.config.env, self.config.aoc_dir)
         subprocess.run(
-            ["docker", "compose", "down"],
-            cwd=self.config.aoc_dir,
+            [
+                "docker",
+                "compose",
+                "-f",
+                f"docker-compose.{self.config.env.value}.yml",
+                "down",
+            ],
+            cwd=cwd,
             check=True,
         )
 
     def generate_secrets(self, vars: Dict[str, str]) -> Dict[str, str]:
         """Generate all required secrets"""
         secrets_map = {
-            "KEYCLOAK_POSTGRES_PASSWORD": "KC_DB_PASSWORD",
-            "BITSWAN_POSTGRES_PASSWORD": None,
+            "KC_DB_PASSWORD": None,
+            "BITSWAN_BACKEND_POSTGRES_PASSWORD": None,
             "INFLUXDB_PASSWORD": "DOCKER_INFLUXDB_INIT_PASSWORD",
             "AUTH_SECRET": None,
             "KEYCLOAK_ADMIN_PASSWORD": None,
@@ -128,33 +157,22 @@ class InitCommand:
 
         return vars
 
-    def setup_secrets(self) -> int:
+    def setup_secrets(self) -> None:
         """Setup command implementation"""
         vars = get_var_defaults(
             self.config,
         )
-        # If config.aoc_dir / "secrets.json" exists then load the secrets from there
-        # otherwise generate new secrets and save them to the file.
-        secrets_file = self.config.aoc_dir / "secrets.json"
+
+        aoc_working_dir = get_aoc_working_directory(
+            self.config.env, self.config.aoc_dir
+        )
+
+        secrets_file = aoc_working_dir / "secrets.json"
         if secrets_file.exists():
             with open(secrets_file, "r") as f:
                 secrets = json.load(f)
                 vars.update(secrets)
         else:
             vars = self.generate_secrets(vars)
-            with open(secrets_file, "w") as f:
-                json.dump(vars, f)
 
-        for service in [
-            Services.INFLUXDB,
-            Services.KEYCLOAK,
-            Services.KEYCLOAK_DB,
-            Services.BITSWAN_DB,
-            Services.OPERATIONS_CENTRE,
-            Services.EMQX,
-            Services.BITSWAN_BACKEND,
-        ]:
-
-            write_env_file(vars, service, self.config.aoc_dir)
-
-        return 0
+        bootstrap_services(self.config.env, vars)

@@ -1,5 +1,5 @@
-from pathlib import Path
 import asyncio
+from pathlib import Path
 
 import click
 
@@ -8,7 +8,7 @@ from aoc_cli.aoc_config import (
     load_environment,
     validate_configurations,
 )
-from aoc_cli.commands.init import InitCommand
+from aoc_cli.handlers.init import InitCommand
 from aoc_cli.config import Environment, InitConfig, Protocol
 
 
@@ -64,6 +64,8 @@ async def _init_async(
         admin_password=kwargs["admin_password"],
         org_name=kwargs["org_name"],
     )
+
+    click.echo(f"env: {configs}")
 
     validate_configurations(configs, config_metadata)
 

@@ -1,6 +1,7 @@
 import click
 
-from aoc_cli.commands.uninstall import UninstallCommand, UninstallCommandArgs
+from aoc_cli.handlers.uninstall import UninstallCommand, UninstallCommandArgs
+
 
 @click.command()
 @click.option("--force", is_flag=True, help="Skip confirmation prompts")
