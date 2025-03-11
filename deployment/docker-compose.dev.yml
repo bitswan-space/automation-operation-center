@@ -15,7 +15,6 @@ services:
     build:
       context: ../django
       dockerfile: ./compose/local/django/Dockerfile
-    image: aoc_bitswan_backend_django
     container_name: aoc_bitswan_backend_django
     depends_on:
       - bitswan-backend-postgres
@@ -60,22 +59,6 @@ services:
     env_file: envs/keycloak-postgres.env
     ports:
       - 5434:5432
-
-  docs:
-    image: bitswan_backend_local_docs
-    container_name: bitswan_backend_local_docs
-    build:
-      context: ../django
-      dockerfile: ./compose/local/docs/Dockerfile
-    env_file:
-      - envs/bitswan-backend.env
-    volumes:
-      - ./docs:/docs:z
-      - ./config:/app/config:z
-      - ./bitswan_backend:/app/bitswan_backend:z
-    ports:
-      - "9060:9000"
-    command: /start-docs
 
   redis:
     image: docker.io/redis:6
