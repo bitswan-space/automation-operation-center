@@ -180,7 +180,6 @@ def bootstrap_operations_centre(
             "Keycloak": {
                 "KEYCLOAK_ISSUER": env_config.get("KEYCLOAK_ISSUER"),
                 "KEYCLOAK_CLIENT_ID": env_config.get("KEYCLOAK_CLIENT_ID"),
-                "KEYCLOAK_CLIENT_SECRET": env_config.get("KEYCLOAK_CLIENT_SECRET"),
                 "KEYCLOAK_REFRESH_URL": env_config.get("KEYCLOAK_REFRESH_URL"),
                 "KEYCLOAK_END_SESSION_URL": env_config.get("KEYCLOAK_END_SESSION_URL"),
                 "KEYCLOAK_POST_LOGOUT_REDIRECT_URI": env_config.get(
