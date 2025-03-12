@@ -24,7 +24,8 @@ class KeycloakConfig:
     admin_password: str
     aoc_dir: Path
     realm_name: str = "master"
-    server_url: str = "http://localhost:10000"
+    server_url: str = "http://localhost:8080"
+    management_url: str = "http://localhost:9000"
     verify: bool = False
     org_name: str = "Example Org"
     env: Environment = Environment.DEV
@@ -71,10 +72,10 @@ class KeycloakService:
         for attempt in range(max_retries):
             try:
                 response = requests.get(
-                    f"{self.config.server_url}/health", verify=self.config.verify
+                    f"{self.config.management_url}/health", verify=self.config.verify
                 )
                 if response.status_code == 200:
-                    click.print("Keycloak is ready")
+                    click.echo("Keycloak is ready")
                     return
             except requests.RequestException:
                 if attempt < max_retries - 1:

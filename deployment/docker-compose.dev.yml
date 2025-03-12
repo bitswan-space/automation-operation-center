@@ -18,8 +18,12 @@ services:
     container_name: aoc_bitswan_backend_django
     restart: always
     depends_on:
-      - bitswan-backend-postgres
-      - redis
+      bitswan-backend-postgres:
+        condition: service_started
+      redis:
+        condition: service_started
+      keycloak-health:
+        condition: service_completed_successfully
     volumes:
       - ../django:/app:z
       - ../django/compose/local/rathole/server.toml:/etc/rathole/rathole.toml:z
@@ -105,15 +109,25 @@ services:
       - aoc_local_emqx_data:/opt/emqx/data
 
   keycloak:
-    image: bitswan/bitswan-keycloak:2024-9110295480-git-d7a8e49
+    image: quay.io/keycloak/keycloak:26.1.3
     restart: always
     container_name: aoc-local-keycloak
     ports:
-      - "10000:8080"
+      - "9000:9000"
       - "8080:8080"
     env_file:
       - envs/keycloak.env
     command: start-dev
+
+  keycloak-health:
+    image: curlimages/curl:latest
+    depends_on:
+      - keycloak
+    restart: "no"
+    volumes:
+      - ./scripts/keycloak-healthcheck.sh:/healthcheck.sh
+    entrypoint: ["/healthcheck.sh"]
+    network_mode: "host"
 
   profile-manager:
     restart: always
