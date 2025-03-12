@@ -15,7 +15,7 @@ services:
     build:
       context: ../django
       dockerfile: ./compose/local/django/Dockerfile
-    container_name: aoc_bitswan_backend_django
+    container_name: aoc-bitswan-backend-django
     restart: always
     depends_on:
       bitswan-backend-postgres:
@@ -132,3 +132,16 @@ services:
   profile-manager:
     restart: always
     image: bitswan/profile-manager:2024-11950867793-git-5ff440c
+
+  aoc-nextjs:
+    build:
+      context: ../nextjs
+      dockerfile: ./dev.dockerfile
+    container_name: aoc-local-nextjs
+    env_file:
+      - ./envs/aoc.env
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../nextjs:/app:z
+      - /app/node_modules
