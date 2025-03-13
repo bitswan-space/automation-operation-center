@@ -40,13 +40,13 @@ aoc-cli init \
 
 ## For local development
 
-1. create a python env
+1. Create a python env
 
 ```bash
 python -m venv venv
 ```
 
-```
+```bash
 source venv/bin/activate
 ```
 
@@ -62,9 +62,9 @@ pip install -e .
 aoc dev init
 ```
 
-you can 'enter' everything if you want to use the default values
+You can 'enter' everything if you want to use the default values.
 
-follow terminal instructions of running a docker container
+Follow terminal instructions of running a docker container.
 
 4. Install next.js dependencies
 
@@ -75,9 +75,9 @@ install pnpm
 curl -fsSL https://get.pnpm.io/install.sh | sh -
 ```
 
-restart your terminal if pnpm was just installed and get into the venv again.
+Restart your terminal if pnpm was just installed and get into the venv again.
 
-go to nextjs folder and install dependencies
+Go to nextjs folder and install dependencies.
 
 ```bash
 cd nextjs
@@ -92,4 +92,4 @@ Make sure you have 20.0.0 node.js installed. If you have nvm you can easily chan
 pnpm dev
 ```
 
-6. Open the AOC in your browser at `http://localhost:3000`
+Open the AOC in your browser at `http://localhost:3000`.
