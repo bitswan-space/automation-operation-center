@@ -1,18 +1,19 @@
 import click
 
-from aoc_cli.config import Environment
-from aoc_cli.env_setup.utils import bootstrap_service
+from aoc_cli.env.config import DevSetupKind, InitConfig
+from aoc_cli.env.utils import bootstrap_service
 
 
 def bootstrap_influx_db(
-    environment: Environment, env_config: dict[str, str] = None
+    init_config: InitConfig, env_config: dict[str, str] = None
 ) -> None:
     """Bootstrap InfluxDB environment variables."""
+
     env_config = env_config or {}
 
     bootstrap_service(
         service_name="InfluxDB",
-        environment=environment,
+        environment=init_config.env,
         env_vars={
             "Influxdb Service Configuration": {
                 "DOCKER_INFLUXDB_INIT_ORG": env_config.get("DOCKER_INFLUXDB_INIT_ORG"),
@@ -31,14 +32,14 @@ def bootstrap_influx_db(
 
 
 def bootstrap_keycloak(
-    environment: Environment, env_config: dict[str, str] = None
+    init_config: InitConfig, env_config: dict[str, str] = None
 ) -> None:
     """Bootstrap Keycloak environment variables."""
     env_config = env_config or {}
 
     bootstrap_service(
         service_name="Keycloak",
-        environment=environment,
+        environment=init_config.env,
         env_vars={
             "Keycloak Service Configuration": {
                 "KEYCLOAK_ADMIN_PASSWORD": env_config.get("KEYCLOAK_ADMIN_PASSWORD"),
@@ -62,14 +63,14 @@ def bootstrap_keycloak(
 
 
 def bootstrap_keycloak_db(
-    environment: Environment, env_config: dict[str, str] = None
+    init_config: InitConfig, env_config: dict[str, str] = None
 ) -> None:
     """Bootstrap Keycloak DB environment variables."""
     env_config = env_config or {}
 
     bootstrap_service(
         service_name="Keycloak DB",
-        environment=environment,
+        environment=init_config.env,
         env_vars={
             "Keycloak DB Service Configuration": {
                 "POSTGRES_USER": env_config.get("KC_DB_USERNAME"),
@@ -84,7 +85,7 @@ def bootstrap_keycloak_db(
 
 
 def bootstrap_bitswan_backend(
-    environment: Environment, env_config: dict[str, str] = None
+    init_config: InitConfig, env_config: dict[str, str] = None
 ) -> None:
     """Bootstrap Bitswan Backend environment variables."""
     env_config = env_config or {}
@@ -109,26 +110,33 @@ def bootstrap_bitswan_backend(
             "AUTH_SECRET_KEY": env_config.get("AUTH_SECRET_KEY"),
             "CORS_ALLOWED_ORIGINS": env_config.get("CORS_ALLOWED_ORIGINS"),
             "USE_DOCKER": env_config.get("USE_DOCKER"),
+            "DJANGO_READ_DOT_ENV_FILE": env_config.get("DJANGO_READ_DOT_ENV_FILE"),
         }
     }
 
     bootstrap_service(
         service_name="Bitswan Backend",
-        environment=environment,
+        environment=init_config.env,
         env_vars=env_vars,
-        env_file="bitswan-backend.env",
+        project_name="bitswan-backend",
+        deployment_kind=init_config.dev_setup.value,
+        env_file=(
+            ".env"
+            if init_config.dev_setup == DevSetupKind.LOCAL
+            else "bitswan-backend.env"
+        ),
     )
 
 
 def bootsrap_bitswan_backend_db(
-    environment: Environment, env_config: dict[str, str] = None
+    init_config: InitConfig, env_config: dict[str, str] = None
 ) -> None:
     """Bootstrap Bitswan Backend DB environment variables."""
     env_config = env_config or {}
 
     bootstrap_service(
         service_name="Bitswan Backend DB",
-        environment=environment,
+        environment=init_config.env,
         env_vars={
             "BITSWAN_BACKEND_DB": {
                 "POSTGRES_HOST": env_config.get("BITSWAN_BACKEND_POSTGRES_HOST"),
@@ -145,14 +153,14 @@ def bootsrap_bitswan_backend_db(
 
 
 def bootstrap_operations_centre(
-    environment: Environment, env_config: dict[str, str] = None
+    init_config: InitConfig, env_config: dict[str, str] = None
 ) -> None:
     """Bootstrap Operations Centre environment variables."""
     env_config = env_config or {}
 
     bootstrap_service(
         service_name="Operations Centre",
-        environment=environment,
+        environment=init_config.env,
         env_vars={
             "NextAuth": {
                 "AUTH_URL": env_config.get("AUTH_URL"),
@@ -195,19 +203,19 @@ def bootstrap_operations_centre(
                 "SENTRY_DSN": env_config.get("SENTRY_DSN"),
             },
         },
-        deployment_kind="local" if environment == Environment.DEV else "docker",
+        deployment_kind=init_config.dev_setup.value,
         project_name="aoc",
-        env_file=".env" if environment == Environment.DEV else None,
+        env_file=".env" if init_config.dev_setup == DevSetupKind.LOCAL else None,
     )
 
 
-def bootstrap_emqx(environment: Environment, env_config: dict[str, str] = None) -> None:
+def bootstrap_emqx(init_config: InitConfig, env_config: dict[str, str] = None) -> None:
     """Bootstrap EMQX environment variables."""
     env_config = env_config or {}
 
     bootstrap_service(
         service_name="EMQX",
-        environment=environment,
+        environment=init_config.env,
         env_vars={
             "EMQX": {
                 "EMQX_HOST": env_config.get("EMQX_HOST"),
@@ -220,16 +228,16 @@ def bootstrap_emqx(environment: Environment, env_config: dict[str, str] = None) 
 
 
 def bootstrap_services(
-    environment: Environment, env_config: dict[str, str] = None
+    init_config: InitConfig, env_config: dict[str, str] = None
 ) -> None:
     """Bootstrap all services environment variables."""
     env_config = env_config or {}
     click.echo("\nBootstrapping Services Environment Variables")
 
-    bootstrap_operations_centre(environment, env_config)
-    bootstrap_influx_db(environment, env_config)
-    bootstrap_keycloak(environment, env_config)
-    bootstrap_keycloak_db(environment, env_config)
-    bootstrap_bitswan_backend(environment, env_config)
-    bootsrap_bitswan_backend_db(environment, env_config)
-    bootstrap_emqx(environment, env_config)
+    bootstrap_operations_centre(init_config, env_config)
+    bootstrap_influx_db(init_config, env_config)
+    bootstrap_keycloak(init_config, env_config)
+    bootstrap_keycloak_db(init_config, env_config)
+    bootstrap_bitswan_backend(init_config, env_config)
+    bootsrap_bitswan_backend_db(init_config, env_config)
+    bootstrap_emqx(init_config, env_config)

@@ -6,9 +6,9 @@ from typing import Dict
 
 import click
 
-from aoc_cli.config import Environment, InitConfig
-from aoc_cli.config.variables import get_var_defaults
-from aoc_cli.env_setup.services import bootstrap_services
+from aoc_cli.env.config import Environment, InitConfig
+from aoc_cli.env.services import bootstrap_services
+from aoc_cli.env.variables import get_var_defaults
 from aoc_cli.services.caddy import CaddyService
 from aoc_cli.services.influxdb import InfluxDBService
 from aoc_cli.services.keycloak import KeycloakConfig, KeycloakService
@@ -96,6 +96,7 @@ class InitCommand:
             aoc_dir=self.config.aoc_dir,
             org_name=self.config.org_name,
             env=self.config.env,
+            dev_setup=self.config.dev_setup,
         )
 
         keycloak = KeycloakService(keycloak_config)
@@ -175,4 +176,4 @@ class InitCommand:
         else:
             vars = self.generate_secrets(vars)
 
-        bootstrap_services(self.config.env, vars)
+        bootstrap_services(self.config, vars)

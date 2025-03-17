@@ -3,6 +3,7 @@ Pillow==11.1.0  # https://github.com/python-pillow/Pillow
 argon2-cffi==23.1.0  # https://github.com/hynek/argon2_cffi
 redis==5.0.1  # https://github.com/redis/redis-py
 uvicorn[standard]==0.27.1  # https://github.com/encode/uvicorn
+environs==14.1.1
 
 # Django
 # ------------------------------------------------------------------------------

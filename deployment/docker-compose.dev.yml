@@ -1,4 +1,4 @@
-version: "3"
+# yaml-language-server: $schema=https://raw.githubusercontent.com/docker/compose/master/compose/config/compose_spec.json
 
 volumes:
   aoc_local_bitswan_backend_postgres_data: {}
@@ -15,7 +15,7 @@ services:
     build:
       context: ../django
       dockerfile: ./compose/local/django/Dockerfile
-    container_name: aoc-bitswan-backend-django
+    container_name: aoc-local-bitswan-backend
     restart: always
     depends_on:
       bitswan-backend-postgres:
@@ -67,7 +67,7 @@ services:
 
   redis:
     image: docker.io/redis:6
-    container_name: bitswan_backend_local_redis
+    container_name: aoc-local-redis
     ports:
       - 6379:6379
 

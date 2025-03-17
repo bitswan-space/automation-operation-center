@@ -7,13 +7,16 @@ import click
 import requests
 from keycloak import KeycloakAdmin, KeycloakPostError
 
-from aoc_cli.config import (
-    BITSWAN_BACKEND_ENV_FILE,
+from aoc_cli.env.config import (
+    BITSWAN_BACKEND_DOCKER_ENV_FILE,
+    BITSWAN_BACKEND_LOCAL_ENV_FILE,
     KEYCLOAK_ENV_FILE,
-    OPERATIONS_CENTRE_ENV_FILE,
+    OPERATIONS_CENTRE_DOCKER_ENV_FILE,
+    OPERATIONS_CENTRE_LOCAL_ENV_FILE,
+    DevSetupKind,
     Environment,
 )
-from aoc_cli.env_setup.utils import get_env_path
+from aoc_cli.env.utils import get_env_path
 from aoc_cli.utils.env import get_env_value
 from aoc_cli.utils.tools import get_aoc_working_directory
 
@@ -29,6 +32,7 @@ class KeycloakConfig:
     verify: bool = False
     org_name: str = "Example Org"
     env: Environment = Environment.DEV
+    dev_setup: DevSetupKind = DevSetupKind.DOCKER
 
 
 class KeycloakService:
@@ -233,39 +237,48 @@ class KeycloakService:
         self.keycloak_admin.group_user_add(user_id, org_group_id)
 
     def _update_envs_with_keycloak_secret(self, secret: dict) -> None:
-        # FIXME: This should be made into some kind of method
         aoc_env_file = (
-            OPERATIONS_CENTRE_ENV_FILE if self.config.env != Environment.DEV else ".env"
+            OPERATIONS_CENTRE_DOCKER_ENV_FILE
+            if self.config.dev_setup == DevSetupKind.DOCKER
+            else OPERATIONS_CENTRE_LOCAL_ENV_FILE
+        )
+
+        bitswan_backend_env_file = (
+            BITSWAN_BACKEND_DOCKER_ENV_FILE
+            if self.config.dev_setup == DevSetupKind.DOCKER
+            else BITSWAN_BACKEND_LOCAL_ENV_FILE
         )
 
         env_updates = {
-            aoc_env_file: (
+            "aoc": (
                 "KEYCLOAK_CLIENT_SECRET",
                 "aoc-frontend",
-                "local" if self.config.env == Environment.DEV else "docker",
-                "aoc",
+                self.config.dev_setup.value,
+                aoc_env_file,
             ),
-            BITSWAN_BACKEND_ENV_FILE: (
+            "bitswan-backend": (
                 "KEYCLOAK_CLIENT_SECRET_KEY",
                 "bitswan-backend",
-                "docker",
-                "bitswan-backend",
+                self.config.dev_setup.value,
+                bitswan_backend_env_file,
             ),
         }
 
+        click.echo(f"Updating {env_updates}")
+
         try:
 
-            for env_file, (
+            for project_name, (
                 env_var_label,
                 client_name,
                 deployment_kind,
-                project_name,
+                env_file,
             ) in env_updates.items():
 
                 file_path = get_env_path(
                     self.config.env,
                     env_file=env_file,
-                    deployment_kind=deployment_kind,
+                    dev_setup=deployment_kind,
                     project_name=project_name,
                 )
                 click.echo(f"Updating {file_path}")
