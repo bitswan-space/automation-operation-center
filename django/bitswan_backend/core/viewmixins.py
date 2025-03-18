@@ -1,8 +1,8 @@
 import logging
 
-from bitswan_backend.core.services.keycloak import KeycloakService
-
 from django.template.defaultfilters import slugify
+
+from bitswan_backend.core.services.keycloak import KeycloakService
 
 logger = logging.getLogger(__name__)
 

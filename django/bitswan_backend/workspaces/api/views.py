@@ -1,6 +1,7 @@
 import datetime
 
 import jwt
+from django.conf import settings
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -50,7 +51,8 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=["GET"])
     def jwt(self, request, pk=None):
         workspace = self.get_object()
-        token = create_token(workspace, "JUST_A_SECRET")
+
+        token = create_token(workspace, settings.EMQX_JWT_SECRET)
 
         return Response(
             {

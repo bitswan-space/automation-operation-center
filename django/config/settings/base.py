@@ -348,3 +348,9 @@ CORS_ALLOWED_ORIGINS = env.list(
         "https://poc.bitswan.space",
     ],
 )
+
+
+# EMQX Settings
+# ------------------------------------------------------------------------------
+
+EMQX_JWT_SECRET = env.str("EMQX_JWT_SECRET")

@@ -185,7 +185,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
                 if cfg.env == Environment.PROD or cfg.dev_setup == DevSetupKind.DOCKER
                 else "mqtt://localhost:1883"
             ),
-            "EMQX_JWT_SECRET": "test",
+            "EMQX_JWT_SECRET": "foo",
             "MQTT_URL": "mqtt://aoc-mosquito:1883",
             "NEXT_PUBLIC_MQTT_URL": "{protocol}://mqtt.{domain}/",
             "EMQX_HOST": f"aoc-{env_name}-emqx",
