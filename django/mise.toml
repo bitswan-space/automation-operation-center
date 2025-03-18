@@ -1,11 +1,13 @@
 [env]
 _.python.venv = { path = "venv", create = true }
 
+[tools]
 python = '3.12.6'
 
 
 [tasks.install]
 description = "Installs django dependencies"
+alias = "i"
 run = "pip install -r ./requirements/local.txt"
 
 [tasks.migrate]

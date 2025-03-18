@@ -8,6 +8,7 @@ from bitswan_backend.dashboard_hub.api.views import DashboardEntryViewSet
 from bitswan_backend.deployments.urls import urlpatterns as deployments_urlpatterns
 from bitswan_backend.gitops.api.views import GitopsViewSet
 from bitswan_backend.users.api.views import UserViewSet
+from bitswan_backend.workspaces.api.views import WorkspaceViewSet
 
 router = DefaultRouter() if settings.DEBUG else SimpleRouter()
 
@@ -21,6 +22,7 @@ router.register(
     DashboardEntryViewSet,
     basename="dashboard-entries",
 )
+router.register("workspaces", WorkspaceViewSet, basename="workspaces")
 
 
 app_name = "api"

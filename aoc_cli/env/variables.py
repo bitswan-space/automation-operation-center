@@ -162,10 +162,12 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
         env_vars={
             "BITSWAN_BACKEND_POSTGRES_USER": "postgres",
             "BITSWAN_BACKEND_POSTGRES_DB": "bitswan_backend",
-            "BITSWAN_BACKEND_POSTGRES_HOST": lambda cfg, svcs: svcs[
-                "bitswan_backend_db"
-            ].name.format(
-                env_name="local" if cfg.env == Environment.DEV else "production"
+            "BITSWAN_BACKEND_POSTGRES_HOST": lambda cfg, svcs: (
+                svcs["bitswan_backend_db"].name.format(
+                    env_name="local" if cfg.env == Environment.DEV else "production"
+                )
+                if env_name != "local"
+                else "localhost"
             ),
             "BITSWAN_BACKEND_POSTGRES_PORT": "5432",
             "BITSWAN_BACKEND_POSTGRES_PASSWORD": "postgres",

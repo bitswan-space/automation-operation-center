@@ -93,6 +93,7 @@ LOCAL_APPS = [
     "bitswan_backend.brokers",
     "bitswan_backend.deployments",
     "bitswan_backend.dashboard_hub",
+    "bitswan_backend.workspaces",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

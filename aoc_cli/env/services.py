@@ -114,6 +114,21 @@ def bootstrap_bitswan_backend(
         }
     }
 
+    if init_config.dev_setup == DevSetupKind.LOCAL:
+        env_vars.update(
+            {
+                "Postgres Config": {
+                    "POSTGRES_HOST": env_config.get("BITSWAN_BACKEND_POSTGRES_HOST"),
+                    "POSTGRES_PORT": env_config.get("BITSWAN_BACKEND_POSTGRES_PORT"),
+                    "POSTGRES_USER": env_config.get("BITSWAN_BACKEND_POSTGRES_USER"),
+                    "POSTGRES_PASSWORD": env_config.get(
+                        "BITSWAN_BACKEND_POSTGRES_PASSWORD"
+                    ),
+                    "POSTGRES_DB": env_config.get("BITSWAN_BACKEND_POSTGRES_DB"),
+                }
+            }
+        )
+
     bootstrap_service(
         service_name="Bitswan Backend",
         environment=init_config.env,
