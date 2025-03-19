@@ -23,9 +23,9 @@ def create_token(workspace: Workspace, secret: str, deployment_id=None):
     workspace_path = f"/c/{workspace.id}"
 
     if deployment_id:
-        mountpoint = f"{base_mountpoint}{workspace_path}/c/{deployment_id}"
+        mountpoint = f"{"".join(base_mountpoint)}{workspace_path}/c/{deployment_id}"
     else:
-        mountpoint = f"{base_mountpoint}{workspace_path}"
+        mountpoint = f"{"".join(base_mountpoint)}{workspace_path}"
 
     payload = {
         "exp": exp_timestamp,
@@ -57,6 +57,8 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
     def jwt(self, request, pk=None):
         workspace = self.get_object()
 
+        # TODO: add check to see if workspace can be viewed by caller
+
         token = create_token(workspace, settings.EMQX_JWT_SECRET)
 
         return Response(
@@ -74,7 +76,8 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
     def pipeline_jwt(self, request, pk=None, deployment_id=None):
         workspace = self.get_object()
 
-        # Generate token with deployment ID
+        # TODO: add check to see if workspace can be viewed by caller
+
         token = create_token(
             workspace,
             settings.EMQX_JWT_SECRET,
