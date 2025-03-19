@@ -92,7 +92,7 @@ class GetProfileEmqxJWTAPIView(KeycloakMixin, views.APIView):
 class GetProfileManagerEmqxJWTAPIView(KeycloakMixin, views.APIView):
     authentication_classes = [KeycloakAuthentication]
 
-    def get(self, request, profile_id):
+    def get(self, request):
         token = create_token(settings.EMQX_JWT_SECRET, config={})
 
         return Response(
@@ -108,6 +108,8 @@ class GetAutomationServerEmqxJWTAPIView(KeycloakMixin, views.APIView):
 
     def get(self, request, automation_server_id):
         org_id = self.get_active_user_org_id()
+
+        # TODO: add check for org_id match with the org_id of the automation server (DB)
 
         token = create_token(
             settings.EMQX_JWT_SECRET,
