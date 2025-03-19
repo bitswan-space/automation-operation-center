@@ -13,26 +13,31 @@ from bitswan_backend.workspaces.api.serializers import WorkspaceSerializer
 from bitswan_backend.workspaces.models import Workspace
 
 
-def create_token(workspace: Workspace, secret: str):
+def create_token(workspace: Workspace, secret: str, deployment_id=None):
     exp = datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=2)
     exp_timestamp = int(exp.timestamp())
 
-    mountpoint = (
+    base_mountpoint = (
         f"/automation-servers/{workspace.keycloak_org_id}/{workspace.automation_server_id}",
-        f"/c/{workspace.id}/",
     )
+    workspace_path = f"/c/{workspace.id}"
+
+    if deployment_id:
+        mountpoint = f"{base_mountpoint}{workspace_path}/c/{deployment_id}"
+    else:
+        mountpoint = f"{base_mountpoint}{workspace_path}"
 
     payload = {
         "exp": exp_timestamp,
         "username": workspace.id,
-        "client_attrs": {"mountpoint": "".join(mountpoint)},
+        "client_attrs": {"mountpoint": mountpoint},
     }
 
     return jwt.encode(payload, secret, algorithm="HS256")
 
 
-# FIXME: Currently a token will be authorized even after it has expired.
-#        Consider reworking the oidc flow setup.
+# FIXME: Currently a Keycloak JWT token will be authorized even after it has expired.
+#        Consider reworking the oidc flow setup to prevent this.
 class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
     queryset = Workspace.objects.all()
     serializer_class = WorkspaceSerializer
@@ -53,6 +58,28 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
         workspace = self.get_object()
 
         token = create_token(workspace, settings.EMQX_JWT_SECRET)
+
+        return Response(
+            {
+                "token": token,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @action(
+        detail=True,
+        methods=["GET"],
+        url_path="pipeline/(?P<deployment_id>[^/.]+)/jwt",
+    )
+    def pipeline_jwt(self, request, pk=None, deployment_id=None):
+        workspace = self.get_object()
+
+        # Generate token with deployment ID
+        token = create_token(
+            workspace,
+            settings.EMQX_JWT_SECRET,
+            deployment_id=deployment_id,
+        )
 
         return Response(
             {
