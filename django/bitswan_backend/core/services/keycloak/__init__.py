@@ -1,9 +1,11 @@
 import logging
 
-from bitswan_backend.core.utils import encryption
-from keycloak import KeycloakAdmin, KeycloakOpenID, KeycloakOpenIDConnection
-
 from django.conf import settings
+
+from bitswan_backend.core.utils import encryption
+from keycloak import KeycloakAdmin
+from keycloak import KeycloakOpenID
+from keycloak import KeycloakOpenIDConnection
 
 logger = logging.getLogger(__name__)
 
