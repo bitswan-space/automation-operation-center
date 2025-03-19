@@ -9,6 +9,7 @@ from bitswan_backend.deployments.urls import urlpatterns as deployments_urlpatte
 from bitswan_backend.gitops.api.views import GitopsViewSet
 from bitswan_backend.users.api.views import UserViewSet
 from bitswan_backend.workspaces.api.views import WorkspaceViewSet
+from bitswan_backend.workspaces.urls import urlpatterns as workspaces_urlpatterns
 
 router = DefaultRouter() if settings.DEBUG else SimpleRouter()
 
@@ -26,5 +27,4 @@ router.register("workspaces", WorkspaceViewSet, basename="workspaces")
 
 
 app_name = "api"
-urlpatterns = router.urls + deployments_urlpatterns
-urlpatterns = router.urls + deployments_urlpatterns
+urlpatterns = router.urls + deployments_urlpatterns + workspaces_urlpatterns
