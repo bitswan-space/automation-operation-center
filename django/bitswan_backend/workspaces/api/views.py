@@ -1,6 +1,3 @@
-import datetime
-
-import jwt
 from django.conf import settings
 from rest_framework import status
 from rest_framework import views
@@ -11,46 +8,8 @@ from rest_framework.response import Response
 from bitswan_backend.core.authentication import KeycloakAuthentication
 from bitswan_backend.core.viewmixins import KeycloakMixin
 from bitswan_backend.workspaces.api.serializers import WorkspaceSerializer
+from bitswan_backend.workspaces.api.services import create_token
 from bitswan_backend.workspaces.models import Workspace
-
-
-def create_token(
-    secret: str,
-    profile_id: str | None = None,
-    keycloak_org_id: str | None = None,
-    workspace: Workspace = None,
-    deployment_id: str | None = None,
-):
-    exp = datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=2)
-    exp_timestamp = int(exp.timestamp())
-
-    mountpoint = ""
-    username = ""
-
-    if profile_id and keycloak_org_id:
-        mountpoint = f"/profiles/{keycloak_org_id}/{profile_id}"
-        username = profile_id
-
-    elif workspace:
-
-        base_mountpoint = (
-            f"/automation-servers/{workspace.keycloak_org_id}/{workspace.automation_server_id}",
-        )
-        workspace_path = f"/c/{workspace.id}"
-
-        if deployment_id:
-            mountpoint = f"{"".join(base_mountpoint)}{workspace_path}/c/{deployment_id}"
-        else:
-            mountpoint = f"{"".join(base_mountpoint)}{workspace_path}"
-        username = workspace.id
-
-    payload = {
-        "exp": exp_timestamp,
-        "username": username,
-        "client_attrs": {"mountpoint": mountpoint},
-    }
-
-    return jwt.encode(payload, secret, algorithm="HS256")
 
 
 # FIXME: Currently a Keycloak JWT token will be authorized even after it has expired.
@@ -76,7 +35,10 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
 
         # TODO: add check to see if workspace can be viewed by caller
 
-        token = create_token(secret=settings.EMQX_JWT_SECRET, workspace=workspace)
+        token = create_token(
+            secret=settings.EMQX_JWT_SECRET,
+            config={"workspace": workspace},
+        )
 
         return Response(
             {
@@ -97,8 +59,7 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
 
         token = create_token(
             secret=settings.EMQX_JWT_SECRET,
-            workspace=workspace,
-            deployment_id=deployment_id,
+            config={"workspace": workspace, "deployment_id": deployment_id},
         )
 
         return Response(
@@ -109,7 +70,7 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
         )
 
 
-class GetProfileEmqxJWT(KeycloakMixin, views.APIView):
+class GetProfileEmqxJWTAPIView(KeycloakMixin, views.APIView):
     authentication_classes = [KeycloakAuthentication]
 
     def get(self, request, profile_id):
@@ -117,8 +78,43 @@ class GetProfileEmqxJWT(KeycloakMixin, views.APIView):
 
         token = create_token(
             settings.EMQX_JWT_SECRET,
-            profile_id=profile_id,
-            keycloak_org_id=org_id,
+            config={"profile_id": profile_id, "keycloak_org_id": org_id},
+        )
+
+        return Response(
+            {
+                "token": token,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class GetProfileManagerEmqxJWTAPIView(KeycloakMixin, views.APIView):
+    authentication_classes = [KeycloakAuthentication]
+
+    def get(self, request, profile_id):
+        token = create_token(settings.EMQX_JWT_SECRET, config={})
+
+        return Response(
+            {
+                "token": token,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class GetAutomationServerEmqxJWTAPIView(KeycloakMixin, views.APIView):
+    authentication_classes = [KeycloakAuthentication]
+
+    def get(self, request, automation_server_id):
+        org_id = self.get_active_user_org_id()
+
+        token = create_token(
+            settings.EMQX_JWT_SECRET,
+            config={
+                "automation_server_id": automation_server_id,
+                "keycloak_org_id": org_id,
+            },
         )
 
         return Response(
