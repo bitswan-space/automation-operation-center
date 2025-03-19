@@ -69,7 +69,7 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
     @action(
         detail=True,
         methods=["GET"],
-        url_path="pipeline/(?P<deployment_id>[^/.]+)/jwt",
+        url_path="pipelines/(?P<deployment_id>[^/.]+)/jwt",
     )
     def pipeline_jwt(self, request, pk=None, deployment_id=None):
         workspace = self.get_object()
