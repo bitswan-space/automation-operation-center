@@ -14,7 +14,7 @@ from bitswan_backend.workspaces.api.services import create_token
 from bitswan_backend.workspaces.models import AutomationServer
 from bitswan_backend.workspaces.models import Workspace
 
-L = logging.getLogger(__name__)
+L = logging.getLogger("workspaces.api.views")
 
 
 # FIXME: Currently a Keycloak JWT token will be authorized even after it has expired.
