@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from rest_framework import status
 from rest_framework import views
@@ -9,7 +11,10 @@ from bitswan_backend.core.authentication import KeycloakAuthentication
 from bitswan_backend.core.viewmixins import KeycloakMixin
 from bitswan_backend.workspaces.api.serializers import WorkspaceSerializer
 from bitswan_backend.workspaces.api.services import create_token
+from bitswan_backend.workspaces.models import AutomationServer
 from bitswan_backend.workspaces.models import Workspace
+
+L = logging.getLogger(__name__)
 
 
 # FIXME: Currently a Keycloak JWT token will be authorized even after it has expired.
@@ -109,7 +114,18 @@ class GetAutomationServerEmqxJWTAPIView(KeycloakMixin, views.APIView):
     def get(self, request, automation_server_id):
         org_id = self.get_active_user_org_id()
 
-        # TODO: add check for org_id match with the org_id of the automation server (DB)
+        try:
+            automation_server = AutomationServer.objects.get(
+                automation_server_id=automation_server_id,
+                keycloak_org_id=org_id,
+            )
+        except AutomationServer.DoesNotExist:
+            return Response(
+                {"error": "Automation server not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        L.info("Got automation server: %s", automation_server)
 
         token = create_token(
             settings.EMQX_JWT_SECRET,
