@@ -20,24 +20,25 @@ def create_token(secret: str, config: dict | None = None):
     deployment_id = config.get("deployment_id")
 
     if automation_server_id and keycloak_org_id:
-        mountpoint = f"/automation-servers/{keycloak_org_id}/{automation_server_id}"
+        mountpoint = (
+            f"/orgs/{keycloak_org_id}/automation-servers/{automation_server_id}"
+        )
         username = automation_server_id
 
     if profile_id and keycloak_org_id:
-        mountpoint = f"/profiles/{keycloak_org_id}/{profile_id}"
+        mountpoint = f"/orgs/{keycloak_org_id}/profiles/{profile_id}"
         username = profile_id
 
     elif workspace:
-
         base_mountpoint = (
-            f"/automation-servers/{workspace.keycloak_org_id}/{workspace.automation_server_id}",
+            f"/orgs/{workspace.keycloak_org_id}/automation-servers/{workspace.automation_server_id}",
         )
         workspace_path = f"/c/{workspace.id}"
 
         if deployment_id:
-            mountpoint = f"{"".join(base_mountpoint)}{workspace_path}/c/{deployment_id}"
+            mountpoint = f"{''.join(base_mountpoint)}{workspace_path}/c/{deployment_id}"
         else:
-            mountpoint = f"{"".join(base_mountpoint)}{workspace_path}"
+            mountpoint = f"{''.join(base_mountpoint)}{workspace_path}"
         username = workspace.id
 
     payload = {

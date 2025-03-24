@@ -111,7 +111,7 @@ def bootstrap_bitswan_backend(
             "CORS_ALLOWED_ORIGINS": env_config.get("CORS_ALLOWED_ORIGINS"),
             "USE_DOCKER": env_config.get("USE_DOCKER"),
             "DJANGO_READ_DOT_ENV_FILE": env_config.get("DJANGO_READ_DOT_ENV_FILE"),
-            "EMQX_JWT_SECRET": env_config.get("EMQX_JWT_SECRET"),
+            "EMQX_JWT_SECRET": env_config.get("EMQX_AUTHENTICATION__SECRET"),
         }
     }
 
@@ -237,7 +237,12 @@ def bootstrap_emqx(init_config: InitConfig, env_config: dict[str, str] = None) -
                 "EMQX_HOST": env_config.get("EMQX_HOST"),
                 "EMQX_PORT": env_config.get("EMQX_PORT"),
                 "EMQX_USER": env_config.get("EMQX_USER"),
-                "EMQX_PASSWORD": env_config.get("EMQX_PASSWORD"),
+                "EMQX_DASHBOARD__DEFAULT_PASSWORD": env_config.get(
+                    "EMQX_DASHBOARD__DEFAULT_PASSWORD"
+                ),
+                "EMQX_AUTHENTICATION__SECRET": env_config.get(
+                    "EMQX_AUTHENTICATION__SECRET"
+                ),
             }
         },
     )

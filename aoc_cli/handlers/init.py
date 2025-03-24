@@ -149,6 +149,7 @@ class InitCommand:
             "EMQX_DASHBOARD__DEFAULT_PASSWORD": None,
             "DJANGO_SECRET_KEY": None,
             "AUTH_SECRET_KEY": None,
+            "EMQX_AUTHENTICATION__SECRET": None,
         }
 
         for key, linked_key in secrets_map.items():
