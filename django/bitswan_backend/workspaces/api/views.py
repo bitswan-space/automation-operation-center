@@ -40,9 +40,17 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
 
         # TODO: add check to see if workspace can be viewed by caller
 
+        mountpoint = (
+            f"/orgs/{workspace.keycloak_org_id}/"
+            f"automation-servers/{workspace.automation_server_id}/"
+            f"c/{workspace.id}"
+        )
+        username = workspace.id
+
         token = create_token(
             secret=settings.EMQX_JWT_SECRET,
-            config={"workspace": workspace},
+            username=username,
+            mountpoint=mountpoint,
         )
 
         return Response(
@@ -62,9 +70,17 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
 
         # TODO: add check to see if workspace can be viewed by caller
 
+        mountpoint = (
+            f"/orgs/{workspace.keycloak_org_id}/"
+            f"automation-servers/{workspace.automation_server_id}/"
+            f"c/{workspace.id}/c/{deployment_id}"
+        )
+        username = workspace.id
+
         token = create_token(
             secret=settings.EMQX_JWT_SECRET,
-            config={"workspace": workspace, "deployment_id": deployment_id},
+            username=username,
+            mountpoint=mountpoint,
         )
 
         return Response(
@@ -81,9 +97,13 @@ class GetProfileEmqxJWTAPIView(KeycloakMixin, views.APIView):
     def get(self, request, profile_id):
         org_id = self.get_active_user_org_id()
 
+        mountpoint = f"/orgs/{org_id}/profiles/{profile_id}"
+        username = profile_id
+
         token = create_token(
-            settings.EMQX_JWT_SECRET,
-            config={"profile_id": profile_id, "keycloak_org_id": org_id},
+            secret=settings.EMQX_JWT_SECRET,
+            username=username,
+            mountpoint=mountpoint,
         )
 
         return Response(
@@ -98,7 +118,10 @@ class GetProfileManagerEmqxJWTAPIView(KeycloakMixin, views.APIView):
     authentication_classes = [KeycloakAuthentication]
 
     def get(self, request):
-        token = create_token(settings.EMQX_JWT_SECRET, config={})
+        token = create_token(
+            secret=settings.EMQX_JWT_SECRET,
+            username="root",
+        )
 
         return Response(
             {
@@ -127,12 +150,13 @@ class GetAutomationServerEmqxJWTAPIView(KeycloakMixin, views.APIView):
 
         L.info("Got automation server: %s", automation_server)
 
+        mountpoint = f"/orgs/{org_id}/automation-servers/{automation_server_id}"
+        username = automation_server_id
+
         token = create_token(
-            settings.EMQX_JWT_SECRET,
-            config={
-                "automation_server_id": automation_server_id,
-                "keycloak_org_id": org_id,
-            },
+            secret=settings.EMQX_JWT_SECRET,
+            username=username,
+            mountpoint=mountpoint,
         )
 
         return Response(

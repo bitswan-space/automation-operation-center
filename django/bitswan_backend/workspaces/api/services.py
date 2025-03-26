@@ -3,43 +3,21 @@ import datetime
 import jwt
 
 
-def create_token(secret: str, config: dict | None = None):
-    if config is None:
-        config = {}
+def create_token(secret: str, username: str, mountpoint: str = "", exp_hours: int = 2):
+    """
+    Create a JWT token with the given parameters.
 
-    exp = datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=2)
+    Args:
+        secret: The secret key used for encoding
+        username: Username to include in the token
+        mountpoint: The mountpoint path (defaults to empty string)
+        exp_hours: Token expiration time in hours (defaults to 2)
+
+    Returns:
+        Encoded JWT token
+    """
+    exp = datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=exp_hours)
     exp_timestamp = int(exp.timestamp())
-
-    mountpoint = ""
-    username = "root"
-
-    automation_server_id = config.get("automation_server_id")
-    keycloak_org_id = config.get("keycloak_org_id")
-    profile_id = config.get("profile_id")
-    workspace = config.get("workspace")
-    deployment_id = config.get("deployment_id")
-
-    if automation_server_id and keycloak_org_id:
-        mountpoint = (
-            f"/orgs/{keycloak_org_id}/automation-servers/{automation_server_id}"
-        )
-        username = automation_server_id
-
-    if profile_id and keycloak_org_id:
-        mountpoint = f"/orgs/{keycloak_org_id}/profiles/{profile_id}"
-        username = profile_id
-
-    elif workspace:
-        base_mountpoint = (
-            f"/orgs/{workspace.keycloak_org_id}/automation-servers/{workspace.automation_server_id}",
-        )
-        workspace_path = f"/c/{workspace.id}"
-
-        if deployment_id:
-            mountpoint = f"{''.join(base_mountpoint)}{workspace_path}/c/{deployment_id}"
-        else:
-            mountpoint = f"{''.join(base_mountpoint)}{workspace_path}"
-        username = workspace.id
 
     payload = {
         "exp": exp_timestamp,
