@@ -50,12 +50,16 @@ class CanReadProfileEMQXJWT(BasePermission):
     def has_permission(self, request, view):
         org_id = self.keycloak.get_active_user_org(request).get("id")
 
-        org_users = self.keycloak.get_org_users(org_id=org_id)
-        org_user_emails = [user["email"] for user in org_users]
+        active_user_id = self.keycloak.get_active_user(request)
+
+        is_group_member = self.keycloak.is_group_member(
+            user_id=active_user_id,
+            group_id=view.kwargs.get("profile_id"),
+        )
 
         return (
             request.user.org_id == org_id
-            and request.user.get_username() in org_user_emails
+            and is_group_member
             and request.user.is_active
             and request.user.is_authenticated
             and request.method in SAFE_METHODS

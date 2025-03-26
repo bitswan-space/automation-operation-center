@@ -341,3 +341,11 @@ class KeycloakService:
         return any(
             group["name"].lower() == "admin" for group in org_group_user_memberships
         )
+
+    def is_group_member(self, user_id, group_id):
+        user_group_memberships = self.keycloak_admin.get_user_groups(
+            user_id=user_id,
+            brief_representation=False,
+        )
+
+        return group_id in [group["id"] for group in user_group_memberships]
