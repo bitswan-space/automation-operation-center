@@ -13,6 +13,10 @@ from bitswan_backend.workspaces.api.serializers import WorkspaceSerializer
 from bitswan_backend.workspaces.api.services import create_token
 from bitswan_backend.workspaces.models import AutomationServer
 from bitswan_backend.workspaces.models import Workspace
+from bitswan_backend.workspaces.permissions import CanReadAutomationServerEMQXJWT
+from bitswan_backend.workspaces.permissions import CanReadProfileEMQXJWT
+from bitswan_backend.workspaces.permissions import CanReadWorkspaceEMQXJWT
+from bitswan_backend.workspaces.permissions import CanReadWorkspacePipelineEMQXJWT
 
 L = logging.getLogger("workspaces.api.views")
 
@@ -34,14 +38,19 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save(keycloak_org_id=self.get_active_user_org_id())
 
-    @action(detail=True, methods=["GET"], url_path="emqx/jwt")
+    @action(
+        detail=True,
+        methods=["GET"],
+        url_path="emqx/jwt",
+        permission_classes=[CanReadWorkspaceEMQXJWT],
+    )
     def emqx_jwt(self, request, pk=None):
         workspace = self.get_object()
 
-        # TODO: add check to see if workspace can be viewed by caller
+        org_id = self.get_active_user_org_id()
 
         mountpoint = (
-            f"/orgs/{workspace.keycloak_org_id}/"
+            f"/orgs/{org_id}/"
             f"automation-servers/{workspace.automation_server_id}/"
             f"c/{workspace.id}"
         )
@@ -64,14 +73,15 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
         detail=True,
         methods=["GET"],
         url_path="pipelines/(?P<deployment_id>[^/.]+)/emqx/jwt",
+        permission_classes=[CanReadWorkspacePipelineEMQXJWT],
     )
     def pipeline_jwt(self, request, pk=None, deployment_id=None):
         workspace = self.get_object()
 
-        # TODO: add check to see if workspace can be viewed by caller
+        org_id = self.get_active_user_org_id()
 
         mountpoint = (
-            f"/orgs/{workspace.keycloak_org_id}/"
+            f"/orgs/{org_id}/"
             f"automation-servers/{workspace.automation_server_id}/"
             f"c/{workspace.id}/c/{deployment_id}"
         )
@@ -93,6 +103,7 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
 
 class GetProfileEmqxJWTAPIView(KeycloakMixin, views.APIView):
     authentication_classes = [KeycloakAuthentication]
+    permission_classes = [CanReadProfileEMQXJWT]
 
     def get(self, request, profile_id):
         org_id = self.get_active_user_org_id()
@@ -133,6 +144,7 @@ class GetProfileManagerEmqxJWTAPIView(KeycloakMixin, views.APIView):
 
 class GetAutomationServerEmqxJWTAPIView(KeycloakMixin, views.APIView):
     authentication_classes = [KeycloakAuthentication]
+    permission_classes = [CanReadAutomationServerEMQXJWT]
 
     def get(self, request, automation_server_id):
         org_id = self.get_active_user_org_id()
