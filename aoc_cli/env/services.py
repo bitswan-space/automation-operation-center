@@ -111,8 +111,24 @@ def bootstrap_bitswan_backend(
             "CORS_ALLOWED_ORIGINS": env_config.get("CORS_ALLOWED_ORIGINS"),
             "USE_DOCKER": env_config.get("USE_DOCKER"),
             "DJANGO_READ_DOT_ENV_FILE": env_config.get("DJANGO_READ_DOT_ENV_FILE"),
+            "EMQX_JWT_SECRET": env_config.get("EMQX_AUTHENTICATION__SECRET"),
         }
     }
+
+    if init_config.dev_setup == DevSetupKind.LOCAL:
+        env_vars.update(
+            {
+                "Postgres Config": {
+                    "POSTGRES_HOST": env_config.get("BITSWAN_BACKEND_POSTGRES_HOST"),
+                    "POSTGRES_PORT": env_config.get("BITSWAN_BACKEND_POSTGRES_PORT"),
+                    "POSTGRES_USER": env_config.get("BITSWAN_BACKEND_POSTGRES_USER"),
+                    "POSTGRES_PASSWORD": env_config.get(
+                        "BITSWAN_BACKEND_POSTGRES_PASSWORD"
+                    ),
+                    "POSTGRES_DB": env_config.get("BITSWAN_BACKEND_POSTGRES_DB"),
+                }
+            }
+        )
 
     bootstrap_service(
         service_name="Bitswan Backend",
@@ -221,7 +237,12 @@ def bootstrap_emqx(init_config: InitConfig, env_config: dict[str, str] = None) -
                 "EMQX_HOST": env_config.get("EMQX_HOST"),
                 "EMQX_PORT": env_config.get("EMQX_PORT"),
                 "EMQX_USER": env_config.get("EMQX_USER"),
-                "EMQX_PASSWORD": env_config.get("EMQX_PASSWORD"),
+                "EMQX_DASHBOARD__DEFAULT_PASSWORD": env_config.get(
+                    "EMQX_DASHBOARD__DEFAULT_PASSWORD"
+                ),
+                "EMQX_AUTHENTICATION__SECRET": env_config.get(
+                    "EMQX_AUTHENTICATION__SECRET"
+                ),
             }
         },
     )

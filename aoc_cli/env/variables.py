@@ -162,10 +162,12 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
         env_vars={
             "BITSWAN_BACKEND_POSTGRES_USER": "postgres",
             "BITSWAN_BACKEND_POSTGRES_DB": "bitswan_backend",
-            "BITSWAN_BACKEND_POSTGRES_HOST": lambda cfg, svcs: svcs[
-                "bitswan_backend_db"
-            ].name.format(
-                env_name="local" if cfg.env == Environment.DEV else "production"
+            "BITSWAN_BACKEND_POSTGRES_HOST": lambda cfg, svcs: (
+                svcs["bitswan_backend_db"].name.format(
+                    env_name="local" if cfg.env == Environment.DEV else "production"
+                )
+                if env_name != "local"
+                else "localhost"
             ),
             "BITSWAN_BACKEND_POSTGRES_PORT": "5432",
             "BITSWAN_BACKEND_POSTGRES_PASSWORD": "postgres",
@@ -183,14 +185,11 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
                 if cfg.env == Environment.PROD or cfg.dev_setup == DevSetupKind.DOCKER
                 else "mqtt://localhost:1883"
             ),
-            "EMQX_JWT_SECRET": "test",
             "MQTT_URL": "mqtt://aoc-mosquito:1883",
             "NEXT_PUBLIC_MQTT_URL": "{protocol}://mqtt.{domain}/",
             "EMQX_HOST": f"aoc-{env_name}-emqx",
             "EMQX_PORT": "1883",
             "EMQX_USER": "admin",
-            "EMQX_PASSWORD": "admin",
-            "EMQX_DASHBOARD__DEFAULT_PASSWORD": "admin",
         },
     )
 

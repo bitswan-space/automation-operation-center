@@ -107,6 +107,7 @@ services:
       - envs/emqx.env
     volumes:
       - aoc_local_emqx_data:/opt/emqx/data
+      - ./emqx/emqx.conf:/opt/emqx/etc/emqx.conf
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.1.3
