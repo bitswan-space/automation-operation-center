@@ -55,6 +55,7 @@ def bootstrap_keycloak(
                 "KC_PROXY_HEADERS": env_config.get("KC_PROXY_HEADERS"),
                 "KC_HOSTNAME_STRICT": env_config.get("KC_HOSTNAME_STRICT"),
                 "KC_HOSTNAME_STRICT_HTTPS": env_config.get("KC_HOSTNAME_STRICT_HTTPS"),
+                "KC_HEALTH_ENABLED": env_config.get("KC_HEALTH_ENABLED"),
             }
         },
     )

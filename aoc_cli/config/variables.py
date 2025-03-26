@@ -92,6 +92,7 @@ def get_var_defaults(
         "KC_HTTP_ENABLED": "true",
         "KC_HOSTNAME_STRICT": "false",
         "KC_HOSTNAME_STRICT_HTTPS": "false",
+        "KC_HEALTH_ENABLED": "true",
         "KEYCLOAK_ADMIN": "admin",
         "KEYCLOAK_CLIENT_ID": "aoc-frontend",  # Probably needs to be set in keycloak service
         "KEYCLOAK_REFRESH_URL": f"{keycloak_url}/realms/master/protocol/openid-connect/token",
