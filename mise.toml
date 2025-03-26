@@ -1,0 +1,14 @@
+
+[tasks.start_services]
+description = "Starts all compose services"
+run = """
+docker compose -f ./deployment/docker-compose.dev.yml up \
+bitswan-backend-postgres \
+keycloak-postgres \
+redis \
+influxdb \
+emqx \
+keycloak \
+keycloak-postgres \
+-d
+"""

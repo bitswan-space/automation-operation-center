@@ -8,8 +8,8 @@ from aoc_cli.aoc_config import (
     load_environment,
     validate_configurations,
 )
+from aoc_cli.env.config import Environment, InitConfig, Protocol
 from aoc_cli.handlers.init import InitCommand
-from aoc_cli.config import Environment, InitConfig, Protocol
 
 
 @click.command()

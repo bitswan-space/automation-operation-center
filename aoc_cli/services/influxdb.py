@@ -7,9 +7,14 @@ import click
 import requests
 from influxdb_client import InfluxDBClient
 
-from aoc_cli.config import Environment, InitConfig
-from aoc_cli.config.services import INFLUXDB_ENV_FILE, OPERATIONS_CENTRE_ENV_FILE
-from aoc_cli.env_setup.utils import get_env_path
+from aoc_cli.env.config import (
+    INFLUXDB_ENV_FILE,
+    OPERATIONS_CENTRE_DOCKER_ENV_FILE,
+    OPERATIONS_CENTRE_LOCAL_ENV_FILE,
+    DevSetupKind,
+    InitConfig,
+)
+from aoc_cli.env.utils import get_env_path
 from aoc_cli.utils.env import get_env_value
 from aoc_cli.utils.tools import get_aoc_working_directory
 
@@ -147,16 +152,21 @@ class InfluxDBService:
 
     def _update_envs_with_influxdb_token(self, secret: str) -> None:
         aoc_env_file = (
-            OPERATIONS_CENTRE_ENV_FILE
-            if self.init_config.env != Environment.DEV
-            else ".env"
+            OPERATIONS_CENTRE_DOCKER_ENV_FILE
+            if self.init_config.dev_setup == DevSetupKind.DOCKER
+            else OPERATIONS_CENTRE_LOCAL_ENV_FILE
         )
 
         file_path = get_env_path(
             self.init_config.env,
             aoc_env_file,
-            "local" if self.init_config.env == Environment.DEV else "docker",
+            self.init_config.dev_setup.value,
             "aoc",
         )
+
+        click.echo(f"Updating {file_path}")
+
         with open(file_path, "a") as f:
             f.write(f"\nINFLUXDB_TOKEN={secret}\n")
+            self.init_config.dev_setup.value,
+            "aoc",

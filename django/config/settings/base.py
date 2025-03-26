@@ -93,6 +93,7 @@ LOCAL_APPS = [
     "bitswan_backend.brokers",
     "bitswan_backend.deployments",
     "bitswan_backend.dashboard_hub",
+    "bitswan_backend.workspaces",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -347,3 +348,9 @@ CORS_ALLOWED_ORIGINS = env.list(
         "https://poc.bitswan.space",
     ],
 )
+
+
+# EMQX Settings
+# ------------------------------------------------------------------------------
+
+EMQX_JWT_SECRET = env.str("EMQX_JWT_SECRET")

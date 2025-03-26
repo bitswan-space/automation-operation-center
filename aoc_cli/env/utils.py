@@ -4,7 +4,7 @@ from typing import Dict, Optional
 
 import click
 
-from aoc_cli.config import Environment
+from aoc_cli.env.config import Environment
 
 
 def bootstrap_service(
@@ -82,7 +82,7 @@ def write_env_file(env_content: str, env_path: str) -> None:
 def get_env_path(
     environment: Environment,
     env_file: str | Path,
-    deployment_kind: str = "docker",
+    dev_setup: str = "docker",
     project_name: str = None,
 ) -> Path:
     """
@@ -94,11 +94,14 @@ def get_env_path(
     Returns:
         Path: The path to the .env file for the given environment.
     """
-    project_app_dir_mapping = {"aoc": Path(__file__).parent.parent.parent / "nextjs"}
+    project_app_dir_mapping = {
+        "aoc": Path(__file__).parent.parent.parent / "nextjs",
+        "bitswan-backend": Path(__file__).parent.parent.parent / "django",
+    }
 
-    if environment == Environment.DEV and deployment_kind == "docker":
+    if environment == Environment.DEV and dev_setup == "docker":
         return Path(__file__).parent.parent.parent / "deployment" / "envs" / env_file
-    elif environment == Environment.DEV and deployment_kind == "local":
+    elif environment == Environment.DEV and dev_setup == "local":
         return project_app_dir_mapping[project_name] / env_file
 
     # TODO: Read from generated config file the specified aoc_dir

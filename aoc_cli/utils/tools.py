@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from aoc_cli.config import Environment
+from aoc_cli.env.config import Environment
 
 
 def get_aoc_working_directory(env: Environment, aoc_dir: Path) -> Path:

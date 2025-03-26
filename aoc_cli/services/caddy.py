@@ -2,7 +2,7 @@ import subprocess
 
 import aiohttp
 
-from aoc_cli.config import Environment, InitConfig
+from aoc_cli.env.config import Environment, InitConfig
 
 
 async def caddy_delete_id(caddy_id):
