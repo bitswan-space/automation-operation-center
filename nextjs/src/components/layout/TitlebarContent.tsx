@@ -1,18 +1,34 @@
 import { Card, CardContent } from "../ui/card";
 
-import { type MQTTProfileListResponse } from "@/server/actions/mqtt-profiles";
+import {
+  type FetchMQTTProfileError,
+  type MQTTProfileListResponse,
+} from "@/server/actions/mqtt-profiles";
 import MQTTProfileSelector from "../groups/MQTTProfileSelector";
 import { Skeleton } from "../ui/skeleton";
 import { Suspense } from "react";
 import clsx from "clsx";
+import { type Result } from "neverthrow";
 
 export type TitleBarContentProps = {
   className?: string;
   title: React.ReactNode;
-  mqttProfiles?: MQTTProfileListResponse;
+  mqttProfilesRes: Result<MQTTProfileListResponse, FetchMQTTProfileError>;
 };
 export function TitleBarContent(props: TitleBarContentProps) {
-  const { className, title, mqttProfiles } = props;
+  const { className, title, mqttProfilesRes } = props;
+
+  const renderMQTTProfileContent = () => {
+    return mqttProfilesRes.match(
+      (data) => <MQTTProfileSelector mqttProfiles={data.results} />,
+      (error) => (
+        <div className="text-red-500">
+          {error.message || "Failed to load MQTT profiles"}
+        </div>
+      ),
+    );
+  };
+
   return (
     <div className={clsx("hidden md:block", className)}>
       <Card
@@ -29,7 +45,7 @@ export function TitleBarContent(props: TitleBarContentProps) {
           <div className="flex gap-4 pr-2">
             <div className="my-auto w-full">
               <Suspense fallback={<Skeleton className="h-10 w-60" />}>
-                <MQTTProfileSelector mqttProfiles={mqttProfiles} />
+                {renderMQTTProfileContent()}
               </Suspense>
             </div>
           </div>

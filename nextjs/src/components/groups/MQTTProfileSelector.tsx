@@ -1,10 +1,7 @@
 "use client";
 
 import { Workflow } from "lucide-react";
-import {
-  type MQTTProfile,
-  type MQTTProfileListResponse,
-} from "@/server/actions/mqtt-profiles";
+import { type MQTTProfile } from "@/server/actions/mqtt-profiles";
 import {
   Select,
   SelectContent,
@@ -20,7 +17,7 @@ import React from "react";
 import useLocalStorageState from "ahooks/lib/useLocalStorageState";
 
 type MQTTProfileSelectorProps = {
-  mqttProfiles?: MQTTProfileListResponse;
+  mqttProfiles: MQTTProfile[];
 };
 
 export default function MQTTProfileSelector(props: MQTTProfileSelectorProps) {
@@ -29,13 +26,13 @@ export default function MQTTProfileSelector(props: MQTTProfileSelectorProps) {
   const [activeMQTTProfile, saveActiveMQTTProfile] = useLocalStorageState<
     MQTTProfile | undefined
   >(ACTIVE_MQTT_PROFILE_STORAGE_KEY, {
-    defaultValue: mqttProfiles?.results?.[0],
+    defaultValue: mqttProfiles?.[0],
     listenStorageChange: true,
   });
 
   const handleActiveMQTTUserChange = (orgGroupId: string) => {
     void saveActiveMQTTProfile(
-      mqttProfiles?.results?.find((profile) => profile.id === orgGroupId),
+      mqttProfiles?.find((profile) => profile.id === orgGroupId),
     );
   };
 
@@ -63,7 +60,7 @@ export default function MQTTProfileSelector(props: MQTTProfileSelectorProps) {
         <SelectGroup>
           <SelectLabel>
             <div>MQTT profiles</div>
-            {mqttProfiles?.results?.length === 0 && (
+            {mqttProfiles?.length === 0 && (
               <div className="mt-2 flex h-16 flex-col items-center justify-center gap-2 rounded border border-dashed">
                 <div className="text-center text-sm font-normal text-neutral-500">
                   No mqtt profiles found
@@ -71,7 +68,7 @@ export default function MQTTProfileSelector(props: MQTTProfileSelectorProps) {
               </div>
             )}
           </SelectLabel>
-          {mqttProfiles?.results?.map((orgGroup) => (
+          {mqttProfiles?.map((orgGroup) => (
             <SelectItem key={orgGroup.id} value={orgGroup.id}>
               {orgGroup.name}
             </SelectItem>

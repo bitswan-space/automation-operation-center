@@ -7,7 +7,8 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 import FlowProvider from "@/context/ReactFlowProvider";
 import { SessionProvider } from "next-auth/react";
-import { auth } from "@/server/auth";
+import { auth, signOut } from "@/server/auth";
+import { keyCloakSessionLogOut } from "@/utils/keycloak";
 
 export const metadata: Metadata = {
   title: "Bitswan A.O.C",
@@ -19,6 +20,23 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const session = await auth();
+
+  if (!session) {
+    keyCloakSessionLogOut()
+      .then((_) => {
+        signOut({ redirectTo: "/" })
+          .then((res) => console.info(res))
+          .catch((error: Error) => {
+            console.log("signOut error:", error);
+          });
+      })
+      .catch((error: Error) => {
+        console.log("keyCloakSessionLogOut error:", error);
+      });
+  }
+
+  console.log("session", session);
+
   return (
     <SessionProvider session={session}>
       <ReactQueryProvider>
