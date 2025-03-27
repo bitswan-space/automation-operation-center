@@ -166,7 +166,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
                 svcs["bitswan_backend_db"].name.format(
                     env_name="local" if cfg.env == Environment.DEV else "production"
                 )
-                if env_name != "local"
+                if cfg.dev_setup == DevSetupKind.DOCKER
                 else "localhost"
             ),
             "BITSWAN_BACKEND_POSTGRES_PORT": "5432",
