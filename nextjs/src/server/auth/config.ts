@@ -6,6 +6,14 @@ import { type DefaultSession, type NextAuthConfig } from "next-auth";
 
 import { type OAuthConfig } from "next-auth/providers";
 import { env } from "@/env.mjs";
+import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import { db } from "@/server/db";
+import {
+  accounts,
+  sessions,
+  users,
+  verificationTokens,
+} from "@/server/db/schema";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -118,6 +126,12 @@ const refreshAccessToken = async (token: JWT) => {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authConfig = {
+  adapter: DrizzleAdapter(db, {
+    usersTable: users,
+    accountsTable: accounts,
+    sessionsTable: sessions,
+    verificationTokensTable: verificationTokens,
+  }),
   callbacks: {
     session: ({ session, token }) => ({
       ...session,
@@ -185,6 +199,9 @@ export const authConfig = {
       issuer: env.KEYCLOAK_ISSUER,
     }),
   ],
+  session: {
+    strategy: "jwt",
+  },
   pages: {
     signIn: "/auth/signin",
   },

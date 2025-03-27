@@ -7,11 +7,13 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
-    NODE_ENV: z.enum(["development", "test", "production"]),
+    NODE_ENV: z
+      .enum(["development", "test", "production"])
+      .default("development"),
     AUTH_SECRET:
       process.env.NODE_ENV === "production"
-        ? z.string().min(1)
-        : z.string().min(1).optional(),
+        ? z.string()
+        : z.string().optional(),
     AUTH_URL: z.preprocess(
       // This makes Vercel deployments not fail if you don't set AUTH_URL
       // Since Auth.js automatically uses the VERCEL_URL if present.
@@ -43,6 +45,8 @@ export const env = createEnv({
 
     // Bitswan Backend
     BITSWAN_BACKEND_API_URL: z.string().url(),
+
+    DATABASE_URL: z.string().url(),
   },
 
   /**
@@ -51,7 +55,9 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
-    NEXT_PUBLIC_NODE_ENV: z.enum(["development", "test", "production"]),
+    NEXT_PUBLIC_NODE_ENV: z
+      .enum(["development", "test", "production"])
+      .default("development"),
     NEXT_PUBLIC_COMMIT_HASH: z.string().optional(),
     NEXT_PUBLIC_BUILD_NO: z.string().optional(),
   },
@@ -91,6 +97,9 @@ export const env = createEnv({
 
     // AoC Backend
     BITSWAN_BACKEND_API_URL: process.env.BITSWAN_BACKEND_API_URL,
+
+    // Database
+    DATABASE_URL: process.env.DATABASE_URL,
 
     // EMQX
     EMQX_JWT_SECRET: process.env.EMQX_JWT_SECRET,
