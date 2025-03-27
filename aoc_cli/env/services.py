@@ -1,6 +1,10 @@
 import click
 
-from aoc_cli.env.config import DevSetupKind, InitConfig
+from aoc_cli.env.config import (
+    OPERATIONS_CENTRE_DOCKER_ENV_FILE,
+    DevSetupKind,
+    InitConfig,
+)
 from aoc_cli.env.utils import bootstrap_service
 
 
@@ -221,7 +225,11 @@ def bootstrap_operations_centre(
         },
         deployment_kind=init_config.dev_setup.value,
         project_name="aoc",
-        env_file=".env" if init_config.dev_setup == DevSetupKind.LOCAL else None,
+        env_file=(
+            ".env"
+            if init_config.dev_setup == DevSetupKind.LOCAL
+            else OPERATIONS_CENTRE_DOCKER_ENV_FILE
+        ),
     )
 
 
@@ -240,10 +248,24 @@ def bootstrap_emqx(init_config: InitConfig, env_config: dict[str, str] = None) -
                 "EMQX_DASHBOARD__DEFAULT_PASSWORD": env_config.get(
                     "EMQX_DASHBOARD__DEFAULT_PASSWORD"
                 ),
-                "EMQX_AUTHENTICATION__SECRET": env_config.get(
-                    "EMQX_AUTHENTICATION__SECRET"
+            },
+            "JWT Authentication": {
+                "EMQX_AUTHENTICATION__1__SECRET": env_config.get(
+                    "EMQX_AUTHENTICATION__1__SECRET"
                 ),
-            }
+                "EMQX_AUTHENTICATION__1__MECHANISM": env_config.get(
+                    "EMQX_AUTHENTICATION__1__MECHANISM"
+                ),
+                "EMQX_AUTHENTICATION__1__FROM": env_config.get(
+                    "EMQX_AUTHENTICATION__1__FROM"
+                ),
+                "EMQX_AUTHENTICATION__1__USE_JWKS": env_config.get(
+                    "EMQX_AUTHENTICATION__1__USE_JWKS"
+                ),
+                "EMQX_AUTHENTICATION__1__ALGORITHM": env_config.get(
+                    "EMQX_AUTHENTICATION__1__ALGORITHM"
+                ),
+            },
         },
     )
 
@@ -258,6 +280,10 @@ def bootstrap_services(
     bootstrap_operations_centre(init_config, env_config)
     bootstrap_influx_db(init_config, env_config)
     bootstrap_keycloak(init_config, env_config)
+    bootstrap_keycloak_db(init_config, env_config)
+    bootstrap_bitswan_backend(init_config, env_config)
+    bootsrap_bitswan_backend_db(init_config, env_config)
+    bootstrap_emqx(init_config, env_config)
     bootstrap_keycloak_db(init_config, env_config)
     bootstrap_bitswan_backend(init_config, env_config)
     bootsrap_bitswan_backend_db(init_config, env_config)

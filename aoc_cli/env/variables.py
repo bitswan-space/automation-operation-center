@@ -190,6 +190,10 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
             "EMQX_HOST": f"aoc-{env_name}-emqx",
             "EMQX_PORT": "1883",
             "EMQX_USER": "admin",
+            "EMQX_AUTHENTICATION__1__MECHANISM": "jwt",
+            "EMQX_AUTHENTICATION__1__FROM": "password",
+            "EMQX_AUTHENTICATION__1__USE_JWKS": "false",
+            "EMQX_AUTHENTICATION__1__ALGORITHM": "hmac-based",
         },
     )
 
