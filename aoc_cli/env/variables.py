@@ -45,6 +45,9 @@ class ServiceConfig:
                     read_dot_env_file=(
                         "True" if config.dev_setup == DevSetupKind.LOCAL else "False"
                     ),
+                    keycloak_url=all_services.get("keycloak").get_url(
+                        config, internal=False
+                    ),
                     **{
                         service_id: service.get_url(config, internal=True)
                         for service_id, service in all_services.items()
@@ -94,9 +97,9 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
             "KC_HEALTH_ENABLED": "true",
             "KEYCLOAK_ADMIN": "admin",
             "KEYCLOAK_CLIENT_ID": "aoc-frontend",
-            "KEYCLOAK_REFRESH_URL": "{keycloak}/realms/master/protocol/openid-connect/token",
-            "KEYCLOAK_ISSUER": "{keycloak}/realms/master",
-            "KEYCLOAK_END_SESSION_URL": "{keycloak}/realms/master/protocol/openid-connect/logout",
+            "KEYCLOAK_REFRESH_URL": "{keycloak_url}/realms/master/protocol/openid-connect/token",
+            "KEYCLOAK_ISSUER": "{keycloak_url}/realms/master",
+            "KEYCLOAK_END_SESSION_URL": "{keycloak_url}/realms/master/protocol/openid-connect/logout",
             "KEYCLOAK_REALM_NAME": "master",
             "KEYCLOAK_FRONTEND_URL": lambda cfg, svcs: svcs["keycloak"].get_url(cfg),
             "KEYCLOAK_ADMIN_URL": lambda cfg, svcs: svcs["keycloak"].get_url(cfg),
