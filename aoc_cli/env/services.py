@@ -292,7 +292,3 @@ def bootstrap_services(
     bootstrap_bitswan_backend(init_config, env_config)
     bootsrap_bitswan_backend_db(init_config, env_config)
     bootstrap_emqx(init_config, env_config)
-    bootstrap_keycloak_db(init_config, env_config)
-    bootstrap_bitswan_backend(init_config, env_config)
-    bootsrap_bitswan_backend_db(init_config, env_config)
-    bootstrap_emqx(init_config, env_config)
