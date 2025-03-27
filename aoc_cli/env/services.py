@@ -115,7 +115,7 @@ def bootstrap_bitswan_backend(
             "CORS_ALLOWED_ORIGINS": env_config.get("CORS_ALLOWED_ORIGINS"),
             "USE_DOCKER": env_config.get("USE_DOCKER"),
             "DJANGO_READ_DOT_ENV_FILE": env_config.get("DJANGO_READ_DOT_ENV_FILE"),
-            "EMQX_JWT_SECRET": env_config.get("EMQX_AUTHENTICATION__SECRET"),
+            "EMQX_JWT_SECRET": env_config.get("EMQX_AUTHENTICATION__1__SECRET"),
         }
     }
 
@@ -203,7 +203,7 @@ def bootstrap_operations_centre(
                 "BITSWAN_BACKEND_API_URL": env_config.get("BITSWAN_BACKEND_API_URL"),
             },
             "EMQX": {
-                "EMQX_JWT_SECRET": env_config.get("EMQX_JWT_SECRET"),
+                "EMQX_JWT_SECRET": env_config.get("EMQX_AUTHENTICATION__1__SECRET"),
                 "EMQX_MQTT_URL": env_config.get("EMQX_MQTT_URL"),
             },
             "Keycloak": {
