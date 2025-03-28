@@ -47,7 +47,6 @@ func HandleTopologyRequest(client mqtt.Client, message mqtt.Message) {
 	for _, profile := range profiles {
 		targetTopic := fmt.Sprintf("/orgs/%s/profiles/%s/automation-servers/%s/c/%s/topology",
 			orgID, profile.Name, automationServerID, workspaceID)
-		
 		client.Publish(targetTopic, 0, true, message.Payload())
 	}
 }
@@ -77,11 +76,11 @@ func HandleProfilesMessage(client mqtt.Client, message mqtt.Message) {
 func HandleProfileLastAlive(client mqtt.Client, message mqtt.Message) {
 	// Parse topic to get org_id and profile_id
 	topic := message.Topic()
-	pattern := regexp.MustCompile(`^/orgs/([^/]+)/profiles/([^/]+)/last_alive$`)
+	pattern := regexp.MustCompile(`^/orgs/([^/]+)/profiles/([^/]+)/last-alive$`)
 	matches := pattern.FindStringSubmatch(topic)
 	
 	if len(matches) != 3 {
-		logger.Error.Printf("Invalid last_alive topic format: %s", topic)
+		logger.Error.Printf("Invalid last-alive topic format: %s", topic)
 		return
 	}
 
@@ -92,7 +91,5 @@ func HandleProfileLastAlive(client mqtt.Client, message mqtt.Message) {
 		logger.Error.Printf("Failed to update last alive for profile %s in org %s: %v", profileID, orgID, err)
 		return
 	}
-
-	logger.Info.Printf("Updated last alive timestamp for profile %s in organization %s", profileID, orgID)
 }
 

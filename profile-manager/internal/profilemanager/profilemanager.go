@@ -64,8 +64,13 @@ func (pm *ProfileManager) UpdateProfiles(orgID string, profiles []Profile) {
 	// Add new profiles that don't exist yet
 	for _, profile := range profiles {
 		if _, exists := orgProfiles[profile.ID]; !exists {
-			profile.LastAlive = time.Now()
-			orgProfiles[profile.ID] = &profile
+			// Create a new Profile instance to avoid storing the loop variable address
+			newProfile := Profile{
+				ID:        profile.ID,
+				Name:      profile.Name,
+				LastAlive: time.Now(),
+			}
+			orgProfiles[profile.ID] = &newProfile
 		}
 	}
 
@@ -78,7 +83,7 @@ func (pm *ProfileManager) UpdateProfiles(orgID string, profiles []Profile) {
 }
 
 // UpdateProfileLastAlive updates the last alive timestamp for a specific profile
-func (pm *ProfileManager) UpdateProfileLastAlive(orgID, profileID string) error {
+func (pm *ProfileManager) UpdateProfileLastAlive(orgID, profileName string) error {
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
 
@@ -87,9 +92,10 @@ func (pm *ProfileManager) UpdateProfileLastAlive(orgID, profileID string) error 
 		return nil
 	}
 
-	if profile, exists := orgProfiles[profileID]; exists {
-		profile.LastAlive = time.Now()
-		return nil
+	for _, profile := range orgProfiles {
+		if profile.Name == profileName {
+			profile.LastAlive = time.Now()
+		}
 	}
 
 	return nil
@@ -116,6 +122,5 @@ func (pm *ProfileManager) GetActiveProfiles(orgID string) []*Profile {
 			activeProfiles = append(activeProfiles, profile)
 		}
 	}
-
 	return activeProfiles
 } 
