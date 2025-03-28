@@ -1,2 +1,2 @@
 mqtt-broker-url: mqtt://localhost:1883
-mqtt-broker-secret: 539dc3234f049df7457581eea28ae480
+mqtt-broker-secret: <slug>
