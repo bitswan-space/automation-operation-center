@@ -61,11 +61,6 @@ func Init() error {
 
 	opts.SetOnConnectHandler(func(client mqtt.Client) {
 		logger.Info.Println("Connected to MQTT broker subscribing to topics...")
-		topologyTopic := "/orgs/+/automation-servers/+/c/+/topology"
-		if token := client.Subscribe(topologyTopic, 0, HandleTopologyRequest); token.Wait() && token.Error() != nil {
-			logger.Error.Printf("Subscription failed: %v", token.Error())
-		}
-
 		lastAliveTopic := "/orgs/+/profiles/+/last-alive"
 		if token := client.Subscribe(lastAliveTopic, 0, HandleProfileLastAlive); token.Wait() && token.Error() != nil {
 			logger.Error.Printf("Subscription failed: %v", token.Error())
@@ -73,6 +68,10 @@ func Init() error {
 
 		profilesTopic := "/orgs/+/profiles"
 		if token := client.Subscribe(profilesTopic, 0, HandleProfilesMessage); token.Wait() && token.Error() != nil {
+			logger.Error.Printf("Subscription failed: %v", token.Error())
+		}
+		topologyTopic := "/orgs/+/automation-servers/+/c/+/topology"
+		if token := client.Subscribe(topologyTopic, 0, HandleTopologyRequest); token.Wait() && token.Error() != nil {
 			logger.Error.Printf("Subscription failed: %v", token.Error())
 		}
 	})
