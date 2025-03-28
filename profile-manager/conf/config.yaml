@@ -1,7 +1,2 @@
 mqtt-broker-url: mqtt://localhost:1883
-mqtt-containers-pub: /c/running-pipelines/topology
-mqtt-topology-topics: []
-mqtt-navigation-topic: /topology
-mqtt-navigation-set: /topology/set
-navigation-file: /conf/navigation_menu.json
-navigation-schema-file: /conf/navigation_schema.json
+mqtt-broker-secret: 539dc3234f049df7457581eea28ae480

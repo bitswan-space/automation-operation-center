@@ -3,18 +3,13 @@ package config
 import (
 	"os"
 
-	"bitswan.space/container-discovery-service/internal/logger"
+	"bitswan.space/profile-manager/internal/logger"
 	"gopkg.in/yaml.v2"
 )
 
 type Configuration struct {
 	MQTTBrokerUrl        string   `yaml:"mqtt-broker-url"`
-	MQTTContainersPub    string   `yaml:"mqtt-containers-pub"`
-	MQTTTopologyTopics   []string `yaml:"mqtt-topology-topics"`
-	MQTTNavigationPub    string   `yaml:"mqtt-navigation-topic"`
-	MQTTNavigationSet    string   `yaml:"mqtt-navigation-set"`
-	NavigationFile       string   `yaml:"navigation-file"`
-	NavigationSchemaFile string   `yaml:"navigation-schema-file"`
+	MQTTBrokerSecret     string   `yaml:"mqtt-broker-secret"`
 }
 
 var cfg *Configuration

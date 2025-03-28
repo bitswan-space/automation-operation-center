@@ -6,9 +6,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"bitswan.space/container-discovery-service/internal/config"
-	"bitswan.space/container-discovery-service/internal/logger"
-	"bitswan.space/container-discovery-service/internal/mqtt"
+	"bitswan.space/profile-manager/internal/config"
+	"bitswan.space/profile-manager/internal/logger"
+	"bitswan.space/profile-manager/internal/mqtt"
 	"github.com/joho/godotenv"
 )
 
