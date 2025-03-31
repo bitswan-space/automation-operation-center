@@ -48,8 +48,6 @@ class CanReadProfileEMQXJWT(BasePermission):
     keycloak = KeycloakService()
 
     def has_permission(self, request, view):
-        org_id = self.keycloak.get_active_user_org(request).get("id")
-
         active_user_id = self.keycloak.get_active_user(request)
 
         is_group_member = self.keycloak.is_group_member(
@@ -58,8 +56,7 @@ class CanReadProfileEMQXJWT(BasePermission):
         )
 
         return (
-            request.user.org_id == org_id
-            and is_group_member
+            is_group_member
             and request.user.is_active
             and request.user.is_authenticated
             and request.method in SAFE_METHODS

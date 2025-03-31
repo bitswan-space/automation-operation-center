@@ -45,6 +45,9 @@ class ServiceConfig:
                     read_dot_env_file=(
                         "True" if config.dev_setup == DevSetupKind.LOCAL else "False"
                     ),
+                    keycloak_url=all_services.get("keycloak").get_url(
+                        config, internal=False
+                    ),
                     **{
                         service_id: service.get_url(config, internal=True)
                         for service_id, service in all_services.items()
@@ -94,9 +97,9 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
             "KC_HEALTH_ENABLED": "true",
             "KEYCLOAK_ADMIN": "admin",
             "KEYCLOAK_CLIENT_ID": "aoc-frontend",
-            "KEYCLOAK_REFRESH_URL": "{keycloak}/realms/master/protocol/openid-connect/token",
-            "KEYCLOAK_ISSUER": "{keycloak}/realms/master",
-            "KEYCLOAK_END_SESSION_URL": "{keycloak}/realms/master/protocol/openid-connect/logout",
+            "KEYCLOAK_REFRESH_URL": "{keycloak_url}/realms/master/protocol/openid-connect/token",
+            "KEYCLOAK_ISSUER": "{keycloak_url}/realms/master",
+            "KEYCLOAK_END_SESSION_URL": "{keycloak_url}/realms/master/protocol/openid-connect/logout",
             "KEYCLOAK_REALM_NAME": "master",
             "KEYCLOAK_FRONTEND_URL": lambda cfg, svcs: svcs["keycloak"].get_url(cfg),
             "KEYCLOAK_ADMIN_URL": lambda cfg, svcs: svcs["keycloak"].get_url(cfg),
@@ -166,7 +169,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
                 svcs["bitswan_backend_db"].name.format(
                     env_name="local" if cfg.env == Environment.DEV else "production"
                 )
-                if env_name != "local"
+                if cfg.dev_setup == DevSetupKind.DOCKER
                 else "localhost"
             ),
             "BITSWAN_BACKEND_POSTGRES_PORT": "5432",
@@ -190,6 +193,10 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
             "EMQX_HOST": f"aoc-{env_name}-emqx",
             "EMQX_PORT": "1883",
             "EMQX_USER": "admin",
+            "EMQX_AUTHENTICATION__1__MECHANISM": "jwt",
+            "EMQX_AUTHENTICATION__1__FROM": "password",
+            "EMQX_AUTHENTICATION__1__USE_JWKS": "false",
+            "EMQX_AUTHENTICATION__1__ALGORITHM": "hmac-based",
         },
     )
 
