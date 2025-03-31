@@ -5,6 +5,8 @@
 
 import * as Sentry from "@sentry/nextjs";
 
+import { env } from "@/env.mjs";
+
 Sentry.init({
   dsn: "https://e9351390f57d66bb500a622c38484d68@o4506314595106816.ingest.us.sentry.io/4506716077686784",
 
@@ -13,4 +15,6 @@ Sentry.init({
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,
+
+  enabled: env.NODE_ENV !== "development",
 });
