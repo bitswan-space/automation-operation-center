@@ -47,6 +47,9 @@ export const env = createEnv({
     BITSWAN_BACKEND_API_URL: z.string().url(),
 
     DATABASE_URL: z.string().url(),
+
+    // Better Auth
+    BETTER_AUTH_SECRET: z.string().min(1),
   },
 
   /**
@@ -104,6 +107,9 @@ export const env = createEnv({
     // EMQX
     EMQX_JWT_SECRET: process.env.EMQX_JWT_SECRET,
     EMQX_MQTT_URL: process.env.EMQX_MQTT_URL,
+
+    // Better Auth
+    BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.
