@@ -32,7 +32,7 @@ You can also use a subdomain like `*.bitswan.example.com`
 3. Run the setup command
 
 ```bash
-bitswan on-prem-aoc init \
+bitswan-on-prem-aoc init \
   --domain=example.com \
   --org-name="Example Org" \
   --admin-email=admin@platform.local \
@@ -60,7 +60,7 @@ pip install -e .
 3. Run the setup command
 
 ```bash
-bitswan on-prem-aoc dev init
+bitswan-on-prem-aoc dev init
 ```
 
 You can 'enter' everything if you want to use the default values.
@@ -74,6 +74,11 @@ install pnpm
 ### For Linux
 ```bash
 curl -fsSL https://get.pnpm.io/install.sh | sh -
+```
+
+### For MacOS
+```bash
+brew install pnpm
 ```
 
 Restart your terminal if pnpm was just installed and get into the venv again.
