@@ -6,7 +6,7 @@ from rest_framework import views
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
+from rest_framework.permissions import AllowAny
 from bitswan_backend.core.authentication import KeycloakAuthentication
 from bitswan_backend.core.viewmixins import KeycloakMixin
 from bitswan_backend.workspaces.api.serializers import WorkspaceSerializer
@@ -177,3 +177,23 @@ class GetAutomationServerEmqxJWTAPIView(KeycloakMixin, views.APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class RegisterCLIAPIView(KeycloakMixin, views.APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        device_registration = self.start_device_registration()
+        return Response(device_registration, status=status.HTTP_200_OK)
+
+    def get(self, request):
+        device_code = request.query_params.get("device_code")
+        print(device_code)
+        if not device_code:
+            return Response(
+                {"error": "Device code is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        device_registration = self.poll_device_registration(device_code)
+        return Response(device_registration, status=status.HTTP_200_OK)

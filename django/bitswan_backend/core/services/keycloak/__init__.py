@@ -1,9 +1,10 @@
+import json
 import logging
 
 from django.conf import settings
 
 from bitswan_backend.core.utils import encryption
-from keycloak import KeycloakAdmin
+from keycloak import KeycloakAdmin, KeycloakPostError
 from keycloak import KeycloakOpenID
 from keycloak import KeycloakOpenIDConnection
 
@@ -349,3 +350,16 @@ class KeycloakService:
         )
 
         return group_id in [group["id"] for group in user_group_memberships]
+
+    def start_device_registration(self):
+        return self.keycloak.device()
+
+    def poll_device_registration(self, device_code):
+        try:
+            return self.keycloak.token(
+                grant_type="urn:ietf:params:oauth:grant-type:device_code",
+                device_code=device_code,
+            )
+        except KeycloakPostError as e:
+            # Return the error response body if available
+            return json.loads(e.response_body)

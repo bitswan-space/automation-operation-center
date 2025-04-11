@@ -143,3 +143,17 @@ class KeycloakMixin:
         """
 
         return self.keycloak.get_org_group_mqtt_profiles(self.request)
+
+    def start_device_registration(self):
+        """
+        Helper method to start device registration
+        """
+
+        return self.keycloak.start_device_registration()
+
+    def poll_device_registration(self, device_code):
+        """
+        Helper method to poll device registration
+        """
+
+        return self.keycloak.poll_device_registration(device_code)
