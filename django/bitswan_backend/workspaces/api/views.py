@@ -196,4 +196,6 @@ class RegisterCLIAPIView(KeycloakMixin, views.APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         device_registration = self.poll_device_registration(device_code)
+        if "error" in device_registration:
+            return Response(device_registration, status=device_registration["status_code"])
         return Response(device_registration, status=status.HTTP_200_OK)

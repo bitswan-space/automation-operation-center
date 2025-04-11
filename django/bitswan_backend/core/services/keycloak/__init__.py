@@ -362,4 +362,6 @@ class KeycloakService:
             )
         except KeycloakPostError as e:
             # Return the error response body if available
-            return json.loads(e.response_body)
+            body = json.loads(e.response_body)
+            body["status_code"] = e.response_code
+            return body
