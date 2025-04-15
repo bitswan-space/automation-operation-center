@@ -131,6 +131,17 @@ class KeycloakService:
         except Exception:
             logger.exception("Failed to get active user org:")
             raise
+        
+    def get_user_org_id(self, token):
+        try:
+            user_info = self.validate_token(token)
+            user_id = user_info["sub"]
+            user_groups = self.get_user_groups(user_id)
+            org_group = self.get_first_group_id_of_type_org(user_groups)
+            return org_group["id"]
+        except Exception:
+            logger.exception("Failed to get user org ID:")
+            raise
 
     def get_org_by_id(self, org_id):
         return self.keycloak_admin.get_group(org_id)

@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from django.conf import settings
 from rest_framework import status
@@ -189,7 +190,7 @@ class RegisterCLIAPIView(KeycloakMixin, views.APIView):
 
     def get(self, request):
         device_code = request.query_params.get("device_code")
-        print(device_code)
+        server_name = request.query_params.get("server_name")
         if not device_code:
             return Response(
                 {"error": "Device code is required."},
@@ -198,4 +199,13 @@ class RegisterCLIAPIView(KeycloakMixin, views.APIView):
         device_registration = self.poll_device_registration(device_code)
         if "error" in device_registration:
             return Response(device_registration, status=device_registration["status_code"])
-        return Response(device_registration, status=status.HTTP_200_OK)
+        if "access_token" in device_registration:
+            automation_server = AutomationServer.objects.create(
+                name=server_name,
+                automation_server_id=uuid.uuid4(),
+                keycloak_org_id=self.get_user_org_id(device_registration["access_token"]),
+            )
+            device_registration["automation_server_id"] = automation_server.automation_server_id
+            return Response(device_registration, status=status.HTTP_200_OK)
+        else:
+            return Response(device_registration, status=device_registration["status_code"])

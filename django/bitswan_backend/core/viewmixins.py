@@ -150,6 +150,13 @@ class KeycloakMixin:
         """
 
         return self.keycloak.start_device_registration()
+    
+    def get_user_org_id(self, token):
+        """
+        Helper method to get the user org ID
+        """
+
+        return self.keycloak.get_user_org_id(token)
 
     def poll_device_registration(self, device_code):
         """
@@ -157,3 +164,10 @@ class KeycloakMixin:
         """
 
         return self.keycloak.poll_device_registration(device_code)
+
+    def confirm_device_registration(self, device_code):
+        """
+        Helper method to confirm device registration
+        """
+
+        return self.keycloak.confirm_device_registration(device_code)
