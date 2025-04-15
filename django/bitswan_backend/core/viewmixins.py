@@ -171,3 +171,10 @@ class KeycloakMixin:
         """
 
         return self.keycloak.confirm_device_registration(device_code)
+    
+    def get_token_from_token(self, request):
+        """
+        Helper method to get a token from a token
+        """
+
+        return self.keycloak.get_token_from_token(request)

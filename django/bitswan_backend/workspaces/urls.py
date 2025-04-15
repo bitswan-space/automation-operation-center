@@ -4,6 +4,7 @@ from bitswan_backend.workspaces.api.views import GetAutomationServerEmqxJWTAPIVi
 from bitswan_backend.workspaces.api.views import GetProfileEmqxJWTAPIView
 from bitswan_backend.workspaces.api.views import GetProfileManagerEmqxJWTAPIView
 from bitswan_backend.workspaces.api.views import RegisterCLIAPIView
+from bitswan_backend.workspaces.api.views import GetWorkspaceTokenAPIView
 
 urlpatterns = [
     path(
@@ -25,5 +26,10 @@ urlpatterns = [
         "cli/register/",
         RegisterCLIAPIView.as_view(),
         name="register_cli",
+    ),
+    path(
+        "automation-servers/token/",
+        GetWorkspaceTokenAPIView.as_view(),
+        name="get_workspace_token",
     ),
 ]

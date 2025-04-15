@@ -376,3 +376,11 @@ class KeycloakService:
             body = json.loads(e.response_body)
             body["status_code"] = e.response_code
             return body
+        
+    def get_token_from_token(self, request):
+        # TODO: change scope if needed
+        token = request.headers.get("Authorization", "").split("Bearer ")[-1]
+        print(token)
+        return self.keycloak.exchange_token(
+            token=token,
+        )

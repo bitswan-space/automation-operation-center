@@ -178,6 +178,14 @@ class GetAutomationServerEmqxJWTAPIView(KeycloakMixin, views.APIView):
             },
             status=status.HTTP_200_OK,
         )
+    
+class GetWorkspaceTokenAPIView(KeycloakMixin, views.APIView):
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [CanReadAutomationServerEMQXJWT]
+
+    def get(self, request):
+        new_token = self.get_token_from_token(request)
+        return Response({"token": new_token["access_token"]}, status=status.HTTP_200_OK)
 
 
 class RegisterCLIAPIView(KeycloakMixin, views.APIView):
