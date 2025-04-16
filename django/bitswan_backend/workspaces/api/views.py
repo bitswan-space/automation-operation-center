@@ -1,4 +1,5 @@
 import logging
+import os
 import uuid
 
 from django.conf import settings
@@ -65,6 +66,7 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
 
         return Response(
             {
+                "url": os.getenv("EMQX_EXTERNAL_URL"),
                 "token": token,
             },
             status=status.HTTP_200_OK,
@@ -96,6 +98,7 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
 
         return Response(
             {
+                "url": os.getenv("EMQX_EXTERNAL_URL"),
                 "token": token,
             },
             status=status.HTTP_200_OK,
@@ -120,6 +123,7 @@ class GetProfileEmqxJWTAPIView(KeycloakMixin, views.APIView):
 
         return Response(
             {
+                "url": os.getenv("EMQX_EXTERNAL_URL"),
                 "token": token,
             },
             status=status.HTTP_200_OK,
@@ -137,6 +141,7 @@ class GetProfileManagerEmqxJWTAPIView(KeycloakMixin, views.APIView):
 
         return Response(
             {
+                "url": os.getenv("EMQX_EXTERNAL_URL"),
                 "token": token,
             },
             status=status.HTTP_200_OK,
@@ -174,6 +179,7 @@ class GetAutomationServerEmqxJWTAPIView(KeycloakMixin, views.APIView):
 
         return Response(
             {
+                "url": os.getenv("EMQX_EXTERNAL_URL"),
                 "token": token,
             },
             status=status.HTTP_200_OK,
