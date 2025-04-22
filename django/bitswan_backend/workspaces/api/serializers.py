@@ -9,7 +9,7 @@ class WorkspaceSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
-            "keycloak_group_id",
+            "keycloak_org_id",
             "automation_server_id",
             "created_at",
             "updated_at",
