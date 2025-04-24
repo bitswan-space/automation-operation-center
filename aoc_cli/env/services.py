@@ -61,6 +61,7 @@ def bootstrap_keycloak(
                 "KC_HOSTNAME_STRICT": env_config.get("KC_HOSTNAME_STRICT"),
                 "KC_HOSTNAME_STRICT_HTTPS": env_config.get("KC_HOSTNAME_STRICT_HTTPS"),
                 "KC_HEALTH_ENABLED": env_config.get("KC_HEALTH_ENABLED"),
+                "KC_FEATURES": env_config.get("KC_FEATURES"),
             }
         },
     )
@@ -125,6 +126,7 @@ def bootstrap_bitswan_backend(
             "USE_DOCKER": env_config.get("USE_DOCKER"),
             "DJANGO_READ_DOT_ENV_FILE": env_config.get("DJANGO_READ_DOT_ENV_FILE"),
             "EMQX_JWT_SECRET": env_config.get("EMQX_AUTHENTICATION__1__SECRET"),
+            "EMQX_EXTERNAL_URL": env_config.get("EMQX_EXTERNAL_URL"),
             "DATABASE_URL": DATABASE_URL,
         }
     }
