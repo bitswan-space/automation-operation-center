@@ -59,7 +59,7 @@ class InitCommand:
 
         if self.config.env == Environment.DEV:
             access_message = f"""
-        cd to {aoc_working_dir} and run:
+        run:
 
         docker compose -f ./deployment/docker-compose.{self.config.env.value}.yml up -d
 
