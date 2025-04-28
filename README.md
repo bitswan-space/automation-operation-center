@@ -65,9 +65,13 @@ bitswan on-prem-aoc dev init
 
 You can 'enter' everything if you want to use the default values.
 
-Follow terminal instructions of running a docker container.
+4. Follow terminal instructions of running a docker container:
 
-4. Install next.js dependencies
+```bash
+docker compose -f ./deployment/docker-compose.dev.yml up -d
+```
+
+5. Install next.js dependencies
 
 install pnpm
 
@@ -85,7 +89,7 @@ cd nextjs
 pnpm install
 ```
 
-5. Run the development server
+6. Run the development server
 
 Make sure you have 20.0.0 node.js installed. If you have nvm you can easily change it by running `nvm use 20.0.0`
 
