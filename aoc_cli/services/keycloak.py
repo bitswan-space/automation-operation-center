@@ -55,7 +55,6 @@ class KeycloakService:
     def configure_realm_settings(self) -> None:
         realm = self.keycloak_admin.get_realm(self.config.realm_name)
 
-        realm["accessTokenLifespan"] = 2073600000
         realm["ssoSessionMaxLifespan"] = 2073600000
 
         self.keycloak_admin.update_realm(self.config.realm_name, realm)
@@ -181,8 +180,9 @@ class KeycloakService:
                 "implicitFlowEnabled": True,
                 "standardFlowEnabled": True,
                 "attributes": {
-                    "access.token.lifespan": "2073600000", # 24 days
-                    "client.session.max.lifespan": "2073600000", # 24 days
+                    "access.token.lifespan": "2073600000", # 24 000 days
+                    "client.session.idle.timeout": "2073600000", # 24 000 days
+                    "client.session.max.lifespan": "2073600000", # 24 000 days
                     "tokenExchange.grant.enabled": "true",
                     "oauth2.device.authorization.grant.enabled": "true",
                 },
