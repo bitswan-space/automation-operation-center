@@ -8,11 +8,16 @@ volumes:
   bitswan_backend_production_postgres_data_backups: {}
   bitswan-editor-data:
 
+networks:
+  bitswan_network:
+    external: true
 services:
   influxdb:
     image: influxdb:2.0
     restart: always
     container_name: aoc-influxdb
+    networks:
+      - bitswan_network
     ports:
       - "8086:8086"
     volumes:
@@ -26,6 +31,8 @@ services:
   portainer:
     image: portainer/portainer-ce:latest
     container_name: aoc-portainer
+    networks:
+      - bitswan_network
     volumes:
       - portainer_data:/data
       - /var/run/docker.sock:/var/run/docker.sock:rw
@@ -34,6 +41,8 @@ services:
   emqx:
     image: emqx:latest
     container_name: aoc-emqx
+    networks:
+      - bitswan_network
     restart: always
     ports:
       - "1883:1883"
@@ -48,6 +57,8 @@ services:
 
   keycloak:
     image: bitswan/bitswan-keycloak:2024-9110295480-git-d7a8e49
+    networks:
+      - bitswan_network
     restart: always
     container_name: aoc-keycloak
     ports:
@@ -60,12 +71,16 @@ services:
     image: postgres:12-bullseye
     restart: always
     container_name: aoc-keycloak-postgres
+    networks:
+      - bitswan_network
     volumes:
       - postgres-keycloak-data:/var/lib/postgresql/data
     env_file: envs/keycloak-postgres.env
 
   automation-operation-centre:
     restart: always
+    networks:
+      - bitswan_network
     depends_on:
       - influxdb
       - bitswan-backend
@@ -76,6 +91,8 @@ services:
 
   profile-manager:
     restart: always
+    networks:
+      - bitswan_network
     image: bitswan/profile-manager:2024-11950867793-git-5ff440c
 
   bitswan-backend:
@@ -84,6 +101,8 @@ services:
     depends_on:
       - bitswan-backend-postgres
     restart: always
+    networks:
+      - bitswan_network
     env_file:
       - envs/bitswan-backend.env
       - envs/bitswan-backend-postgres.env
@@ -95,6 +114,8 @@ services:
     image: postgres:15-bullseye
     container_name: bitswan-backend-postgres
     restart: always
+    networks:
+      - bitswan_network
     volumes:
       - bitswan_backend_production_postgres_data:/var/lib/postgresql/data
       - bitswan_backend_production_postgres_data_backups:/backups
