@@ -205,9 +205,9 @@ class RegisterCLIAPIView(KeycloakMixin, views.APIView):
     def get(self, request):
         device_code = request.query_params.get("device_code")
         server_name = request.query_params.get("server_name")
-        if not device_code:
+        if not device_code or not server_name:
             return Response(
-                {"error": "Device code is required."},
+                {"error": "Device code and server name are required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         device_registration = self.poll_device_registration(device_code)
