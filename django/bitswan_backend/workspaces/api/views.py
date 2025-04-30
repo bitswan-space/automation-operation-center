@@ -214,11 +214,17 @@ class RegisterCLIAPIView(KeycloakMixin, views.APIView):
         if "error" in device_registration:
             return Response(device_registration, status=device_registration["status_code"])
         if "access_token" in device_registration:
-            automation_server = AutomationServer.objects.create(
-                name=server_name,
-                automation_server_id=uuid.uuid4(),
-                keycloak_org_id=self.get_user_org_id(device_registration["access_token"]),
-            )
+            # Check if the automation server with same server name already exists in the same org
+            org_id = self.get_user_org_id(device_registration["access_token"])
+            automation_server = AutomationServer.objects.filter(name=server_name, keycloak_org_id=org_id).first()
+            if automation_server:
+                return Response({"error": "Automation server already exists."}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                automation_server = AutomationServer.objects.create(
+                    name=server_name,
+                    automation_server_id=uuid.uuid4(),
+                    keycloak_org_id=org_id,
+                )
             device_registration["automation_server_id"] = automation_server.automation_server_id
             return Response(device_registration, status=status.HTTP_200_OK)
         else:
