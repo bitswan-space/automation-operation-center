@@ -17,7 +17,7 @@ class ServiceConfig:
 
     def get_url(self, config: "InitConfig", internal: bool = False) -> str:
         """Generate URL for this service based on environment"""
-        if config.env == Environment.PROD:
+        if config.domain and config.protocol:
             return f"{config.protocol.value}://{self.url_pattern.format(domain=config.domain)}"
         elif internal and (config.dev_setup == DevSetupKind.DOCKER):
             # Use Docker internal networking name
@@ -57,13 +57,13 @@ class ServiceConfig:
 
 
 # Define all services
-def create_service_configs(env_name: str, env: Environment) -> Dict[str, ServiceConfig]:
+def create_service_configs(env: Environment) -> Dict[str, ServiceConfig]:
     """Create configuration for all services"""
     services = {}
 
     # InfluxDB Service
     services["influxdb"] = ServiceConfig(
-        name=f"aoc-{env_name}-influxdb",
+        name="aoc-influxdb",
         url_pattern="influxdb.{domain}",
         port=8086,
         env_vars={
@@ -83,8 +83,8 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
 
     # Keycloak Service
     services["keycloak"] = ServiceConfig(
-        name=f"aoc-{env_name}-keycloak",
-        url_pattern="keycloak.{domain}",
+        name="aoc-keycloak",
+        url_pattern="auth.{domain}",
         port=8080,
         env_vars={
             "KC_HOSTNAME_URL": lambda cfg, svcs: svcs["keycloak"].get_url(cfg),
@@ -112,15 +112,13 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
 
     # Keycloak DB
     services["keycloak_db"] = ServiceConfig(
-        name=f"aoc-{env_name}-keycloak-postgres",
+        name="aoc-keycloak-postgres",
         url_pattern="keycloak-db.{domain}",
         port=5432,
         env_vars={
             "KC_DB": "postgres",
             "DB_ADDR": "postgres",
-            "KC_DB_URL_HOST": lambda cfg, svcs: svcs["keycloak_db"].name.format(
-                env_name="local" if cfg.env == Environment.DEV else "production"
-            ),
+            "KC_DB_URL_HOST": lambda cfg, svcs: svcs["keycloak_db"].name,
             "KC_DB_URL_DATABASE": "postgres",
             "KC_DB_PASSWORD": "postgres",
             "KC_DB_USERNAME": "postgres",
@@ -130,7 +128,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
 
     # Bitswan Backend
     services["bitswan_backend"] = ServiceConfig(
-        name=f"aoc-{env_name}-bitswan-backend",
+        name="aoc-bitswan-backend",
         url_pattern="api.{domain}",
         port=5000 if env == Environment.PROD else 8000,
         env_vars={
@@ -141,7 +139,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
             ),
             "DJANGO_ADMIN_URL": "j2ClKNry4Dqlt022mBiYza2z81afm5ou/",
             "DJANGO_ALLOWED_HOSTS": (
-                "api.{domain}," "aoc-{env_name}-bitswan-backend,http://localhost:3000"
+                "api.{domain}," "aoc-bitswan-backend,http://localhost:3000"
             ),
             "DJANGO_SECURE_SSL_REDIRECT": "False",
             "DJANGO_SERVER_EMAIL": "",
@@ -149,12 +147,12 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
             "BITSWAN_BACKEND_KEYCLOAK_CLIENT_ID": "bitswan-backend",
             "CORS_ALLOWED_ORIGINS": (
                 "http://localhost:3000,{protocol}://aoc.{domain},"
-                "{protocol}://aoc-{env_name}-nextjs:3000"
+                "{protocol}://automation-operation-centre:3000"
             ),
             "EMQX_EXTERNAL_URL": lambda cfg, svcs: (
-                f"aoc-{env_name}-emqx:1883"
-                if cfg.env == Environment.DEV
-                else "mqtt.{domain}"
+                f"emqx.{cfg.domain}"
+                if cfg.domain and cfg.protocol
+                else "aoc-emqx:1883"
             ),
             "WEB_CONCURRENCY": "4",
             "SENTRY_TRACES_SAMPLE_RATE": "1.0",
@@ -165,19 +163,13 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
 
     # Bitswan Backend DB
     services["bitswan_backend_db"] = ServiceConfig(
-        name=f"aoc-{env_name}-bitswan-backend-postgres",
+        name="aoc-bitswan-backend-postgres",
         url_pattern="bitswan-db.{domain}",
         port=5432,
         env_vars={
             "BITSWAN_BACKEND_POSTGRES_USER": "postgres",
             "BITSWAN_BACKEND_POSTGRES_DB": "bitswan_backend",
-            "BITSWAN_BACKEND_POSTGRES_HOST": lambda cfg, svcs: (
-                svcs["bitswan_backend_db"].name.format(
-                    env_name="local" if cfg.env == Environment.DEV else "production"
-                )
-                if cfg.dev_setup == DevSetupKind.DOCKER
-                else "localhost"
-            ),
+            "BITSWAN_BACKEND_POSTGRES_HOST": lambda cfg, svcs: svcs["bitswan_backend_db"].name,
             "BITSWAN_BACKEND_POSTGRES_PORT": "5432",
             "BITSWAN_BACKEND_POSTGRES_PASSWORD": "postgres",
         },
@@ -190,13 +182,13 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
         port=1883,
         env_vars={
             "EMQX_MQTT_URL": lambda cfg, svcs: (
-                f"mqtt://aoc-{env_name}-emqx:1883"
-                if cfg.env == Environment.PROD or cfg.dev_setup == DevSetupKind.DOCKER
-                else "mqtt://localhost:1883"
+                f"mqtt://mqtt.{cfg.domain}" 
+                if cfg.domain and cfg.protocol
+                else "aoc-emqx:1883"
             ),
-            "MQTT_URL": "mqtt://aoc-mosquito:1883",
+            "MQTT_URL": "mqtt://aoc-emqx:1883",
             "NEXT_PUBLIC_MQTT_URL": "{protocol}://mqtt.{domain}/",
-            "EMQX_HOST": f"aoc-{env_name}-emqx",
+            "EMQX_HOST": "aoc-emqx",
             "EMQX_PORT": "1883",
             "EMQX_USER": "admin",
             "EMQX_AUTHENTICATION__1__MECHANISM": "jwt",
@@ -224,15 +216,15 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
                 "bitswan_backend"
             ].get_url(cfg, internal=True),
             "SENTRY_DSN": "",
-            "CDS_API_URL": f"http://aoc-{env_name}-cds-api:8080/api",
-            "PORTAINER_BASE_URL": f"http://aoc-{env_name}-portainer:9000/",
+            "CDS_API_URL": f"http://aoc-cds-api:8080/api",
+            "PORTAINER_BASE_URL": f"http://aoc-portainer:9000/",
             "PREPARE_MQTT_SERVICE_URL": "http://container-config-service:8080/trigger",
         },
     )
 
     # Common/other
     services["redis"] = ServiceConfig(
-        name=f"aoc-{env_name}-redis",
+        name="aoc-redis",
         url_pattern="redis.{domain}",
         port=6379,
         env_vars={
@@ -257,9 +249,7 @@ def get_var_defaults(
         Dictionary containing all default values with any custom overrides applied
     """
     # Create all service configurations
-    env_name = "local" if config.env == Environment.DEV else "production"
-
-    services = create_service_configs(env_name, config.env)
+    services = create_service_configs(config.env)
 
     # Initialize empty defaults dict
     defaults = {}

@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -24,7 +25,11 @@ class InitCommand:
         await self.setup_environment()
 
     async def setup_environment(self) -> None:
+        await self.setup_caddy()
+
         if self.config.env == Environment.DEV:
+            self.generate_certs()
+            self.setup_etc_hosts()
             self.create_aoc_directory()
             self.copy_compose_file()
 
@@ -114,14 +119,30 @@ class InitCommand:
         caddy = CaddyService(self.config)
         await caddy.initialize()
         await caddy.add_proxy(
-            f"{self.config.protocol.value}://keycloak.{self.config.domain}",
-            "aoc-keycloak:8080",
+            f"{self.config.protocol.value}://auth.{self.config.domain}",
+            "aoc-keycloak:8080"
         )
         await caddy.add_proxy(
             f"{self.config.protocol.value}://aoc.{self.config.domain}",
-            "automation-operation-centre:3000",
+            "automation-operation-centre:3000"
         )
-        caddy.start()
+        await caddy.add_proxy(
+            f"{self.config.protocol.value}://api.{self.config.domain}",
+            "aoc-bitswan-backend:8000"
+        )
+        await caddy.add_proxy(
+            f"{self.config.protocol.value}://mqtt.{self.config.domain}",
+            "aoc-emqx:1883"
+        )
+        await caddy.add_proxy(
+            f"{self.config.protocol.value}://emqx.{self.config.domain}",
+            "aoc-emqx:18083"
+        )
+        await caddy.add_proxy(
+            f"{self.config.protocol.value}://influxdb.{self.config.domain}",
+            "aoc-influxdb:8086"
+        )
+
 
     def cleanup(self) -> None:
         cwd = get_aoc_working_directory(self.config.env, self.config.aoc_dir)
@@ -178,3 +199,64 @@ class InitCommand:
             vars = self.generate_secrets(vars)
 
         bootstrap_services(self.config, vars)
+
+    def setup_etc_hosts(self) -> None:
+        hosts = [
+            f"aoc.{self.config.domain}",
+            f"auth.{self.config.domain}",
+            f"api.{self.config.domain}",
+            f"mqtt.{self.config.domain}",
+            f"emqx.{self.config.domain}",
+            f"influxdb.{self.config.domain}",
+        ]
+    
+        # remove hosts from hosts list that are already in the etc/hosts file
+        with open("/etc/hosts", "r") as f:
+            for line in f:
+                for host in hosts:
+                    if host in line:
+                        hosts.remove(host)
+        # try to add records with sudo
+        try:
+            for host in hosts:
+                subprocess.run(
+                    ["sudo", "sh", "-c", f"echo '127.0.0.1 {host}' >> /etc/hosts"],
+                    check=True,
+                )
+        except subprocess.CalledProcessError:
+            print("Failed to add hosts to /etc/hosts")
+            print("Please add the following to /etc/hosts:")
+            for host in hosts:
+                print(f"127.0.0.1 {host}")
+        print("hosts added to /etc/hosts")
+
+    def generate_certs(self) -> None:
+        # check if certs for bitswan.local are already in $HOME/.config/bitswan/caddy/certs/bitswan.local
+        caddy_dir = Path.home() / ".config" / "bitswan" / "caddy"
+
+        domain_certs_dir = caddy_dir / "certs" / "bitswan.local"
+        certs_dir = caddy_dir / "certs"
+
+        if domain_certs_dir.exists():
+            print("Certs already exist")
+            return
+
+        if not certs_dir.exists():
+            os.makedirs(certs_dir)
+        
+        if not domain_certs_dir.exists():
+            os.makedirs(domain_certs_dir)
+
+
+        print("Generating certs")
+        subprocess.run(
+            ["mkcert", "*.bitswan.local"],
+            cwd=domain_certs_dir,
+            check=True,
+        )
+
+        # rename the certs to full-chain.pem and private-key.pem
+        os.rename("_wildcard.bitswan.local-key.pem", "private-key.pem", cwd=domain_certs_dir)
+        os.rename("_wildcard.bitswan.local.pem", "full-chain.pem", cwd=domain_certs_dir)
+        print("Certs generated")
+

@@ -97,9 +97,9 @@ services:
 
   bitswan-backend:
     image: bitswan/bitswan-backend:2025-13211829799-git-65ce7c8
-    container_name: bitswan-backend
+    container_name: aoc-bitswan-backend
     depends_on:
-      - bitswan-backend-postgres
+      - aoc-bitswan-backend-postgres
     restart: always
     networks:
       - bitswan_network
@@ -112,7 +112,7 @@ services:
 
   bitswan-backend-postgres:
     image: postgres:15-bullseye
-    container_name: bitswan-backend-postgres
+    container_name: aoc-bitswan-backend-postgres
     restart: always
     networks:
       - bitswan_network

@@ -42,6 +42,6 @@ class InitConfig:
     admin_password: str = "admin"
     org_name: str = "Example Org"
     dev_setup: DevSetupKind = DevSetupKind.DOCKER
-
+    certs: bool = False
     def get_url(self, subdomain: str) -> str:
         return f"{self.protocol.value}://{subdomain}.{self.domain}"

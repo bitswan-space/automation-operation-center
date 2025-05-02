@@ -33,17 +33,17 @@ from aoc_cli.handlers.init import InitCommand
     help="Development environment",
     prompt=True,
 )
-def init(admin_email, admin_password, org_name, dev_setup) -> None:
-    asyncio.run(_init_async(admin_email, admin_password, org_name, dev_setup))
 
+def init(admin_email, admin_password, org_name, dev_setup, certs) -> None:
+    asyncio.run(_init_async(admin_email, admin_password, org_name, dev_setup, certs))
 
-async def _init_async(admin_email, admin_password, org_name, dev_setup) -> None:
+async def _init_async(admin_email, admin_password, org_name, dev_setup, certs) -> None:
     click.echo("\n\nInitializing AoC Dev environment...")
 
     init_config = InitConfig(
         env=Environment("dev"),
-        protocol=Protocol("http"),
-        domain="platform.local",
+        protocol=Protocol("https"),
+        domain="bitswan.local",
         admin_email=admin_email,
         admin_password=admin_password,
         org_name=org_name,

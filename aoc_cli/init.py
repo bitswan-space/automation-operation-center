@@ -76,8 +76,8 @@ async def _init_async(
     init_config = InitConfig(
         env=Environment(configs.get("env")),
         aoc_dir=Path(output_dir),
-        protocol=Protocol(configs.get("protocol")),
-        domain=configs.get("domain"),
+        protocol=Protocol(configs.get("protocol", "https")),
+        domain=configs.get("domain", "bitswan.local"),
         admin_email=configs.get("admin_email"),
         admin_password=configs.get("admin_password"),
         org_name=configs.get("org_name"),

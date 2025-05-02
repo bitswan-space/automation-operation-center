@@ -19,7 +19,7 @@ services:
     build:
       context: ../django
       dockerfile: ./compose/local/django/Dockerfile
-    container_name: aoc-local-bitswan-backend
+    container_name: aoc-bitswan-backend
     restart: always
     networks:
       - bitswan_network
@@ -48,7 +48,7 @@ services:
     build:
       context: .
       dockerfile: ./postgres/Dockerfile
-    container_name: aoc-local-bitswan-backend-postgres
+    container_name: aoc-bitswan-backend-postgres
     networks:
       - bitswan_network
     restart: always
@@ -67,7 +67,7 @@ services:
     restart: always
     networks:
       - bitswan_network
-    container_name: aoc-local-keycloak-postgres
+    container_name: aoc-keycloak-postgres
     volumes:
       - aoc_local_keycloak_postgres_data:/var/lib/postgresql/data
       - aoc_local_keycloak_postgres_data_backups:/backups
@@ -79,7 +79,7 @@ services:
     image: docker.io/redis:6
     networks:
       - bitswan_network
-    container_name: aoc-local-redis
+    container_name: aoc-redis
     ports:
       - 6379:6379
 
@@ -88,7 +88,7 @@ services:
     restart: always
     networks:
       - bitswan_network
-    container_name: aoc-local-influxdb
+    container_name: aoc-influxdb
     ports:
       - "8086:8086"
     volumes:
@@ -103,7 +103,7 @@ services:
     image: portainer/portainer-ce:latest
     networks:
       - bitswan_network
-    container_name: aoc-local-portainer
+    container_name: aoc-portainer
     volumes:
       - aoc_local_portainer_data:/data
       - /var/run/docker.sock:/var/run/docker.sock:rw
@@ -113,7 +113,7 @@ services:
     image: emqx:latest
     networks:
       - bitswan_network
-    container_name: aoc-local-emqx
+    container_name: aoc-emqx
     restart: "no"
     ports:
       - "1883:1883"
@@ -132,7 +132,7 @@ services:
     networks:
       - bitswan_network
     restart: always
-    container_name: aoc-local-keycloak
+    container_name: aoc-keycloak
     ports:
       - "9000:9000"
       - "8080:8080"
@@ -160,7 +160,7 @@ services:
     build:
       context: ../nextjs
       dockerfile: ./dev.dockerfile
-    container_name: aoc-local-nextjs
+    container_name: automation-operation-centre
     networks:
       - bitswan_network
     env_file:
