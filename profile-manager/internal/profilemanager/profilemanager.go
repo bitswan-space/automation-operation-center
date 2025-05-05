@@ -13,7 +13,6 @@ const (
 type Profile struct {
 	ID            string   `json:"id"`
 	Name          string   `json:"name"`
-	LastAlive     time.Time `json:"last_alive"`
 }
 
 // ProfileManager handles the management of organization profiles
@@ -66,9 +65,8 @@ func (pm *ProfileManager) UpdateProfiles(orgID string, profiles []Profile) {
 		if _, exists := orgProfiles[profile.ID]; !exists {
 			// Create a new Profile instance to avoid storing the loop variable address
 			newProfile := Profile{
-				ID:        profile.ID,
-				Name:      profile.Name,
-				LastAlive: time.Now(),
+				ID:   profile.ID,
+				Name: profile.Name,
 			}
 			orgProfiles[profile.ID] = &newProfile
 		}
@@ -82,29 +80,6 @@ func (pm *ProfileManager) UpdateProfiles(orgID string, profiles []Profile) {
 	}
 }
 
-// UpdateProfileLastAlive updates the last alive timestamp for a specific profile
-func (pm *ProfileManager) UpdateProfileLastAlive(orgID, profileName string) error {
-	pm.mu.Lock()
-	defer pm.mu.Unlock()
-
-	orgProfiles, exists := pm.profiles[orgID]
-	if !exists {
-		return nil
-	}
-
-	for _, profile := range orgProfiles {
-		if profile.Name == profileName {
-			profile.LastAlive = time.Now()
-		}
-	}
-
-	return nil
-}
-
-// isProfileAlive checks if a profile is active based on its last alive timestamp
-func (pm *ProfileManager) isProfileAlive(profile *Profile) bool {
-	return time.Since(profile.LastAlive) < profileTimeout
-}
 
 // GetActiveProfiles returns all active profiles for an organization
 func (pm *ProfileManager) GetActiveProfiles(orgID string) []*Profile {
@@ -118,9 +93,7 @@ func (pm *ProfileManager) GetActiveProfiles(orgID string) []*Profile {
 
 	var activeProfiles []*Profile
 	for _, profile := range orgProfiles {
-		if pm.isProfileAlive(profile) {
-			activeProfiles = append(activeProfiles, profile)
-		}
+		activeProfiles = append(activeProfiles, profile)
 	}
 	return activeProfiles
 } 

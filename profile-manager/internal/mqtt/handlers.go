@@ -73,23 +73,5 @@ func HandleProfilesMessage(client mqtt.Client, message mqtt.Message) {
 	logger.Info.Printf("Successfully updated profiles for organization %s", orgID)
 }
 
-func HandleProfileLastAlive(client mqtt.Client, message mqtt.Message) {
-	// Parse topic to get org_id and profile_id
-	topic := message.Topic()
-	pattern := regexp.MustCompile(`^/orgs/([^/]+)/profiles/([^/]+)/last-alive$`)
-	matches := pattern.FindStringSubmatch(topic)
-	
-	if len(matches) != 3 {
-		logger.Error.Printf("Invalid last-alive topic format: %s", topic)
-		return
-	}
 
-	orgID := matches[1]
-	profileID := matches[2]
-
-	if err := profileManager.UpdateProfileLastAlive(orgID, profileID); err != nil {
-		logger.Error.Printf("Failed to update last alive for profile %s in org %s: %v", profileID, orgID, err)
-		return
-	}
-}
 
