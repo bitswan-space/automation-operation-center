@@ -44,13 +44,21 @@ class KeycloakService:
         self.start_services()
         self.wait_for_service()
         self.connect()
-
+        self.configure_realm_settings()
         client_secrets = self.create_clients()
-
+        self.setup_token_exchange()
         self.initialize_admin_user()
 
         self._update_envs_with_keycloak_secret(client_secrets)
         click.echo("✓ Keycloak setup complete")
+
+    def configure_realm_settings(self) -> None:
+        realm = self.keycloak_admin.get_realm(self.config.realm_name)
+
+        realm["ssoSessionMaxLifespan"] = 2073600000
+
+        self.keycloak_admin.update_realm(self.config.realm_name, realm)
+        click.echo("✓ Realm settings configured")
 
     def start_services(self) -> None:
         cwd = get_aoc_working_directory(self.config.env, self.config.aoc_dir)
@@ -70,6 +78,54 @@ class KeycloakService:
             shell=False,
             stdout=subprocess.DEVNULL,
         )
+
+    def setup_token_exchange(self) -> None:
+        clients = self.keycloak_admin.get_clients()
+        bitswan_backend_client = next((client for client in clients if client["clientId"] == "bitswan-backend"), None)
+        master_realm_client = next((client for client in clients if client["clientId"] == "master-realm"), None)
+        if not bitswan_backend_client or not master_realm_client:
+            raise ValueError("Bitswan backend or master realm client not found")
+    
+        bitswan_backend_client_id = bitswan_backend_client.get("id")
+        master_realm_client_id = master_realm_client.get("id")
+
+        self.keycloak_admin.update_client_management_permissions({"enabled": True}, bitswan_backend_client_id)
+
+        resources = self.keycloak_admin.get_client_authz_resources(bitswan_backend_client_id)
+        default_resource = next((resource for resource in resources if resource["name"] == "Default Resource"), None)
+
+        if not default_resource:
+            raise ValueError("Default resource not found")
+
+        policy = {
+            "name": "default-token-exchange-policy",
+            "type": "client",
+            "logic": "POSITIVE",
+            "decisionStrategy": "UNANIMOUS",
+            "clients": [bitswan_backend_client_id]
+        }
+        
+        policy = self.keycloak_admin.create_client_authz_client_policy(policy, master_realm_client_id)
+
+        scopes = self.keycloak_admin.get_client_authz_scopes(master_realm_client_id)
+        token_exchange_scope = next((scope for scope in scopes if scope["name"] == "token-exchange"), None)
+        
+        if not token_exchange_scope:
+            raise ValueError("Token exchange scope not found in permissions")
+
+        permission = {
+            "name": "bitswan-backend-token-exchange",
+            "description": "Allow bitswan-backend to exchange tokens",
+            "type": "scope",
+            "logic": "POSITIVE",
+            "decisionStrategy": "UNANIMOUS",
+            "policies": [policy["id"]],
+            "resources": [default_resource["_id"]],
+            "scopes": [token_exchange_scope["id"]]
+        }
+
+        self.keycloak_admin.create_client_authz_scope_permission(permission, bitswan_backend_client_id)
+        click.echo("✓ Token exchange setup complete")
 
     def wait_for_service(self, max_retries: int = 30, delay: int = 10) -> None:
         click.echo("Waiting for Keycloak to be ready...")
@@ -123,6 +179,13 @@ class KeycloakService:
                 "directAccessGrantsEnabled": True,
                 "implicitFlowEnabled": True,
                 "standardFlowEnabled": True,
+                "attributes": {
+                    "access.token.lifespan": "2073600000", # 24 000 days
+                    "client.session.idle.timeout": "2073600000", # 24 000 days
+                    "client.session.max.lifespan": "2073600000", # 24 000 days
+                    "tokenExchange.grant.enabled": "true",
+                    "oauth2.device.authorization.grant.enabled": "true",
+                },
             },
         }
 

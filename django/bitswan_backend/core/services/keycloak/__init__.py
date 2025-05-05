@@ -1,9 +1,10 @@
+import json
 import logging
 
 from django.conf import settings
 
 from bitswan_backend.core.utils import encryption
-from keycloak import KeycloakAdmin
+from keycloak import KeycloakAdmin, KeycloakPostError
 from keycloak import KeycloakOpenID
 from keycloak import KeycloakOpenIDConnection
 
@@ -129,6 +130,17 @@ class KeycloakService:
             return self.get_first_group_id_of_type_org(user_keycloak_groups)
         except Exception:
             logger.exception("Failed to get active user org:")
+            raise
+        
+    def get_user_org_id(self, token):
+        try:
+            user_info = self.validate_token(token)
+            user_id = user_info["sub"]
+            user_groups = self.get_user_groups(user_id)
+            org_group = self.get_first_group_id_of_type_org(user_groups)
+            return org_group["id"]
+        except Exception:
+            logger.exception("Failed to get user org ID:")
             raise
 
     def get_org_by_id(self, org_id):
@@ -349,3 +361,26 @@ class KeycloakService:
         )
 
         return group_id in [group["id"] for group in user_group_memberships]
+
+    def start_device_registration(self):
+        return self.keycloak.device()
+
+    def poll_device_registration(self, device_code):
+        try:
+            return self.keycloak.token(
+                grant_type="urn:ietf:params:oauth:grant-type:device_code",
+                device_code=device_code,
+            )
+        except KeycloakPostError as e:
+            # Return the error response body if available
+            body = json.loads(e.response_body)
+            body["status_code"] = e.response_code
+            return body
+        
+    def get_token_from_token(self, request):
+        # TODO: change scope if needed
+        token = request.headers.get("Authorization", "").split("Bearer ")[-1]
+        print(token)
+        return self.keycloak.exchange_token(
+            token=token,
+        )

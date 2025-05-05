@@ -3,6 +3,8 @@ from django.urls import path
 from bitswan_backend.workspaces.api.views import GetAutomationServerEmqxJWTAPIView
 from bitswan_backend.workspaces.api.views import GetProfileEmqxJWTAPIView
 from bitswan_backend.workspaces.api.views import GetProfileManagerEmqxJWTAPIView
+from bitswan_backend.workspaces.api.views import RegisterCLIAPIView
+from bitswan_backend.workspaces.api.views import GetWorkspaceTokenAPIView
 
 urlpatterns = [
     path(
@@ -19,5 +21,15 @@ urlpatterns = [
         "root/emqx/jwt/",
         GetProfileManagerEmqxJWTAPIView.as_view(),
         name="profile_manager_emqx_jwt",
+    ),
+    path(
+        "cli/register/",
+        RegisterCLIAPIView.as_view(),
+        name="register_cli",
+    ),
+    path(
+        "automation-servers/token/",
+        GetWorkspaceTokenAPIView.as_view(),
+        name="get_workspace_token",
     ),
 ]
