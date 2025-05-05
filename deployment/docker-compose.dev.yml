@@ -132,7 +132,11 @@ services:
 
   profile-manager:
     restart: always
-    image: bitswan/profile-manager:2024-11950867793-git-5ff440c
+    build:
+      context: ../profile-manager
+      dockerfile: ./Dockerfile
+    env_file:
+      - ./envs/profile-manager.env
 
   aoc-nextjs:
     build:
