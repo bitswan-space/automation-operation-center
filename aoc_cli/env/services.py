@@ -1,6 +1,10 @@
 import click
 
-from aoc_cli.env.config import DevSetupKind, InitConfig
+from aoc_cli.env.config import (
+    OPERATIONS_CENTRE_DOCKER_ENV_FILE,
+    DevSetupKind,
+    InitConfig,
+)
 from aoc_cli.env.utils import bootstrap_service
 
 
@@ -90,6 +94,15 @@ def bootstrap_bitswan_backend(
     """Bootstrap Bitswan Backend environment variables."""
     env_config = env_config or {}
 
+    POSTGRES_USER = env_config.get("BITSWAN_BACKEND_POSTGRES_USER")
+    POSTGRES_HOST = env_config.get("BITSWAN_BACKEND_POSTGRES_HOST")
+    POSTGRES_PORT = env_config.get("BITSWAN_BACKEND_POSTGRES_PORT")
+    POSTGRES_USER = env_config.get("BITSWAN_BACKEND_POSTGRES_USER")
+    POSTGRES_PASSWORD = env_config.get("BITSWAN_BACKEND_POSTGRES_PASSWORD")
+    POSTGRES_DB = env_config.get("BITSWAN_BACKEND_POSTGRES_DB")
+
+    DATABASE_URL = f"postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+
     env_vars = {
         "Bitswan Backend Service Configuration": {
             "DJANGO_SECRET_KEY": env_config.get("DJANGO_SECRET_KEY"),
@@ -111,7 +124,8 @@ def bootstrap_bitswan_backend(
             "CORS_ALLOWED_ORIGINS": env_config.get("CORS_ALLOWED_ORIGINS"),
             "USE_DOCKER": env_config.get("USE_DOCKER"),
             "DJANGO_READ_DOT_ENV_FILE": env_config.get("DJANGO_READ_DOT_ENV_FILE"),
-            "EMQX_JWT_SECRET": env_config.get("EMQX_AUTHENTICATION__SECRET"),
+            "EMQX_JWT_SECRET": env_config.get("EMQX_AUTHENTICATION__1__SECRET"),
+            "DATABASE_URL": DATABASE_URL,
         }
     }
 
@@ -119,13 +133,11 @@ def bootstrap_bitswan_backend(
         env_vars.update(
             {
                 "Postgres Config": {
-                    "POSTGRES_HOST": env_config.get("BITSWAN_BACKEND_POSTGRES_HOST"),
-                    "POSTGRES_PORT": env_config.get("BITSWAN_BACKEND_POSTGRES_PORT"),
-                    "POSTGRES_USER": env_config.get("BITSWAN_BACKEND_POSTGRES_USER"),
-                    "POSTGRES_PASSWORD": env_config.get(
-                        "BITSWAN_BACKEND_POSTGRES_PASSWORD"
-                    ),
-                    "POSTGRES_DB": env_config.get("BITSWAN_BACKEND_POSTGRES_DB"),
+                    "POSTGRES_HOST": POSTGRES_HOST,
+                    "POSTGRES_PORT": POSTGRES_PORT,
+                    "POSTGRES_USER": POSTGRES_USER,
+                    "POSTGRES_PASSWORD": POSTGRES_PASSWORD,
+                    "POSTGRES_DB": POSTGRES_DB,
                 }
             }
         )
@@ -199,7 +211,7 @@ def bootstrap_operations_centre(
                 "BITSWAN_BACKEND_API_URL": env_config.get("BITSWAN_BACKEND_API_URL"),
             },
             "EMQX": {
-                "EMQX_JWT_SECRET": env_config.get("EMQX_JWT_SECRET"),
+                "EMQX_JWT_SECRET": env_config.get("EMQX_AUTHENTICATION__1__SECRET"),
                 "EMQX_MQTT_URL": env_config.get("EMQX_MQTT_URL"),
             },
             "Keycloak": {
@@ -221,7 +233,11 @@ def bootstrap_operations_centre(
         },
         deployment_kind=init_config.dev_setup.value,
         project_name="aoc",
-        env_file=".env" if init_config.dev_setup == DevSetupKind.LOCAL else None,
+        env_file=(
+            ".env"
+            if init_config.dev_setup == DevSetupKind.LOCAL
+            else OPERATIONS_CENTRE_DOCKER_ENV_FILE
+        ),
     )
 
 
@@ -240,10 +256,24 @@ def bootstrap_emqx(init_config: InitConfig, env_config: dict[str, str] = None) -
                 "EMQX_DASHBOARD__DEFAULT_PASSWORD": env_config.get(
                     "EMQX_DASHBOARD__DEFAULT_PASSWORD"
                 ),
-                "EMQX_AUTHENTICATION__SECRET": env_config.get(
-                    "EMQX_AUTHENTICATION__SECRET"
+            },
+            "JWT Authentication": {
+                "EMQX_AUTHENTICATION__1__SECRET": env_config.get(
+                    "EMQX_AUTHENTICATION__1__SECRET"
                 ),
-            }
+                "EMQX_AUTHENTICATION__1__MECHANISM": env_config.get(
+                    "EMQX_AUTHENTICATION__1__MECHANISM"
+                ),
+                "EMQX_AUTHENTICATION__1__FROM": env_config.get(
+                    "EMQX_AUTHENTICATION__1__FROM"
+                ),
+                "EMQX_AUTHENTICATION__1__USE_JWKS": env_config.get(
+                    "EMQX_AUTHENTICATION__1__USE_JWKS"
+                ),
+                "EMQX_AUTHENTICATION__1__ALGORITHM": env_config.get(
+                    "EMQX_AUTHENTICATION__1__ALGORITHM"
+                ),
+            },
         },
     )
 

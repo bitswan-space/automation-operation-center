@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "aoc-cli"
+name = "bitswan-on-prem-aoc"
 version = "0.1.0"
 description = "Command line tool for AOC environment setup"
 requires-python = ">=3.10"
@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.scripts]
-aoc = "aoc_cli.aoc:cli"
+bitswan-on-prem-aoc = "aoc_cli.aoc:cli"
 
 
 [tool.hatch.build.targets.wheel]

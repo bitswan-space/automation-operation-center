@@ -96,7 +96,7 @@ services:
   emqx:
     image: emqx:latest
     container_name: aoc-local-emqx
-    restart: always
+    restart: "no"
     ports:
       - "1883:1883"
       - "8083:8083"
@@ -140,7 +140,7 @@ services:
       dockerfile: ./dev.dockerfile
     container_name: aoc-local-nextjs
     env_file:
-      - ./envs/aoc.env
+      - ./envs/operations-centre.env
     ports:
       - "3000:3000"
     volumes:
