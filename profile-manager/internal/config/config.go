@@ -1,10 +1,8 @@
 package config
 
 import (
+	"fmt"
 	"os"
-
-	"bitswan.space/profile-manager/internal/logger"
-	"gopkg.in/yaml.v2"
 )
 
 type Configuration struct {
@@ -15,15 +13,17 @@ type Configuration struct {
 var cfg *Configuration
 
 func LoadConfig(filename string) error {
-	buf, err := os.ReadFile(filename)
-	if err != nil {
-		return err
+
+	brokerUrl := os.Getenv("MQTT_BROKER_URL")
+	brokerSecret := os.Getenv("MQTT_BROKER_SECRET")
+
+	if brokerUrl == "" || brokerSecret == "" {
+		return fmt.Errorf("MQTT_BROKER_URL and MQTT_BROKER_SECRET must be set")
 	}
 
-	if err := yaml.Unmarshal(buf, &cfg); err != nil {
-		return err
-	}
-	logger.Info.Printf("Successfuly loaded configuration")
+	cfg.MQTTBrokerUrl = brokerUrl
+	cfg.MQTTBrokerSecret = brokerSecret
+
 	return nil
 }
 
