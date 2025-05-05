@@ -224,6 +224,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
         },
     )
 
+
     # Common/other
     services["redis"] = ServiceConfig(
         name=f"aoc-{env_name}-redis",

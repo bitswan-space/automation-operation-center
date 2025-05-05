@@ -1,34 +1,29 @@
 package config
 
 import (
+	"fmt"
 	"os"
-
-	"bitswan.space/container-discovery-service/internal/logger"
-	"gopkg.in/yaml.v2"
 )
 
 type Configuration struct {
-	MQTTBrokerUrl        string   `yaml:"mqtt-broker-url"`
-	MQTTContainersPub    string   `yaml:"mqtt-containers-pub"`
-	MQTTTopologyTopics   []string `yaml:"mqtt-topology-topics"`
-	MQTTNavigationPub    string   `yaml:"mqtt-navigation-topic"`
-	MQTTNavigationSet    string   `yaml:"mqtt-navigation-set"`
-	NavigationFile       string   `yaml:"navigation-file"`
-	NavigationSchemaFile string   `yaml:"navigation-schema-file"`
+	MQTTBrokerUrl    string `yaml:"mqtt-broker-url"`
+	MQTTBrokerSecret string `yaml:"mqtt-broker-secret"`
 }
 
 var cfg *Configuration
 
 func LoadConfig(filename string) error {
-	buf, err := os.ReadFile(filename)
-	if err != nil {
-		return err
+
+	brokerUrl := os.Getenv("MQTT_BROKER_URL")
+	brokerSecret := os.Getenv("MQTT_BROKER_SECRET")
+
+	if brokerUrl == "" || brokerSecret == "" {
+		return fmt.Errorf("MQTT_BROKER_URL and MQTT_BROKER_SECRET must be set")
 	}
 
-	if err := yaml.Unmarshal(buf, &cfg); err != nil {
-		return err
-	}
-	logger.Info.Printf("Successfuly loaded configuration")
+	cfg.MQTTBrokerUrl = brokerUrl
+	cfg.MQTTBrokerSecret = brokerSecret
+
 	return nil
 }
 

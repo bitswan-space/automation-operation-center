@@ -2,134 +2,73 @@ package mqtt
 
 import (
 	"encoding/json"
-	"os"
-	"sync"
+	"fmt"
+	"regexp"
 
-	"bitswan.space/container-discovery-service/internal/logger"
+	"bitswan.space/profile-manager/internal/logger"
+	"bitswan.space/profile-manager/internal/profilemanager"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/xeipuuv/gojsonschema"
 )
-
-type Message struct {
-	Count uint64 `json:"count"`
-}
-
-type Topology struct {
-	Topology     map[string]Pipeline `json:"topology"`
-	DisplayStyle string              `json:"display-style"`
-}
-
-type Pipeline struct {
-	Wires      []interface{} `json:"wires"`
-	Properties Properties    `json:"properties"`
-	Metrics    []interface{} `json:"metrics"`
-}
-
-type Properties struct {
-	ContainerID  string `json:"container-id"`
-	EndpointName string `json:"endpoint-name"`
-	DeploymentID string `json:"deployment-id"`
-	CreatedAt    string `json:"created-at"`
-	Name         string `json:"name"`
-	State        string `json:"state"`
-	Status       string `json:"status"`
-}
-
-type TopologyEvent struct {
-	Count                      uint64   `json:"count"`
-	RemainingSubscriptionCount uint64   `json:"remaining_subscription_count"`
-	Data                       Topology `json:"data"`
-}
 
 var (
-	mergedTopology  Topology
-	lock            sync.Mutex
-	pipelineSources = make(map[string]string)
+	profileManager = profilemanager.GetInstance()
 )
 
-func init() {
-	mergedTopology = Topology{
-		Topology: make(map[string]Pipeline),
-	}
-}
-
 func HandleTopologyRequest(client mqtt.Client, message mqtt.Message) {
-	var newTopology Topology
-
 	if !json.Valid([]byte(message.Payload())) {
 		logger.Error.Println("Invalid JSON")
-	} else {
-		json.Unmarshal([]byte(message.Payload()), &newTopology)
-
-		// Identify the topic from the message
-		topic := message.Topic()
-
-		// Track pipelines received in this message
-		receivedPipelines := make(map[string]struct{})
-
-		lock.Lock()
-		for key, value := range newTopology.Topology {
-			mergedTopology.Topology[key] = value
-			pipelineSources[key] = topic
-			receivedPipelines[key] = struct{}{}
-		}
-
-		// Check for any pipelines that need to be removed
-		// These are pipelines that were previously added by this topic but are not present in the new message
-		for pipeline, srcTopic := range pipelineSources {
-			if srcTopic == topic {
-				if _, exists := receivedPipelines[pipeline]; !exists {
-					// Pipeline was not in the received message; remove it
-					delete(mergedTopology.Topology, pipeline)
-					delete(pipelineSources, pipeline)
-				}
-			}
-		}
-		lock.Unlock()
-
-		// TODO: remove this and return just topology
-		topologyEvent := TopologyEvent{
-			Count:                      1,
-			RemainingSubscriptionCount: 1,
-			Data:                       mergedTopology,
-		}
-		b, err := json.MarshalIndent(topologyEvent, "", "  ")
-		if err != nil {
-			logger.Error.Println(err)
-			return
-		}
-
-		client.Publish(cfg.MQTTContainersPub, 0, true, string(b))
-	}
-
-}
-
-func HandleNavigationSetRequest(client mqtt.Client, message mqtt.Message) {
-	var msg json.RawMessage
-	logger.Info.Println("Received navigation set request")
-	documentLoader := gojsonschema.NewStringLoader(string(message.Payload()))
-
-	logger.Info.Printf("Validating JSON schema...")
-	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
-	if err != nil {
-		logger.Error.Println(err)
 		return
 	}
 
-	if !result.Valid() {
-		logger.Error.Println("Invalid JSON schema. Errors:")
-		for _, desc := range result.Errors() {
-			logger.Error.Printf("- %s\n", desc)
-		}
-	} else {
-		json.Unmarshal([]byte(message.Payload()), &msg)
-		err := os.WriteFile(cfg.NavigationFile, msg, 0644)
-		if err != nil {
-			logger.Error.Println(err)
-			return
-		}
+	// Identify the topic from the message
+	topic := message.Topic()
 
-		// Send retained message with new navigation structure
-		client.Publish(cfg.MQTTNavigationPub, 0, true, string(msg))
+	// Parse topic string using regex
+	pattern := regexp.MustCompile(`^/orgs/([^/]+)/automation-servers/([^/]+)/c/([^/]+)/topology$`)
+	matches := pattern.FindStringSubmatch(topic)
+
+	if len(matches) != 4 {
+		logger.Error.Printf("Invalid topic format: %s", topic)
+		return
 	}
+
+	orgID := matches[1]
+	automationServerID := matches[2]
+	workspaceID := matches[3]
+
+	// Get active profiles for the organization
+	profiles := profileManager.GetActiveProfiles(orgID)
+	if len(profiles) == 0 {
+		logger.Info.Printf("No active profiles found for organization %s", orgID)
+		return
+	}
+
+	// Forward message to all active profiles
+	for _, profile := range profiles {
+		targetTopic := fmt.Sprintf("/orgs/%s/profiles/%s/automation-servers/%s/c/%s/topology",
+			orgID, profile.Name, automationServerID, workspaceID)
+		client.Publish(targetTopic, 0, true, message.Payload())
+	}
+}
+
+func HandleProfilesMessage(client mqtt.Client, message mqtt.Message) {
+	// Parse topic to get org_id
+	topic := message.Topic()
+	pattern := regexp.MustCompile(`^/orgs/([^/]+)/profiles$`)
+	matches := pattern.FindStringSubmatch(topic)
+
+	if len(matches) != 2 {
+		logger.Error.Printf("Invalid profiles topic format: %s", topic)
+		return
+	}
+
+	orgID := matches[1]
+	var profiles []profilemanager.Profile
+	if err := json.Unmarshal([]byte(message.Payload()), &profiles); err != nil {
+		logger.Error.Printf("Failed to unmarshal profiles message: %v", err)
+		return
+	}
+
+	profileManager.UpdateProfiles(orgID, profiles)
+	logger.Info.Printf("Successfully updated profiles for organization %s", orgID)
 }
