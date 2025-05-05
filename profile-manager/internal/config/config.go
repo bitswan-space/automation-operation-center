@@ -6,8 +6,8 @@ import (
 )
 
 type Configuration struct {
-	MQTTBrokerUrl        string   `yaml:"mqtt-broker-url"`
-	MQTTBrokerSecret     string   `yaml:"mqtt-broker-secret"`
+	MQTTBrokerUrl    string `yaml:"mqtt-broker-url"`
+	MQTTBrokerSecret string `yaml:"mqtt-broker-secret"`
 }
 
 var cfg *Configuration

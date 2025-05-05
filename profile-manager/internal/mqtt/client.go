@@ -19,7 +19,7 @@ var cfg *config.Configuration
 func GenerateJWTToken(secret string) string {
 	// Create the token claims
 	claims := jwt.MapClaims{
-		"exp": time.Now().Add(24 * time.Hour).Unix(),
+		"exp":      time.Now().Add(24 * time.Hour).Unix(),
 		"username": "profile-manager",
 		"client_attrs": map[string]string{
 			"mountpoint": "",
@@ -28,7 +28,7 @@ func GenerateJWTToken(secret string) string {
 
 	// Create the token with HS256 algorithm
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	
+
 	// Sign and get the complete encoded token as a string
 	tokenString, err := token.SignedString([]byte(secret))
 	if err != nil {

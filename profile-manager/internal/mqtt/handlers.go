@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	profileManager  = profilemanager.GetInstance()
+	profileManager = profilemanager.GetInstance()
 )
 
 func HandleTopologyRequest(client mqtt.Client, message mqtt.Message) {
@@ -26,7 +26,7 @@ func HandleTopologyRequest(client mqtt.Client, message mqtt.Message) {
 	// Parse topic string using regex
 	pattern := regexp.MustCompile(`^/orgs/([^/]+)/automation-servers/([^/]+)/c/([^/]+)/topology$`)
 	matches := pattern.FindStringSubmatch(topic)
-	
+
 	if len(matches) != 4 {
 		logger.Error.Printf("Invalid topic format: %s", topic)
 		return
@@ -56,7 +56,7 @@ func HandleProfilesMessage(client mqtt.Client, message mqtt.Message) {
 	topic := message.Topic()
 	pattern := regexp.MustCompile(`^/orgs/([^/]+)/profiles$`)
 	matches := pattern.FindStringSubmatch(topic)
-	
+
 	if len(matches) != 2 {
 		logger.Error.Printf("Invalid profiles topic format: %s", topic)
 		return
@@ -72,6 +72,3 @@ func HandleProfilesMessage(client mqtt.Client, message mqtt.Message) {
 	profileManager.UpdateProfiles(orgID, profiles)
 	logger.Info.Printf("Successfully updated profiles for organization %s", orgID)
 }
-
-
-

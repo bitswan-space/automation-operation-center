@@ -11,8 +11,8 @@ const (
 
 // Profile represents a profile with its properties
 type Profile struct {
-	ID            string   `json:"id"`
-	Name          string   `json:"name"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 // ProfileManager handles the management of organization profiles
@@ -80,7 +80,6 @@ func (pm *ProfileManager) UpdateProfiles(orgID string, profiles []Profile) {
 	}
 }
 
-
 // GetActiveProfiles returns all active profiles for an organization
 func (pm *ProfileManager) GetActiveProfiles(orgID string) []*Profile {
 	pm.mu.RLock()
@@ -96,4 +95,4 @@ func (pm *ProfileManager) GetActiveProfiles(orgID string) []*Profile {
 		activeProfiles = append(activeProfiles, profile)
 	}
 	return activeProfiles
-} 
+}
