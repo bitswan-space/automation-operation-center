@@ -4,6 +4,7 @@ import json
 import logging
 
 from django.bitswan_backend.core.services.keycloak import KeycloakService
+from django.bitswan_backend.workspaces.api.services import create_token
 
 logger = logging.getLogger(__name__)
 
@@ -23,10 +24,12 @@ class MQTTClient:
 
     def setup_client(self):
         # Get MQTT settings from Django settings
-        mqtt_host = getattr(settings, 'MQTT_BROKER_HOST')
-        mqtt_port = getattr(settings, 'MQTT_BROKER_PORT')
-        mqtt_username = getattr(settings, 'MQTT_USERNAME')
-        mqtt_password = getattr(settings, 'MQTT_PASSWORD')
+        mqtt_url = getattr(settings, 'EMQX_INTERNAL_URL')
+        mqtt_url = mqtt_url.split(':')
+        mqtt_host = mqtt_url[0]
+        mqtt_port = mqtt_url[1]
+        mqtt_username = "bitswan-backend"
+        mqtt_password = create_token(secret=settings.EMQX_JWT_SECRET, username=mqtt_username)
 
         if mqtt_username and mqtt_password:
             self.client.username_pw_set(mqtt_username, mqtt_password)

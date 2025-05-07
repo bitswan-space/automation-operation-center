@@ -127,6 +127,7 @@ def bootstrap_bitswan_backend(
             "DJANGO_READ_DOT_ENV_FILE": env_config.get("DJANGO_READ_DOT_ENV_FILE"),
             "EMQX_JWT_SECRET": env_config.get("EMQX_AUTHENTICATION__1__SECRET"),
             "EMQX_EXTERNAL_URL": env_config.get("EMQX_EXTERNAL_URL"),
+            "EMQX_INTERNAL_URL": env_config.get("EMQX_INTERNAL_URL"),
             "DATABASE_URL": DATABASE_URL,
         }
     }
