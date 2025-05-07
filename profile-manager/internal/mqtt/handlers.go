@@ -46,7 +46,7 @@ func HandleTopologyRequest(client mqtt.Client, message mqtt.Message) {
 	// Forward message to all active profiles
 	for _, profile := range profiles {
 		targetTopic := fmt.Sprintf("/orgs/%s/profiles/%s/automation-servers/%s/c/%s/topology",
-			orgID, profile.Name, automationServerID, workspaceID)
+			orgID, profile, automationServerID, workspaceID)
 		client.Publish(targetTopic, 0, true, message.Payload())
 	}
 }
@@ -63,7 +63,7 @@ func HandleProfilesMessage(client mqtt.Client, message mqtt.Message) {
 	}
 
 	orgID := matches[1]
-	var profiles []profilemanager.Profile
+	var profiles []string
 	if err := json.Unmarshal([]byte(message.Payload()), &profiles); err != nil {
 		logger.Error.Printf("Failed to unmarshal profiles message: %v", err)
 		return
