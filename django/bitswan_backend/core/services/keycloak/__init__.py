@@ -384,3 +384,11 @@ class KeycloakService:
         return self.keycloak.exchange_token(
             token=token,
         )
+
+    def get_orgs(self):
+        groups = self.keycloak_admin.get_groups()
+        org_groups = [group for group in groups if (
+                "type" in group.get("attributes", {})
+                and "org" in group["attributes"]["type"]
+            )]
+        return org_groups
