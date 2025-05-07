@@ -4,7 +4,7 @@ from keycloak import KeycloakDeleteError
 from keycloak import KeycloakGetError
 from keycloak import KeycloakPostError
 from keycloak import KeycloakPutError
-from django.bitswan_backend.core.mqtt import MQTTService
+from bitswan_backend.core.mqtt import MQTTService
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action

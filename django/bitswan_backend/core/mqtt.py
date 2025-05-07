@@ -3,8 +3,8 @@ from django.conf import settings
 import json
 import logging
 
-from django.bitswan_backend.core.services.keycloak import KeycloakService
-from django.bitswan_backend.workspaces.api.services import create_token
+from bitswan_backend.core.services.keycloak import KeycloakService
+from bitswan_backend.workspaces.api.services import create_token
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class MQTTClient:
         mqtt_url = getattr(settings, 'EMQX_INTERNAL_URL')
         mqtt_url = mqtt_url.split(':')
         mqtt_host = mqtt_url[0]
-        mqtt_port = mqtt_url[1]
+        mqtt_port = int(mqtt_url[1])
         mqtt_username = "bitswan-backend"
         mqtt_password = create_token(secret=settings.EMQX_JWT_SECRET, username=mqtt_username)
 
@@ -86,8 +86,8 @@ class MQTTService:
                 profiles.append(f"{organization_id}_group_{group['id']}")
                 profiles.append(f"{organization_id}_group_{group['id']}_admin")
 
-            topic = f"/org/{organization_id}/profiles"
-            self.mqtt_client.publish(topic, profiles)
+            topic = f"/orgs/{organization_id}/profiles"
+            self.mqtt_client.publish(topic, profiles, retain=True)
         except Exception as e:
             logger.error(f"Error publishing organization profiles: {e}")
 

@@ -6,5 +6,5 @@ class BrokersConfig(AppConfig):
     name = "bitswan_backend.brokers"
 
     def ready(self):
-        from django.bitswan_backend.core.mqtt import MQTTService
+        from bitswan_backend.core.mqtt import MQTTService
         MQTTService().publish_orgs_profiles()
