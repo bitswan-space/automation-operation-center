@@ -154,6 +154,9 @@ services:
     networks:
       - bitswan_network
     restart: always
+    depends_on:
+      - emqx
+      - django
     build:
       context: ../profile-manager
       dockerfile: ./Dockerfile

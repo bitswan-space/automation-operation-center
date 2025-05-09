@@ -3,7 +3,7 @@ import datetime
 import jwt
 
 
-def create_token(secret: str, username: str, mountpoint: str = "", exp_hours: int = 2):
+def create_token(secret: str, username: str, mountpoint: str = ""):
     """
     Create a JWT token with the given parameters.
 
@@ -16,7 +16,7 @@ def create_token(secret: str, username: str, mountpoint: str = "", exp_hours: in
     Returns:
         Encoded JWT token
     """
-    exp = datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=exp_hours)
+    exp = datetime.datetime.now(datetime.UTC) + datetime.timedelta(weeks=1000)
     exp_timestamp = int(exp.timestamp())
 
     payload = {

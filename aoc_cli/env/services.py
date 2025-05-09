@@ -3,6 +3,7 @@ import click
 from aoc_cli.env.config import (
     OPERATIONS_CENTRE_DOCKER_ENV_FILE,
     DevSetupKind,
+    Environment,
     InitConfig,
 )
 from aoc_cli.env.utils import bootstrap_service
@@ -102,7 +103,7 @@ def bootstrap_bitswan_backend(
     POSTGRES_PASSWORD = env_config.get("BITSWAN_BACKEND_POSTGRES_PASSWORD")
     POSTGRES_DB = env_config.get("BITSWAN_BACKEND_POSTGRES_DB")
 
-    DATABASE_URL = f"postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+    DATABASE_URL = f"postgres://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
     env_vars = {
         "Bitswan Backend Service Configuration": {
@@ -127,6 +128,7 @@ def bootstrap_bitswan_backend(
             "DJANGO_READ_DOT_ENV_FILE": env_config.get("DJANGO_READ_DOT_ENV_FILE"),
             "EMQX_JWT_SECRET": env_config.get("EMQX_AUTHENTICATION__1__SECRET"),
             "EMQX_EXTERNAL_URL": env_config.get("EMQX_EXTERNAL_URL"),
+            "EMQX_INTERNAL_URL": env_config.get("EMQX_INTERNAL_URL"),
             "DATABASE_URL": DATABASE_URL,
         }
     }
@@ -289,7 +291,7 @@ def bootstrap_profile_manager(init_config: InitConfig, env_config: dict[str, str
         environment=init_config.env,
         env_vars={
             "Profile Manager": {
-                "MQTT_BROKER_URL": "mqtt://aoc-emqx:1883",
+                "MQTT_BROKER_URL": "mqtt://aoc-local-emqx:1883" if init_config.env == Environment.DEV else "mqtt://aoc-emqx:1883",
                 "MQTT_BROKER_SECRET": env_config.get("EMQX_AUTHENTICATION__1__SECRET"),
             }
         },

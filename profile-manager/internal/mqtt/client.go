@@ -17,9 +17,9 @@ var schemaLoader gojsonschema.JSONLoader
 var cfg *config.Configuration
 
 func GenerateJWTToken(secret string) string {
-	// Create the token claims
+	// Create the token claims with expiration to 20 years
 	claims := jwt.MapClaims{
-		"exp":      time.Now().Add(24 * time.Hour).Unix(),
+		"exp":      time.Now().Add(20 * 365 * 24 * time.Hour).Unix(),
 		"username": "profile-manager",
 		"client_attrs": map[string]string{
 			"mountpoint": "",
@@ -61,12 +61,32 @@ func Init() error {
 
 	opts.SetOnConnectHandler(func(client mqtt.Client) {
 		logger.Info.Println("Connected to MQTT broker subscribing to topics...")
+
+		// Organizations profiles
+		// /orgs/{org id}/profiles
 		profilesTopic := "/orgs/+/profiles"
 		if token := client.Subscribe(profilesTopic, 0, HandleProfilesMessage); token.Wait() && token.Error() != nil {
 			logger.Error.Printf("Subscription failed: %v", token.Error())
 		}
+
+		// List of automations for each workspace
+		// /orgs/{org id}/automation-servers/{automation server id}/c/{workspace id}/topology
 		topologyTopic := "/orgs/+/automation-servers/+/c/+/topology"
 		if token := client.Subscribe(topologyTopic, 0, HandleTopologyRequest); token.Wait() && token.Error() != nil {
+			logger.Error.Printf("Subscription failed: %v", token.Error())
+		}
+
+		// Requests from AOC to the automations
+		// /orgs/{org id}/profiles/{profile id}/automation-servers/{automation server id}/c/{workspace id}/c/{automation id}/+
+		automationsProfilesTopic := "/orgs/+/profiles/+/automation-servers/+/c/+/c/#"
+		if token := client.Subscribe(automationsProfilesTopic, 0, HandleAutomationProfileRequest); token.Wait() && token.Error() != nil {
+			logger.Error.Printf("Subscription failed: %v", token.Error())
+		}
+
+		// Data from the automations
+		// /orgs/{org id}/automation-servers/{automation server id}/c/{workspace id}/c/{automation id}/+
+		automationsTopic := "/orgs/+/automation-servers/+/c/+/c/#"
+		if token := client.Subscribe(automationsTopic, 0, HandleAutomationMessage); token.Wait() && token.Error() != nil {
 			logger.Error.Printf("Subscription failed: %v", token.Error())
 		}
 	})
