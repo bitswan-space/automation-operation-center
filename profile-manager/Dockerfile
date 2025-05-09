@@ -13,7 +13,7 @@ RUN go mod download
 # Copy the source from the current directory to the Working Directory inside the container.
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o container-discovery-service ./cmd/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o profile-manager ./cmd/main.go
 
 # Start a new stage from scratch.
 FROM alpine:latest  
@@ -21,7 +21,7 @@ FROM alpine:latest
 WORKDIR /app
 
 # Copy the Pre-built binary file from the previous stage.
-COPY --from=builder /app/container-discovery-service .
+COPY --from=builder /app/profile-manager .
 
 # Command to run the executable.
-CMD ["/app/container-discovery-service"]
+CMD ["/app/profile-manager"]
