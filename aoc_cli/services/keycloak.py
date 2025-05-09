@@ -46,7 +46,7 @@ class KeycloakService:
         self.connect()
         self.configure_realm_settings()
         client_secrets = self.create_clients()
-        self.setup_token_exchange()
+        self.setup_bitswan_backend_client()
         self.initialize_admin_user()
 
         self._update_envs_with_keycloak_secret(client_secrets)
@@ -79,7 +79,7 @@ class KeycloakService:
             stdout=subprocess.DEVNULL,
         )
 
-    def setup_token_exchange(self) -> None:
+    def setup_bitswan_backend_client(self) -> None:
         clients = self.keycloak_admin.get_clients()
         bitswan_backend_client = next((client for client in clients if client["clientId"] == "bitswan-backend"), None)
         master_realm_client = next((client for client in clients if client["clientId"] == "master-realm"), None)
@@ -125,7 +125,21 @@ class KeycloakService:
         }
 
         self.keycloak_admin.create_client_authz_scope_permission(permission, bitswan_backend_client_id)
-        click.echo("✓ Token exchange setup complete")
+
+        offline_scope = self.keycloak_admin.get_client_scope_by_name("offline_access")
+        if offline_scope:
+            self.keycloak_admin.delete_client_optional_client_scope(bitswan_backend_client_id, offline_scope["id"])
+            payload = {
+                "realm": self.config.realm_name,
+                "client": bitswan_backend_client_id,
+                "clientScopeId": offline_scope["id"]
+            }
+            self.keycloak_admin.add_client_default_client_scope(bitswan_backend_client_id, offline_scope["id"], payload)
+            
+        else:
+            raise ValueError("Error durring bitswan backend client setup - offline scope not found")
+
+        click.echo("✓ Bitswan backend client setup complete")
 
     def wait_for_service(self, max_retries: int = 30, delay: int = 10) -> None:
         click.echo("Waiting for Keycloak to be ready...")
