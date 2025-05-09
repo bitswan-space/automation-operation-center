@@ -8,6 +8,7 @@ from bitswan_backend.dashboard_hub.api.views import DashboardEntryViewSet
 from bitswan_backend.deployments.urls import urlpatterns as deployments_urlpatterns
 from bitswan_backend.gitops.api.views import GitopsViewSet
 from bitswan_backend.users.api.views import UserViewSet
+from bitswan_backend.workspaces.api.views import AutomationServerViewSet
 from bitswan_backend.workspaces.api.views import WorkspaceViewSet
 from bitswan_backend.workspaces.urls import urlpatterns as workspaces_urlpatterns
 
@@ -24,6 +25,11 @@ router.register(
     basename="dashboard-entries",
 )
 router.register("workspaces", WorkspaceViewSet, basename="workspaces")
+router.register(
+    "automation-servers",
+    AutomationServerViewSet,
+    basename="automation-servers",
+)
 
 
 app_name = "api"

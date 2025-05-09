@@ -41,7 +41,12 @@ export const fetchMQTTProfiles = async (session: Session | null) => {
     console.error("Error fetching MQTT profiles", res);
     console.error("response: ", await res.text());
 
-    throw new Error("Error fetching MQTT profiles");
+    return {
+      count: 0,
+      next: null,
+      previous: null,
+      results: [],
+    };
   }
 
   const data = (await res.json()) as MQTTProfileListResponse;
