@@ -9,11 +9,11 @@ type AutomationServerListResponse = {
   results: AutomationServer[];
 };
 
-type Workspace = {
-  id: string;
+export type Workspace = {
+  id: number;
   name: string;
   keycloak_org_id: string;
-  automation_server_id: string;
+  automation_server: string;
   created_at: string;
   updated_at: string;
 };

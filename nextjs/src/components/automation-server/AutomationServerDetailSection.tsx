@@ -193,7 +193,7 @@ export function AutomationServerDetailSection(
                         <TableCell className="items-center text-blue-600 underline underline-offset-2">
                           <Link
                             className="flex items-center gap-1"
-                            href={`/dashboard/automation-servers/${server.id}/workspaces/${workspace.id}`}
+                            href={`/dashboard/automation-servers/${server.automation_server_id}/workspaces/${workspace.id}`}
                           >
                             {workspace.name}
                             <ArrowUpRight className="h-4 w-4" />

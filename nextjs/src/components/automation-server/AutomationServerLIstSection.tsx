@@ -121,7 +121,7 @@ export function AutomationServerLIstSection(
                       className="h-8 w-8 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
                       asChild
                     >
-                      <Link href={`/dashboard/automation-servers/${server.id}`}>
+                      <Link href={`/dashboard/automation-servers/${server.automation_server_id}`}>
                         <ExternalLink className="h-4 w-4" />
                       </Link>
                     </Button>

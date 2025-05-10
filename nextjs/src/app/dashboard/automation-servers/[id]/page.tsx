@@ -14,7 +14,7 @@ const AutomationServersPage = async (props: {
   console.log("automationServers", automationServers);
 
   const automationServer = automationServers.results.find(
-    (server) => server.id === Number(id),
+    (server) => server.automation_server_id === id,
   );
 
   console.log("automationServer", automationServer);
