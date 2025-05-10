@@ -29,9 +29,14 @@ export default function MQTTProfileSelector(props: MQTTProfileSelectorProps) {
   const [activeMQTTProfile, saveActiveMQTTProfile] = useLocalStorageState<
     MQTTProfile | undefined
   >(ACTIVE_MQTT_PROFILE_STORAGE_KEY, {
-    defaultValue: mqttProfiles?.results?.[0],
     listenStorageChange: true,
   });
+
+  React.useEffect(() => {
+    if (!activeMQTTProfile && mqttProfiles?.results?.[0]) {
+      saveActiveMQTTProfile(mqttProfiles?.results?.[0]);
+    }
+  }, [activeMQTTProfile, mqttProfiles?.results, saveActiveMQTTProfile]);
 
   const handleActiveMQTTUserChange = (orgGroupId: string) => {
     void saveActiveMQTTProfile(

@@ -1,6 +1,4 @@
-import { auth } from "@/server/auth";
-import axios from "axios";
-import { env } from "@/env.mjs";
+import { authenticatedBitswanBackendInstance } from "@/server/bitswan-backend";
 
 type AutomationServerListResponse = {
   count: number;
@@ -27,27 +25,6 @@ export type AutomationServer = {
   isConnected: boolean;
   updated_at: string;
   created_at: string;
-};
-
-// Will move to a separate file
-export const authenticatedBitswanBackendInstance = async () => {
-  const BITSWAN_BACKEND_API_URL = env.BITSWAN_BACKEND_API_URL + "/api";
-
-  const session = await auth();
-  if (!session) {
-    // Handle the case when the user is not authenticated
-    throw new Error("Not authenticated");
-  }
-
-  const apiToken = session?.access_token;
-
-  return axios.create({
-    baseURL: BITSWAN_BACKEND_API_URL,
-    headers: {
-      Authorization: `Bearer ${apiToken}`,
-      "Content-Type": "application/json",
-    },
-  });
 };
 
 export async function getAutomationServers() {

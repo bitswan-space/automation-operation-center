@@ -25,7 +25,6 @@ export default async function DashboardLayout({
   }
 
   return (
-    <SideBarContextProvider>
       <SidebarProvider>
         <SidebarItemsProvider>
           {/* Sidebar */}
@@ -40,6 +39,5 @@ export default async function DashboardLayout({
           <Toaster />
         </SidebarItemsProvider>
       </SidebarProvider>
-    </SideBarContextProvider>
   );
 }

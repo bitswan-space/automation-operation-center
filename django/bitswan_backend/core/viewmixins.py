@@ -178,3 +178,9 @@ class KeycloakMixin:
         """
 
         return self.keycloak.get_token_from_token(request)
+
+    def is_admin(self, request):
+        """
+        Helper method to check if the user is an admin
+        """
+        return self.keycloak.is_admin(request)

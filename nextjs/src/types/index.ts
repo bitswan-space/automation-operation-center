@@ -205,6 +205,12 @@ export interface ContainerServiceTopologyResponse {
   remaining_subscription_count: number;
 }
 
+export interface WorkspaceTopologyResponse {
+  topology: Topology;
+  "display-style": string;
+  "display-priority": string;
+}
+
 export type Topology = Record<string, PipelineTopology>;
 
 export interface PipelineTopology {
