@@ -27,13 +27,15 @@ interface PipelineTopologyDisplayProps {
   pipelineParentIDs: string[];
   initialNodes: Node[];
   initialEdges: Edge[];
+  automationServerId: string;
+  workspaceId: string;
 }
 const panOnDrag = [1, 2];
 
 export const PipelineTopologyDisplay = (
   props: PipelineTopologyDisplayProps,
 ) => {
-  const { initialNodes, initialEdges, pipelineParentIDs } = props;
+  const { initialNodes, initialEdges, pipelineParentIDs, automationServerId, workspaceId } = props;
 
   const [initialNodesCopy, setInitialNodesCopy] = React.useState<Node[]>([]);
   const [initialEdgesCopy, setInitialEdgesCopy] = React.useState<Edge[]>([]);
@@ -42,11 +44,11 @@ export const PipelineTopologyDisplay = (
     setInitialNodesCopy(
       initialNodes.map((node) => ({
         ...node,
-        data: { ...node.data, parentIDs: pipelineParentIDs } as NodeData,
+        data: { ...node.data, parentIDs: pipelineParentIDs, automationServerId, workspaceId } as NodeData,
       })),
     );
     setInitialEdgesCopy(initialEdges);
-  }, [initialNodes, initialEdges, pipelineParentIDs]);
+  }, [initialNodes, initialEdges, pipelineParentIDs, automationServerId, workspaceId]);
 
   const [nodes, setNodes] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);

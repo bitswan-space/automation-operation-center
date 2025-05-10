@@ -11,13 +11,9 @@ const AutomationServersPage = async (props: {
   const { id } = await props.params;
   const automationServers = await getAutomationServers();
 
-  console.log("automationServers", automationServers);
-
   const automationServer = automationServers.results.find(
     (server) => server.automation_server_id === id,
   );
-
-  console.log("automationServer", automationServer);
 
   return (
     <div className="w-full">

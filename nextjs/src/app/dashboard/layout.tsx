@@ -13,6 +13,7 @@ import { SidebarItemsProvider } from "@/context/SideBarItemsProvider";
 import { Toaster } from "sonner";
 import { auth } from "@/server/auth";
 import { redirect } from "next/navigation";
+import { AutomationsProvider } from "@/context/AutomationsProvider";
 
 export default async function DashboardLayout({
   children,
@@ -30,12 +31,14 @@ export default async function DashboardLayout({
           {/* Sidebar */}
           <AppSidebar session={session} />
           <SidebarRail />
-          <SidebarInset className="bg-neutral-200/50">
-            <div className="flex p-4 lg:pl-0 lg:pr-8">
-              <SidebarTrigger className="mx-2 mt-1" />
-              {children}
-            </div>
-          </SidebarInset>
+          <AutomationsProvider>
+            <SidebarInset className="bg-neutral-200/50">
+              <div className="flex p-4 lg:pl-0 lg:pr-8">
+                <SidebarTrigger className="mx-2 mt-1" />
+                {children}
+              </div>
+            </SidebarInset>
+          </AutomationsProvider>
           <Toaster />
         </SidebarItemsProvider>
       </SidebarProvider>

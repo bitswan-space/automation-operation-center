@@ -1,3 +1,5 @@
+"use client";
+
 import { ArrowLeft, ArrowUpRight, Server, Users, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
@@ -15,65 +17,9 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { type AutomationServer } from "@/data/automation-server";
 import { formatRelative } from "date-fns";
-
-const automationServer = {
-  id: "server-002",
-  name: "production-server-2",
-  version: "3.2.1",
-  workspaces: 18,
-  automations: 56,
-  isConnected: true,
-  lastUpdated: "5 minutes ago",
-  workspacesList: [
-    {
-      id: "ws-101",
-      name: "Product",
-      automations: 14,
-      lastActive: "15 minutes ago",
-      status: "active",
-    },
-    {
-      id: "ws-102",
-      name: "Support",
-      automations: 22,
-      lastActive: "5 minutes ago",
-      status: "active",
-    },
-    {
-      id: "ws-103",
-      name: "Operations",
-      automations: 20,
-      lastActive: "1 hour ago",
-      status: "active",
-    },
-  ],
-  automationsList: [
-    {
-      id: "auto-101",
-      name: "Product Analytics",
-      workspace: "Product",
-      lastRun: "2 hours ago",
-      status: "completed",
-      nextRun: "Tomorrow at 6:00 AM",
-    },
-    {
-      id: "auto-102",
-      name: "Support Ticket Routing",
-      workspace: "Support",
-      lastRun: "10 minutes ago",
-      status: "completed",
-      nextRun: "Hourly",
-    },
-    {
-      id: "auto-103",
-      name: "Infrastructure Monitoring",
-      workspace: "Operations",
-      lastRun: "5 minutes ago",
-      status: "running",
-      nextRun: "Every 15 minutes",
-    },
-  ],
-};
+import { PipelineDataCardList } from "../pipeline/PipelineDataCardList";
+import { PipelineDataTable } from "../pipeline/PipelineDataTable";
+import { useAutomations } from "@/context/AutomationsProvider";
 
 type AutomationServerDetailSectionProps = {
   server?: AutomationServer;
@@ -83,36 +29,11 @@ export function AutomationServerDetailSection(
   props: AutomationServerDetailSectionProps,
 ) {
   const { server } = props;
+  server!.is_connected = true;
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "active":
-      case "completed":
-        return (
-          <Badge className="border-green-200 bg-green-100 text-green-700 hover:bg-green-100">
-            {status}
-          </Badge>
-        );
-      case "running":
-        return (
-          <Badge className="border-blue-200 bg-blue-100 text-blue-700 hover:bg-blue-100">
-            {status}
-          </Badge>
-        );
-      case "failed":
-        return (
-          <Badge className="border-red-200 bg-red-100 text-red-700 hover:bg-red-100">
-            {status}
-          </Badge>
-        );
-      default:
-        return (
-          <Badge className="border-gray-200 bg-gray-100 text-gray-700 hover:bg-gray-100">
-            {status}
-          </Badge>
-        );
-    }
-  };
+  const { automationServers } = useAutomations();
+
+  const automationServerPipelines = automationServers[server?.automation_server_id ?? ""];
 
   return (
     <div className="container mx-auto flex-1 px-0 py-4">
@@ -141,12 +62,12 @@ export function AutomationServerDetailSection(
                     {(server?.workspaces?.length ?? 0) > 1 && "s"}
                   </span>
                   <span>•</span>
-                  <span>{automationServer.automations} automations</span>
+                  <span>{automationServerPipelines?.pipelines.length} automations</span>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {automationServer.isConnected ? (
+              {server?.is_connected ? (
                 <Badge className="border-green-200 bg-green-100 text-green-700 hover:bg-green-100">
                   Connected
                 </Badge>
@@ -167,7 +88,7 @@ export function AutomationServerDetailSection(
           </TabsTrigger>
           <TabsTrigger value="automations" className="flex items-center">
             <Zap className="mr-2 h-4 w-4" />
-            Automations ({automationServer.automations})
+            Automations ({automationServerPipelines?.pipelines.length})
           </TabsTrigger>
         </TabsList>
 
@@ -199,7 +120,7 @@ export function AutomationServerDetailSection(
                             <ArrowUpRight className="h-4 w-4" />
                           </Link>
                         </TableCell>
-                        <TableCell className="text-center">{0}</TableCell>
+                        <TableCell className="text-center">{automationServerPipelines?.workspaces[workspace.id]?.pipelines.length ?? 0}</TableCell>
                         <TableCell className="text-right font-medium">
                           {formatRelative(
                             new Date(workspace.created_at),
@@ -216,45 +137,18 @@ export function AutomationServerDetailSection(
         </TabsContent>
 
         <TabsContent value="automations">
-          <Card className="rounded-md border border-slate-300 shadow-none">
-            <CardHeader>
-              <CardTitle>Automations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Workspace</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Last Run</TableHead>
-                      <TableHead className="text-right">Next Run</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {automationServer.automationsList.map((automation) => (
-                      <TableRow key={automation.id}>
-                        <TableCell className="font-medium">
-                          {automation.name}
-                        </TableCell>
-                        <TableCell>{automation.workspace}</TableCell>
-                        <TableCell>
-                          {getStatusBadge(automation.status)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {automation.lastRun}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {automation.nextRun}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+          <PipelineDataCardList pipelines={automationServerPipelines?.pipelines ?? []} />
+          <div className="hidden py-4 lg:block">
+            <Card
+              className={
+                "h-full w-full rounded-md border border-slate-300 shadow-sm"
+              }
+            >
+              <CardContent className="p-3">
+                <PipelineDataTable pipelines={automationServerPipelines?.pipelines ?? []} />
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

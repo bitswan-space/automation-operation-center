@@ -1,61 +1,138 @@
-// app/_components/NotificationProvider.tsx
 "use client";
 
+import { PipelineTopology, PipelineWithStats, WorkspaceTopologyResponse } from "@/types";
 import {
   createContext,
   useContext,
   useEffect,
-  useRef,
+  useMemo,
   useState,
   type ReactNode,
 } from "react";
+import { useMQTTRequestResponse } from "@/shared/hooks/useMQTTRequestResponse";
+import { usePipelineStats } from "@/components/pipeline/hooks/usePipelineStats";
 
-type Notification = {
-  id: string;
-  message: string;
-  createdAt: string;
-};
+type WorkspaceGroup = {
+  workspaceId: string;
+  automationServerId: string;
+  pipelines: PipelineWithStats[];
+}
 
-type NotificationContextType = {
-  notifications: Notification[];
-};
+type AutomationServerGroup = {
+  serverId: string;
+  workspaces: Record<string, WorkspaceGroup>;
+  pipelines: PipelineWithStats[]; // All pipelines in this server across workspaces
+}
 
-const NotificationContext = createContext<NotificationContextType | null>(null);
+type AutomationsGroups = {
+  all: PipelineWithStats[];
+  automationServers: Record<string, AutomationServerGroup>;
+}
 
-export const NotificationProvider = ({ children }: { children: ReactNode }) => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const wsRef = useRef<WebSocket | null>(null);
+const AutomationsContext = createContext<AutomationsGroups | null>(null);
 
+export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
+  console.log("AutomationsProvider");
+  const pipelineStats = usePipelineStats();
+  // Keep track of all workspaces and their pipelines
+  const [workspaces, setWorkspaces] = useState<Record<string, WorkspaceGroup>>({});
+
+  const { response: workspaceTopology, messageTopic } =
+    useMQTTRequestResponse<WorkspaceTopologyResponse>({
+      requestTopic: `/automation-servers/+/c/+/topology/subscribe`,
+      responseTopic: `/automation-servers/+/c/+/topology`,
+    });
+
+  // Extract server and workspace IDs from the MQTT topic
+  const topicInfo = useMemo(() => {
+    if (!messageTopic) return null;
+    const parts = messageTopic.split('/');
+    return {
+      automationServerId: parts[2], // Index 2 contains server ID
+      workspaceId: parts[4], // Index 4 contains workspace ID
+    };
+  }, [messageTopic]);
+
+  // Update workspaces when we receive new topology
   useEffect(() => {
-    const ws = new WebSocket("wss://your-api/ws/notifications");
-    wsRef.current = ws;
+    if (workspaceTopology && topicInfo?.workspaceId && topicInfo?.automationServerId) {
+      const { workspaceId, automationServerId } = topicInfo;
 
-    // ws.onmessage = (event) => {
-    //   const data = JSON.parse(event.data);
-    //   setNotifications((prev) => [data, ...prev]);
-    // };
+      // Process pipelines for this workspace
+      // This creates a new array of pipelines that represents the current state of the workspace
+      const workspacePipelines = Object.entries(workspaceTopology.topology ?? {}).map(
+        ([key, value]) => ({
+          _key: key,
+          ...value as PipelineTopology,
+          pipelineStat: pipelineStats?.filter((stat) =>
+            value.properties["deployment-id"].startsWith(stat.deployment_id)
+          ) || [],
+          automationServerId,
+          workspaceId,
+        }),
+      );
 
-    ws.onclose = () => {
-      // Optional: Add reconnect logic here
+      // Update workspaces state by replacing the entire workspace entry
+      // This ensures we only keep the current state of the workspace's pipelines
+      setWorkspaces(prev => ({
+        ...prev,
+        [workspaceId]: {
+          workspaceId,
+          automationServerId,
+          pipelines: workspacePipelines, // Replace entire pipeline list with current state
+        },
+      }));
+    }
+  }, [workspaceTopology, topicInfo, pipelineStats]);
+
+  // Derive automation servers and all lists from workspaces
+  const automations = useMemo(() => {
+    // First, group workspaces by server to build the server structure
+    const serverGroups = Object.values(workspaces).reduce((acc, workspace) => {
+      const { automationServerId } = workspace;
+      
+      if (!acc[automationServerId]) {
+        acc[automationServerId] = {
+          serverId: automationServerId,
+          workspaces: {},
+          pipelines: [],
+        };
+      }
+      
+      acc[automationServerId].workspaces[workspace.workspaceId] = workspace;
+      return acc;
+    }, {} as Record<string, AutomationServerGroup>);
+
+    // Now calculate the pipelines for each server and the total
+    const allPipelines: PipelineWithStats[] = [];
+    
+    // Update server pipelines and collect all pipelines
+    Object.values(serverGroups).forEach(server => {
+      // Get all pipelines for this server from its workspaces
+      server.pipelines = Object.values(server.workspaces).flatMap(workspace => workspace.pipelines);
+      // Add them to the total
+      allPipelines.push(...server.pipelines);
+    });
+
+    return {
+      all: allPipelines,
+      automationServers: serverGroups,
     };
-
-    return () => {
-      ws.close();
-    };
-  }, []);
+  }, [workspaces]);
 
   return (
-    <NotificationContext.Provider value={{ notifications }}>
+    <AutomationsContext.Provider value={automations}>
       {children}
-    </NotificationContext.Provider>
+    </AutomationsContext.Provider>
   );
 };
 
-export const useNotifications = () => {
-  const context = useContext(NotificationContext);
+export const useAutomations = () => {
+  console.log("useAutomations");
+  const context = useContext(AutomationsContext);
   if (!context) {
     throw new Error(
-      "useNotifications must be used within a NotificationProvider",
+      "useAutomations must be used within a AutomationsProvider",
     );
   }
   return context;

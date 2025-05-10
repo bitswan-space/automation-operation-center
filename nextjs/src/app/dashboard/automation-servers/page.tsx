@@ -1,14 +1,11 @@
-import { AutomationServerLIstSection } from "@/components/automation-server/AutomationServerLIstSection";
+import { AutomationServerListSection } from "@/components/automation-server/AutomationServerListSection";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import React from "react";
 import { TitleBar } from "@/components/layout/TitleBar";
 import { getAutomationServers } from "@/data/automation-server";
-
 const AutomationServersPage = async () => {
   const automationServers = await getAutomationServers();
-
-  console.log("automationServers", automationServers);
 
   const formattedAutomationServers = automationServers.results.map(
     (server) => ({
@@ -16,8 +13,7 @@ const AutomationServersPage = async () => {
       name: server.name,
       automation_server_id: server.automation_server_id,
       workspaces: server.workspaces,
-      automations: 4,
-      isConnected: true,
+      is_connected: true,
       updated_at: server.updated_at,
       created_at: new Date(server.created_at).toTimeString(),
     }),
@@ -37,7 +33,7 @@ const AutomationServersPage = async () => {
           Search
         </Button>
       </div>
-      <AutomationServerLIstSection servers={formattedAutomationServers} />
+      <AutomationServerListSection servers={formattedAutomationServers} />
     </div>
   );
 };

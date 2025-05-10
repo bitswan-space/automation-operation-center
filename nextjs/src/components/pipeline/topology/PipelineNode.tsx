@@ -115,6 +115,8 @@ const typeIconMap: Record<string, ProcessorNodeAttributes> = {
 
 export type NodeData = {
   parentIDs: string[];
+  automationServerId: string;
+  workspaceId: string;
   type: string;
   name: string;
   kind: string;
@@ -172,12 +174,12 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
     [],
   );
 
-  const pipelineEventsRequestTopic = `${joinIDsWithDelimiter(
+  const pipelineEventsRequestTopic = `/automation-servers/${data.automationServerId}/c/${data.workspaceId}${joinIDsWithDelimiter(
     parentIDs,
     "/",
   )}/c/${nodeID}/events/subscribe`;
 
-  const pipelineEventsResponseTopic = `${joinIDsWithDelimiter(
+  const pipelineEventsResponseTopic = `/automation-servers/${data.automationServerId}/c/${data.workspaceId}${joinIDsWithDelimiter(
     parentIDs,
     "/",
   )}/c/${nodeID}/events`;

@@ -15,15 +15,16 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import Link from "next/link";
 import React from "react";
-
+import { useAutomations } from "@/context/AutomationsProvider";
 type AutomationServerListSectionProps = {
   servers: AutomationServer[];
 };
 
-export function AutomationServerLIstSection(
+export function AutomationServerListSection(
   props: AutomationServerListSectionProps,
 ) {
   const { servers } = props;
+  const { automationServers: automationServersGroup } = useAutomations();
 
   const [searchQuery, setSearchQuery] = React.useState("");
 
@@ -75,7 +76,7 @@ export function AutomationServerLIstSection(
                       </p>
                     </div>
                   </div>
-                  {server.isConnected ? (
+                  {server.is_connected ? (
                     <Badge className="border-green-200 bg-green-100 text-green-700 hover:bg-green-100">
                       Connected
                     </Badge>
@@ -97,7 +98,7 @@ export function AutomationServerLIstSection(
                     <div>
                       <p className="mb-1 text-xs text-gray-500">Automations</p>
                       <p className="text-lg font-semibold">
-                        {server.automations}
+                        {automationServersGroup[server.automation_server_id]?.pipelines.length}
                       </p>
                     </div>
                   </div>

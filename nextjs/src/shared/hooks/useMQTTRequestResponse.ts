@@ -11,7 +11,6 @@ import {
 import useLocalStorageState from "ahooks/lib/useLocalStorageState";
 import { type MQTTProfile } from "@/server/actions/mqtt-profiles";
 import { getMQTTToken } from "@/server/actions/mqtt";
-import { auth } from "@/server/auth";
 type UseMQTTRequestResponseArgs<ResponseT> = {
   requestTopic: string;
   responseTopic: string;
@@ -55,7 +54,7 @@ export function useMQTTRequestResponse<ResponseT>({
         mqttConnect(mqttConfig.url, {
           clientId: "bitswan-poc" + Math.random().toString(16).substring(2, 8),
           clean: true,
-          reconnectPeriod: 100000,
+          reconnectPeriod: 60,
           connectTimeout: 30 * 1000,
         username: activeMQTTProfile?.id ?? "",
         password: token ?? "",
@@ -88,9 +87,11 @@ export function useMQTTRequestResponse<ResponseT>({
 
   const isLoading = !payload;
   const response = payload?.message;
+  const messageTopic = payload?.topic;
 
   return {
     response,
     isLoading,
+    messageTopic,
   };
 }

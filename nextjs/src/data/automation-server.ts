@@ -21,8 +21,7 @@ export type AutomationServer = {
   name: string;
   workspaces?: Workspace[];
   automation_server_id: string;
-  automations: number;
-  isConnected: boolean;
+  is_connected: boolean;
   updated_at: string;
   created_at: string;
 };

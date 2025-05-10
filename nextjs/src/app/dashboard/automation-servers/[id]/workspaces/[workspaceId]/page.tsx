@@ -5,33 +5,26 @@ import { TitleBar } from "@/components/layout/TitleBar";
 import { getAutomationServers } from "@/data/automation-server";
 import { WorkspaceDetailSection } from "@/components/workspaces/WorkspaceDetailSection";
 
-const AutomationServersPage = async (props: {
+const WorkspacePage = async (props: {
   params: Promise<{ id: string; workspaceId: string }>;
 }) => {
   const { id, workspaceId } = await props.params;
   const automationServers = await getAutomationServers();
 
-  console.log("automationServers", automationServers);
-
   const automationServer = automationServers.results.find(
     (server) => server.automation_server_id === id,
   );
 
-  console.log("automationServer", automationServer?.workspaces);
-
   const workspace = automationServer?.workspaces?.find(
     (workspace) => workspace.id === Number(workspaceId),
   );
-  
-  console.log("workspace", workspace);
-
 
   return (
     <div className="w-full">
       <h1 className="text-2xl font-bold text-stone-700 md:hidden">
-        Automation Server
+        Workspace Details
       </h1>
-      <TitleBar title="Automation Server" />
+      <TitleBar title="Workspace Details" />
       <div className="flex py-4 pt-6 lg:hidden">
         <Input
           placeholder="Find pipeline"
@@ -41,9 +34,11 @@ const AutomationServersPage = async (props: {
           Search
         </Button>
       </div>
-      <WorkspaceDetailSection workspace={workspace} />
+      <WorkspaceDetailSection 
+        workspace={workspace} 
+      />
     </div>
   );
 };
 
-export default AutomationServersPage;
+export default WorkspacePage;

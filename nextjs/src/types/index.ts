@@ -139,7 +139,10 @@ export interface PipelineStat {
 export type PipelineWithStats = PipelineTopology & {
   _key: string;
   pipelineStat: PipelineStat[];
+  automationServerId: string;
+  workspaceId: string;
 };
+
 export interface PipelineNode {
   id: string;
   type?: string;

@@ -61,7 +61,7 @@ export const columns = [
 
       return (
         <Link
-          href={`/dashboard/pipelines/${_key}`}
+          href={`/dashboard/automation-servers/${row.original.automationServerId}/workspaces/${row.original.workspaceId}/pipelines/${_key}`}
           className="text-xs text-blue-700 underline"
         >
           {properties.name}
