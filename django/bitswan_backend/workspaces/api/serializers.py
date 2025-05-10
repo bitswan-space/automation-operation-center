@@ -5,10 +5,16 @@ from bitswan_backend.workspaces.models import Workspace
 
 
 class WorkspaceSerializer(serializers.ModelSerializer):
+    automation_server_id = serializers.SlugRelatedField(
+        source="automation_server",
+        slug_field="automation_server_id",
+        queryset=AutomationServer.objects.all(),
+        write_only=True,
+    )
     # Display the automation server's ID (external ID) in a readable way
     automation_server = serializers.SlugRelatedField(
         slug_field="automation_server_id",
-        queryset=AutomationServer.objects.all(),
+        read_only=True,
     )
 
     class Meta:
@@ -18,6 +24,7 @@ class WorkspaceSerializer(serializers.ModelSerializer):
             "name",
             "keycloak_org_id",
             "automation_server",
+            "automation_server_id",
             "created_at",
             "updated_at",
         ]

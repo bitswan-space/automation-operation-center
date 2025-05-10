@@ -10,6 +10,8 @@ class Workspace(models.Model):
         on_delete=models.CASCADE,
         to_field="automation_server_id",
         related_name="workspaces",
+        null=False,
+        blank=False,
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
