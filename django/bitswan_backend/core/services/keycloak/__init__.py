@@ -381,9 +381,14 @@ class KeycloakService:
     def get_token_from_token(self, request):
         # TODO: change scope if needed
         token = request.headers.get("Authorization", "").split("Bearer ")[-1]
-
-        logger.debug("Token [get_token_from_token]: {%s}", token)
-
         return self.keycloak.exchange_token(
             token=token,
         )
+
+    def get_orgs(self):
+        groups = self.keycloak_admin.get_groups(query={"briefRepresentation": "false"})
+        org_groups = [group for group in groups if (
+                "type" in group.get("attributes", {})
+                and "org" in group["attributes"]["type"]
+            )]
+        return org_groups

@@ -354,3 +354,4 @@ CORS_ALLOWED_ORIGINS = env.list(
 # ------------------------------------------------------------------------------
 
 EMQX_JWT_SECRET = env.str("EMQX_JWT_SECRET")
+EMQX_INTERNAL_URL = env.str("EMQX_INTERNAL_URL")

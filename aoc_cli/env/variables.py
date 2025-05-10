@@ -156,6 +156,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
                 if cfg.env == Environment.DEV
                 else "mqtt.{domain}"
             ),
+            "EMQX_INTERNAL_URL": f"aoc-{env_name}-emqx:1883",
             "WEB_CONCURRENCY": "4",
             "SENTRY_TRACES_SAMPLE_RATE": "1.0",
             "USE_DOCKER": "{use_docker}",

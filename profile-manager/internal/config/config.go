@@ -13,7 +13,7 @@ type Configuration struct {
 var cfg *Configuration
 
 func LoadConfig(filename string) error {
-
+	cfg = &Configuration{}
 	brokerUrl := os.Getenv("MQTT_BROKER_URL")
 	brokerSecret := os.Getenv("MQTT_BROKER_SECRET")
 
