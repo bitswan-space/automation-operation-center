@@ -25,6 +25,7 @@ class WorkspaceSerializer(serializers.ModelSerializer):
             "keycloak_org_id",
             "automation_server",
             "automation_server_id",
+            "editor_url",
             "created_at",
             "updated_at",
         ]

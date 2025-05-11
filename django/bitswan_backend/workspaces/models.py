@@ -14,6 +14,7 @@ class Workspace(models.Model):
         blank=False,
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    editor_url = models.CharField(max_length=255, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
