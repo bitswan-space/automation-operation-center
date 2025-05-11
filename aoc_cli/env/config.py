@@ -36,12 +36,15 @@ class DevSetupKind(Enum):
 class InitConfig:
     env: Environment
     aoc_dir: Path = Path.home() / ".config" / "bitswan" / "aoc"
-    domain: str = "platform.local"
+    domain: str = "bitswan.local"
     protocol: Protocol = Protocol.HTTP
-    admin_email: str = "admin@platform.local"
+    admin_email: str = "admin@bitswan.local"
     admin_password: str = "admin"
     org_name: str = "Example Org"
     dev_setup: DevSetupKind = DevSetupKind.DOCKER
+    aoc_be_image: str | None = None
+    aoc_fe_image: str | None = None
+    profile_manager_image: str | None = None
 
     def get_url(self, subdomain: str) -> str:
         return f"{self.protocol.value}://{subdomain}.{self.domain}"

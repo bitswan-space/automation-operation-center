@@ -67,7 +67,7 @@ class KeycloakService:
                 "docker",
                 "compose",
                 "-f",
-                f"docker-compose.{self.config.env.value}.yml",
+                f"docker-compose.yml" if self.config.env == Environment.PROD else f"docker-compose.{self.config.env.value}.yml",
                 "up",
                 "-d",
                 "keycloak",
@@ -168,7 +168,7 @@ class KeycloakService:
         for attempt in range(max_retries):
             try:
                 response = requests.get(
-                    f"{self.config.management_url}/health", verify=self.config.verify
+                    f"{self.config.server_url}/health", verify=self.config.verify
                 )
                 if response.status_code == 200:
                     click.echo("Keycloak is ready")
@@ -180,7 +180,7 @@ class KeycloakService:
                     raise TimeoutError("Keycloak failed to start")
 
     def connect(self) -> None:
-        keycloak_env_path = get_env_path(self.config.env, KEYCLOAK_ENV_FILE)
+        keycloak_env_path = get_env_path(self.config.env, KEYCLOAK_ENV_FILE, aoc_dir=self.config.aoc_dir)
         username = get_env_value(keycloak_env_path, "KEYCLOAK_ADMIN")
         password = get_env_value(keycloak_env_path, "KEYCLOAK_ADMIN_PASSWORD")
 

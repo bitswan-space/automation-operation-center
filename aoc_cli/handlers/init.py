@@ -1,10 +1,14 @@
 import json
+import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
 from typing import Dict
 
 import click
+import requests
+import yaml
 
 from aoc_cli.env.config import Environment, InitConfig
 from aoc_cli.env.services import bootstrap_services
@@ -24,20 +28,21 @@ class InitCommand:
         await self.setup_environment()
 
     async def setup_environment(self) -> None:
-        if self.config.env == Environment.DEV:
-            self.create_aoc_directory()
-            self.copy_compose_file()
+        self.create_aoc_directory()
+        self.copy_config_files()
+        if self.config.env == Environment.PROD:
+            self.replace_docker_compose_services_versions()
 
         self.setup_secrets()
 
         keycloak_confirm = click.confirm(
-            "\n\nDo you want to setup Keycloak?", default=True, abort=True
+            "\n\nDo you want to setup Keycloak?", default=True, abort=False
         )
         if keycloak_confirm:
             self.setup_keycloak()
 
         influxdb_confirm = click.confirm(
-            "\n\nDo you want to setup InfluxDB?", default=True, abort=True
+            "\n\nDo you want to setup InfluxDB?", default=True, abort=False
         )
         if influxdb_confirm:
             self.setup_influxdb()
@@ -76,7 +81,7 @@ class InitCommand:
     def create_aoc_directory(self) -> None:
         self.config.aoc_dir.mkdir(parents=True, exist_ok=True)
 
-    def copy_compose_file(self) -> None:
+    def copy_config_files(self) -> None:
         template_path = (
             Path(__file__).parent.parent
             / "templates"
@@ -88,6 +93,63 @@ class InitCommand:
 
         dest_path = self.config.aoc_dir / "docker-compose.yml"
         shutil.copy2(template_path, dest_path)
+
+        emqx_config_path = (
+            Path(__file__).parent.parent
+            / "templates"
+            / "emqx"
+            / "emqx.conf"
+        )
+        if not emqx_config_path.exists():
+            raise FileNotFoundError(f"Emqx config not found: {emqx_config_path}")
+
+        os.makedirs(self.config.aoc_dir / "emqx", exist_ok=True)
+        shutil.copy2(emqx_config_path, self.config.aoc_dir / "emqx" / "emqx.conf")
+
+    def replace_docker_compose_services_versions(self) -> None:
+        click.echo("Finding latest versions for AOC services")
+        cwd = get_aoc_working_directory(self.config.env, self.config.aoc_dir)
+
+        # Read the docker-compose.yml file using yaml
+        with open(cwd / "docker-compose.yml", "r") as f:
+            docker_compose = yaml.safe_load(f)
+
+        # get latest version from Docker Hub
+        services = [
+            ("keycloak", "https://hub.docker.com/v2/repositories/bitswan/bitswan-keycloak/tags/"),
+            ("bitswan-backend", "https://hub.docker.com/v2/repositories/bitswan/bitswan-backend/tags/"),
+            ("profile-manager", "https://hub.docker.com/v2/repositories/bitswan/profile-manager/tags/"),
+            ("aoc", "https://hub.docker.com/v2/repositories/bitswan/automation-operations-centre/tags/"),
+        ]
+
+        if self.config.aoc_be_image:
+            docker_compose["services"]["bitswan-backend"]["image"] = self.config.aoc_be_image
+        if self.config.aoc_fe_image:
+            docker_compose["services"]["aoc"]["image"] = self.config.aoc_fe_image
+        if self.config.profile_manager_image:
+            docker_compose["services"]["profile-manager"]["image"] = self.config.profile_manager_image
+
+        # Replace the services versions
+        for service in services:
+            service_name, url = service
+            response = requests.get(url)
+            if response.status_code == 200:
+                results = response.json()["results"]
+                pattern = r"\d{4}-\d+-git-[a-fA-F0-9]+$"
+                latest_version = next((version for version in results if re.match(pattern, version["name"])), None)
+                service = docker_compose["services"][service_name]
+                if latest_version:
+                    click.echo(f"Found latest version for {service_name}: {latest_version['name']}")
+                    service["image"] = service["image"].replace("<slug>", latest_version["name"])
+                    docker_compose["services"][service_name] = service
+                else:
+                    click.echo(f"No latest version found for {service_name}")
+                    service["image"] = service["image"].replace("<slug>", "latest")
+                    docker_compose["services"][service_name] = service
+
+        # Write the updated docker-compose.yml file
+        with open(cwd / "docker-compose.yml", "w") as f:
+            yaml.dump(docker_compose, f)
 
     def setup_keycloak(self) -> None:
         keycloak_config = KeycloakConfig(
@@ -130,7 +192,7 @@ class InitCommand:
                 "docker",
                 "compose",
                 "-f",
-                f"docker-compose.{self.config.env.value}.yml",
+                f"docker-compose.yml" if self.config.env == Environment.PROD else f"docker-compose.{self.config.env.value}.yml",
                 "down",
             ],
             cwd=cwd,

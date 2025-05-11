@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/sidebar";
 
 import { AppSidebar } from "@/components/layout/Sidebar/Sidebar";
-import { SideBarContextProvider } from "@/context/SideBarContextProvider";
 import { SidebarItemsProvider } from "@/context/SideBarItemsProvider";
 import { Toaster } from "sonner";
 import { auth } from "@/server/auth";

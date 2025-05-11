@@ -71,6 +71,8 @@ export function useMQTTRequestResponse<ResponseT>({
         topic: responseTopic,
           qos: 0,
         });
+      }).catch(error => {
+        console.error(error);
       });
     }
   }, [

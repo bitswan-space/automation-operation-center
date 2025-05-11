@@ -8,7 +8,6 @@ import { type Metadata } from "next";
 import FlowProvider from "@/context/ReactFlowProvider";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/server/auth";
-import { AutomationsProvider } from "@/context/AutomationsProvider";
 
 export const metadata: Metadata = {
   title: "Bitswan A.O.C",

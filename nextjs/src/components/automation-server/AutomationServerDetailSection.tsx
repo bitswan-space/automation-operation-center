@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowUpRight, Server, Users, Zap, Code } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Server, Users, Zap } from "lucide-react";
 import { VscVscode } from "react-icons/vsc";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {

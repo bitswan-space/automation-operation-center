@@ -28,13 +28,13 @@ export function EditGitopsItemForm(props: Readonly<EditGitopsItemFormProps>) {
     if (isPending) {
       onSave();
     }
-  }, [isPending]);
+  }, [isPending, onSave]);
 
   React.useEffect(() => {
     if (state.status === "success") {
       onSuccessfulEdit();
     }
-  }, [state]);
+  }, [state, onSuccessfulEdit]);
 
   return (
     <form action={formAction} className="my-auto flex w-full justify-end gap-4">

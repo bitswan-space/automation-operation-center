@@ -76,6 +76,8 @@ COPY --chown=django:django ./compose/production/django/start /start
 # copy application code to WORKDIR
 COPY --chown=django:django . ${APP_HOME}
 
+RUN chmod +x /entrypoint /start
+
 # make django owner of the WORKDIR directory as well.
 RUN chown django:django ${APP_HOME}
 

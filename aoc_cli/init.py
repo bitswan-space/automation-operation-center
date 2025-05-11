@@ -32,6 +32,9 @@ from aoc_cli.handlers.init import InitCommand
 @click.option("--admin-email", type=str, help="Admin email")
 @click.option("--admin-password", type=str, hide_input=True, help="Admin password")
 @click.option("--org-name", type=str, help="Organization name")
+@click.option("--aoc-be-image", type=str, help="AOC BE docker image")
+@click.option("--aoc-image", type=str, help="AOC FE docker image")
+@click.option("--profile-manager-image", type=str, help="Profile Manager docker image")
 @click.pass_context
 def init(
     ctx,

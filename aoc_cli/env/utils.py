@@ -16,6 +16,7 @@ def bootstrap_service(
     deployment_kind: str = "docker",
     project_name: str = None,
     verbose: bool = False,
+    aoc_dir: Path = None,
 ) -> None:
     """
     Generic function to bootstrap environment variables for any service.
@@ -39,6 +40,7 @@ def bootstrap_service(
         env_file,
         deployment_kind,
         project_name,
+        aoc_dir,
     )
 
     click.echo(f"✓ Writing environment variables to {env_path}")
@@ -84,6 +86,7 @@ def get_env_path(
     env_file: str | Path,
     dev_setup: str = "docker",
     project_name: str = None,
+    aoc_dir: Path = None,
 ) -> Path:
     """
     Get the path to the .env file for a given environment.
@@ -104,8 +107,10 @@ def get_env_path(
     elif environment == Environment.DEV and dev_setup == "local":
         return project_app_dir_mapping[project_name] / env_file
 
-    # TODO: Read from generated config file the specified aoc_dir
-    return
+    if environment == Environment.PROD:
+        return aoc_dir / "envs" / env_file
+
+    raise ValueError(f"Invalid environment: {environment}")
 
 
 def marshall_env(env_dict):

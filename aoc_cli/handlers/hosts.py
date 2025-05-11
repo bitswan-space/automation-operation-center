@@ -18,14 +18,14 @@ class HostEntry:
 
 class HostsManager:
     DEFAULT_DOMAINS = [
-        "platform.local",
-        "aoc.platform.local",
-        "influx.platform.local",
-        "keycloak.platform.local",
-        "mqtt.platform.local",
-        "portainer.platform.local",
-        "editor.platform.local",
-        "emqx.platform.local",
+        "bitswan.local",
+        "aoc.bitswan.local",
+        "influx.bitswan.local",
+        "keycloak.bitswan.local",
+        "api.bitswan.local",
+        "mqtt.bitswan.local",
+        "mqttws.bitswan.local",
+        "emqx.bitswan.local",
     ]
 
     def __init__(self, hosts_file: Path, dry_run: bool = False):
