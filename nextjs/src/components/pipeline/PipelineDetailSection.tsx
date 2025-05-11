@@ -21,7 +21,7 @@ export const PipelineDetailSection = (props: PipelineDetailSectionProps) => {
 
   const automationServer = automationServers[automationServerId];
   const workspace = automationServer?.workspaces[workspaceId];
-  const automation = workspace?.pipelines.find((p) => p._key === ids?.[0]);
+  const automation = workspace?.pipelines.find((p) => p.properties["deployment-id"] === ids?.[0]);
 
   const getBreadcrumbs = (pipelineIDs: string[]) => {
     return pipelineIDs.map((id, index) => {

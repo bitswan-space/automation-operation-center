@@ -62,7 +62,7 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
       // This creates a new array of pipelines that represents the current state of the workspace
       const workspacePipelines = Object.entries(workspaceTopology.topology ?? {}).map(
         ([key, value]) => ({
-          _key: key,
+          _key: value.properties["container-id"],
           ...value as PipelineTopology,
           pipelineStat: pipelineStats?.filter((stat) =>
             value.properties["deployment-id"].startsWith(stat.deployment_id)

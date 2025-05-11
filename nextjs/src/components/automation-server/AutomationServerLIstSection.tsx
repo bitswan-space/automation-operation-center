@@ -92,13 +92,13 @@ export function AutomationServerListSection(
                     <div>
                       <p className="mb-1 text-xs text-gray-500">Workspaces</p>
                       <p className="text-lg font-semibold">
-                        {server.workspaces?.length}
+                        {server.workspaces?.length ?? 0}
                       </p>
                     </div>
                     <div>
                       <p className="mb-1 text-xs text-gray-500">Automations</p>
                       <p className="text-lg font-semibold">
-                        {automationServersGroup[server.automation_server_id]?.pipelines.length}
+                        {automationServersGroup[server.automation_server_id]?.pipelines.length ?? 0}
                       </p>
                     </div>
                   </div>

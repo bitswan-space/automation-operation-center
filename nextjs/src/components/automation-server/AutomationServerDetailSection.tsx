@@ -63,7 +63,7 @@ export function AutomationServerDetailSection(
                     {(server?.workspaces?.length ?? 0) > 1 && "s"}
                   </span>
                   <span>•</span>
-                  <span>{automationServerPipelines?.pipelines.length} automations</span>
+                  <span>{automationServerPipelines?.pipelines.length ?? 0} automations</span>
                 </div>
               </div>
             </div>
@@ -85,11 +85,11 @@ export function AutomationServerDetailSection(
         <TabsList>
           <TabsTrigger value="workspaces" className="flex items-center">
             <Users className="mr-2 h-4 w-4" />
-            Workspaces ({server?.workspaces?.length})
+            Workspaces ({server?.workspaces?.length ?? 0})
           </TabsTrigger>
           <TabsTrigger value="automations" className="flex items-center">
             <Zap className="mr-2 h-4 w-4" />
-            Automations ({automationServerPipelines?.pipelines.length})
+            Automations ({automationServerPipelines?.pipelines.length ?? 0})
           </TabsTrigger>
         </TabsList>
 

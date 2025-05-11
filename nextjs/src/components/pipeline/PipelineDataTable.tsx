@@ -61,7 +61,7 @@ export const columns = [
 
       return (
         <Link
-          href={`/dashboard/automation-servers/${row.original.automationServerId}/workspaces/${row.original.workspaceId}/automations/${_key}`}
+          href={`/dashboard/automation-servers/${row.original.automationServerId}/workspaces/${row.original.workspaceId}/automations/${row.original.properties["deployment-id"]}`}
           className="text-xs text-blue-700 underline"
         >
           {properties.name}
