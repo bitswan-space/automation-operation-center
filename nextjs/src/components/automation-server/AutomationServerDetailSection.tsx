@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowLeft, ArrowUpRight, Server, Users, Zap } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Server, Users, Zap, Code } from "lucide-react";
+import { VscVscode } from "react-icons/vsc";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
   Table,
@@ -106,6 +107,7 @@ export function AutomationServerDetailSection(
 
                       <TableHead className="text-center">Automations</TableHead>
                       <TableHead className="text-right">Created</TableHead>
+                      <TableHead className="text-right"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -125,6 +127,15 @@ export function AutomationServerDetailSection(
                           {formatRelative(
                             new Date(workspace.created_at),
                             new Date(),
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {workspace.editor_url && (
+                            <Link href={workspace.editor_url} target="_blank">
+                              <Button variant="outline" size="icon">
+                                <VscVscode size={20} />
+                              </Button>
+                            </Link>
                           )}
                         </TableCell>
                       </TableRow>

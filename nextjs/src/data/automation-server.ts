@@ -14,6 +14,7 @@ export type Workspace = {
   automation_server: string;
   created_at: string;
   updated_at: string;
+  editor_url: string | null;
 };
 
 export type AutomationServer = {

@@ -9,6 +9,7 @@ import { type Workspace } from "@/data/automation-server";
 import { PipelineDataTable } from "../pipeline/PipelineDataTable";
 import { useAutomations } from "@/context/AutomationsProvider";
 import { PipelineDataCardList } from "../pipeline/PipelineDataCardList";
+import { VscVscode } from "react-icons/vsc";
 
 
 type WorkspaceDetailSectionProps = {
@@ -53,6 +54,15 @@ export function WorkspaceDetailSection(
                 </div>
               </div>
             </div>
+            {workspace?.editor_url && (
+              <Link href={workspace.editor_url} target="_blank">
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  <div className="flex items-center gap-2">
+                    <VscVscode size={20} /> Editor
+                  </div>
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </header>
