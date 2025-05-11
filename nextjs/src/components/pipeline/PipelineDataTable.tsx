@@ -61,7 +61,7 @@ export const columns = [
 
       return (
         <Link
-          href={`/dashboard/automation-servers/${row.original.automationServerId}/workspaces/${row.original.workspaceId}/pipelines/${_key}`}
+          href={`/dashboard/automation-servers/${row.original.automationServerId}/workspaces/${row.original.workspaceId}/automations/${_key}`}
           className="text-xs text-blue-700 underline"
         >
           {properties.name}
@@ -155,8 +155,8 @@ export const columns = [
     cell: ({ row }) => {
       return (
         <Link
-          href={`/pipelines/launch-pipeline-editor/${row.original._key}`}
-          title="Launch pipeline editor"
+          href={`/automations/launch-automation-editor/${row.original._key}`}
+          title="Launch automation editor"
           className="hidden"
         >
           <Button variant={"outline"}>
@@ -227,7 +227,7 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
     <div className="w-full">
       <div className="flex items-center pb-4">
         <Input
-          placeholder="Find pipelines..."
+          placeholder="Find automations..."
           value={
             (table.getColumn("properties_name")?.getFilterValue() as string) ??
             ""

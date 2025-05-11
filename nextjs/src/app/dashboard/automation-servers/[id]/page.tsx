@@ -23,7 +23,7 @@ const AutomationServersPage = async (props: {
       <TitleBar title="Automation Servers" />
       <div className="flex py-4 pt-6 lg:hidden">
         <Input
-          placeholder="Find pipeline"
+          placeholder="Find automation"
           className="rounded-r-none bg-white"
         />
         <Button type="submit" className="my-auto rounded-l-none bg-stone-800">

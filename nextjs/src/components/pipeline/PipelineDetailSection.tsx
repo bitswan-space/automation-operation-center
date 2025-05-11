@@ -28,11 +28,11 @@ export const PipelineDetailSection = (props: PipelineDetailSectionProps) => {
       if (index === 0) {
         return (
           <React.Fragment key={id}>
-            <Link href={"/dashboard/pipelines"} className="underline">
+            <Link href={"/dashboard/automations"} className="underline">
               Automations
             </Link>
             <span className="text-lg">&#x25B8;</span>
-            <Link href={`/dashboard/automation-servers/${automationServerId}/workspaces/${workspaceId}/pipelines/${id}`} className="underline">
+            <Link href={`/dashboard/automation-servers/${automationServerId}/workspaces/${workspaceId}/automations/${id}`} className="underline">
               {formatPipelineName(automation?.properties.name ?? "N/A")}
             </Link>
           </React.Fragment>
@@ -43,7 +43,7 @@ export const PipelineDetailSection = (props: PipelineDetailSectionProps) => {
         <React.Fragment key={id}>
           <span className="text-lg">&#x25B8;</span>
           <Link
-            href={`/dashboard/automation-servers/${automationServerId}/workspaces/${workspaceId}/pipelines/${id}`}
+            href={`/dashboard/automation-servers/${automationServerId}/workspaces/${workspaceId}/automations/${id}`}
             className="underline"
           >
             {id}

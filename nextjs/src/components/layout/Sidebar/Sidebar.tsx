@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-import { Braces, Server } from "lucide-react";
+import { Server, Zap } from "lucide-react";
 import NavTreeView from "./NavTreeView";
 import { type Session } from "next-auth";
 import { SidebarFooterMenu } from "./SidebarFooterMenu";
@@ -41,11 +41,11 @@ export function AppSidebar(props: AppSidebarProps) {
           <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem key={"pipelines"}>
+              <SidebarMenuItem key={"automations"}>
                 <SidebarMenuButton asChild>
-                  <Link href={"/dashboard/pipelines"}>
-                    <Braces />
-                    <span>{"Pipelines"}</span>
+                  <Link href={"/dashboard/automations"}>
+                    <Zap />
+                    <span>{"Automations"}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

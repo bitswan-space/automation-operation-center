@@ -24,10 +24,10 @@ const WorkspacePage = async (props: {
       <h1 className="text-2xl font-bold text-stone-700 md:hidden">
         Workspace Details
       </h1>
-      <TitleBar title="Workspace Details" />
+      <TitleBar title="Automation Servers" />
       <div className="flex py-4 pt-6 lg:hidden">
         <Input
-          placeholder="Find pipeline"
+          placeholder="Find automation"
           className="rounded-r-none bg-white"
         />
         <Button type="submit" className="my-auto rounded-l-none bg-stone-800">

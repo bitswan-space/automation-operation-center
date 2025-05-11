@@ -9,7 +9,7 @@ export const usePipelineStats = () => {
   const [data, setData] = React.useState<PipelineStat[]>([]);
 
   React.useEffect(() => {
-    const eventSource = new EventSource(`${API_BASE_URL}/pipelines/influxdb`);
+    const eventSource = new EventSource(`${API_BASE_URL}/automations/influxdb`);
 
     eventSource.onmessage = (event) => {
       try {

@@ -194,7 +194,7 @@ export function MenuItemList(props: Readonly<MenuItemListProps>) {
 
   const sideBarItems = React.useContext(SideBarContext);
   const [activeItem, setActiveItem] =
-    React.useState<string>("Running pipelines");
+    React.useState<string>("Running automations");
 
   const getURLFromType = (type: string, item: DynamicSidebarItem) => {
     switch (type) {
@@ -203,7 +203,7 @@ export function MenuItemList(props: Readonly<MenuItemListProps>) {
       case "iframe-link":
         return `/iframe?iframeUrl=${item.properties.link.href}&title=${item.properties.name}`;
       default:
-        return "/pipelines";
+        return "/automations";
     }
   };
 
