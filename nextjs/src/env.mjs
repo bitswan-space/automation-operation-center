@@ -34,9 +34,6 @@ export const env = createEnv({
     KEYCLOAK_END_SESSION_URL: z.string().url(),
     KEYCLOAK_POST_LOGOUT_REDIRECT_URI: z.string().url(),
 
-    // MQTT
-    CDS_API_URL: z.string().url(),
-
     // EMQX
     EMQX_JWT_SECRET: z.string().min(1),
     EMQX_MQTT_URL: z.string(),
@@ -81,9 +78,6 @@ export const env = createEnv({
     KEYCLOAK_END_SESSION_URL: process.env.KEYCLOAK_END_SESSION_URL,
     KEYCLOAK_POST_LOGOUT_REDIRECT_URI:
       process.env.KEYCLOAK_POST_LOGOUT_REDIRECT_URI,
-
-    // MQTT
-    CDS_API_URL: process.env.CDS_API_URL,
 
     NEXT_PUBLIC_NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_COMMIT_HASH: process.env.NEXT_PUBLIC_COMMIT_HASH,

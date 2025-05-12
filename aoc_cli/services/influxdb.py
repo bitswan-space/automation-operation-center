@@ -12,6 +12,7 @@ from aoc_cli.env.config import (
     OPERATIONS_CENTRE_DOCKER_ENV_FILE,
     OPERATIONS_CENTRE_LOCAL_ENV_FILE,
     DevSetupKind,
+    Environment,
     InitConfig,
 )
 from aoc_cli.env.utils import get_env_path
@@ -34,7 +35,7 @@ class InfluxDBConfig:
 class InfluxDBService:
     def __init__(self, config: InitConfig):
         """Initialize InfluxDB service"""
-        influx_db_env_path = get_env_path(config.env, INFLUXDB_ENV_FILE)
+        influx_db_env_path = get_env_path(config.env, INFLUXDB_ENV_FILE, aoc_dir=config.aoc_dir)
         config_params = InfluxDBConfig(
             username=get_env_value(
                 influx_db_env_path,
@@ -82,7 +83,7 @@ class InfluxDBService:
                 "docker",
                 "compose",
                 "-f",
-                f"docker-compose.{self.init_config.env.value}.yml",
+                f"docker-compose.yml" if self.init_config.env == Environment.PROD else f"docker-compose.{self.init_config.env.value}.yml",
                 "up",
                 "-d",
                 "influxdb",
@@ -162,6 +163,7 @@ class InfluxDBService:
             aoc_env_file,
             self.init_config.dev_setup.value,
             "aoc",
+            self.init_config.aoc_dir,
         )
 
         click.echo(f"Updating {file_path}")

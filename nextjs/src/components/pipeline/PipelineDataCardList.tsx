@@ -15,13 +15,15 @@ export function PipelineDataCardList(
       {pipelines?.map((pipeline) => (
         <div key={pipeline._key}>
           <PipelineDataCard
-            id={pipeline._key}
+            id={pipeline.properties["deployment-id"]}
             key={pipeline.properties["container-id"]}
             name={pipeline.properties.name}
             machineName={pipeline.properties["endpoint-name"]}
             dateCreated={pipeline.properties["created-at"]}
             status={pipeline.properties.state}
             uptime={pipeline.properties.status}
+            automationServerId={pipeline.automationServerId}
+            workspaceId={pipeline.workspaceId}
           />
         </div>
       ))}

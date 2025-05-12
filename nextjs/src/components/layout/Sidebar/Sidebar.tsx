@@ -12,12 +12,13 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-import { Braces } from "lucide-react";
+import { Server, Zap } from "lucide-react";
 import NavTreeView from "./NavTreeView";
 import { type Session } from "next-auth";
 import { SidebarFooterMenu } from "./SidebarFooterMenu";
 import { SidebarMenuLogo } from "./SidebarMenuLogo";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
 
 type AppSidebarProps = {
   session?: Session | null;
@@ -40,12 +41,20 @@ export function AppSidebar(props: AppSidebarProps) {
           <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem key={"pipelines"}>
+              <SidebarMenuItem key={"automations"}>
                 <SidebarMenuButton asChild>
-                  <a href={"#"}>
-                    <Braces />
-                    <span>{"Pipelines"}</span>
-                  </a>
+                  <Link href={"/dashboard/automations"}>
+                    <Zap />
+                    <span>{"Automations"}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem key={"automation-servers"}>
+                <SidebarMenuButton asChild>
+                  <Link href={"/dashboard/automation-servers"}>
+                    <Server />
+                    <span>{"Automation Servers"}</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

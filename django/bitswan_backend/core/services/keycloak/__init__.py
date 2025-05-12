@@ -4,9 +4,10 @@ import logging
 from django.conf import settings
 
 from bitswan_backend.core.utils import encryption
-from keycloak import KeycloakAdmin, KeycloakPostError
+from keycloak import KeycloakAdmin
 from keycloak import KeycloakOpenID
 from keycloak import KeycloakOpenIDConnection
+from keycloak import KeycloakPostError
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +132,7 @@ class KeycloakService:
         except Exception:
             logger.exception("Failed to get active user org:")
             raise
-        
+
     def get_user_org_id(self, token):
         try:
             user_info = self.validate_token(token)
@@ -376,7 +377,7 @@ class KeycloakService:
             body = json.loads(e.response_body)
             body["status_code"] = e.response_code
             return body
-        
+
     def get_token_from_token(self, request):
         # TODO: change scope if needed
         token = request.headers.get("Authorization", "").split("Bearer ")[-1]

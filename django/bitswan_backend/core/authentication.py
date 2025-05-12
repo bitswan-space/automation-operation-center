@@ -24,5 +24,6 @@ class KeycloakAuthentication(BaseAuthentication):
             raise TokenExpiredOrInvalid
 
         user = User.objects.get_or_create(email=email)[0]
+        logger.info("User: %s", user)
 
         return (user, None)

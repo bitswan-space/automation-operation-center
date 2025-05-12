@@ -14,10 +14,12 @@ interface PipelineDataCardProps {
   dateCreated: Date;
   status: string;
   uptime: string;
+  automationServerId: string;
+  workspaceId: string;
 }
 
 function PipelineDataCard(props: PipelineDataCardProps) {
-  const { name, machineName, dateCreated, status, uptime, id } = props;
+  const { name, machineName, dateCreated, status, uptime, id, automationServerId, workspaceId } = props;
 
   const createdAt = new Date(dateCreated)
     .toISOString()
@@ -47,21 +49,12 @@ function PipelineDataCard(props: PipelineDataCardProps) {
       <Separator />
       <CardFooter className="px-4 pb-4 pt-4">
         <div className="flex w-full flex-col gap-2">
-          <Link href={`/pipelines/${id}`} className="w-full">
+          <Link href={`/automation-servers/${automationServerId}/workspaces/${workspaceId}/automations/${id}`} className="w-full">
             <Button className="w-full" variant={"outline"}>
               <Eye size={22} className="mr-2" />
               View
             </Button>
-          </Link>
-          <Link
-            href={`/pipelines/launch-pipeline-editor/${id}`}
-            className="w-full"
-          >
-            <Button variant={"outline"} className="w-full">
-              <FileCog size={22} className=" mr-2" />
-              Launch Pipeline Editor
-            </Button>
-          </Link>
+          </Link> 
         </div>
       </CardFooter>
     </Card>

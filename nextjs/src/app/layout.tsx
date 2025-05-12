@@ -22,13 +22,13 @@ export default async function RootLayout({
   return (
     <SessionProvider session={session}>
       <ReactQueryProvider>
-        <FlowProvider>
-          <html lang="en" className={`${GeistSans.variable} bg-neutral-200/50`}>
-            <body className="">
-              <main>{children}</main>
-            </body>
-          </html>
-        </FlowProvider>
+          <FlowProvider>
+            <html lang="en" className={`${GeistSans.variable} bg-neutral-200/50`}>
+              <body className="">
+                <main>{children}</main>
+              </body>
+            </html>
+            </FlowProvider>
       </ReactQueryProvider>
     </SessionProvider>
   );

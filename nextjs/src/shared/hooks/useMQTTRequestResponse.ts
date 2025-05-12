@@ -3,7 +3,6 @@
 import React from "react";
 import { useMQTT } from "./useMQTT";
 import { useQuery } from "@tanstack/react-query";
-import { type EMQXJWTResponse } from "@/pages/api/mqtt/jwt";
 import { getMQTTConfig } from "@/server/queries/mqtt";
 import {
   ACTIVE_MQTT_PROFILE_STORAGE_KEY,
@@ -11,7 +10,7 @@ import {
 } from "../constants";
 import useLocalStorageState from "ahooks/lib/useLocalStorageState";
 import { type MQTTProfile } from "@/server/actions/mqtt-profiles";
-
+import { getMQTTToken } from "@/server/actions/mqtt";
 type UseMQTTRequestResponseArgs<ResponseT> = {
   requestTopic: string;
   responseTopic: string;
@@ -46,33 +45,19 @@ export function useMQTTRequestResponse<ResponseT>({
     },
   );
 
-  const { data: jwtToken } = useQuery({
-    queryKey: ["jwt", activeMQTTProfile],
-    enabled: !!activeMQTTProfile,
-    queryFn: async () => {
-      const response = await fetch("/api/mqtt/jwt", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: activeMQTTProfile ?? "",
-        }),
-      });
-      const data = (await response.json()) as EMQXJWTResponse;
-      return data.token;
-    },
-  });
+  console.log("activeMQTTProfile", activeMQTTProfile);
 
   React.useEffect(() => {
-    if (activeMQTTProfile && jwtToken && mqttConfig) {
-      mqttConnect(mqttConfig.url, {
-        clientId: "bitswan-poc" + Math.random().toString(16).substring(2, 8),
-        clean: true,
-        reconnectPeriod: 100000,
-        connectTimeout: 30 * 1000,
+    if (activeMQTTProfile && mqttConfig) {
+      getMQTTToken(activeMQTTProfile).then(token => {
+        console.log("token", token);
+        mqttConnect(mqttConfig.url, {
+          clientId: "bitswan-poc" + Math.random().toString(16).substring(2, 8),
+          clean: true,
+          reconnectPeriod: 60,
+          connectTimeout: 30 * 1000,
         username: activeMQTTProfile?.id ?? "",
-        password: jwtToken,
+        password: token ?? "",
       });
 
       mqttPublish({
@@ -84,13 +69,15 @@ export function useMQTTRequestResponse<ResponseT>({
 
       mqttSub({
         topic: responseTopic,
-        qos: 0,
+          qos: 0,
+        });
+      }).catch(error => {
+        console.error(error);
       });
     }
   }, [
     activeMQTTProfile,
     defaultRequest,
-    jwtToken,
     mqttConfig,
     mqttConnect,
     mqttPublish,
@@ -102,9 +89,11 @@ export function useMQTTRequestResponse<ResponseT>({
 
   const isLoading = !payload;
   const response = payload?.message;
+  const messageTopic = payload?.topic;
 
   return {
     response,
     isLoading,
+    messageTopic,
   };
 }

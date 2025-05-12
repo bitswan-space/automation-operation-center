@@ -16,12 +16,16 @@ import { PipelineSummary } from "./PipelineSummary";
 export interface PipelineDetailTabsProps {
   pipeline?: PipelineWithStats;
   pipelineParentIDs: string[];
+  automationServerId: string;
+  workspaceId: string;
 }
 
 export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
-  const { pipeline, pipelineParentIDs } = props;
+  const { pipeline, pipelineParentIDs, automationServerId, workspaceId } = props;
 
   const { pipelineTopology } = usePipelineTopology({
+    automationServerId,
+    workspaceId,
     componentIDs: pipelineParentIDs,
   });
 
@@ -65,6 +69,8 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
           </CardHeader>
           <CardContent className="h-5/6 w-full space-y-2 p-2">
             <PipelineTopologyDisplay
+              automationServerId={automationServerId}
+              workspaceId={workspaceId}
               initialNodes={transformTopologyToFlowNodes(
                 pipelineTopology ?? [],
               )}

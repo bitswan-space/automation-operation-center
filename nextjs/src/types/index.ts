@@ -139,7 +139,10 @@ export interface PipelineStat {
 export type PipelineWithStats = PipelineTopology & {
   _key: string;
   pipelineStat: PipelineStat[];
+  automationServerId: string;
+  workspaceId: string;
 };
+
 export interface PipelineNode {
   id: string;
   type?: string;
@@ -203,6 +206,12 @@ export interface ContainerServiceTopologyResponse {
   };
   count: number;
   remaining_subscription_count: number;
+}
+
+export interface WorkspaceTopologyResponse {
+  topology: Topology;
+  "display-style": string;
+  "display-priority": string;
 }
 
 export type Topology = Record<string, PipelineTopology>;

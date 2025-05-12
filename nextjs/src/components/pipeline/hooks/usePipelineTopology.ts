@@ -3,18 +3,20 @@ import { type PumpTopologyResponse } from "@/types";
 import { flattenTopology, joinIDsWithDelimiter } from "@/utils/pipelineUtils";
 
 type UsePipelineTopologyProps = {
+  automationServerId: string;
+  workspaceId: string;
   componentIDs: string[];
 };
 
 export const usePipelineTopology = (props: UsePipelineTopologyProps) => {
-  const { componentIDs } = props;
+  const { automationServerId, workspaceId, componentIDs } = props;
 
-  const pipelineTopologyRequestTopic = `${joinIDsWithDelimiter(
+  const pipelineTopologyRequestTopic = `/automation-servers/${automationServerId}/c/${workspaceId}${joinIDsWithDelimiter(
     componentIDs,
     "/",
   )}/topology/subscribe`;
 
-  const pipelineTopologyResponseTopic = `${joinIDsWithDelimiter(
+  const pipelineTopologyResponseTopic = `/automation-servers/${automationServerId}/c/${workspaceId}${joinIDsWithDelimiter(
     componentIDs,
     "/",
   )}/topology`;

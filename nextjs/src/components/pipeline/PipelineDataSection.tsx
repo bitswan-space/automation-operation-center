@@ -1,13 +1,13 @@
 "use client";
 
+import { useAutomations } from "@/context/AutomationsProvider";
 import { Card, CardContent } from "../ui/card";
 
 import { PipelineDataCardList } from "./PipelineDataCardList";
 import { PipelineDataTable } from "./PipelineDataTable";
-import { usePipelinesWithStats } from "./hooks/usePipelinesWithStats";
 
 export function PipelineDataSection() {
-  const { pipelinesWithStats: pipelines } = usePipelinesWithStats();
+  const { all: pipelines } = useAutomations();
 
   console.log("pipelines", pipelines);
 

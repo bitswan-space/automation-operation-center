@@ -29,3 +29,5 @@ python-keycloak==3.9.1 # https://github.com/marcospereirampj/python-keycloak/
 debugpy==1.8.1 # https://github.com/microsoft/debugpy
 setuptools==74.1.2 # https://github.com/pypa/setuptools
 paho-mqtt==1.6.1 # https://github.com/eclipse/paho.mqtt.python
+django-debug-toolbar==4.3.0  # https://github.com/jazzband/django-debug-toolbar
+django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions

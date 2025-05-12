@@ -1,21 +1,24 @@
 import logging
 import os
+from profile import Profile
 import uuid
 
+from core.pagination import DefaultPagination
 from django.conf import settings
 from rest_framework import status
 from rest_framework import views
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
 from bitswan_backend.core.authentication import KeycloakAuthentication
 from bitswan_backend.core.viewmixins import KeycloakMixin
+from bitswan_backend.workspaces.api.serializers import AutomationServerSerializer
 from bitswan_backend.workspaces.api.serializers import WorkspaceSerializer
 from bitswan_backend.workspaces.api.services import create_token
 from bitswan_backend.workspaces.models import AutomationServer
 from bitswan_backend.workspaces.models import Workspace
-from bitswan_backend.workspaces.permissions import CanReadAutomationServerEMQXJWT
 from bitswan_backend.workspaces.permissions import CanReadProfileEMQXJWT
 from bitswan_backend.workspaces.permissions import CanReadWorkspaceEMQXJWT
 from bitswan_backend.workspaces.permissions import CanReadWorkspacePipelineEMQXJWT
@@ -54,9 +57,9 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
         mountpoint = (
             f"/orgs/{org_id}/"
             f"automation-servers/{workspace.automation_server_id}/"
-            f"c/{workspace.id}"
+            f"c/{str(workspace.id)}"
         )
-        username = workspace.id
+        username = str(workspace.id)
 
         token = create_token(
             secret=settings.EMQX_JWT_SECRET,
@@ -86,9 +89,58 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
         mountpoint = (
             f"/orgs/{org_id}/"
             f"automation-servers/{workspace.automation_server_id}/"
-            f"c/{workspace.id}/c/{deployment_id}"
+            f"c/{str(workspace.id)}/c/{deployment_id}"
         )
-        username = workspace.id
+        username = str(workspace.id)
+
+        token = create_token(
+            secret=settings.EMQX_JWT_SECRET,
+            username=username,
+            mountpoint=mountpoint,
+        )
+
+        return Response(
+            {
+                "url": os.getenv("EMQX_EXTERNAL_URL"),
+                "token": token,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AutomationServerViewSet(KeycloakMixin, viewsets.ModelViewSet):
+    queryset = AutomationServer.objects.all()
+    serializer_class = AutomationServerSerializer
+    pagination_class = DefaultPagination
+    authentication_classes = [KeycloakAuthentication]
+
+    def get_queryset(self):
+        org_id = self.get_active_user_org_id()
+        return AutomationServer.objects.filter(keycloak_org_id=org_id).order_by(
+            "-updated_at",
+        )
+
+    @action(detail=False, methods=["get"], url_path="token")
+    def get_token(self, request):
+        new_token = self.get_token_from_token(request)
+        return Response({"token": new_token["access_token"]})
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="emqx/jwt",
+        permission_classes=[CanReadWorkspaceEMQXJWT],
+    )
+    def emqx_jwt(self, request, pk=None):
+        workspace = self.get_object()
+        org_id = self.get_active_user_org_id()
+
+        mountpoint = (
+            f"/orgs/{org_id}/"
+            f"automation-servers/{workspace.automation_server_id}/"
+            f"c/{str(workspace.id)}"
+        )
+        username = str(workspace.id)
 
         token = create_token(
             secret=settings.EMQX_JWT_SECRET,
@@ -111,6 +163,9 @@ class GetProfileEmqxJWTAPIView(KeycloakMixin, views.APIView):
 
     def get(self, request, profile_id):
         org_id = self.get_active_user_org_id()
+        is_admin = self.is_admin(request)
+        
+        profile_id = f"{org_id}_group_{profile_id}{'_admin' if is_admin else ''}"
 
         mountpoint = f"/orgs/{org_id}/profiles/{profile_id}"
         username = profile_id
@@ -148,52 +203,6 @@ class GetProfileManagerEmqxJWTAPIView(KeycloakMixin, views.APIView):
         )
 
 
-class GetAutomationServerEmqxJWTAPIView(KeycloakMixin, views.APIView):
-    authentication_classes = [KeycloakAuthentication]
-    permission_classes = [CanReadAutomationServerEMQXJWT]
-
-    def get(self, request, automation_server_id):
-        org_id = self.get_active_user_org_id()
-
-        try:
-            automation_server = AutomationServer.objects.get(
-                automation_server_id=automation_server_id,
-                keycloak_org_id=org_id,
-            )
-        except AutomationServer.DoesNotExist:
-            return Response(
-                {"error": "Automation server not found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        L.info("Got automation server: %s", automation_server)
-
-        mountpoint = f"/orgs/{org_id}/automation-servers/{automation_server_id}"
-        username = automation_server_id
-
-        token = create_token(
-            secret=settings.EMQX_JWT_SECRET,
-            username=username,
-            mountpoint=mountpoint,
-        )
-
-        return Response(
-            {
-                "url": os.getenv("EMQX_EXTERNAL_URL"),
-                "token": token,
-            },
-            status=status.HTTP_200_OK,
-        )
-    
-class GetWorkspaceTokenAPIView(KeycloakMixin, views.APIView):
-    authentication_classes = [KeycloakAuthentication]
-    permission_classes = [CanReadAutomationServerEMQXJWT]
-
-    def get(self, request):
-        new_token = self.get_token_from_token(request)
-        return Response({"token": new_token["access_token"]}, status=status.HTTP_200_OK)
-
-
 class RegisterCLIAPIView(KeycloakMixin, views.APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
@@ -212,20 +221,34 @@ class RegisterCLIAPIView(KeycloakMixin, views.APIView):
             )
         device_registration = self.poll_device_registration(device_code)
         if "error" in device_registration:
-            return Response(device_registration, status=device_registration["status_code"])
+            return Response(
+                device_registration,
+                status=device_registration["status_code"],
+            )
         if "access_token" in device_registration:
-            # Check if the automation server with same server name already exists in the same org
+            # Check if the automation server with same server name already exists
+            # in the same org
             org_id = self.get_user_org_id(device_registration["access_token"])
-            automation_server = AutomationServer.objects.filter(name=server_name, keycloak_org_id=org_id).first()
+            automation_server = AutomationServer.objects.filter(
+                name=server_name,
+                keycloak_org_id=org_id,
+            ).first()
             if automation_server:
-                return Response({"error": "Automation server already exists."}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                automation_server = AutomationServer.objects.create(
-                    name=server_name,
-                    automation_server_id=uuid.uuid4(),
-                    keycloak_org_id=org_id,
+                return Response(
+                    {"error": "Automation server already exists."},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
-            device_registration["automation_server_id"] = automation_server.automation_server_id
+            automation_server = AutomationServer.objects.create(
+                name=server_name,
+                automation_server_id=uuid.uuid4(),
+                keycloak_org_id=org_id,
+            )
+            device_registration[
+                "automation_server_id"
+            ] = automation_server.automation_server_id
             return Response(device_registration, status=status.HTTP_200_OK)
-        else:
-            return Response(device_registration, status=device_registration["status_code"])
+
+        return Response(
+            device_registration,
+            status=device_registration["status_code"],
+        )

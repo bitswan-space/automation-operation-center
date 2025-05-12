@@ -8,12 +8,12 @@ const DashboardPage = () => {
   return (
     <div className="w-full">
       <h1 className="text-2xl font-bold text-stone-700 md:hidden">
-        Pipeline Containers
+        Automations
       </h1>
-      <TitleBar title="Pipeline Containers" />
+      <TitleBar title="Automations" />
       <div className="flex py-4 pt-6 lg:hidden">
         <Input
-          placeholder="Find pipeline"
+          placeholder="Find automation"
           className="rounded-r-none bg-white"
         />
         <Button type="submit" className="my-auto rounded-l-none bg-stone-800">

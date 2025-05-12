@@ -1,6 +1,6 @@
 "use client";
 
-import { Braces } from "lucide-react";
+import { Server, Zap } from "lucide-react";
 import { DynamicIcon } from "../layout/Sidebar/DynamicIcon";
 import { FaFolderOpen } from "react-icons/fa";
 import PanelItemCard from "./PanelItemCard";
@@ -34,12 +34,21 @@ export default function PanelItemsSection(props: PanelItemsSectionProps) {
   return (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
       {showDefaultItems && (
-        <PanelItemCard
-          key={"pipeline_card"}
-          icon={<Braces size={32} className="text-neutral-900" />}
-          title={"Pipelines"}
-          url={"/dashboard/pipelines"}
-        />
+        <>
+          <PanelItemCard
+            key={"automations_card"}
+            icon={<Zap size={32} className="text-neutral-900" />}
+            title={"Automations"}
+            url={"/dashboard/automations"}
+          />
+
+          <PanelItemCard
+            key={"automation_servers_card"}
+            icon={<Server size={32} className="text-neutral-900" />}
+            title={"Automation Servers"}
+            url={"/dashboard/automation-servers"}
+          />
+        </>
       )}
       {sidebarItemsToUse?.map((item) => (
         <PanelItemCard

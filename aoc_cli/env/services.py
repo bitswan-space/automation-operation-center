@@ -33,6 +33,7 @@ def bootstrap_influx_db(
                 ),
             }
         },
+        aoc_dir=init_config.aoc_dir,
     )
 
 
@@ -65,6 +66,7 @@ def bootstrap_keycloak(
                 "KC_FEATURES": env_config.get("KC_FEATURES"),
             }
         },
+        aoc_dir=init_config.aoc_dir,
     )
 
 
@@ -87,6 +89,7 @@ def bootstrap_keycloak_db(
             }
         },
         env_file="keycloak-postgres.env",
+        aoc_dir=init_config.aoc_dir,
     )
 
 
@@ -157,6 +160,7 @@ def bootstrap_bitswan_backend(
             if init_config.dev_setup == DevSetupKind.LOCAL
             else "bitswan-backend.env"
         ),
+        aoc_dir=init_config.aoc_dir,
     )
 
 
@@ -181,6 +185,7 @@ def bootsrap_bitswan_backend_db(
             }
         },
         env_file="bitswan-backend-postgres.env",
+        aoc_dir=init_config.aoc_dir,
     )
 
 
@@ -204,9 +209,6 @@ def bootstrap_operations_centre(
                 "INFLUXDB_BUCKET": env_config.get("INFLUXDB_BUCKET"),
                 "INFLUXDB_USERNAME": env_config.get("INFLUXDB_USERNAME"),
                 "INFLUXDB_TOKEN": env_config.get("INFLUXDB_TOKEN"),
-            },
-            "CDS": {
-                "CDS_API_URL": env_config.get("CDS_API_URL"),
             },
             "Bitswan Backend": {
                 "NEXT_PUBLIC_BITSWAN_BACKEND_API_URL": env_config.get(
@@ -242,6 +244,7 @@ def bootstrap_operations_centre(
             if init_config.dev_setup == DevSetupKind.LOCAL
             else OPERATIONS_CENTRE_DOCKER_ENV_FILE
         ),
+        aoc_dir=init_config.aoc_dir,
     )
 
 
@@ -279,6 +282,7 @@ def bootstrap_emqx(init_config: InitConfig, env_config: dict[str, str] = None) -
                 ),
             },
         },
+        aoc_dir=init_config.aoc_dir,
     )
 
 
@@ -291,11 +295,12 @@ def bootstrap_profile_manager(init_config: InitConfig, env_config: dict[str, str
         environment=init_config.env,
         env_vars={
             "Profile Manager": {
-                "MQTT_BROKER_URL": "mqtt://aoc-local-emqx:1883" if init_config.env == Environment.DEV else "mqtt://aoc-emqx:1883",
+                "MQTT_BROKER_URL": "mqtt://aoc-emqx:1883",
                 "MQTT_BROKER_SECRET": env_config.get("EMQX_AUTHENTICATION__1__SECRET"),
             }
         },
         env_file="profile-manager.env",
+        aoc_dir=init_config.aoc_dir,
     )
 
 

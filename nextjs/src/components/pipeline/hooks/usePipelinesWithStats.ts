@@ -4,6 +4,7 @@ import type {
   ContainerServiceTopologyResponse,
   PipelineTopology,
   PipelineWithStats,
+  WorkspaceTopologyResponse,
 } from "@/types";
 
 import React from "react";
@@ -15,17 +16,17 @@ export const usePipelinesWithStats = (): {
 } => {
   const pipelineStats = usePipelineStats();
 
-  const { response: containerServiceTopology } =
-    useMQTTRequestResponse<ContainerServiceTopologyResponse>({
-      requestTopic: `/c/running-pipelines/topology/subscribe`,
-      responseTopic: `/c/running-pipelines/topology`,
+  const { response: workspaceTopology } =
+    useMQTTRequestResponse<WorkspaceTopologyResponse>({
+      requestTopic: `/automation-servers/+/c/+/topology/subscribe`,
+      responseTopic: `/automation-servers/+/c/+/topology`,
     });
 
-  console.log("containerServiceTopology", containerServiceTopology);
+  console.log("workspaceTopology", workspaceTopology);
 
   const pipelines: (PipelineTopology & { _key: string })[] = React.useMemo(
     () =>
-      Object.entries(containerServiceTopology?.data?.topology ?? {}).map(
+      Object.entries(workspaceTopology?.topology ?? {}).map(
         ([key, value]) => {
           return {
             _key: key,
@@ -33,7 +34,7 @@ export const usePipelinesWithStats = (): {
           };
         },
       ),
-    [containerServiceTopology],
+    [workspaceTopology],
   );
 
   const pipelinesWithStats = React.useMemo(

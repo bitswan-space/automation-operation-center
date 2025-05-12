@@ -67,7 +67,7 @@ class KeycloakService:
                 "docker",
                 "compose",
                 "-f",
-                f"docker-compose.{self.config.env.value}.yml",
+                f"docker-compose.yml" if self.config.env == Environment.PROD else f"docker-compose.{self.config.env.value}.yml",
                 "up",
                 "-d",
                 "keycloak",
@@ -81,18 +81,34 @@ class KeycloakService:
 
     def setup_bitswan_backend_client(self) -> None:
         clients = self.keycloak_admin.get_clients()
-        bitswan_backend_client = next((client for client in clients if client["clientId"] == "bitswan-backend"), None)
-        master_realm_client = next((client for client in clients if client["clientId"] == "master-realm"), None)
+        bitswan_backend_client = next(
+            (client for client in clients if client["clientId"] == "bitswan-backend"),
+            None,
+        )
+        master_realm_client = next(
+            (client for client in clients if client["clientId"] == "master-realm"), None
+        )
         if not bitswan_backend_client or not master_realm_client:
             raise ValueError("Bitswan backend or master realm client not found")
-    
+
         bitswan_backend_client_id = bitswan_backend_client.get("id")
         master_realm_client_id = master_realm_client.get("id")
 
-        self.keycloak_admin.update_client_management_permissions({"enabled": True}, bitswan_backend_client_id)
+        self.keycloak_admin.update_client_management_permissions(
+            {"enabled": True}, bitswan_backend_client_id
+        )
 
-        resources = self.keycloak_admin.get_client_authz_resources(bitswan_backend_client_id)
-        default_resource = next((resource for resource in resources if resource["name"] == "Default Resource"), None)
+        resources = self.keycloak_admin.get_client_authz_resources(
+            bitswan_backend_client_id
+        )
+        default_resource = next(
+            (
+                resource
+                for resource in resources
+                if resource["name"] == "Default Resource"
+            ),
+            None,
+        )
 
         if not default_resource:
             raise ValueError("Default resource not found")
@@ -102,14 +118,18 @@ class KeycloakService:
             "type": "client",
             "logic": "POSITIVE",
             "decisionStrategy": "UNANIMOUS",
-            "clients": [bitswan_backend_client_id]
+            "clients": [bitswan_backend_client_id],
         }
-        
-        policy = self.keycloak_admin.create_client_authz_client_policy(policy, master_realm_client_id)
+
+        policy = self.keycloak_admin.create_client_authz_client_policy(
+            policy, master_realm_client_id
+        )
 
         scopes = self.keycloak_admin.get_client_authz_scopes(master_realm_client_id)
-        token_exchange_scope = next((scope for scope in scopes if scope["name"] == "token-exchange"), None)
-        
+        token_exchange_scope = next(
+            (scope for scope in scopes if scope["name"] == "token-exchange"), None
+        )
+
         if not token_exchange_scope:
             raise ValueError("Token exchange scope not found in permissions")
 
@@ -121,10 +141,12 @@ class KeycloakService:
             "decisionStrategy": "UNANIMOUS",
             "policies": [policy["id"]],
             "resources": [default_resource["_id"]],
-            "scopes": [token_exchange_scope["id"]]
+            "scopes": [token_exchange_scope["id"]],
         }
 
-        self.keycloak_admin.create_client_authz_scope_permission(permission, bitswan_backend_client_id)
+        self.keycloak_admin.create_client_authz_scope_permission(
+            permission, bitswan_backend_client_id
+        )
 
         offline_scope = self.keycloak_admin.get_client_scope_by_name("offline_access")
         if offline_scope:
@@ -146,7 +168,7 @@ class KeycloakService:
         for attempt in range(max_retries):
             try:
                 response = requests.get(
-                    f"{self.config.management_url}/health", verify=self.config.verify
+                    f"{self.config.server_url}/health", verify=self.config.verify
                 )
                 if response.status_code == 200:
                     click.echo("Keycloak is ready")
@@ -158,7 +180,7 @@ class KeycloakService:
                     raise TimeoutError("Keycloak failed to start")
 
     def connect(self) -> None:
-        keycloak_env_path = get_env_path(self.config.env, KEYCLOAK_ENV_FILE)
+        keycloak_env_path = get_env_path(self.config.env, KEYCLOAK_ENV_FILE, aoc_dir=self.config.aoc_dir)
         username = get_env_value(keycloak_env_path, "KEYCLOAK_ADMIN")
         password = get_env_value(keycloak_env_path, "KEYCLOAK_ADMIN_PASSWORD")
 
@@ -194,9 +216,9 @@ class KeycloakService:
                 "implicitFlowEnabled": True,
                 "standardFlowEnabled": True,
                 "attributes": {
-                    "access.token.lifespan": "2073600000", # 24 000 days
-                    "client.session.idle.timeout": "2073600000", # 24 000 days
-                    "client.session.max.lifespan": "2073600000", # 24 000 days
+                    "access.token.lifespan": "2073600000",  # 24 000 days
+                    "client.session.idle.timeout": "2073600000",  # 24 000 days
+                    "client.session.max.lifespan": "2073600000",  # 24 000 days
                     "tokenExchange.grant.enabled": "true",
                     "oauth2.device.authorization.grant.enabled": "true",
                 },
@@ -277,7 +299,6 @@ class KeycloakService:
         return client_secrets
 
     def initialize_admin_user(self) -> None:
-
         try:
             user_id = self.keycloak_admin.create_user(
                 {
@@ -344,19 +365,18 @@ class KeycloakService:
         click.echo(f"Updating {env_updates}")
 
         try:
-
             for project_name, (
                 env_var_label,
                 client_name,
                 deployment_kind,
                 env_file,
             ) in env_updates.items():
-
                 file_path = get_env_path(
                     self.config.env,
                     env_file=env_file,
                     dev_setup=deployment_kind,
                     project_name=project_name,
+                    aoc_dir=self.config.aoc_dir,
                 )
                 click.echo(f"Updating {file_path}")
                 with open(file_path, "a") as f:
