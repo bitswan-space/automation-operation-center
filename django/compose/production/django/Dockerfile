@@ -85,6 +85,7 @@ USER django
 
 # Compile messages with required environment variables
 RUN DATABASE_URL="" \
+  EMQX_JWT_SECRET="" \
   DJANGO_SETTINGS_MODULE="config.settings.test" \
   python manage.py compilemessages
 

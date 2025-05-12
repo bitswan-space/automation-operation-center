@@ -353,5 +353,5 @@ CORS_ALLOWED_ORIGINS = env.list(
 # EMQX Settings
 # ------------------------------------------------------------------------------
 
-EMQX_JWT_SECRET = os.environ.get("EMQX_JWT_SECRET", "dummy")
+EMQX_JWT_SECRET = os.environ.get("EMQX_JWT_SECRET")
 EMQX_INTERNAL_URL = os.environ.get("EMQX_INTERNAL_URL", "aoc-emqx:1883")
