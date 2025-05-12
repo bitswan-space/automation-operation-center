@@ -1,13 +1,12 @@
 "use client";
 
 import type {
-  ContainerServiceTopologyResponse,
   PipelineTopology,
   PipelineWithStats,
   WorkspaceTopologyResponse,
 } from "@/types";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useMQTTRequestResponse } from "@/shared/hooks/useMQTTRequestResponse";
 import { usePipelineStats } from "./usePipelineStats";
 
@@ -16,13 +15,22 @@ export const usePipelinesWithStats = (): {
 } => {
   const pipelineStats = usePipelineStats();
 
-  const { response: workspaceTopology } =
+  const { response: workspaceTopology, messageTopic } =
     useMQTTRequestResponse<WorkspaceTopologyResponse>({
       requestTopic: `/automation-servers/+/c/+/topology/subscribe`,
       responseTopic: `/automation-servers/+/c/+/topology`,
     });
 
   console.log("workspaceTopology", workspaceTopology);
+
+  const topicInfo = useMemo(() => {
+    if (!messageTopic) return null;
+    const parts = messageTopic.split('/');
+    return {
+      automationServerId: parts[2], // Index 2 contains server ID
+      workspaceId: parts[4], // Index 4 contains workspace ID
+    };
+  }, [messageTopic]);
 
   const pipelines: (PipelineTopology & { _key: string })[] = React.useMemo(
     () =>
@@ -49,6 +57,8 @@ export const usePipelinesWithStats = (): {
         return {
           ...pipeline,
           pipelineStat,
+          automationServerId: topicInfo?.automationServerId ?? "",
+          workspaceId: topicInfo?.workspaceId ?? "",
         };
       }),
     [pipelineStats, pipelines],
