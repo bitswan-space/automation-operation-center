@@ -154,7 +154,11 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
                 if cfg.env == Environment.DEV
                 else f"mqtt.{cfg.domain}:443"
             ),
-            "EMQX_INTERNAL_URL": f"aoc-emqx:1883",
+            "EMQX_INTERNAL_URL": lambda cfg, svcs: (
+                "localhost:1883"
+                if cfg.env == Environment.DEV and cfg.dev_setup == DevSetupKind.LOCAL
+                else "aoc-emqx:1883"
+            ),
             "WEB_CONCURRENCY": "4",
             "SENTRY_TRACES_SAMPLE_RATE": "1.0",
             "USE_DOCKER": "{use_docker}",
@@ -170,7 +174,11 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
         env_vars={
             "BITSWAN_BACKEND_POSTGRES_USER": "postgres",
             "BITSWAN_BACKEND_POSTGRES_DB": "bitswan_backend",
-            "BITSWAN_BACKEND_POSTGRES_HOST": "aoc-bitswan-backend-postgres",
+            "BITSWAN_BACKEND_POSTGRES_HOST": lambda cfg, svcs: (
+                "localhost"
+                if cfg.env == Environment.DEV and cfg.dev_setup == DevSetupKind.LOCAL
+                else "aoc-bitswan-backend-postgres"
+            ),
             "BITSWAN_BACKEND_POSTGRES_PORT": "5432",
             "BITSWAN_BACKEND_POSTGRES_PASSWORD": "postgres",
         },
