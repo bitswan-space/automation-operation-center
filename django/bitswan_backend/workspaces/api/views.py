@@ -57,9 +57,9 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
         mountpoint = (
             f"/orgs/{org_id}/"
             f"automation-servers/{workspace.automation_server_id}/"
-            f"c/{workspace.id}"
+            f"c/{str(workspace.id)}"
         )
-        username = workspace.id
+        username = str(workspace.id)
 
         token = create_token(
             secret=settings.EMQX_JWT_SECRET,
@@ -89,9 +89,9 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
         mountpoint = (
             f"/orgs/{org_id}/"
             f"automation-servers/{workspace.automation_server_id}/"
-            f"c/{workspace.id}/c/{deployment_id}"
+            f"c/{str(workspace.id)}/c/{deployment_id}"
         )
-        username = workspace.id
+        username = str(workspace.id)
 
         token = create_token(
             secret=settings.EMQX_JWT_SECRET,
@@ -138,9 +138,9 @@ class AutomationServerViewSet(KeycloakMixin, viewsets.ModelViewSet):
         mountpoint = (
             f"/orgs/{org_id}/"
             f"automation-servers/{workspace.automation_server_id}/"
-            f"c/{workspace.id}"
+            f"c/{str(workspace.id)}"
         )
-        username = workspace.id
+        username = str(workspace.id)
 
         token = create_token(
             secret=settings.EMQX_JWT_SECRET,

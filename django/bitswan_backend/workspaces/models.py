@@ -1,8 +1,9 @@
+import uuid
 from django.db import models
 
 
 class Workspace(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     keycloak_org_id = models.CharField(max_length=255, null=False, blank=False)
     automation_server = models.ForeignKey(

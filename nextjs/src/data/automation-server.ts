@@ -8,7 +8,7 @@ type AutomationServerListResponse = {
 };
 
 export type Workspace = {
-  id: number;
+  id: string;
   name: string;
   keycloak_org_id: string;
   automation_server: string;

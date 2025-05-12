@@ -16,7 +16,7 @@ const WorkspacePage = async (props: {
   );
 
   const workspace = automationServer?.workspaces?.find(
-    (workspace) => workspace.id === Number(workspaceId),
+    (workspace) => workspace.id === workspaceId,
   );
 
   return (
