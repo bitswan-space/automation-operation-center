@@ -14,9 +14,7 @@ services:
   influxdb:
     image: influxdb:2.0
     restart: always
-    container_name: aoc-influxdb
-    ports:
-      - "8086:8086"
+    container_name: aoc-influxdb 
     volumes:
       - influx_data:/var/lib/influxdb2
       - influx_config:/etc/influxdb2
@@ -31,12 +29,6 @@ services:
     image: emqx:latest
     container_name: aoc-emqx
     restart: always
-    ports:
-      - "1883:1883"
-      - "8083:8083"
-      - "8084:8084"
-      - "8883:8883"
-      - "18083:18083"
     env_file:
       - envs/emqx.env
     volumes:
@@ -49,9 +41,6 @@ services:
     image: bitswan/bitswan-keycloak:<slug>
     restart: always
     container_name: aoc-keycloak
-    ports:
-      - "9000:9000"
-      - "8080:8080"
     env_file:
       - envs/keycloak.env
     command: start-dev
@@ -76,8 +65,6 @@ services:
     depends_on:
       - influxdb
       - keycloak
-    ports:
-      - "3000:3000"
     networks:
       - bitswan_network
 
@@ -101,8 +88,6 @@ services:
     env_file:
       - envs/bitswan-backend.env
       - envs/bitswan-backend-postgres.env
-    ports:
-      - "8000:8000"
     command: /start
     networks:
       - bitswan_network
