@@ -124,8 +124,8 @@ class InitCommand:
 
         if self.config.aoc_be_image:
             docker_compose["services"]["bitswan-backend"]["image"] = self.config.aoc_be_image
-        if self.config.aoc_fe_image:
-            docker_compose["services"]["aoc"]["image"] = self.config.aoc_fe_image
+        if self.config.aoc_image:
+            docker_compose["services"]["aoc"]["image"] = self.config.aoc_image
         if self.config.profile_manager_image:
             docker_compose["services"]["profile-manager"]["image"] = self.config.profile_manager_image
 

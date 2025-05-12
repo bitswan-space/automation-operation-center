@@ -84,6 +84,9 @@ async def _init_async(
         admin_email=configs.get("admin_email"),
         admin_password=configs.get("admin_password"),
         org_name=configs.get("org_name"),
+        aoc_be_image=kwargs.get("aoc_be_image"),
+        aoc_image=kwargs.get("aoc_image"),
+        profile_manager_image=kwargs.get("profile_manager_image"),
     )
 
     handler = InitCommand(init_config)

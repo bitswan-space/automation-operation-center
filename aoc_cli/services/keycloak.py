@@ -376,6 +376,7 @@ class KeycloakService:
                     env_file=env_file,
                     dev_setup=deployment_kind,
                     project_name=project_name,
+                    aoc_dir=self.config.aoc_dir,
                 )
                 click.echo(f"Updating {file_path}")
                 with open(file_path, "a") as f:
