@@ -87,7 +87,7 @@ def collect_configurations(
             "env_var": AOC_DOMAIN,
             "prompt_text": "Domain",
             "hide_input": False,
-            "default": "platform.local",
+            "default": "localhost",
         },
         "protocol": {
             "option": protocol,

@@ -36,9 +36,9 @@ class DevSetupKind(Enum):
 class InitConfig:
     env: Environment
     aoc_dir: Path = Path.home() / ".config" / "bitswan" / "aoc"
-    domain: str = "bitswan.local"
+    domain: str = "localhost"
     protocol: Protocol = Protocol.HTTP
-    admin_email: str = "admin@bitswan.local"
+    admin_email: str = "admin@localhost"
     admin_password: str = "admin"
     org_name: str = "Example Org"
     dev_setup: DevSetupKind = DevSetupKind.DOCKER

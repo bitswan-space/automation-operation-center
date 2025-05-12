@@ -150,9 +150,9 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
                 "{protocol}://aoc-nextjs:3000"
             ),
             "EMQX_EXTERNAL_URL": lambda cfg, svcs: (
-                f"aoc-emqx:1883"
+                f"aoc-emqx:8084"
                 if cfg.env == Environment.DEV
-                else f"mqtt.{cfg.domain}"
+                else f"mqtt.{cfg.domain}:443"
             ),
             "EMQX_INTERNAL_URL": f"aoc-emqx:1883",
             "WEB_CONCURRENCY": "4",
@@ -183,7 +183,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
         port=1883,
         env_vars={
             "EMQX_MQTT_URL": lambda cfg, svcs: (
-                f"wss://mqttws.{cfg.domain}/mqtt"
+                f"wss://mqtt.{cfg.domain}/mqtt"
                 if cfg.env == Environment.PROD
                 else "ws://localhost:8083/mqtt"
             ),
