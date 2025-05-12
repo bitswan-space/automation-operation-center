@@ -26,5 +26,5 @@ Sentry.init({
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,
 
-  enabled: env.NODE_ENV !== "development",
+  enabled: env.NEXT_PUBLIC_NODE_ENV !== "development",
 });
