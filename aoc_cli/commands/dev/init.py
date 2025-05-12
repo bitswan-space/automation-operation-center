@@ -43,7 +43,7 @@ async def _init_async(admin_email, admin_password, org_name, dev_setup) -> None:
     init_config = InitConfig(
         env=Environment("dev"),
         protocol=Protocol("http"),
-        domain="localhost",
+        domain="bitswan.localhost",
         admin_email=admin_email,
         admin_password=admin_password,
         org_name=org_name,
