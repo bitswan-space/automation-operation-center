@@ -23,22 +23,12 @@ class CaddyService:
         self.outsourced = (
             False  # gets set to true in initialize when caddy admin is found
         )
-        self.caddyfile_path = None
 
     async def add_proxy(self, domain: str, target: str):
-        if not self.outsourced:
-            config = f"""
-                {domain} {{
-                    reverse_proxy {target}
-                }}
-            """
-
-            with open(self.caddyfile_path, "a") as f:
-                f.write(config)
-        else:
             gitops_routes_url = (
                 "http://localhost:2019/config/apps/http/servers/srv0/routes"
             )
+
             payload = {
                 "@id": domain,
                 "match": [{"host": [domain]}],
@@ -59,6 +49,26 @@ class CaddyService:
                 ],
                 "terminal": True,
             }
+
+            if self.config.certs:
+                tls_policy_url = "http://localhost:2019/config/apps/http/servers/srv0/tls_connection_policies/..."
+                tls_policy = [
+                    {
+                        "@id": f"{domain}_policy",
+                        "match": {
+                            "sni": [domain]
+                        },
+                        "certificate_selection": {
+                            "any_tag": ["aoc-cert"]
+                        }
+                    }
+                ]
+                await caddy_delete_id(f"{domain}_policy")
+                async with aiohttp.ClientSession() as session:
+                    async with session.post(tls_policy_url, json=tls_policy) as response:
+                        print(f"Status: {response.status}")
+                        print(f"Response: {await response.text()}")
+
             await caddy_delete_id(domain)
             async with aiohttp.ClientSession() as session:
                 async with session.post(gitops_routes_url, json=payload) as response:
@@ -79,39 +89,33 @@ class CaddyService:
                 self.outsourced = False
 
         if not self.outsourced:
-            self.caddyfile_path = self.config.aoc_dir / "Caddyfile"
-            directories = [
-                self.config.aoc_dir / "caddy_data",
-                self.config.aoc_dir / "caddy_config",
-            ]
-
             try:
-                for directory in directories:
-                    directory.mkdir(parents=True, exist_ok=True)
-                    print(f"Created directory: {directory}")
-
-                caddyfile_content = """
-                    {
-                        auto_https off
-                    }"""
-
-                if self.config.env == Environment.PROD:
-                    # Production environment
-                    caddyfile_content = f"""
-                    {{
-                        email {self.config.admin_email}
-                    }}
-                    """
-
-                caddyfile_path = self.config.aoc_dir / "Caddyfile"
-                with open(caddyfile_path, "w", encoding="utf-8") as f:
-                    f.write(caddyfile_content)
-                print(f"Created Caddyfile: {caddyfile_path}")
-
-            except OSError as e:
-                raise OSError(f"Failed to set up Caddy service: {str(e)}")
+                subprocess.run(
+                    ["bitswan", "caddy", "init", "--domain", self.config.domain],
+                    cwd=self.config.aoc_dir,
+                    check=True,
+                )
+            except subprocess.CalledProcessError as e:
+                raise Exception(f"Failed to initialize Caddy: {e}") 
         else:
             pass
+
+    async def load_certs(self) -> None:
+        caddy_url = "http://localhost:2019/config/apps/tls/certificates/load_files/..."
+        payload = [
+            {
+                "@id": "aoc_tlscerts",
+                "certificate": f"/tls/{self.config.domain}/full-chain.pem",
+                "key": f"/tls/{self.config.domain}/private-key.pem",
+                "tags": ["aoc-cert"]
+            }
+        ]
+        await caddy_delete_id("aoc_tlscerts")
+        async with aiohttp.ClientSession() as session:
+            async with session.post(caddy_url, json=payload) as response:
+                print(f"Status: {response.status}")
+                print(f"Response: {await response.text()}")
+                
 
     def start(self) -> None:
         if not self.outsourced:

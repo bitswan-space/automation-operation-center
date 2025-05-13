@@ -17,7 +17,7 @@ class ServiceConfig:
 
     def get_url(self, config: "InitConfig", internal: bool = False) -> str:
         """Generate URL for this service based on environment"""
-        if config.env == Environment.PROD:
+        if config.env == Environment.PROD and not config.local:
             return f"{config.protocol.value}://{self.url_pattern.format(domain=config.domain)}"
         elif internal and (config.dev_setup == DevSetupKind.DOCKER):
             # Use Docker internal networking name
@@ -46,7 +46,7 @@ class ServiceConfig:
                         "True" if config.dev_setup == DevSetupKind.LOCAL else "False"
                     ),
                     keycloak_url=all_services.get("keycloak").get_url(
-                        config, internal=False
+                        config, internal=True
                     ),
                     **{
                         service_id: service.get_url(config, internal=True)
@@ -57,7 +57,7 @@ class ServiceConfig:
 
 
 # Define all services
-def create_service_configs(env_name: str, env: Environment) -> Dict[str, ServiceConfig]:
+def create_service_configs(env_name: str, env: Environment, config: "InitConfig") -> Dict[str, ServiceConfig]:
     """Create configuration for all services"""
     services = {}
 
@@ -130,7 +130,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
     services["bitswan_backend"] = ServiceConfig(
         name=f"aoc-bitswan-backend",
         url_pattern="api.{domain}",
-        port=5000 if env == Environment.PROD else 8000,
+        port=5000 if env == Environment.PROD and not config.local else 8000,
         env_vars={
             "DJANGO_SETTINGS_MODULE": lambda cfg, svcs: (
                 "config.settings.production"
@@ -151,7 +151,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
             ),
             "EMQX_EXTERNAL_URL": lambda cfg, svcs: (
                 f"aoc-emqx:8084"
-                if cfg.env == Environment.DEV
+                if cfg.env == Environment.DEV or cfg.local
                 else f"mqtt.{cfg.domain}:443"
             ),
             "EMQX_INTERNAL_URL": lambda cfg, svcs: (
@@ -192,8 +192,8 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
         env_vars={
             "EMQX_MQTT_URL": lambda cfg, svcs: (
                 f"wss://mqtt.{cfg.domain}/mqtt"
-                if cfg.env == Environment.PROD
-                else "ws://localhost:8083/mqtt"
+                if cfg.env == Environment.PROD and not cfg.local
+                else "wss://localhost:8084/mqtt"
             ),
             "EMQX_HOST": f"aoc-emqx",
             "EMQX_PORT": "1883",

@@ -28,8 +28,12 @@ class InitCommand:
         await self.setup_environment()
 
     async def setup_environment(self) -> None:
+        if self.config.caddy:
+            await self.setup_caddy()
+
         self.create_aoc_directory()
         self.copy_config_files()
+
         if self.config.env == Environment.PROD:
             self.replace_docker_compose_services_versions()
 
@@ -54,29 +58,60 @@ class InitCommand:
         )
         click.echo("AoC initialized successfully!")
 
+        if self.config.local:
+            self.setup_local_prod_host()
+
         if self.config.env == Environment.PROD:
             click.echo(
                 f"You can launch the aoc by going to {aoc_working_dir} and running `docker-compose up -d`"
             )
 
-        access_message = f"""
-        Access the AOC at the url {self.config.protocol.value}://aoc.{self.config.domain}"""
+            aoc_url = f"{self.config.protocol.value}://aoc.{self.config.domain}" if not self.config.local else "http://localhost:3000"
+
+            access_message = f"""
+            Access the AOC at the url {aoc_url}"""
 
         if self.config.env == Environment.DEV:
             access_message = f"""
-        cd to {aoc_working_dir} and run:
+            Run the following command to start the AOC:
 
-        docker compose -f ./deployment/docker-compose.{self.config.env.value}.yml up -d
+                docker compose -f ./deployment/docker-compose.{self.config.env.value}.yml up -d
 
-        cd to the nextjs directory and run:
-        pnpm dev
+            cd to the nextjs directory and run:
+            pnpm dev
 
-        and
+            and
 
-        Access the AOC at the url http://localhost:3000
-        """
+            Access the AOC at the url http://localhost:3000
+            """
 
         click.echo(access_message)
+
+    def setup_local_prod_host(self) -> None:
+        hosts = [
+            "aoc-keycloak",
+            "aoc-bitswan-backend",
+        ]
+
+        with open("/etc/hosts", "r") as f:
+            for line in f:
+                for host in hosts:
+                    if host in line:
+                        hosts.remove(host)
+
+        try:
+            for host in hosts:
+                subprocess.run(
+                    ["sudo", "sh", "-c", f"echo '127.0.0.1 {host}' >> /etc/hosts"],
+                    check=True,
+                )
+        except subprocess.CalledProcessError:
+            print("Failed to add hosts to /etc/hosts")
+            print("Please add the following to /etc/hosts:")
+            for host in hosts:
+                click.echo(f"127.0.0.1 {host}")
+        click.echo("hosts added to /etc/hosts")
+
 
     def create_aoc_directory(self) -> None:
         self.config.aoc_dir.mkdir(parents=True, exist_ok=True)
@@ -86,7 +121,7 @@ class InitCommand:
             Path(__file__).parent.parent
             / "templates"
             / self.config.env.value
-            / "docker-compose.yml"
+            / ("docker-compose.yml" if not self.config.local else "docker-compose.local.yml")
         )
         if not template_path.exists():
             raise FileNotFoundError(f"Template not found: {template_path}")
@@ -175,15 +210,61 @@ class InitCommand:
 
         caddy = CaddyService(self.config)
         await caddy.initialize()
+
+        if self.config.certs:
+            self.generate_certs()
+            await caddy.load_certs()
+
         await caddy.add_proxy(
-            f"{self.config.protocol.value}://keycloak.{self.config.domain}",
+            f"keycloak.{self.config.domain}",
             "aoc-keycloak:8080",
         )
         await caddy.add_proxy(
-            f"{self.config.protocol.value}://aoc.{self.config.domain}",
-            "automation-operation-centre:3000",
+            f"aoc.{self.config.domain}",
+            "aoc:3000",
         )
-        caddy.start()
+        await caddy.add_proxy(
+            f"api.{self.config.domain}",
+            "aoc-bitswan-backend:5000" if self.config.env == Environment.PROD else "aoc-bitswan-backend:8000",
+        )
+        await caddy.add_proxy(
+            f"mqtt.{self.config.domain}",
+            "aoc-emqx:8084",
+        )
+        await caddy.add_proxy(
+            f"emqx.{self.config.domain}",
+            "aoc-emqx:18083",
+        )
+
+    def generate_certs(self) -> None:
+        # check if certs for bitswan.local are already in $HOME/.config/bitswan/caddy/certs/bitswan.local
+        caddy_dir = Path.home() / ".config" / "bitswan" / "caddy"
+
+        domain_certs_dir = caddy_dir / "certs" / self.config.domain
+        certs_dir = caddy_dir / "certs"
+
+        if domain_certs_dir.exists():
+            print("Certs already exist")
+            return
+
+        if not certs_dir.exists():
+            os.makedirs(certs_dir)
+        
+        if not domain_certs_dir.exists():
+            os.makedirs(domain_certs_dir)
+
+
+        print("Generating certs")
+        subprocess.run(
+            ["mkcert", f"*.{self.config.domain}"],
+            cwd=domain_certs_dir,
+            check=True,
+        )
+
+        # rename the certs to full-chain.pem and private-key.pem
+        os.rename(os.path.join(domain_certs_dir, f"_wildcard.{self.config.domain}-key.pem"), os.path.join(domain_certs_dir, "private-key.pem"))
+        os.rename(os.path.join(domain_certs_dir, f"_wildcard.{self.config.domain}.pem"), os.path.join(domain_certs_dir, "full-chain.pem"))
+        print("Certs generated")
 
     def cleanup(self) -> None:
         cwd = get_aoc_working_directory(self.config.env, self.config.aoc_dir)

@@ -24,7 +24,7 @@ from aoc_cli.handlers.init import InitCommand
 @click.option("--interactive", is_flag=True, help="Enable interactive mode")
 @click.option(
     "--env",
-    type=click.Choice(["dev", "prod", "staging"]),
+    type=click.Choice(["dev", "prod"]),
     help="Deployment environment",
 )
 @click.option("--domain", type=str, help="Domain")
@@ -35,6 +35,9 @@ from aoc_cli.handlers.init import InitCommand
 @click.option("--aoc-be-image", type=str, help="AOC BE docker image")
 @click.option("--aoc-image", type=str, help="AOC FE docker image")
 @click.option("--profile-manager-image", type=str, help="Profile Manager docker image")
+@click.option("--caddy", is_flag=True, help="Install Caddy", default=False)
+@click.option("--certs", is_flag=True, help="Setup Certs", default=False)
+@click.option("--local", is_flag=True, help="Setup local environment", default=False)
 @click.pass_context
 def init(
     ctx,
@@ -87,6 +90,9 @@ async def _init_async(
         aoc_be_image=kwargs.get("aoc_be_image"),
         aoc_image=kwargs.get("aoc_image"),
         profile_manager_image=kwargs.get("profile_manager_image"),
+        caddy=kwargs.get("caddy"),
+        certs=kwargs.get("certs"),
+        local=kwargs.get("local"),
     )
 
     handler = InitCommand(init_config)

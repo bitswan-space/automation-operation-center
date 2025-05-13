@@ -45,6 +45,8 @@ class InitConfig:
     aoc_be_image: str | None = None
     aoc_image: str | None = None
     profile_manager_image: str | None = None
-
+    caddy: bool = False
+    certs: bool = False
+    local: bool = False
     def get_url(self, subdomain: str) -> str:
         return f"{self.protocol.value}://{subdomain}.{self.domain}"
