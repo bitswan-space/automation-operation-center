@@ -256,7 +256,7 @@ def get_var_defaults(
     # Create all service configurations
     env_name = "local" if config.env == Environment.DEV else "production"
 
-    services = create_service_configs(env_name, config.env)
+    services = create_service_configs(env_name, config.env, config)
 
     # Initialize empty defaults dict
     defaults = {}
