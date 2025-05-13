@@ -193,7 +193,7 @@ def create_service_configs(env_name: str, env: Environment, config: "InitConfig"
             "EMQX_MQTT_URL": lambda cfg, svcs: (
                 f"wss://mqtt.{cfg.domain}/mqtt"
                 if cfg.env == Environment.PROD and not cfg.local
-                else "wss://localhost:8084/mqtt"
+                else "ws://localhost:8083/mqtt"
             ),
             "EMQX_HOST": f"aoc-emqx",
             "EMQX_PORT": "1883",
