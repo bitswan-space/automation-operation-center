@@ -25,6 +25,9 @@ class InitCommand:
         self.config = config
 
     async def execute(self) -> None:
+        subprocess.run(
+            ["bitswan", "workspace", "init", "--domain", "app.bitswan.ai", "aoc"],
+        )
         self.create_aoc_directory()
         self.copy_config_files()
         if self.config.env == Environment.PROD:
