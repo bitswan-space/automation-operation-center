@@ -26,7 +26,13 @@ class InitCommand:
 
     async def execute(self) -> None:
         subprocess.run(
-            ["bitswan", "workspace", "init", "--domain", "app.bitswan.ai", "aoc"],
+            ["bitswan",
+             "workspace",
+             "init",
+             "--domain",
+             "app.bitswan.ai",
+             "aoc",
+             ],
         )
         self.create_aoc_directory()
         self.copy_config_files()
@@ -35,11 +41,17 @@ class InitCommand:
 
         self.setup_secrets()
 
+        caddy = CaddyService(self.config)
         keycloak_confirm = click.confirm(
             "\n\nDo you want to setup Keycloak?", default=True, abort=False
         )
         if keycloak_confirm:
+            await caddy.add_proxy(
+                f"keycloak.{self.config.domain}",
+                "aoc-keycloak:8080",
+            )
             self.setup_keycloak()
+
 
         influxdb_confirm = click.confirm(
             "\n\nDo you want to setup InfluxDB?", default=True, abort=False
@@ -47,7 +59,10 @@ class InitCommand:
         if influxdb_confirm:
             self.setup_influxdb()
 
-        self.cleanup()
+        await caddy.add_proxy(
+            f"aoc.{self.config.domain}",
+            "automation-operation-centre:3000",
+        )
 
         aoc_working_dir = get_aoc_working_directory(
             self.config.env, self.config.aoc_dir
@@ -170,34 +185,6 @@ class InitCommand:
         influxdb = InfluxDBService(self.config)
         influxdb.setup()
 
-    async def setup_caddy(self) -> None:
-        print("Initializing Caddy")
-
-        caddy = CaddyService(self.config)
-        await caddy.initialize()
-        await caddy.add_proxy(
-            f"{self.config.protocol.value}://keycloak.{self.config.domain}",
-            "aoc-keycloak:8080",
-        )
-        await caddy.add_proxy(
-            f"{self.config.protocol.value}://aoc.{self.config.domain}",
-            "automation-operation-centre:3000",
-        )
-        caddy.start()
-
-    def cleanup(self) -> None:
-        cwd = get_aoc_working_directory(self.config.env, self.config.aoc_dir)
-        subprocess.run(
-            [
-                "docker",
-                "compose",
-                "-f",
-                f"docker-compose.yml" if self.config.env == Environment.PROD else f"docker-compose.{self.config.env.value}.yml",
-                "down",
-            ],
-            cwd=cwd,
-            check=True,
-        )
 
     def generate_secrets(self, vars: Dict[str, str]) -> Dict[str, str]:
         """Generate all required secrets"""
