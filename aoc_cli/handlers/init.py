@@ -174,6 +174,7 @@ class InitCommand:
             org_name=self.config.org_name,
             env=self.config.env,
             dev_setup=self.config.dev_setup,
+            server_url= f"https://keycloak.{self.config.domain}" if self.config.env == Environment.PROD else "https://localhost:8080"
         )
 
         keycloak = KeycloakService(keycloak_config)

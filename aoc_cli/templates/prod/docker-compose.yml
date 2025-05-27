@@ -46,6 +46,9 @@ services:
     command: start-dev
     networks:
       - bitswan_network
+    ports:
+      - "9000:9000"
+
 
   keycloak-postgres:
     image: postgres:12-bullseye
