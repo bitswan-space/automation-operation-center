@@ -25,9 +25,6 @@ class InitCommand:
         self.config = config
 
     async def execute(self) -> None:
-        await self.setup_environment()
-
-    async def setup_environment(self) -> None:
         self.create_aoc_directory()
         self.copy_config_files()
         if self.config.env == Environment.PROD:
