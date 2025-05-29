@@ -54,3 +54,21 @@ class CaddyService:
                 else:
                     raise f"Unknown Caddy API status! {resp.status}, response {resp.text}"
 
+
+    def restart(self):
+        """Restart the Caddy Docker container"""
+        try:
+            result = subprocess.run(
+                ["docker", "restart", "caddy"],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            print("Caddy container restarted successfully")
+            return True
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to restart Caddy: {e.stderr}")
+            return False
+        except FileNotFoundError:
+            print("Docker command not found")
+            return False

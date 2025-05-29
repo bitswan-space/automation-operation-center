@@ -84,6 +84,7 @@ class InitCommand:
             f"emqx.{self.config.domain}",
             "aoc-emqx:18083",
         )
+        caddy.restart()
         aoc_working_dir = get_aoc_working_directory(
             self.config.env, self.config.aoc_dir
         )
