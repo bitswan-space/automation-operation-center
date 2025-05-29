@@ -46,7 +46,7 @@ class ServiceConfig:
                         "True" if config.dev_setup == DevSetupKind.LOCAL else "False"
                     ),
                     keycloak_url=all_services.get("keycloak").get_url(
-                        config, internal=False
+                        config, internal=True
                     ),
                     **{
                         service_id: service.get_url(config, internal=True)

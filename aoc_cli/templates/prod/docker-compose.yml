@@ -41,7 +41,7 @@ services:
       - bitswan_network
 
   keycloak:
-    image: bitswan/bitswan-keycloak:<slug>
+    image: quay.io/keycloak/keycloak:26.1.3
     restart: always
     container_name: aoc-keycloak
     env_file:

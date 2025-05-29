@@ -61,9 +61,20 @@ class InitCommand:
 
         await caddy.add_proxy(
             f"aoc.{self.config.domain}",
-            "automation-operation-centre:3000",
+            "aoc:3000",
         )
-
+        await caddy.add_proxy(
+            f"api.{self.config.domain}",
+            "aoc-bitswan-backend:5000" if self.config.env == Environment.PROD else "aoc-bitswan-backend:8000",
+        )
+        await caddy.add_proxy(
+            f"mqtt.{self.config.domain}",
+            "aoc-emqx:8084",
+        )
+        await caddy.add_proxy(
+            f"emqx.{self.config.domain}",
+            "aoc-emqx:18083",
+        )
         aoc_working_dir = get_aoc_working_directory(
             self.config.env, self.config.aoc_dir
         )
