@@ -25,15 +25,24 @@ class InitCommand:
         self.config = config
 
     async def execute(self) -> None:
-        subprocess.run(
-            ["bitswan",
-             "workspace",
-             "init",
-             "--domain",
-             "app.bitswan.ai",
-             "aoc",
-             ],
+        # Check if 'aoc' workspace already exists
+        result = subprocess.run(
+            ["bitswan", "workspace", "list"],
+            capture_output=True,
+            text=True
         )
+
+        # Only run init if 'aoc' is not found in the output
+        if "aoc" not in result.stdout:
+            subprocess.run(
+                ["bitswan",
+                "workspace", 
+                "init",
+                "--domain",
+                "app.bitswan.ai",
+                "aoc",
+                ],
+            )
         self.create_aoc_directory()
         self.copy_config_files()
         if self.config.env == Environment.PROD:
