@@ -107,6 +107,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
             "KEYCLOAK_SERVER_URL": lambda cfg, svcs: svcs["keycloak"].get_url(
                 cfg, internal=True
             ),
+            "KC_HTTP_ENABLED": "true",
         },
     )
 

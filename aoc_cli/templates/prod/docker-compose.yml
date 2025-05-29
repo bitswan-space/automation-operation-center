@@ -46,7 +46,7 @@ services:
     container_name: aoc-keycloak
     env_file:
       - envs/keycloak.env
-    command: start-dev
+    command: start
     networks:
       - bitswan_network
     ports:
