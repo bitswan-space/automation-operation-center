@@ -78,7 +78,7 @@ class InitCommand:
         )
         await caddy.add_proxy(
             f"mqtt.{self.config.domain}",
-            "aoc-emqx:8084",
+            "aoc-emqx:8083",
         )
         await caddy.add_proxy(
             f"emqx.{self.config.domain}",
