@@ -46,7 +46,7 @@ class ServiceConfig:
                         "True" if config.dev_setup == DevSetupKind.LOCAL else "False"
                     ),
                     keycloak_url=all_services.get("keycloak").get_url(
-                        config, internal=False
+                        config, internal=True
                     ),
                     **{
                         service_id: service.get_url(config, internal=True)
@@ -88,11 +88,14 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
         port=8080,
         env_vars={
             "KC_HOSTNAME_URL": lambda cfg, svcs: svcs["keycloak"].get_url(cfg),
+            "KC_HOSTNAME": lambda cfg, svcs: svcs["keycloak"].get_url(cfg),
+            "KC_HOSTNAME_ADMIN_URL": lambda cfg, svcs: svcs["keycloak"].get_url(cfg),
+            "KC_HOSTNAME_ADMIN": lambda cfg, svcs: svcs["keycloak"].get_url(cfg),
             "PROXY_ADDRESS_FORWARDING": "true",
             "KC_PROXY": "edge",
             "KC_PROXY_HEADERS": "forwarded",
             "KC_HTTP_ENABLED": "true",
-            "KC_HOSTNAME_STRICT": "false",
+            "KC_HOSTNAME_STRICT": "true",
             "KC_HOSTNAME_STRICT_HTTPS": "false",
             "KC_HEALTH_ENABLED": "true",
             "KC_FEATURES": "preview,token-exchange",
@@ -107,6 +110,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
             "KEYCLOAK_SERVER_URL": lambda cfg, svcs: svcs["keycloak"].get_url(
                 cfg, internal=True
             ),
+            "KC_HTTP_ENABLED": "true",
         },
     )
 

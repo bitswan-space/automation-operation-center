@@ -25,9 +25,24 @@ class InitCommand:
         self.config = config
 
     async def execute(self) -> None:
-        await self.setup_environment()
+        # Check if 'aoc' workspace already exists
+        result = subprocess.run(
+            ["bitswan", "workspace", "list"],
+            capture_output=True,
+            text=True
+        )
 
-    async def setup_environment(self) -> None:
+        # Only run init if 'aoc' is not found in the output
+        if "aoc" not in result.stdout:
+            subprocess.run(
+                ["bitswan",
+                "workspace", 
+                "init",
+                "--domain",
+                "app.bitswan.ai",
+                "aoc",
+                ],
+            )
         self.create_aoc_directory()
         self.copy_config_files()
         if self.config.env == Environment.PROD:
@@ -35,11 +50,17 @@ class InitCommand:
 
         self.setup_secrets()
 
+        caddy = CaddyService(self.config)
         keycloak_confirm = click.confirm(
             "\n\nDo you want to setup Keycloak?", default=True, abort=False
         )
         if keycloak_confirm:
+            await caddy.add_proxy(
+                f"keycloak.{self.config.domain}",
+                "aoc-keycloak:8080",
+            )
             self.setup_keycloak()
+
 
         influxdb_confirm = click.confirm(
             "\n\nDo you want to setup InfluxDB?", default=True, abort=False
@@ -47,8 +68,23 @@ class InitCommand:
         if influxdb_confirm:
             self.setup_influxdb()
 
-        self.cleanup()
-
+        await caddy.add_proxy(
+            f"aoc.{self.config.domain}",
+            "aoc:3000",
+        )
+        await caddy.add_proxy(
+            f"api.{self.config.domain}",
+            "aoc-bitswan-backend:5000" if self.config.env == Environment.PROD else "aoc-bitswan-backend:8000",
+        )
+        await caddy.add_proxy(
+            f"mqtt.{self.config.domain}",
+            "aoc-emqx:8083",
+        )
+        await caddy.add_proxy(
+            f"emqx.{self.config.domain}",
+            "aoc-emqx:18083",
+        )
+        caddy.restart()
         aoc_working_dir = get_aoc_working_directory(
             self.config.env, self.config.aoc_dir
         )
@@ -159,6 +195,7 @@ class InitCommand:
             org_name=self.config.org_name,
             env=self.config.env,
             dev_setup=self.config.dev_setup,
+            server_url= f"https://keycloak.{self.config.domain}" if self.config.env == Environment.PROD else "https://localhost:8080"
         )
 
         keycloak = KeycloakService(keycloak_config)
@@ -170,34 +207,6 @@ class InitCommand:
         influxdb = InfluxDBService(self.config)
         influxdb.setup()
 
-    async def setup_caddy(self) -> None:
-        print("Initializing Caddy")
-
-        caddy = CaddyService(self.config)
-        await caddy.initialize()
-        await caddy.add_proxy(
-            f"{self.config.protocol.value}://keycloak.{self.config.domain}",
-            "aoc-keycloak:8080",
-        )
-        await caddy.add_proxy(
-            f"{self.config.protocol.value}://aoc.{self.config.domain}",
-            "automation-operation-centre:3000",
-        )
-        caddy.start()
-
-    def cleanup(self) -> None:
-        cwd = get_aoc_working_directory(self.config.env, self.config.aoc_dir)
-        subprocess.run(
-            [
-                "docker",
-                "compose",
-                "-f",
-                f"docker-compose.yml" if self.config.env == Environment.PROD else f"docker-compose.{self.config.env.value}.yml",
-                "down",
-            ],
-            cwd=cwd,
-            check=True,
-        )
 
     def generate_secrets(self, vars: Dict[str, str]) -> Dict[str, str]:
         """Generate all required secrets"""

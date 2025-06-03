@@ -48,6 +48,11 @@ def bootstrap_keycloak(
         environment=init_config.env,
         env_vars={
             "Keycloak Service Configuration": {
+                "KC_HOSTNAME_URL": env_config.get("KC_HOSTNAME_URL"),
+                "KC_HOSTNAME": env_config.get("KC_HOSTNAME"),
+                "KC_HOSTNAME_ADMIN": env_config.get("KC_HOSTNAME_ADMIN"),
+                "KC_HOSTNAME_ADMIN_URL": env_config.get("KC_HOSTNAME_ADMIN_URL"),
+                "KC_HTTP_ENABLED": env_config.get("KC_HTTP_ENABLED"),
                 "KEYCLOAK_ADMIN_PASSWORD": env_config.get("KEYCLOAK_ADMIN_PASSWORD"),
                 "KEYCLOAK_ADMIN": env_config.get("KEYCLOAK_ADMIN"),
                 "KC_HOSTNAME_URL": env_config.get("KC_HOSTNAME_URL"),
@@ -64,6 +69,8 @@ def bootstrap_keycloak(
                 "KC_HOSTNAME_STRICT_HTTPS": env_config.get("KC_HOSTNAME_STRICT_HTTPS"),
                 "KC_HEALTH_ENABLED": env_config.get("KC_HEALTH_ENABLED"),
                 "KC_FEATURES": env_config.get("KC_FEATURES"),
+                "KC_HTTP_ENABLED": env_config.get("KC_HTTP_ENABLED"),
+                "KC_HOSTNAME_STRICT_HTTPS": env_config.get("KC_HOSTNAME_STRICT_HTTPS"),
             }
         },
         aoc_dir=init_config.aoc_dir,

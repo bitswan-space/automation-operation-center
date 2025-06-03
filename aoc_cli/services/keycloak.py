@@ -164,11 +164,12 @@ class KeycloakService:
         click.echo("✓ Bitswan backend client setup complete")
 
     def wait_for_service(self, max_retries: int = 30, delay: int = 10) -> None:
-        click.echo("Waiting for Keycloak to be ready...")
+        health_url = f"{self.config.server_url}/health"
+        click.echo(f"Waiting for Keycloak to be ready at... {health_url}")
         for attempt in range(max_retries):
             try:
                 response = requests.get(
-                    f"{self.config.server_url}/health", verify=self.config.verify
+                    health_url, verify=self.config.verify
                 )
                 if response.status_code == 200:
                     click.echo("Keycloak is ready")
