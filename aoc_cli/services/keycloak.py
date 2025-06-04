@@ -67,7 +67,11 @@ class KeycloakService:
                 "docker",
                 "compose",
                 "-f",
-                f"docker-compose.yml" if self.config.env == Environment.PROD else f"docker-compose.{self.config.env.value}.yml",
+                (
+                    "docker-compose.yml"
+                    if self.config.env == Environment.PROD
+                    else f"docker-compose.{self.config.env.value}.yml"
+                ),
                 "up",
                 "-d",
                 "keycloak",
@@ -150,26 +154,31 @@ class KeycloakService:
 
         offline_scope = self.keycloak_admin.get_client_scope_by_name("offline_access")
         if offline_scope:
-            self.keycloak_admin.delete_client_optional_client_scope(bitswan_backend_client_id, offline_scope["id"])
+            self.keycloak_admin.delete_client_optional_client_scope(
+                bitswan_backend_client_id, offline_scope["id"]
+            )
             payload = {
                 "realm": self.config.realm_name,
                 "client": bitswan_backend_client_id,
-                "clientScopeId": offline_scope["id"]
+                "clientScopeId": offline_scope["id"],
             }
-            self.keycloak_admin.add_client_default_client_scope(bitswan_backend_client_id, offline_scope["id"], payload)
-            
+            self.keycloak_admin.add_client_default_client_scope(
+                bitswan_backend_client_id, offline_scope["id"], payload
+            )
+
         else:
-            raise ValueError("Error durring bitswan backend client setup - offline scope not found")
+            raise ValueError(
+                "Error durring bitswan backend client setup - offline scope not found"
+            )
 
         click.echo("✓ Bitswan backend client setup complete")
 
     def wait_for_service(self, max_retries: int = 30, delay: int = 10) -> None:
-        health_url = f"{self.config.server_url}/health"
-        click.echo(f"Waiting for Keycloak to be ready at... {health_url}")
+        click.echo("Waiting for Keycloak to be ready...")
         for attempt in range(max_retries):
             try:
                 response = requests.get(
-                    health_url, verify=self.config.verify
+                    f"{self.config.server_url}/health", verify=self.config.verify
                 )
                 if response.status_code == 200:
                     click.echo("Keycloak is ready")
@@ -181,7 +190,9 @@ class KeycloakService:
                     raise TimeoutError("Keycloak failed to start")
 
     def connect(self) -> None:
-        keycloak_env_path = get_env_path(self.config.env, KEYCLOAK_ENV_FILE, aoc_dir=self.config.aoc_dir)
+        keycloak_env_path = get_env_path(
+            self.config.env, KEYCLOAK_ENV_FILE, aoc_dir=self.config.aoc_dir
+        )
         username = get_env_value(keycloak_env_path, "KEYCLOAK_ADMIN")
         password = get_env_value(keycloak_env_path, "KEYCLOAK_ADMIN_PASSWORD")
 
@@ -254,12 +265,16 @@ class KeycloakService:
         for client_id in client_ids:
             roles = self.keycloak_admin.get_client_roles(client_id)
             client_available_roles[client_id] = {role["name"]: role for role in roles}
+            # Add group_membership scope to client
+            self.add_client_scope_to_client(client_id, "group_membership")
 
         client_secrets = {}
 
         for name, client_config in clients.items():
             try:
                 client_id = self.keycloak_admin.create_client(client_config)
+                # Add group_membership scope to client
+                self.add_client_scope_to_client(client_id, "group_membership")
                 print(f"Client ID: {client_id}")
             except KeycloakPostError as e:
                 if e.response_code == 409:
@@ -385,3 +400,65 @@ class KeycloakService:
                         f.write(f"\n{env_var_label}={secret.get(client_name)}\n")
         except Exception as e:
             click.echo(f"Error updating {env_file}: {e}")
+
+    def create_client_scope(self, scope_name: str) -> None:
+
+        client_scope = self.keycloak_admin.get_client_scope_by_name(scope_name)
+        if client_scope:
+            return client_scope.get("id")
+
+        client_scope_id = self.keycloak_admin.create_client_scope(
+            {
+                "name": scope_name,
+                "description": "",
+                "type": "none",
+                "protocol": "openid-connect",
+                "attributes": {
+                    "display.on.consent.screen": "true",
+                    "consent.screen.text": "",
+                    "include.in.token.scope": "false",
+                    "gui.order": "",
+                },
+            }
+        )
+
+        return client_scope_id
+
+    def create_client_scope_mapper(self, scope_id: str, name: str) -> dict:
+        client_scope = self.keycloak_admin.get_client_scope(scope_id)
+
+        protocol_mapper = client_scope.get("protocolMappers", [])
+
+        for mapper in protocol_mapper:
+            if mapper.get("name") == name:
+                click.echo(f"Mapper {name} already exists")
+                return mapper
+
+        click.echo(f"Adding {name} mapper to {scope_id}")
+        return self.keycloak_admin.add_mapper_to_client_scope(
+            scope_id,
+            {
+                "protocol": "openid-connect",
+                "protocolMapper": "oidc-group-membership-mapper",
+                "name": name,
+                "config": {
+                    "claim.name": name,
+                    "full.path": "true",
+                    "id.token.claim": "true",
+                    "access.token.claim": "true",
+                    "lightweight.claim": "true",
+                    "userinfo.token.claim": "true",
+                    "introspection.token.claim": "true",
+                },
+            },
+        )
+
+    def add_client_scope_to_client(self, client_id: str, scope_name: str) -> None:
+        scope_id = self.create_client_scope(scope_name)
+        self.create_client_scope_mapper(scope_id, scope_name)
+
+        self.keycloak_admin.add_client_default_client_scope(
+            client_id,
+            scope_id,
+            {},
+        )
