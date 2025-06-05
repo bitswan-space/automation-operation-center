@@ -27,20 +27,19 @@ class InitCommand:
     async def execute(self) -> None:
         # Check if 'aoc' workspace already exists
         result = subprocess.run(
-            ["bitswan", "workspace", "list"],
-            capture_output=True,
-            text=True
+            ["bitswan", "workspace", "list"], capture_output=True, text=True
         )
 
         # Only run init if 'aoc' is not found in the output
         if "aoc" not in result.stdout:
             subprocess.run(
-                ["bitswan",
-                "workspace", 
-                "init",
-                "--domain",
-                "app.bitswan.ai",
-                "aoc",
+                [
+                    "bitswan",
+                    "workspace",
+                    "init",
+                    "--domain",
+                    "app.bitswan.ai",
+                    "aoc",
                 ],
             )
         self.create_aoc_directory()
@@ -61,7 +60,6 @@ class InitCommand:
             )
             self.setup_keycloak()
 
-
         influxdb_confirm = click.confirm(
             "\n\nDo you want to setup InfluxDB?", default=True, abort=False
         )
@@ -74,7 +72,11 @@ class InitCommand:
         )
         await caddy.add_proxy(
             f"api.{self.config.domain}",
-            "aoc-bitswan-backend:5000" if self.config.env == Environment.PROD else "aoc-bitswan-backend:8000",
+            (
+                "aoc-bitswan-backend:5000"
+                if self.config.env == Environment.PROD
+                else "aoc-bitswan-backend:8000"
+            ),
         )
         await caddy.add_proxy(
             f"mqtt.{self.config.domain}",
@@ -131,10 +133,7 @@ class InitCommand:
         shutil.copy2(template_path, dest_path)
 
         emqx_config_path = (
-            Path(__file__).parent.parent
-            / "templates"
-            / "emqx"
-            / "emqx.conf"
+            Path(__file__).parent.parent / "templates" / "emqx" / "emqx.conf"
         )
         if not emqx_config_path.exists():
             raise FileNotFoundError(f"Emqx config not found: {emqx_config_path}")
@@ -152,18 +151,34 @@ class InitCommand:
 
         # get latest version from Docker Hub
         services = [
-            ("keycloak", "https://hub.docker.com/v2/repositories/bitswan/bitswan-keycloak/tags/"),
-            ("bitswan-backend", "https://hub.docker.com/v2/repositories/bitswan/bitswan-backend/tags/"),
-            ("profile-manager", "https://hub.docker.com/v2/repositories/bitswan/profile-manager/tags/"),
-            ("aoc", "https://hub.docker.com/v2/repositories/bitswan/automation-operations-centre/tags/"),
+            (
+                "keycloak",
+                "https://hub.docker.com/v2/repositories/bitswan/bitswan-keycloak/tags/",
+            ),
+            (
+                "bitswan-backend",
+                "https://hub.docker.com/v2/repositories/bitswan/bitswan-backend/tags/",
+            ),
+            (
+                "profile-manager",
+                "https://hub.docker.com/v2/repositories/bitswan/profile-manager/tags/",
+            ),
+            (
+                "aoc",
+                "https://hub.docker.com/v2/repositories/bitswan/automation-operations-centre/tags/",
+            ),
         ]
 
         if self.config.aoc_be_image:
-            docker_compose["services"]["bitswan-backend"]["image"] = self.config.aoc_be_image
+            docker_compose["services"]["bitswan-backend"][
+                "image"
+            ] = self.config.aoc_be_image
         if self.config.aoc_image:
             docker_compose["services"]["aoc"]["image"] = self.config.aoc_image
         if self.config.profile_manager_image:
-            docker_compose["services"]["profile-manager"]["image"] = self.config.profile_manager_image
+            docker_compose["services"]["profile-manager"][
+                "image"
+            ] = self.config.profile_manager_image
 
         # Replace the services versions
         for service in services:
@@ -172,11 +187,22 @@ class InitCommand:
             if response.status_code == 200:
                 results = response.json()["results"]
                 pattern = r"\d{4}-\d+-git-[a-fA-F0-9]+$"
-                latest_version = next((version for version in results if re.match(pattern, version["name"])), None)
+                latest_version = next(
+                    (
+                        version
+                        for version in results
+                        if re.match(pattern, version["name"])
+                    ),
+                    None,
+                )
                 service = docker_compose["services"][service_name]
                 if latest_version:
-                    click.echo(f"Found latest version for {service_name}: {latest_version['name']}")
-                    service["image"] = service["image"].replace("<slug>", latest_version["name"])
+                    click.echo(
+                        f"Found latest version for {service_name}: {latest_version['name']}"
+                    )
+                    service["image"] = service["image"].replace(
+                        "<slug>", latest_version["name"]
+                    )
                     docker_compose["services"][service_name] = service
                 else:
                     click.echo(f"No latest version found for {service_name}")
@@ -195,7 +221,11 @@ class InitCommand:
             org_name=self.config.org_name,
             env=self.config.env,
             dev_setup=self.config.dev_setup,
-            server_url= f"https://keycloak.{self.config.domain}" if self.config.env == Environment.PROD else "https://localhost:8080"
+            server_url=(
+                f"https://keycloak.{self.config.domain}"
+                if self.config.env == Environment.PROD
+                else "http://localhost:8080"
+            ),
         )
 
         keycloak = KeycloakService(keycloak_config)
@@ -206,7 +236,6 @@ class InitCommand:
 
         influxdb = InfluxDBService(self.config)
         influxdb.setup()
-
 
     def generate_secrets(self, vars: Dict[str, str]) -> Dict[str, str]:
         """Generate all required secrets"""
