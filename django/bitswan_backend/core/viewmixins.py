@@ -127,7 +127,8 @@ class KeycloakMixin:
         Helper method to invite a user to the org
         """
 
-        org_id = self.keycloak.get_active_user_org(self.request)
+        org = self.keycloak.get_active_user_org(self.request)
+        org_id = org.get("id")
 
         self.keycloak.invite_user_to_org(email=email, org_id=org_id)
 
