@@ -16,7 +16,7 @@ from aoc_cli.env.config import (
     DevSetupKind,
     Environment,
 )
-from aoc_cli.env.utils import get_env_path
+from aoc_cli.env.utils import get_env_path, get_env_var
 from aoc_cli.utils.env import get_env_value
 from aoc_cli.utils.tools import get_aoc_working_directory
 
@@ -48,6 +48,7 @@ class KeycloakService:
         client_secrets = self.create_clients()
         self.setup_bitswan_backend_client()
         self.initialize_admin_user()
+        self.update_realm_smtp_server()
 
         self._update_envs_with_keycloak_secret(client_secrets)
         click.echo("✓ Keycloak setup complete")
@@ -182,7 +183,7 @@ class KeycloakService:
         for attempt in range(max_retries):
             try:
                 response = requests.get(
-                    f"{health_url}/health", verify=self.config.verify
+                    f"{health_url}", verify=self.config.verify
                 )
                 if response.status_code == 200:
                     click.echo("Keycloak is ready")
@@ -465,3 +466,36 @@ class KeycloakService:
             scope_id,
             {},
         )
+
+    def update_realm_smtp_server(self) -> None:
+        realm_name = "master"
+        realm_settings = self.keycloak_admin.get_realm(realm_name=realm_name)
+
+        KEYCLOAK_SMTP_USERNAME = get_env_var(
+            "KEYCLOAK_SMTP_USERNAME", env=self.config.env, required_in_prod=True)
+        KEYCLOAK_SMTP_PASSWORD = get_env_var(
+            "KEYCLOAK_SMTP_PASSWORD", env=self.config.env, required_in_prod=True)
+        KEYCLOAK_SMTP_HOST = get_env_var(
+            "KEYCLOAK_SMTP_HOST", env=self.config.env, required_in_prod=True)
+        KEYCLOAK_SMTP_FROM = get_env_var(
+            "KEYCLOAK_SMTP_FROM", env=self.config.env, required_in_prod=True)
+        KEYCLOAK_SMTP_PORT = get_env_var(
+            "KEYCLOAK_SMTP_PORT", env=self.config.env, required_in_prod=True)
+
+        options = {
+            "password" : KEYCLOAK_SMTP_PASSWORD,
+            "replyToDisplayName" : "",
+            "starttls" : "true",
+            "auth" : "true",
+            "port" : KEYCLOAK_SMTP_PORT,
+            "host" : KEYCLOAK_SMTP_HOST,
+            "replyTo" : "",
+            "from" : KEYCLOAK_SMTP_FROM,
+            "fromDisplayName" : "",
+            "envelopeFrom" : "",
+            "ssl" : "false",
+            "user" : KEYCLOAK_SMTP_USERNAME
+        }
+        realm_settings["smtpServer"] = options
+
+        self.keycloak_admin.update_realm(realm_name=realm_name, payload=realm_settings)
