@@ -69,8 +69,8 @@ RUN pip install --no-cache-dir --no-index --find-links=/wheels/ /wheels/* \
   && rm -rf /wheels/
 
 # Script files
-COPY --chown=django:django ./compose/production/django/entrypoint /entrypoint
-COPY --chown=django:django ./compose/production/django/start /start
+COPY --chown=django:django ./docker/entrypoint /entrypoint
+COPY --chown=django:django ./docker/start /start
 
 
 # copy application code to WORKDIR
