@@ -58,7 +58,7 @@ jobs:
       - name: Build and Push
         env:
           IMAGE_TAG: "bitswan/bitswan-backend"
-          DOCKER_FILE: "./compose/production/django/Dockerfile"
+          DOCKER_FILE: "./Dockerfile"
         run: |
           cd django
           bash ../build_and_push.sh
