@@ -48,6 +48,11 @@ async def _init_async(admin_email, admin_password, org_name, dev_setup) -> None:
         admin_password=admin_password,
         org_name=org_name,
         dev_setup=DevSetupKind(dev_setup.lower()),
+        keycloak_smtp_username="",
+        keycloak_smtp_password="",
+        keycloak_smtp_port="1025",
+        keycloak_smtp_host="mailpit",
+        keycloak_smtp_from="auth@bitswan.localhost",
     )
 
     handler = InitCommand(init_config)

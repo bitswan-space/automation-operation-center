@@ -54,10 +54,11 @@ class InitCommand:
             "\n\nDo you want to setup Keycloak?", default=True, abort=False
         )
         if keycloak_confirm:
-            await caddy.add_proxy(
-                f"keycloak.{self.config.domain}",
-                "aoc-keycloak:8080",
-            )
+            if self.config.env == Environment.PROD:
+                await caddy.add_proxy(
+                    f"keycloak.{self.config.domain}",
+                    "aoc-keycloak:8080",
+                )
             self.setup_keycloak()
 
         influxdb_confirm = click.confirm(
@@ -66,27 +67,29 @@ class InitCommand:
         if influxdb_confirm:
             self.setup_influxdb()
 
-        await caddy.add_proxy(
-            f"aoc.{self.config.domain}",
-            "aoc:3000",
-        )
-        await caddy.add_proxy(
-            f"api.{self.config.domain}",
-            (
-                "aoc-bitswan-backend:5000"
-                if self.config.env == Environment.PROD
-                else "aoc-bitswan-backend:8000"
-            ),
-        )
-        await caddy.add_proxy(
-            f"mqtt.{self.config.domain}",
-            "aoc-emqx:8083",
-        )
-        await caddy.add_proxy(
-            f"emqx.{self.config.domain}",
-            "aoc-emqx:18083",
-        )
-        caddy.restart()
+        if self.config.env == Environment.PROD:
+            await caddy.add_proxy(
+                f"aoc.{self.config.domain}",
+                "aoc:3000",
+            )
+            await caddy.add_proxy(
+                f"api.{self.config.domain}",
+                (
+                    "aoc-bitswan-backend:5000"
+                    if self.config.env == Environment.PROD
+                    else "aoc-bitswan-backend:8000"
+                ),
+            )
+            await caddy.add_proxy(
+                f"mqtt.{self.config.domain}",
+                "aoc-emqx:8083",
+            )
+            await caddy.add_proxy(
+                f"emqx.{self.config.domain}",
+                "aoc-emqx:18083",
+            )
+            caddy.restart()
+
         aoc_working_dir = get_aoc_working_directory(
             self.config.env, self.config.aoc_dir
         )
@@ -226,6 +229,11 @@ class InitCommand:
                 if self.config.env == Environment.PROD
                 else "http://localhost:8080"
             ),
+            keycloak_smtp_username=self.config.keycloak_smtp_username,
+            keycloak_smtp_password=self.config.keycloak_smtp_password,
+            keycloak_smtp_host=self.config.keycloak_smtp_host,
+            keycloak_smtp_from=self.config.keycloak_smtp_from,
+            keycloak_smtp_port=self.config.keycloak_smtp_port,
         )
 
         keycloak = KeycloakService(keycloak_config)

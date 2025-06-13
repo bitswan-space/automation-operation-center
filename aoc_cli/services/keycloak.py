@@ -16,7 +16,7 @@ from aoc_cli.env.config import (
     DevSetupKind,
     Environment,
 )
-from aoc_cli.env.utils import get_env_path, get_env_var
+from aoc_cli.env.utils import get_env_path
 from aoc_cli.utils.env import get_env_value
 from aoc_cli.utils.tools import get_aoc_working_directory
 
@@ -33,6 +33,11 @@ class KeycloakConfig:
     org_name: str = "Example Org"
     env: Environment = Environment.DEV
     dev_setup: DevSetupKind = DevSetupKind.DOCKER
+    keycloak_smtp_username: str | None = None
+    keycloak_smtp_password: str | None = None
+    keycloak_smtp_host: str | None = None
+    keycloak_smtp_from: str | None = None
+    keycloak_smtp_port: str | None = None
 
 
 class KeycloakService:
@@ -182,9 +187,7 @@ class KeycloakService:
 
         for attempt in range(max_retries):
             try:
-                response = requests.get(
-                    f"{health_url}", verify=self.config.verify
-                )
+                response = requests.get(f"{health_url}", verify=self.config.verify)
                 if response.status_code == 200:
                     click.echo("Keycloak is ready")
                     return
@@ -471,30 +474,19 @@ class KeycloakService:
         realm_name = "master"
         realm_settings = self.keycloak_admin.get_realm(realm_name=realm_name)
 
-        KEYCLOAK_SMTP_USERNAME = get_env_var(
-            "KEYCLOAK_SMTP_USERNAME", env=self.config.env, required_in_prod=True)
-        KEYCLOAK_SMTP_PASSWORD = get_env_var(
-            "KEYCLOAK_SMTP_PASSWORD", env=self.config.env, required_in_prod=True)
-        KEYCLOAK_SMTP_HOST = get_env_var(
-            "KEYCLOAK_SMTP_HOST", env=self.config.env, required_in_prod=True)
-        KEYCLOAK_SMTP_FROM = get_env_var(
-            "KEYCLOAK_SMTP_FROM", env=self.config.env, required_in_prod=True)
-        KEYCLOAK_SMTP_PORT = get_env_var(
-            "KEYCLOAK_SMTP_PORT", env=self.config.env, required_in_prod=True)
-
         options = {
-            "password" : KEYCLOAK_SMTP_PASSWORD,
-            "replyToDisplayName" : "",
-            "starttls" : "true",
-            "auth" : "true",
-            "port" : KEYCLOAK_SMTP_PORT,
-            "host" : KEYCLOAK_SMTP_HOST,
-            "replyTo" : "",
-            "from" : KEYCLOAK_SMTP_FROM,
-            "fromDisplayName" : "",
-            "envelopeFrom" : "",
-            "ssl" : "false",
-            "user" : KEYCLOAK_SMTP_USERNAME
+            "password": self.config.keycloak_smtp_password,
+            "replyToDisplayName": "",
+            "starttls": "true",
+            "auth": "true",
+            "port": self.config.keycloak_smtp_port,
+            "host": self.config.keycloak_smtp_host,
+            "replyTo": "",
+            "from": self.config.keycloak_smtp_from,
+            "fromDisplayName": "",
+            "envelopeFrom": "",
+            "ssl": "false",
+            "user": self.config.keycloak_smtp_username,
         }
         realm_settings["smtpServer"] = options
 

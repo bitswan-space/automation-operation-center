@@ -12,6 +12,11 @@ AOC_PROTOCOL = "AOC_PROTOCOL"
 AOC_ADMIN_EMAIL = "AOC_ADMIN_EMAIL"
 AOC_ADMIN_PASSWORD = "AOC_ADMIN_PASSWORD"
 AOC_ORG_NAME = "AOC_ORG_NAME"
+KEYCLOAK_SMTP_USERNAME = "KEYCLOAK_SMTP_USERNAME"
+KEYCLOAK_SMTP_PASSWORD = "KEYCLOAK_SMTP_PASSWORD"
+KEYCLOAK_SMTP_HOST = "KEYCLOAK_SMTP_HOST"
+KEYCLOAK_SMTP_FROM = "KEYCLOAK_SMTP_FROM"
+KEYCLOAK_SMTP_PORT = "KEYCLOAK_SMTP_PORT"
 
 
 @dataclass
@@ -65,6 +70,11 @@ def collect_configurations(
     admin_email: str,
     admin_password: str,
     org_name: str,
+    keycloak_smtp_username: str,
+    keycloak_smtp_password: str,
+    keycloak_smtp_host: str,
+    keycloak_smtp_from: str,
+    keycloak_smtp_port: str,
 ):
     """
     Retrieves configuration values using CLI options, env variables, or interactive input.
@@ -116,6 +126,37 @@ def collect_configurations(
             "prompt_text": "Organization name",
             "hide_input": False,
             "default": "Example Organization",
+        },
+        "keycloak_smtp_username": {
+            "option": keycloak_smtp_username,
+            "env_var": KEYCLOAK_SMTP_USERNAME,
+            "prompt_text": "Keycloak SMTP username",
+            "hide_input": False,
+            "default": "auth.no-reply@bitswan.localhost",
+        },
+        "keycloak_smtp_password": {
+            "option": keycloak_smtp_password,
+            "env_var": KEYCLOAK_SMTP_PASSWORD,
+            "prompt_text": "Keycloak SMTP password",
+            "hide_input": True,
+        },
+        "keycloak_smtp_host": {
+            "option": keycloak_smtp_host,
+            "env_var": KEYCLOAK_SMTP_HOST,
+            "prompt_text": "Keycloak SMTP host",
+            "hide_input": False,
+        },
+        "keycloak_smtp_from": {
+            "option": keycloak_smtp_from,
+            "env_var": KEYCLOAK_SMTP_FROM,
+            "prompt_text": "Keycloak SMTP from",
+            "hide_input": False,
+        },
+        "keycloak_smtp_port": {
+            "option": keycloak_smtp_port,
+            "env_var": KEYCLOAK_SMTP_PORT,
+            "prompt_text": "Keycloak SMTP port",
+            "hide_input": False,
         },
     }
 

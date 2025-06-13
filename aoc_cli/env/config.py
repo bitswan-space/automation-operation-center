@@ -32,9 +32,15 @@ class DevSetupKind(Enum):
     LOCAL = "local"
 
 
-@dataclass
+@dataclass(kw_only=True)
 class InitConfig:
-    env: Environment
+    env: Environment  # Required — must come first
+
+    keycloak_smtp_username: str | None = None
+    keycloak_smtp_password: str | None = None
+    keycloak_smtp_host: str | None = None
+    keycloak_smtp_from: str | None = None
+    keycloak_smtp_port: str | None = None
     aoc_dir: Path = Path.home() / ".config" / "bitswan" / "aoc"
     domain: str = "bitswan.localhost"
     protocol: Protocol = Protocol.HTTP
