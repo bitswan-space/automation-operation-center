@@ -35,6 +35,11 @@ from aoc_cli.handlers.init import InitCommand
 @click.option("--aoc-be-image", type=str, help="AOC BE docker image")
 @click.option("--aoc-image", type=str, help="AOC FE docker image")
 @click.option("--profile-manager-image", type=str, help="Profile Manager docker image")
+@click.option("--keycloak-smtp-username", type=str, help="Keycloak SMTP username")
+@click.option("--keycloak-smtp-password", type=str, help="Keycloak SMTP password")
+@click.option("--keycloak-smtp-host", type=str, help="Keycloak SMTP host")
+@click.option("--keycloak-smtp-from", type=str, help="Keycloak SMTP from")
+@click.option("--keycloak-smtp-port", type=str, help="Keycloak SMTP port")
 @click.pass_context
 def init(
     ctx,
@@ -66,6 +71,11 @@ async def _init_async(
         admin_email=kwargs["admin_email"],
         admin_password=kwargs["admin_password"],
         org_name=kwargs["org_name"],
+        keycloak_smtp_username=kwargs["keycloak_smtp_username"],
+        keycloak_smtp_password=kwargs["keycloak_smtp_password"],
+        keycloak_smtp_host=kwargs["keycloak_smtp_host"],
+        keycloak_smtp_from=kwargs["keycloak_smtp_from"],
+        keycloak_smtp_port=kwargs["keycloak_smtp_port"],
     )
 
     click.echo(f"env: {configs}")
@@ -87,6 +97,11 @@ async def _init_async(
         aoc_be_image=kwargs.get("aoc_be_image"),
         aoc_image=kwargs.get("aoc_image"),
         profile_manager_image=kwargs.get("profile_manager_image"),
+        keycloak_smtp_username=kwargs.get("keycloak_smtp_username"),
+        keycloak_smtp_password=kwargs.get("keycloak_smtp_password"),
+        keycloak_smtp_host=kwargs.get("keycloak_smtp_host"),
+        keycloak_smtp_from=kwargs.get("keycloak_smtp_from"),
+        keycloak_smtp_port=kwargs.get("keycloak_smtp_port"),
     )
 
     handler = InitCommand(init_config)

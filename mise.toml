@@ -10,5 +10,6 @@ influxdb \
 emqx \
 keycloak \
 keycloak-postgres \
+mailpit \
 -d
 """

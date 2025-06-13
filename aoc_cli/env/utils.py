@@ -135,3 +135,35 @@ def marshall_env(env_dict):
         sections.append("\n".join(lines))
 
     return "\n\n".join(sections)
+
+
+def get_env_var(
+    var_name: str,
+    default: str | None = None,
+    env: Environment = Environment.DEV,
+    required_in_prod: bool = False,
+) -> str | None:
+    """
+    Get an environment variable, optionally requiring it in production.
+
+    Args:
+        var_name: Name of the environment variable.
+        default: Default value if the variable is not set.
+        env: Configured App environment
+        required_in_prod: If True, raise an error in production if var is not set.
+
+    Returns:
+        The value of the environment variable, or default if provided and applicable.
+
+    Raises:
+        RuntimeError: If required_in_prod is True and we're in production and the variable is not set.
+    """
+    value = os.getenv(var_name, default)
+    is_prod = env == Environment.PROD
+
+    if required_in_prod and is_prod and (value is None or str(value).strip() == ""):
+        raise RuntimeError(
+            f"Missing required environment variable '{var_name}' in production."
+        )
+
+    return value

@@ -9,6 +9,7 @@ volumes:
   aoc_local_emqx_data:
   aoc_local_keycloak_postgres_data: {}
   aoc_local_keycloak_postgres_data_backups: {}
+  aoc_local_mailpit_data: {}
 
 networks:
   bitswan_network:
@@ -167,3 +168,20 @@ services:
     volumes:
       - ../nextjs:/app:z
       - /app/node_modules
+
+  mailpit:
+    networks:
+      - bitswan_network
+    image: axllent/mailpit
+    container_name: mailpit
+    restart: unless-stopped
+    volumes:
+      - aoc_local_mailpit_data:/data
+    ports:
+      - 8025:8025
+      - 1025:1025
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1

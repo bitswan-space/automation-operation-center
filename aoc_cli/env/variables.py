@@ -63,7 +63,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
 
     # InfluxDB Service
     services["influxdb"] = ServiceConfig(
-        name=f"aoc-influxdb",
+        name="aoc-influxdb",
         url_pattern="influxdb.{domain}",
         port=8086,
         env_vars={
@@ -83,7 +83,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
 
     # Keycloak Service
     services["keycloak"] = ServiceConfig(
-        name=f"aoc-keycloak",
+        name="aoc-keycloak",
         url_pattern="keycloak.{domain}",
         port=8080,
         env_vars={
@@ -110,13 +110,12 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
             "KEYCLOAK_SERVER_URL": lambda cfg, svcs: svcs["keycloak"].get_url(
                 cfg, internal=True
             ),
-            "KC_HTTP_ENABLED": "true",
         },
     )
 
     # Keycloak DB
     services["keycloak_db"] = ServiceConfig(
-        name=f"aoc-keycloak-postgres",
+        name="aoc-keycloak-postgres",
         url_pattern="keycloak-db.{domain}",
         port=5432,
         env_vars={
@@ -132,7 +131,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
 
     # Bitswan Backend
     services["bitswan_backend"] = ServiceConfig(
-        name=f"aoc-bitswan-backend",
+        name="aoc-bitswan-backend",
         url_pattern="api.{domain}",
         port=5000 if env == Environment.PROD else 8000,
         env_vars={
@@ -154,7 +153,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
                 "{protocol}://aoc-nextjs:3000"
             ),
             "EMQX_EXTERNAL_URL": lambda cfg, svcs: (
-                f"aoc-emqx:8084"
+                "aoc-emqx:8084"
                 if cfg.env == Environment.DEV
                 else f"mqtt.{cfg.domain}:443"
             ),
@@ -172,7 +171,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
 
     # Bitswan Backend DB
     services["bitswan_backend_db"] = ServiceConfig(
-        name=f"aoc-bitswan-backend-postgres",
+        name="aoc-bitswan-backend-postgres",
         url_pattern="bitswan-db.{domain}",
         port=5432,
         env_vars={
@@ -199,7 +198,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
                 if cfg.env == Environment.PROD
                 else "ws://localhost:8083/mqtt"
             ),
-            "EMQX_HOST": f"aoc-emqx",
+            "EMQX_HOST": "aoc-emqx",
             "EMQX_PORT": "1883",
             "EMQX_USER": "admin",
             "EMQX_AUTHENTICATION__1__MECHANISM": "jwt",
@@ -230,10 +229,9 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
         },
     )
 
-
     # Common/other
     services["redis"] = ServiceConfig(
-        name=f"aoc-redis",
+        name="aoc-redis",
         url_pattern="redis.{domain}",
         port=6379,
         env_vars={
