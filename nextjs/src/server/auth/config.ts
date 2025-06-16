@@ -6,6 +6,8 @@ import { type DefaultSession, type NextAuthConfig } from "next-auth";
 
 import { type OAuthConfig } from "next-auth/providers";
 import { env } from "@/env.mjs";
+import { keyCloakSessionLogOut } from "@/utils/keycloak";
+import { signOut } from ".";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -69,7 +71,6 @@ type RefreshTokenResponse = {
  */
 const refreshAccessToken = async (token: JWT) => {
   try {
-    if (Date.now() > token.expires_at) throw Error;
     const details = {
       client_id: env.KEYCLOAK_CLIENT_ID,
       client_secret: env.KEYCLOAK_CLIENT_SECRET,
@@ -85,7 +86,7 @@ const refreshAccessToken = async (token: JWT) => {
     });
 
     const formData = formBody.join("&");
-    const url = `${process.env.KEYCLOAK_BASE_URL}/token`;
+    const url = env.KEYCLOAK_REFRESH_URL;
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -105,6 +106,20 @@ const refreshAccessToken = async (token: JWT) => {
         Date.now() + (refreshedTokens.refresh_expires_in - 15) * 1000,
     };
   } catch (error) {
+    console.error(error, "Error refreshing access token");
+
+    keyCloakSessionLogOut()
+      .then((_) => {
+        signOut()
+          .then((res) => console.info(res))
+          .catch((error: Error) => {
+            console.error(error, "Failed to sign out");
+          });
+      })
+      .catch((error: Error) => {
+        console.error(error, "Failed to end Keycloak session");
+      });
+
     return {
       ...token,
       error: "RefreshAccessTokenError",
