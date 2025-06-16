@@ -4,7 +4,6 @@ import React from "react";
 import { SettingTabs } from "./../../../components/settings/SettingTabs";
 import { TitleBar } from "@/components/layout/TitleBar";
 import { auth } from "@/server/auth";
-import { fetchGitopsList } from "@/server/actions/gitops";
 import { fetchOrgGroups } from "@/server/actions/groups";
 import { fetchOrgUsers } from "@/server/actions/users";
 
@@ -13,7 +12,6 @@ const SettingsPage = async () => {
 
   const groupsList = await fetchOrgGroups(session);
   const usersList = await fetchOrgUsers(session);
-  const gitopsList = await fetchGitopsList(session);
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -27,11 +25,7 @@ const SettingsPage = async () => {
           }
         >
           <CardContent className="h-full p-3">
-            <SettingTabs
-              groupsList={groupsList}
-              usersList={usersList}
-              gitopsList={gitopsList}
-            />
+            <SettingTabs groupsList={groupsList} usersList={usersList} />
           </CardContent>
         </Card>
       </div>
