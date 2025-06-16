@@ -1,7 +1,8 @@
-import { ServerCog, Settings, Ungroup, Users } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+"use client";
 
-import GitopsDisplay from "../gitops/GitopsDisplay";
+import { Settings, Ungroup, Users } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { useState } from "react";
 
 import { GroupDetailTable } from "../groups/GroupDetailTable";
 import { type OrgUsersListResponse } from "@/server/actions/users";
@@ -9,19 +10,38 @@ import React from "react";
 import { SwitchForm } from "./EditModeForm";
 import { UserDetailTable } from "../users/UserDetailTable";
 import { type UserGroupsListResponse } from "@/server/actions/groups";
-import { type GitopsListResponse } from "@/server/actions/gitops";
+import { useQueryState } from "nuqs";
 
 type SettingTabsProps = {
   groupsList?: UserGroupsListResponse;
   usersList?: OrgUsersListResponse;
-  gitopsList?: GitopsListResponse;
 };
 
+type SettingTab = "general" | "users" | "groups" | "gitops";
+
 export function SettingTabs(props: SettingTabsProps) {
-  const { groupsList, usersList, gitopsList } = props;
+  const { groupsList, usersList } = props;
+
+  const [activeTabParam, setActiveTabParam] = useQueryState("activeTab", {
+    defaultValue: "general",
+  });
+
+  const [activeTab, setActiveTab] = useState<SettingTab>(
+    activeTabParam as SettingTab,
+  );
+
+  const handleTabChange = (tab: SettingTab) => {
+    setActiveTab(tab);
+    setActiveTabParam(tab).catch((error) => {
+      console.error(error);
+    });
+  };
 
   return (
-    <Tabs defaultValue="general">
+    <Tabs
+      value={activeTab}
+      onValueChange={(value) => handleTabChange(value as SettingTab)}
+    >
       <TabsList>
         <TabsTrigger value="general">
           <Settings size={16} className="mr-2" /> General
@@ -31,9 +51,6 @@ export function SettingTabs(props: SettingTabsProps) {
         </TabsTrigger>
         <TabsTrigger value="groups">
           <Ungroup size={16} className="mr-2" /> Groups
-        </TabsTrigger>
-        <TabsTrigger value="gitops">
-          <ServerCog size={16} className="mr-2" /> Gitops
         </TabsTrigger>
       </TabsList>
       <TabsContent value="general">
@@ -50,9 +67,6 @@ export function SettingTabs(props: SettingTabsProps) {
         <div className="w-full">
           <GroupDetailTable userGroups={groupsList} />
         </div>
-      </TabsContent>
-      <TabsContent value="gitops">
-        <GitopsDisplay gitopsList={gitopsList} />
       </TabsContent>
     </Tabs>
   );
