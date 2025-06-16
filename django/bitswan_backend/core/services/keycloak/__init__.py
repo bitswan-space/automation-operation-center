@@ -79,17 +79,9 @@ class KeycloakService:
                 brief_representation=False,
             )
 
-    def validate_token(self, decrypted_token):
-        key = self.keycloak.public_key()
-
-        formatted_key = (
-            "-----BEGIN PUBLIC KEY-----\n" + key + "\n-----END PUBLIC KEY-----"
-        )
-
-        logger.info("Key: %s", key)
+    def validate_token(self, token):
         result = self.keycloak.decode_token(
-            decrypted_token,
-            key=formatted_key,
+            token,
         )
 
         logger.info("Result: %s", result)
@@ -387,8 +379,11 @@ class KeycloakService:
 
     def get_orgs(self):
         groups = self.keycloak_admin.get_groups(query={"briefRepresentation": "false"})
-        org_groups = [group for group in groups if (
+        return [
+            group
+            for group in groups
+            if (
                 "type" in group.get("attributes", {})
                 and "org" in group["attributes"]["type"]
-            )]
-        return org_groups
+            )
+        ]
