@@ -198,23 +198,24 @@ class InitCommand:
                     ),
                     None,
                 )
-                service = docker_compose["services"][service_name]
                 if latest_version:
                     click.echo(
                         f"Found latest version for {service_name}: {latest_version['name']}"
                     )
-                    service["image"] = service["image"].replace(
-                        "<slug>", latest_version["name"]
-                    )
-                    docker_compose["services"][service_name] = service
+                    self.change_version(docker_compose, service_name, latest_version['name'])
                 else:
                     click.echo(f"No latest version found for {service_name}")
-                    service["image"] = service["image"].replace("<slug>", "latest")
-                    docker_compose["services"][service_name] = service
+                    self.change_version(docker_compose, service_name, "latest")                    
 
         # Write the updated docker-compose.yml file
         with open(cwd / "docker-compose.yml", "w") as f:
             yaml.dump(docker_compose, f)
+
+    def change_version(self, docker_compose, service_name, latest_version):
+        """Helper method to change docker compose service version"""
+        image = docker_compose["services"][service_name]["image"].split(":")
+        image[-1] = latest_version
+        docker_compose["services"][service_name]["image"] = ":".join(image)
 
     def setup_keycloak(self) -> None:
         keycloak_config = KeycloakConfig(
