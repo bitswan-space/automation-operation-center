@@ -12,6 +12,6 @@ def update():
     init_command.replace_docker_compose_services_versions()
 
     subprocess.run(
-        ["docker", "compose", "docker-compose.yml", "-d"], 
+        ["docker", "compose", "-f", "docker-compose.yml", "up", "-d"],
         cwd=init_config.aoc_dir, check=True
     )
