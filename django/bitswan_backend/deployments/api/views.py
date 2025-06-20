@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.http import JsonResponse
 
 from bitswan_backend.core.authentication import KeycloakAuthentication
 from bitswan_backend.core.utils.secrets import generate_secret
@@ -53,3 +54,10 @@ class PipelineIDEStartView(KeycloakMixin, APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+def current_deployed_version(request):
+    return JsonResponse({
+        "aoc"            : "<version>", 
+        "bitswan-backend": "<version>", 
+        "profile-manager": "<version>"
+    })
