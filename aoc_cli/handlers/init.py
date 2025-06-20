@@ -172,17 +172,6 @@ class InitCommand:
             ),
         ]
 
-        if self.config.aoc_be_image:
-            docker_compose["services"]["bitswan-backend"][
-                "image"
-            ] = self.config.aoc_be_image
-        if self.config.aoc_image:
-            docker_compose["services"]["aoc"]["image"] = self.config.aoc_image
-        if self.config.profile_manager_image:
-            docker_compose["services"]["profile-manager"][
-                "image"
-            ] = self.config.profile_manager_image
-
         # Replace the services versions
         for service in services:
             service_name, url = service
@@ -206,6 +195,17 @@ class InitCommand:
                 else:
                     click.echo(f"No latest version found for {service_name}")
                     self.change_version(docker_compose, service_name, "latest")                    
+
+        if self.config.aoc_be_image:
+            docker_compose["services"]["bitswan-backend"][
+                "image"
+            ] = self.config.aoc_be_image
+        if self.config.aoc_image:
+            docker_compose["services"]["aoc"]["image"] = self.config.aoc_image
+        if self.config.profile_manager_image:
+            docker_compose["services"]["profile-manager"][
+                "image"
+            ] = self.config.profile_manager_image
 
         # Write the updated docker-compose.yml file
         with open(cwd / "docker-compose.yml", "w") as f:
