@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from django.conf import settings
 from django.shortcuts import get_object_or_404
@@ -6,6 +7,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.http import JsonResponse
+import yaml
 
 from bitswan_backend.core.authentication import KeycloakAuthentication
 from bitswan_backend.core.utils.secrets import generate_secret
@@ -56,8 +58,12 @@ class PipelineIDEStartView(KeycloakMixin, APIView):
         )
 
 def current_deployed_version(request):
+    path = Path("~/.config/bitswan/aoc/docker-compose.yml").expanduser()
+    with path.open('r') as f:
+        docker_compose = yaml.safe_load(f)
+
     return JsonResponse({
-        "aoc"            : "<version>", 
-        "bitswan-backend": "<version>", 
-        "profile-manager": "<version>"
+        "aoc"            : docker_compose["services"]["aoc"]["image"].split(":")[-1], 
+        "bitswan-backend": docker_compose["services"]["bitswan-backend"]["image"].split(":")[-1], 
+        "profile-manager": docker_compose["services"]["profile-manager"]["image"].split(":")[-1]
     })
