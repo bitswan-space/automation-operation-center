@@ -1,4 +1,5 @@
 import logging
+import os
 from pathlib import Path
 
 from django.conf import settings
@@ -58,12 +59,8 @@ class PipelineIDEStartView(KeycloakMixin, APIView):
         )
 
 def current_deployed_version(request):
-    path = Path("~/.config/bitswan/aoc/docker-compose.yml").expanduser()
-    with path.open('r') as f:
-        docker_compose = yaml.safe_load(f)
-
     return JsonResponse({
-        "aoc"            : docker_compose["services"]["aoc"]["image"].split(":")[-1], 
-        "bitswan-backend": docker_compose["services"]["bitswan-backend"]["image"].split(":")[-1], 
-        "profile-manager": docker_compose["services"]["profile-manager"]["image"].split(":")[-1]
+        "aoc"            : os.getenv("AOC"), 
+        "bitswan-backend": os.getenv("BITSWAN_BACKEND"), 
+        "profile-manager": os.getenv("PROFILE_MANAGER")
     })

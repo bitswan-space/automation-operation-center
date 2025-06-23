@@ -172,6 +172,8 @@ class InitCommand:
             ),
         ]
 
+        docker_compose["services"]["bitswan-backend"]["environment"] = {}
+
         # Replace the services versions
         for service in services:
             service_name, url = service
@@ -216,6 +218,9 @@ class InitCommand:
         image = docker_compose["services"][service_name]["image"].split(":")
         image[-1] = latest_version
         docker_compose["services"][service_name]["image"] = ":".join(image)
+
+        # Add version as env to bitswan-backend service
+        docker_compose["services"]["bitswan-backend"]["environment"][service_name.upper().replace("-", "_")] = latest_version
 
     def setup_keycloak(self) -> None:
         keycloak_config = KeycloakConfig(
