@@ -106,14 +106,19 @@ def bootstrap_bitswan_backend(
     """Bootstrap Bitswan Backend environment variables."""
     env_config = env_config or {}
 
-    POSTGRES_USER = env_config.get("BITSWAN_BACKEND_POSTGRES_USER")
-    POSTGRES_HOST = env_config.get("BITSWAN_BACKEND_POSTGRES_HOST")
-    POSTGRES_PORT = env_config.get("BITSWAN_BACKEND_POSTGRES_PORT")
-    POSTGRES_USER = env_config.get("BITSWAN_BACKEND_POSTGRES_USER")
-    POSTGRES_PASSWORD = env_config.get("BITSWAN_BACKEND_POSTGRES_PASSWORD")
-    POSTGRES_DB = env_config.get("BITSWAN_BACKEND_POSTGRES_DB")
+    # Workaround for broken env
+    if env_config.get("DATABASE_URL"):
+        DATABASE_URL = env_config.get("DATABASE_URL")
 
-    DATABASE_URL = f"postgres://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+    else:
+        POSTGRES_USER = env_config.get("BITSWAN_BACKEND_POSTGRES_USER")
+        POSTGRES_HOST = env_config.get("BITSWAN_BACKEND_POSTGRES_HOST")
+        POSTGRES_PORT = env_config.get("BITSWAN_BACKEND_POSTGRES_PORT")
+        POSTGRES_USER = env_config.get("BITSWAN_BACKEND_POSTGRES_USER")
+        POSTGRES_PASSWORD = env_config.get("BITSWAN_BACKEND_POSTGRES_PASSWORD")
+        POSTGRES_DB = env_config.get("BITSWAN_BACKEND_POSTGRES_DB")
+
+        DATABASE_URL = f"postgres://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
     env_vars = {
         "Bitswan Backend Service Configuration": {
@@ -140,6 +145,10 @@ def bootstrap_bitswan_backend(
             "EMQX_EXTERNAL_URL": env_config.get("EMQX_EXTERNAL_URL"),
             "EMQX_INTERNAL_URL": env_config.get("EMQX_INTERNAL_URL"),
             "DATABASE_URL": DATABASE_URL,
+            "AOC_VERSION": env_config.get("AOC_VERSION"),
+            "BITSWAN_BACKEND_VERSION": env_config.get("BITSWAN_BACKEND_VERSION"),
+            "PROFILE_MANAGER_VERSION": env_config.get("PROFILE_MANAGER_VERSION"),
+            "KEYCLOAK_VERSION": env_config.get("KEYCLOAK_VERSION"),
         }
     }
 
