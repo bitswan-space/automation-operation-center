@@ -7,7 +7,6 @@ import requests
 @click.command()
 @click.option("--from", "from_url", default=None, type=str, help="URL endpoint returning versions for update")
 def update(from_url):
-    click.echo(from_url)
     aoc_image=None
     aoc_be_image=None
     profile_manager_image=None
@@ -16,9 +15,13 @@ def update(from_url):
         response = requests.get(from_url)
         if response.status_code == 200:
             versions = response.json()
-            aoc_image = f"bitswan/automation-operations-centre:{versions["aoc"]}"
-            aoc_be_image = f"bitswan/bitswan-backend:{versions["bitswan-backend"]}"
-            profile_manager_image = f"bitswan/profile-manager:{versions["profile-manager"]}"
+
+            if versions.get("aoc"):
+                aoc_image = f"bitswan/automation-operations-centre:{versions["aoc"]}"
+            if versions.get("bitswan-backend"): 
+                aoc_be_image = f"bitswan/bitswan-backend:{versions["bitswan-backend"]}"
+            if versions.get("profile-manager"): 
+                profile_manager_image = f"bitswan/profile-manager:{versions["profile-manager"]}"
 
     init_config = InitConfig(
         env=Environment.PROD, 
