@@ -9,10 +9,8 @@ KEYCLOAK_DB_ENV_FILE = "keycloak-postgres.env"
 
 BITSWAN_DB_ENV_FILE = "bitswan-backend-postgres.env"
 BITSWAN_BACKEND_DOCKER_ENV_FILE = "bitswan-backend.env"
-BITSWAN_BACKEND_LOCAL_ENV_FILE = ".env"
 
 OPERATIONS_CENTRE_DOCKER_ENV_FILE = "operations-centre.env"
-OPERATIONS_CENTRE_LOCAL_ENV_FILE = ".env"
 
 EMQX_ENV_FILE = "emqx.env"
 
@@ -25,11 +23,6 @@ class Environment(Enum):
 class Protocol(Enum):
     HTTP = "http"
     HTTPS = "https"
-
-
-class DevSetupKind(Enum):
-    DOCKER = "docker"
-    LOCAL = "local"
 
 
 @dataclass(kw_only=True)
@@ -47,7 +40,6 @@ class InitConfig:
     admin_email: str = "admin@bitswan.localhost"
     admin_password: str = "admin"
     org_name: str = "Example Org"
-    dev_setup: DevSetupKind = DevSetupKind.DOCKER
     aoc_be_image: str | None = None
     aoc_image: str | None = None
 

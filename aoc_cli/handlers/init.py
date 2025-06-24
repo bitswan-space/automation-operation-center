@@ -17,7 +17,6 @@ from aoc_cli.services.caddy import CaddyService
 from aoc_cli.services.influxdb import InfluxDBService
 from aoc_cli.services.keycloak import KeycloakConfig, KeycloakService
 from aoc_cli.utils.secrets import generate_secret
-from aoc_cli.utils.tools import get_aoc_working_directory
 
 
 class InitCommand:
@@ -44,8 +43,7 @@ class InitCommand:
             )
         self.create_aoc_directory()
         self.copy_config_files()
-        if self.config.env == Environment.PROD:
-            self.replace_docker_compose_services_versions()
+        self.replace_docker_compose_services_versions()
 
         self.setup_secrets()
 
@@ -54,11 +52,10 @@ class InitCommand:
             "\n\nDo you want to setup Keycloak?", default=True, abort=False
         )
         if keycloak_confirm:
-            if self.config.env == Environment.PROD:
-                await caddy.add_proxy(
-                    f"keycloak.{self.config.domain}",
-                    "aoc-keycloak:8080",
-                )
+            await caddy.add_proxy(
+                f"keycloak.{self.config.domain}",
+                "aoc-keycloak:8080",
+            )
             self.setup_keycloak()
 
         influxdb_confirm = click.confirm(
@@ -67,48 +64,42 @@ class InitCommand:
         if influxdb_confirm:
             self.setup_influxdb()
 
-        if self.config.env == Environment.PROD:
-            await caddy.add_proxy(
-                f"aoc.{self.config.domain}",
-                "aoc:3000",
-            )
-            await caddy.add_proxy(
-                f"api.{self.config.domain}",
-                (
-                    "aoc-bitswan-backend:5000"
-                    if self.config.env == Environment.PROD
-                    else "aoc-bitswan-backend:8000"
-                ),
-            )
-            await caddy.add_proxy(
-                f"mqtt.{self.config.domain}",
-                "aoc-emqx:8083",
-            )
-            await caddy.add_proxy(
-                f"emqx.{self.config.domain}",
-                "aoc-emqx:18083",
-            )
-            caddy.restart()
-
-        aoc_working_dir = get_aoc_working_directory(
-            self.config.env, self.config.aoc_dir
+        await caddy.add_proxy(
+            f"aoc.{self.config.domain}",
+            "aoc:3000",
         )
-        click.echo("AoC initialized successfully!")
+        await caddy.add_proxy(
+            f"api.{self.config.domain}",
+            (
+                "aoc-bitswan-backend:5000"
+            ),
+        )
+        await caddy.add_proxy(
+            f"mqtt.{self.config.domain}",
+            "aoc-emqx:8083",
+        )
+        await caddy.add_proxy(
+            f"emqx.{self.config.domain}",
+            "aoc-emqx:18083",
+        )
+        caddy.restart()
 
-        if self.config.env == Environment.PROD:
-            click.echo(
-                f"You can launch the aoc by going to {aoc_working_dir} and running `docker-compose up -d`"
-            )
+        click.echo("AOC initialized successfully!")
+
+        
+        click.echo("Starting AOC")
+        # Run 'docker compose up -d'
+        subprocess.run(
+            ['docker', 'compose', 'up', '-d'],
+            check=True,
+            cwd=self.config.aoc_dir,
+        )
 
         access_message = f"""
         Access the AOC at the url {self.config.protocol.value}://aoc.{self.config.domain}"""
 
         if self.config.env == Environment.DEV:
             access_message = f"""
-        cd to {aoc_working_dir} and run:
-
-        docker compose -f ./deployment/docker-compose.{self.config.env.value}.yml up -d
-
         cd to the nextjs directory and run:
         pnpm dev
 
@@ -126,7 +117,7 @@ class InitCommand:
         template_path = (
             Path(__file__).parent.parent
             / "templates"
-            / self.config.env.value
+            / "docker-compose"
             / "docker-compose.yml"
         )
         if not template_path.exists():
@@ -146,10 +137,9 @@ class InitCommand:
 
     def replace_docker_compose_services_versions(self) -> None:
         click.echo("Finding latest versions for AOC services")
-        cwd = get_aoc_working_directory(self.config.env, self.config.aoc_dir)
 
         # Read the docker-compose.yml file using yaml
-        with open(cwd / "docker-compose.yml", "r") as f:
+        with open(self.config.aoc_dir / "docker-compose.yml", "r") as f:
             docker_compose = yaml.safe_load(f)
 
         # get latest version from Docker Hub
@@ -205,7 +195,7 @@ class InitCommand:
                     self.change_version(docker_compose, service_name, "latest")
 
         # Write the updated docker-compose.yml file
-        with open(cwd / "docker-compose.yml", "w") as f:
+        with open(self.config.aoc_dir / "docker-compose.yml", "w") as f:
             yaml.dump(docker_compose, f)
 
     def change_version(self, docker_compose, service_name, latest_version):
@@ -225,11 +215,8 @@ class InitCommand:
             aoc_dir=self.config.aoc_dir,
             org_name=self.config.org_name,
             env=self.config.env,
-            dev_setup=self.config.dev_setup,
             server_url=(
                 f"https://keycloak.{self.config.domain}"
-                if self.config.env == Environment.PROD
-                else "http://localhost:8080"
             ),
             keycloak_smtp_username=self.config.keycloak_smtp_username,
             keycloak_smtp_password=self.config.keycloak_smtp_password,
@@ -275,11 +262,7 @@ class InitCommand:
             self.config,
         )
 
-        aoc_working_dir = get_aoc_working_directory(
-            self.config.env, self.config.aoc_dir
-        )
-
-        secrets_file = aoc_working_dir / "secrets.json"
+        secrets_file = self.config.aoc_dir / "secrets.json"
         if secrets_file.exists():
             with open(secrets_file, "r") as f:
                 secrets = json.load(f)

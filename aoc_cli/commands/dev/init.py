@@ -2,7 +2,7 @@ import asyncio
 
 import click
 
-from aoc_cli.env.config import DevSetupKind, Environment, InitConfig, Protocol
+from aoc_cli.env.config import Environment, InitConfig, Protocol
 from aoc_cli.handlers.init import InitCommand
 
 
@@ -26,18 +26,11 @@ from aoc_cli.handlers.init import InitCommand
     help="Organization name",
     prompt=True,
 )
-@click.option(
-    "--dev-setup",
-    type=click.Choice(["local", "docker"]),
-    default="docker",
-    help="Development environment",
-    prompt=True,
-)
-def init(admin_email, admin_password, org_name, dev_setup) -> None:
-    asyncio.run(_init_async(admin_email, admin_password, org_name, dev_setup))
+def init(admin_email, admin_password, org_name) -> None:
+    asyncio.run(_init_async(admin_email, admin_password, org_name))
 
 
-async def _init_async(admin_email, admin_password, org_name, dev_setup) -> None:
+async def _init_async(admin_email, admin_password, org_name) -> None:
     click.echo("\n\nInitializing AoC Dev environment...")
 
     init_config = InitConfig(
@@ -47,7 +40,6 @@ async def _init_async(admin_email, admin_password, org_name, dev_setup) -> None:
         admin_email=admin_email,
         admin_password=admin_password,
         org_name=org_name,
-        dev_setup=DevSetupKind(dev_setup.lower()),
         keycloak_smtp_username="",
         keycloak_smtp_password="",
         keycloak_smtp_port="1025",

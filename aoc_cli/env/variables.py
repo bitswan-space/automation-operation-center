@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Callable, Dict, Optional, Union
 
-from aoc_cli.env.config import DevSetupKind, Environment, InitConfig
+from aoc_cli.env.config import Environment, InitConfig
 
 
 @dataclass
@@ -17,14 +17,7 @@ class ServiceConfig:
 
     def get_url(self, config: "InitConfig", internal: bool = False) -> str:
         """Generate URL for this service based on environment"""
-        if config.env == Environment.PROD:
-            return f"{config.protocol.value}://{self.url_pattern.format(domain=config.domain)}"
-        elif internal and (config.dev_setup == DevSetupKind.DOCKER):
-            # Use Docker internal networking name
-            return f"http://{self.name}:{self.port}"
-        else:
-            # Local development
-            return f"http://localhost:{self.port}"
+        return f"{config.protocol.value}://{self.url_pattern.format(domain=config.domain)}"
 
     def get_env_vars(
         self, config: "InitConfig", all_services: Dict[str, "ServiceConfig"]
@@ -40,10 +33,10 @@ class ServiceConfig:
                     protocol=config.protocol.value,
                     env_name="local" if config.env == Environment.DEV else "production",
                     use_docker=(
-                        "yes" if config.dev_setup == DevSetupKind.DOCKER else "no"
+                        "yes"
                     ),
                     read_dot_env_file=(
-                        "True" if config.dev_setup == DevSetupKind.LOCAL else "False"
+                        "False"
                     ),
                     keycloak_url=all_services.get("keycloak").get_url(
                         config, internal=True
@@ -158,9 +151,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
                 else f"mqtt.{cfg.domain}:443"
             ),
             "EMQX_INTERNAL_URL": lambda cfg, svcs: (
-                "localhost:1883"
-                if cfg.env == Environment.DEV and cfg.dev_setup == DevSetupKind.LOCAL
-                else "aoc-emqx:1883"
+                "aoc-emqx:1883"
             ),
             "WEB_CONCURRENCY": "4",
             "SENTRY_TRACES_SAMPLE_RATE": "1.0",
@@ -178,9 +169,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
             "BITSWAN_BACKEND_POSTGRES_USER": "postgres",
             "BITSWAN_BACKEND_POSTGRES_DB": "bitswan_backend",
             "BITSWAN_BACKEND_POSTGRES_HOST": lambda cfg, svcs: (
-                "localhost"
-                if cfg.env == Environment.DEV and cfg.dev_setup == DevSetupKind.LOCAL
-                else "aoc-bitswan-backend-postgres"
+                "aoc-bitswan-backend-postgres"
             ),
             "BITSWAN_BACKEND_POSTGRES_PORT": "5432",
             "BITSWAN_BACKEND_POSTGRES_PASSWORD": "postgres",

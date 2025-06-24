@@ -10,14 +10,11 @@ from influxdb_client import InfluxDBClient
 from aoc_cli.env.config import (
     INFLUXDB_ENV_FILE,
     OPERATIONS_CENTRE_DOCKER_ENV_FILE,
-    OPERATIONS_CENTRE_LOCAL_ENV_FILE,
-    DevSetupKind,
     Environment,
     InitConfig,
 )
 from aoc_cli.env.utils import get_env_path
 from aoc_cli.utils.env import get_env_value
-from aoc_cli.utils.tools import get_aoc_working_directory
 
 
 @dataclass
@@ -35,7 +32,10 @@ class InfluxDBConfig:
 class InfluxDBService:
     def __init__(self, config: InitConfig):
         """Initialize InfluxDB service"""
-        influx_db_env_path = get_env_path(config.env, INFLUXDB_ENV_FILE, aoc_dir=config.aoc_dir)
+        influx_db_env_path = get_env_path(
+            config.aoc_dir,
+            "influxdb",
+        )
         config_params = InfluxDBConfig(
             username=get_env_value(
                 influx_db_env_path,
@@ -77,18 +77,17 @@ class InfluxDBService:
     def start(self) -> None:
         """Start the InfluxDB service using docker-compose"""
         click.echo("Starting InfluxDB service...")
-        cwd = get_aoc_working_directory(self.init_config.env, self.init_config.aoc_dir)
         subprocess.run(
             [
                 "docker",
                 "compose",
                 "-f",
-                f"docker-compose.yml" if self.init_config.env == Environment.PROD else f"docker-compose.{self.init_config.env.value}.yml",
+                "docker-compose.yml"
                 "up",
                 "-d",
                 "influxdb",
             ],
-            cwd=cwd,
+            cwd=self.init_config.aoc_dir,
             check=True,
             stdout=subprocess.DEVNULL,
         )
@@ -154,16 +153,11 @@ class InfluxDBService:
     def _update_envs_with_influxdb_token(self, secret: str) -> None:
         aoc_env_file = (
             OPERATIONS_CENTRE_DOCKER_ENV_FILE
-            if self.init_config.dev_setup == DevSetupKind.DOCKER
-            else OPERATIONS_CENTRE_LOCAL_ENV_FILE
         )
 
         file_path = get_env_path(
-            self.init_config.env,
-            aoc_env_file,
-            self.init_config.dev_setup.value,
-            "aoc",
             self.init_config.aoc_dir,
+            "aoc",
         )
 
         click.echo(f"Updating {file_path}")

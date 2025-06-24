@@ -9,16 +9,12 @@ from keycloak import KeycloakAdmin, KeycloakPostError
 
 from aoc_cli.env.config import (
     BITSWAN_BACKEND_DOCKER_ENV_FILE,
-    BITSWAN_BACKEND_LOCAL_ENV_FILE,
     KEYCLOAK_ENV_FILE,
     OPERATIONS_CENTRE_DOCKER_ENV_FILE,
-    OPERATIONS_CENTRE_LOCAL_ENV_FILE,
-    DevSetupKind,
     Environment,
 )
 from aoc_cli.env.utils import get_env_path
 from aoc_cli.utils.env import get_env_value
-from aoc_cli.utils.tools import get_aoc_working_directory
 
 
 @dataclass
@@ -26,13 +22,12 @@ class KeycloakConfig:
     admin_username: str
     admin_password: str
     aoc_dir: Path
+    server_url: str
     realm_name: str = "master"
-    server_url: str = "http://localhost:8080"
     management_url: str = "http://localhost:9000"
     verify: bool = False
     org_name: str = "Example Org"
     env: Environment = Environment.DEV
-    dev_setup: DevSetupKind = DevSetupKind.DOCKER
     keycloak_smtp_username: str | None = None
     keycloak_smtp_password: str | None = None
     keycloak_smtp_host: str | None = None
@@ -67,7 +62,6 @@ class KeycloakService:
         click.echo("✓ Realm settings configured")
 
     def start_services(self) -> None:
-        cwd = get_aoc_working_directory(self.config.env, self.config.aoc_dir)
         subprocess.run(
             [
                 "docker",
@@ -75,15 +69,13 @@ class KeycloakService:
                 "-f",
                 (
                     "docker-compose.yml"
-                    if self.config.env == Environment.PROD
-                    else f"docker-compose.{self.config.env.value}.yml"
                 ),
                 "up",
                 "-d",
                 "keycloak",
                 "keycloak-postgres",
             ],
-            cwd=cwd,
+            cwd=self.config.aoc_dir,
             check=True,
             shell=False,
             stdout=subprocess.DEVNULL,
@@ -199,7 +191,8 @@ class KeycloakService:
 
     def connect(self) -> None:
         keycloak_env_path = get_env_path(
-            self.config.env, KEYCLOAK_ENV_FILE, aoc_dir=self.config.aoc_dir
+            self.config.aoc_dir,
+            "keycloak",
         )
         username = get_env_value(keycloak_env_path, "KEYCLOAK_ADMIN")
         password = get_env_value(keycloak_env_path, "KEYCLOAK_ADMIN_PASSWORD")
@@ -361,14 +354,10 @@ class KeycloakService:
     def _update_envs_with_keycloak_secret(self, secret: dict) -> None:
         aoc_env_file = (
             OPERATIONS_CENTRE_DOCKER_ENV_FILE
-            if self.config.dev_setup == DevSetupKind.DOCKER
-            else OPERATIONS_CENTRE_LOCAL_ENV_FILE
         )
 
         bitswan_backend_env_file = (
             BITSWAN_BACKEND_DOCKER_ENV_FILE
-            if self.config.dev_setup == DevSetupKind.DOCKER
-            else BITSWAN_BACKEND_LOCAL_ENV_FILE
         )
 
         env_updates = {
@@ -396,11 +385,8 @@ class KeycloakService:
                 env_file,
             ) in env_updates.items():
                 file_path = get_env_path(
-                    self.config.env,
-                    env_file=env_file,
-                    dev_setup=deployment_kind,
-                    project_name=project_name,
-                    aoc_dir=self.config.aoc_dir,
+                    self.config.aoc_dir,
+                    "keycloak",
                 )
                 click.echo(f"Updating {file_path}")
                 with open(file_path, "a") as f:
