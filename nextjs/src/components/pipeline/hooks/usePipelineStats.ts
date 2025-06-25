@@ -24,7 +24,7 @@ export const usePipelineStats = () => {
       // The error event is fired when a stream is closed by the server
       // it's part of the spec and not an actual error
       if (env.NEXT_PUBLIC_NODE_ENV === "development") {
-        console.error("EventSource failed:", error);
+        console.info("EventSource failed:", error);
       }
       eventSource.close();
     };

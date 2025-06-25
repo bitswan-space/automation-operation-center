@@ -2,11 +2,7 @@
 
 import * as React from "react";
 
-import {
-  type CreateOrUpdateOrgGroupFormActionState,
-  type UserGroup,
-  createOrUpdateOrgGroupAction,
-} from "@/server/actions/groups";
+import { type UserGroup } from "@/server/actions/groups";
 
 import { Button } from "../ui/button";
 import { HexColorPicker } from "react-colorful";
@@ -14,6 +10,9 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Loader } from "lucide-react";
 import { Textarea } from "../ui/textarea";
+import { toast } from "sonner";
+import { useAction } from "next-safe-action/hooks";
+import { createOrUpdateOrgGroupAction } from "./action";
 
 type CreateGroupFormProps = {
   group?: UserGroup;
@@ -24,13 +23,20 @@ export function CreateOrEditGroupForm(props: CreateGroupFormProps) {
 
   const tagColorInputRef = React.useRef<HTMLInputElement>(null);
 
-  const [state, formAction, isPending] = React.useActionState<
-    CreateOrUpdateOrgGroupFormActionState,
-    FormData
-  >(createOrUpdateOrgGroupAction, {});
+  const { execute, isPending, result } = useAction(
+    createOrUpdateOrgGroupAction,
+    {
+      onSuccess: ({ data }) => {
+        toast.success(data?.message ?? "Group updated successfully");
+      },
+      onError: ({ error }) => {
+        toast.error(error.serverError?.message ?? "Error updating group");
+      },
+    },
+  );
 
   const [tagColor, setTagColor] = React.useState<string>(
-    group?.tag_color ?? "aabbcc",
+    group?.tag_color ?? "#2f3b46",
   );
 
   const handleColorChange = (color: string) => {
@@ -40,10 +46,8 @@ export function CreateOrEditGroupForm(props: CreateGroupFormProps) {
     }
   };
 
-  console.log("tagColor", tagColor);
-
   return (
-    <form action={formAction}>
+    <form action={execute}>
       <input type="text" name="id" hidden defaultValue={group?.id ?? ""} />
       <div className="grid gap-4 py-4">
         <div>
@@ -53,11 +57,13 @@ export function CreateOrEditGroupForm(props: CreateGroupFormProps) {
             required
             minLength={2}
             name="name"
-            defaultValue={group?.name ?? state.data?.name ?? ""}
-            className={state.errors?.name ? "text-red-500" : ""}
+            defaultValue={group?.name ?? result.data?.data.name ?? ""}
+            className={result.validationErrors?.name ? "text-red-500" : ""}
           />
-          {state.errors?.name && (
-            <div className="text-red-500">{state.errors.name[0]}</div>
+          {result.validationErrors?.name && (
+            <div className="text-sm text-red-500">
+              {result.validationErrors.name._errors?.[0]}
+            </div>
           )}
         </div>
 
@@ -66,11 +72,17 @@ export function CreateOrEditGroupForm(props: CreateGroupFormProps) {
           <Textarea
             placeholder="Group description"
             name="description"
-            defaultValue={group?.description ?? state.data?.description ?? ""}
-            className={state.errors?.description ? "text-red-500" : ""}
+            defaultValue={
+              group?.description ?? result.data?.data.description ?? ""
+            }
+            className={
+              result.validationErrors?.description ? "text-red-500" : ""
+            }
           />
-          {state.errors?.description && (
-            <div className="text-red-500">{state.errors.description[0]}</div>
+          {result.validationErrors?.description && (
+            <div className="text-sm text-red-500">
+              {result.validationErrors.description._errors?.[0]}
+            </div>
           )}
         </div>
 
@@ -99,8 +111,10 @@ export function CreateOrEditGroupForm(props: CreateGroupFormProps) {
               {tagColor}
             </div>
           </div>
-          {state.errors?.tag_color && (
-            <div className="text-red-500">{state.errors.tag_color[0]}</div>
+          {result.validationErrors?.tag_color && (
+            <div className="text-sm text-red-500">
+              {result.validationErrors.tag_color._errors?.[0]}
+            </div>
           )}
         </div>
       </div>

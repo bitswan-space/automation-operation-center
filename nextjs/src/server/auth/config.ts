@@ -6,8 +6,6 @@ import { type DefaultSession, type NextAuthConfig } from "next-auth";
 
 import { type OAuthConfig } from "next-auth/providers";
 import { env } from "@/env.mjs";
-import { keyCloakSessionLogOut } from "@/utils/keycloak";
-import { signOut } from ".";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -25,6 +23,7 @@ declare module "next-auth" {
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
+    error?: "RefreshAccessTokenError";
   }
   interface Profile {
     group_membership?: string[];
@@ -96,7 +95,7 @@ const refreshAccessToken = async (token: JWT) => {
     });
 
     const refreshedTokens = (await response.json()) as RefreshTokenResponse;
-    if (!response.ok) throw refreshedTokens;
+    if (!response.ok) throw new Error("Failed to refresh access token");
     return {
       ...token,
       access_token: refreshedTokens.access_token,
@@ -106,19 +105,7 @@ const refreshAccessToken = async (token: JWT) => {
         Date.now() + (refreshedTokens.refresh_expires_in - 15) * 1000,
     };
   } catch (error) {
-    console.error(error, "Error refreshing access token");
-
-    keyCloakSessionLogOut()
-      .then((_) => {
-        signOut()
-          .then((res) => console.info(res))
-          .catch((error: Error) => {
-            console.error(error, "Failed to sign out");
-          });
-      })
-      .catch((error: Error) => {
-        console.error(error, "Failed to end Keycloak session");
-      });
+    console.error(error);
 
     return {
       ...token,
@@ -137,6 +124,8 @@ export const authConfig = {
     session: ({ session, token }) => ({
       ...session,
       access_token: token.access_token,
+      id_token: token.id_token,
+      error: token.error,
       user: {
         ...session.user,
         group_membership: token.group_membership ?? [],

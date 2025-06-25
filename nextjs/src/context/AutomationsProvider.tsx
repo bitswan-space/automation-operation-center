@@ -1,6 +1,6 @@
 "use client";
 
-import { PipelineTopology, PipelineWithStats, WorkspaceTopologyResponse } from "@/types";
+import { PipelineTopology, type PipelineWithStats, type WorkspaceTopologyResponse } from "@/types";
 import {
   createContext,
   useContext,
@@ -32,7 +32,6 @@ type AutomationsGroups = {
 const AutomationsContext = createContext<AutomationsGroups | null>(null);
 
 export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
-  console.log("AutomationsProvider");
   const pipelineStats = usePipelineStats();
   // Keep track of all workspaces and their pipelines
   const [workspaces, setWorkspaces] = useState<Record<string, WorkspaceGroup>>({});
@@ -90,7 +89,7 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
     // First, group workspaces by server to build the server structure
     const serverGroups = Object.values(workspaces).reduce((acc, workspace) => {
       const { automationServerId } = workspace;
-      
+
       if (!acc[automationServerId]) {
         acc[automationServerId] = {
           serverId: automationServerId,
@@ -98,14 +97,14 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
           pipelines: [],
         };
       }
-      
+
       acc[automationServerId].workspaces[workspace.workspaceId] = workspace;
       return acc;
     }, {} as Record<string, AutomationServerGroup>);
 
     // Now calculate the pipelines for each server and the total
     const allPipelines: PipelineWithStats[] = [];
-    
+
     // Update server pipelines and collect all pipelines
     Object.values(serverGroups).forEach(server => {
       // Get all pipelines for this server from its workspaces
