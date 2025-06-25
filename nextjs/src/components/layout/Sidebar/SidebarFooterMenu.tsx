@@ -14,9 +14,7 @@ import {
 
 import Link from "next/link";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
-import { handleError } from "@/utils/errors";
-import { keyCloakSessionLogOut } from "@/utils/keycloak";
-import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 type SidebarFooterMenuProps = {
   name?: string | null;
@@ -25,18 +23,10 @@ type SidebarFooterMenuProps = {
 export const SidebarFooterMenu = (props: SidebarFooterMenuProps) => {
   const { name, email } = props;
 
+  const router = useRouter();
+
   const handleSignOut = () => {
-    keyCloakSessionLogOut()
-      .then((_) => {
-        signOut()
-          .then((res) => console.info(res))
-          .catch((error: Error) => {
-            handleError(error, "Failed to sign out");
-          });
-      })
-      .catch((error: Error) => {
-        handleError(error, "Failed to end Keycloak session");
-      });
+    router.push("/api/keycloak-logout");
   };
 
   const getInitials = (name: string) => {

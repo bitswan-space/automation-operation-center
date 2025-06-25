@@ -21,23 +21,15 @@ import Link from "next/link";
 import { handleError } from "@/utils/errors";
 import { type DynamicSidebarItem } from "@/types/sidebar";
 import { env } from "@/env.mjs";
-import { keyCloakSessionLogOut } from "@/utils/keycloak";
+import { useRouter } from "next/navigation";
 
 const SideNavBar = () => {
   const [expanded, setExpanded] = React.useState<boolean>(false);
 
+  const router = useRouter();
+
   const handleSignOut = () => {
-    keyCloakSessionLogOut()
-      .then((_) => {
-        signOut({ callbackUrl: "/" })
-          .then((res) => console.info(res))
-          .catch((error: Error) => {
-            handleError(error, "Failed to sign out");
-          });
-      })
-      .catch((error: Error) => {
-        handleError(error, "Failed to end Keycloak session");
-      });
+    router.push("/api/keycloak-logout");
   };
 
   const handleExpand = () => {
@@ -193,8 +185,9 @@ export function MenuItemList(props: Readonly<MenuItemListProps>) {
   const { expanded } = props;
 
   const sideBarItems = React.useContext(SideBarContext);
-  const [activeItem, setActiveItem] =
-    React.useState<string>("Running automations");
+  const [activeItem, setActiveItem] = React.useState<string>(
+    "Running automations",
+  );
 
   const getURLFromType = (type: string, item: DynamicSidebarItem) => {
     switch (type) {
