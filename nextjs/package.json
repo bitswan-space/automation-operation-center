@@ -69,6 +69,7 @@
     "neverthrow": "^8.2.0",
     "next": "15.2.4",
     "next-auth": "5.0.0-beta.25",
+    "next-safe-action": "^8.0.4",
     "next-themes": "^0.4.4",
     "nextjs-cors": "^2.2.0",
     "nuqs": "^2.4.3",
@@ -88,7 +89,8 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "use-clipboard-copy": "^0.2.0",
-    "zod": "^3.24.1"
+    "zod": "^3.24.2",
+    "zod-form-data": "^2.0.7"
   },
   "devDependencies": {
     "@types/eslint": "^8.56.12",

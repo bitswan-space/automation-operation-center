@@ -45,35 +45,36 @@ export function useMQTTRequestResponse<ResponseT>({
     },
   );
 
-  console.log("activeMQTTProfile", activeMQTTProfile);
-
   React.useEffect(() => {
     if (activeMQTTProfile && mqttConfig) {
-      getMQTTToken(activeMQTTProfile).then(token => {
-        console.log("token", token);
-        mqttConnect(mqttConfig.url, {
-          clientId: "bitswan-poc" + Math.random().toString(16).substring(2, 8),
-          clean: true,
-          reconnectPeriod: 60,
-          connectTimeout: 30 * 1000,
-        username: activeMQTTProfile?.id ?? "",
-        password: token ?? "",
-      });
+      getMQTTToken(activeMQTTProfile)
+        .then((token) => {
+          console.log("token", token);
+          mqttConnect(mqttConfig.url, {
+            clientId:
+              "bitswan-poc" + Math.random().toString(16).substring(2, 8),
+            clean: true,
+            reconnectPeriod: 60,
+            connectTimeout: 30 * 1000,
+            username: activeMQTTProfile?.id ?? "",
+            password: token ?? "",
+          });
 
-      mqttPublish({
-        topic: requestTopic,
-        payload:
-          JSON.stringify(requestMessage) ?? JSON.stringify(defaultRequest),
-        qos: 0,
-      });
+          mqttPublish({
+            topic: requestTopic,
+            payload:
+              JSON.stringify(requestMessage) ?? JSON.stringify(defaultRequest),
+            qos: 0,
+          });
 
-      mqttSub({
-        topic: responseTopic,
-          qos: 0,
+          mqttSub({
+            topic: responseTopic,
+            qos: 0,
+          });
+        })
+        .catch((error) => {
+          console.error(error);
         });
-      }).catch(error => {
-        console.error(error);
-      });
     }
   }, [
     activeMQTTProfile,

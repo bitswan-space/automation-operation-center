@@ -31,6 +31,8 @@ export function useSidebarItemsSource() {
     },
   );
 
+  console.log("activeMQTTProfile?.nav_items", activeMQTTProfile?.nav_items);
+
   return useSerializedNavItemData(activeMQTTProfile?.nav_items ?? []);
 }
 

@@ -1,10 +1,5 @@
 "use client";
 
-import {
-  type CreateOrUpdateOrgGroupFormActionState,
-  createOrUpdateOrgGroupAction,
-} from "@/server/actions/groups";
-
 import { ACTIVE_MQTT_PROFILE_STORAGE_KEY } from "@/shared/constants";
 import { Button } from "@/components/ui/button";
 import { Label } from "../ui/label";
@@ -16,6 +11,9 @@ import useLocalStorageState from "ahooks/lib/useLocalStorageState";
 import { useSession } from "next-auth/react";
 import { useSidebar } from "../ui/sidebar";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
+import { useAction } from "next-safe-action/hooks";
+import { toast } from "sonner";
+import { createOrUpdateOrgGroupAction } from "../groups/action";
 
 export function SwitchForm() {
   const { editMode, setEditMode } = useSidebar();
@@ -31,10 +29,18 @@ export function SwitchForm() {
 
   const { data: session } = useSession();
 
-  const [, formAction, isPending] = React.useActionState<
-    CreateOrUpdateOrgGroupFormActionState,
-    FormData
-  >(createOrUpdateOrgGroupAction, {});
+  const { execute, isPending, result } = useAction(
+    createOrUpdateOrgGroupAction,
+    {
+      onSuccess: ({ data }) => {
+        toast.success(data?.message ?? "Group updated successfully");
+      },
+      onError: ({ error }) => {
+        console.error(error);
+        toast.error(error.serverError?.message ?? "Error updating group");
+      },
+    },
+  );
 
   const hasPerms = canMutateSidebarItems(session);
 
@@ -60,15 +66,27 @@ export function SwitchForm() {
           </div>
         </div>
       </div>
+      {result?.validationErrors && (
+        <div className="text-red-500">
+          {result.validationErrors._errors?.map((error) => (
+            <div key={error}>{error}</div>
+          ))}
+        </div>
+      )}
       <div className="text-end">
-        <form action={formAction}>
+        <form action={execute}>
           <input
-            name="groupId"
+            name="id"
             type="hidden"
             defaultValue={activeMQTTProfile?.group_id}
           />
           <input
-            name="navItems"
+            name="name"
+            type="hidden"
+            defaultValue={activeMQTTProfile?.name}
+          />
+          <input
+            name="nav_items"
             type="hidden"
             defaultValue={JSON.stringify(deserializedNavItems)}
           />
