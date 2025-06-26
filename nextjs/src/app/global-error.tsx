@@ -13,7 +13,7 @@ export default function GlobalError({ error }: { error: Error }) {
   return (
     <html>
       <body>
-        <div className="flex h-screen w-screen items-center justify-center">
+        <div className="flex h-screen w-screen flex-col items-center justify-center">
           <h1 className="py-2 text-2xl font-bold text-neutral-950">
             Oops, something went wrong!
           </h1>
