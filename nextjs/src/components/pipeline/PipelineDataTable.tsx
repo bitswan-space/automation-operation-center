@@ -57,7 +57,7 @@ export const columns = [
   columnHelper.accessor("properties.name", {
     header: "Name",
     cell: ({ row }) => {
-      const { properties, _key } = row.original;
+      const { properties } = row.original;
 
       return (
         <Link
@@ -70,7 +70,7 @@ export const columns = [
     },
   }),
   columnHelper.accessor("properties.endpoint-id", {
-    header: "Machine Name",
+    header: "Workspace Name",
     cell: ({ row }) => {
       const machineName = row.original.properties["endpoint-name"];
       return <div className="text-xs capitalize">{machineName}</div>;
