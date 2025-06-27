@@ -1,6 +1,5 @@
 import logging
 import os
-from pathlib import Path
 
 from django.conf import settings
 from django.shortcuts import get_object_or_404
@@ -8,7 +7,6 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.http import JsonResponse
-import yaml
 
 from bitswan_backend.core.authentication import KeycloakAuthentication
 from bitswan_backend.core.utils.secrets import generate_secret
@@ -68,8 +66,5 @@ def current_deployed_version(request):
     
     if os.getenv("PROFILE_MANAGER_VERSION"):
         versions["profile-manager"] = os.getenv("PROFILE_MANAGER_VERSION")
-
-    if os.getenv("KEYCLOAK_VERSION"):
-        versions["keycloak"] = os.getenv("KEYCLOAK_VERSION")
 
     return JsonResponse(versions)

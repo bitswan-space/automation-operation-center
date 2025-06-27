@@ -5,14 +5,13 @@ import shutil
 import subprocess
 from pathlib import Path
 from typing import Dict
-from dotenv import dotenv_values
 
 import click
 import requests
 import yaml
 
 from aoc_cli.env.config import Environment, InitConfig
-from aoc_cli.env.services import bootstrap_bitswan_backend, bootstrap_services
+from aoc_cli.env.services import bootstrap_services
 from aoc_cli.env.variables import get_var_defaults
 from aoc_cli.services.caddy import CaddyService
 from aoc_cli.services.influxdb import InfluxDBService
@@ -148,30 +147,23 @@ class InitCommand:
     def replace_docker_compose_services_versions(self) -> None:
         click.echo("Finding latest versions for AOC services")
         cwd = get_aoc_working_directory(self.config.env, self.config.aoc_dir)
-        env_config = dotenv_values(cwd /  "envs" / "bitswan-backend.env")
-
-        # Workaround for broken env
-        env_config["BITSWAN_BACKEND_KEYCLOAK_CLIENT_ID"] = env_config["KEYCLOAK_CLIENT_ID"]
-        env_config["EMQX_AUTHENTICATION__1__SECRET"] = env_config["EMQX_JWT_SECRET"]
 
         # Read the docker-compose.yml file using yaml
         with open(cwd / "docker-compose.yml", "r") as f:
             docker_compose = yaml.safe_load(f)
 
         # get latest version from Docker Hub
-        services = [
-            (
-                "keycloak",
-                "https://hub.docker.com/v2/repositories/bitswan/bitswan-keycloak/tags/",
-            )
-        ]
+        services: list[tuple[str, str]] = []
+
+        docker_compose["services"]["bitswan-backend"]["environment"] = {}
 
         # Add service only if image wasn't provided through config
         if self.config.aoc_be_image:
             docker_compose["services"]["bitswan-backend"][
                 "image"
             ] = self.config.aoc_be_image
-            env_config["BITSWAN_BACKEND_VERSION"] = self.config.aoc_be_image.split(":")[-1]
+            docker_compose["services"]["bitswan-backend"]["environment"][
+                "BITSWAN_BACKEND_VERSION"] = self.config.aoc_be_image.split(":")[-1]
         else: 
             services.append((
                 "bitswan-backend",
@@ -180,7 +172,8 @@ class InitCommand:
 
         if self.config.aoc_image:
             docker_compose["services"]["aoc"]["image"] = self.config.aoc_image
-            env_config["AOC_VERSION"] = self.config.aoc_image.split(":")[-1]
+            docker_compose["services"]["bitswan-backend"]["environment"][
+                "AOC_VERSION"] = self.config.aoc_image.split(":")[-1]
         else: 
             services.append((
                 "aoc",
@@ -191,7 +184,8 @@ class InitCommand:
             docker_compose["services"]["profile-manager"][
                 "image"
             ] = self.config.profile_manager_image
-            env_config["PROFILE_MANAGER_VERSION"] = self.config.profile_manager_image.split(":")[-1]
+            docker_compose["services"]["bitswan-backend"]["environment"][
+                "PROFILE_MANAGER_VERSION"] = self.config.profile_manager_image.split(":")[-1]
         else:
             services.append((
                 "profile-manager",
@@ -218,24 +212,23 @@ class InitCommand:
                         f"Found latest version for {service_name}: {latest_version['name']}"
                     )
                     self.change_version(docker_compose, service_name, latest_version['name'])
-                    env_config[service_name.upper().replace("-", "_") + "_VERSION"] = latest_version['name']
                 else:
                     click.echo(f"No latest version found for {service_name}")
                     self.change_version(docker_compose, service_name, "latest")
-                    env_config[service_name.upper().replace("-", "_") + "_VERSION"] = "latest"                
 
         # Write the updated docker-compose.yml file
         with open(cwd / "docker-compose.yml", "w") as f:
             yaml.dump(docker_compose, f)
-        
-        # Set/update the version environment variables 
-        bootstrap_bitswan_backend(self.config, env_config)
 
     def change_version(self, docker_compose, service_name, latest_version):
         """Helper method to change docker compose service version"""
         image = docker_compose["services"][service_name]["image"].split(":")
         image[-1] = latest_version
         docker_compose["services"][service_name]["image"] = ":".join(image)
+
+        # Add version as env to bitswan-backend service
+        docker_compose["services"]["bitswan-backend"]["environment"][
+            service_name.upper().replace("-", "_") + "_VERSION"] = latest_version
 
     def setup_keycloak(self) -> None:
         keycloak_config = KeycloakConfig(
