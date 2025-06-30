@@ -11,7 +11,7 @@ RUN yarn install && \
     npx keycloakify
 
 # Base image for Keycloak server
-FROM quay.io/keycloak/keycloak:22.0.2
+FROM quay.io/keycloak/keycloak:26.1.3
 
 # Copy the theme JAR from the build stage into the Keycloak server image
 COPY --from=builder /usr/src/app/build_keycloak/target/*keycloak-theme*.jar /opt/keycloak/providers/
