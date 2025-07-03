@@ -121,3 +121,15 @@
         @apply bg-background text-foreground;
     }
 }
+
+.kcBodyClass {
+    background-color: #262626;
+}
+
+.kcFormPasswordVisibilityButtonClass {
+    @apply border-none ml-2;
+}
+
+.kcHeaderWrapperClass {
+    @apply font-sans !text-2xl;
+}

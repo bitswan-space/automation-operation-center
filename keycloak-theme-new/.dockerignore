@@ -1,0 +1,4 @@
+node_modules
+dist
+dist_keycloak
+# DO NOT ADD .git and .gitignore

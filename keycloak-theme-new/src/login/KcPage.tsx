@@ -51,6 +51,5 @@ export default function KcPage(props: { kcContext: KcContext }) {
 
 const classes = {
     kcHtmlClass: "",
-    kcBodyClass: "dark"
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    kcBodyClass: ""
 } satisfies { [key in ClassKey]?: string };
