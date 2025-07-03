@@ -8,6 +8,8 @@ import { getKcClsx, type KcClsx } from "keycloakify/login/lib/kcClsx";
 import type { KcContext } from "../KcContext";
 import type { I18n } from "../i18n";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import logo from "./assets/bitswan-dark-sm.png";
 
 export default function Login(props: PageProps<Extract<KcContext, { pageId: "login.ftl" }>, I18n>) {
     const { kcContext, i18n, doUseDefaultCss, Template, classes } = props;
@@ -30,7 +32,18 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
             doUseDefaultCss={doUseDefaultCss}
             classes={classes}
             displayMessage={!messagesPerField.existsError("username", "password")}
-            headerNode={msg("loginAccountTitle")}
+            headerNode={
+                <div className="flex flex-col items-center justify-center">
+                    <img
+                        src={logo}
+                        alt="Logo"
+                        style={{
+                            color: "rgba(255, 255, 255, 1)"
+                        }}
+                    />
+                    <h1 className="text-2xl font-bold">{msg("loginAccountTitle")}</h1>
+                </div>
+            }
             displayInfo={realm.password && realm.registrationAllowed && !registrationDisabled}
             infoNode={
                 <div id="kc-registration-container">
@@ -97,10 +110,10 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                                               ? msg("usernameOrEmail")
                                               : msg("email")}
                                     </label>
-                                    <input
+                                    <Input
                                         tabIndex={2}
                                         id="username"
-                                        className={kcClsx("kcInputClass")}
+                                        // className={kcClsx("kcInputClass")}
                                         name="username"
                                         defaultValue={login.username ?? ""}
                                         type="text"
@@ -126,10 +139,9 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                                     {msg("password")}
                                 </label>
                                 <PasswordWrapper kcClsx={kcClsx} i18n={i18n} passwordInputId="password">
-                                    <input
+                                    <Input
                                         tabIndex={3}
                                         id="password"
-                                        className={kcClsx("kcInputClass")}
                                         name="password"
                                         type="password"
                                         autoComplete="current-password"
@@ -178,7 +190,13 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
 
                             <div id="kc-form-buttons" className={kcClsx("kcFormGroupClass")}>
                                 <input type="hidden" id="id-hidden-input" name="credentialId" value={auth.selectedCredential} />
-                                <Button tabIndex={7} name="login" type="submit" disabled={isLoginButtonDisabled} className="w-full">
+                                <Button
+                                    tabIndex={7}
+                                    name="login"
+                                    type="submit"
+                                    disabled={isLoginButtonDisabled}
+                                    className="w-full !bg-neutral-700 !text-white"
+                                >
                                     {msgStr("doLogIn")}
                                 </Button>
                             </div>

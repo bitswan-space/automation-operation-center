@@ -5,7 +5,7 @@ on:
     branches: [main]
     tags: ["v*"]
     paths:
-      - "keycloak/**"
+      - "keycloak-theme-new/**"
       - ".github/workflows/keycloak.yml"
 
 jobs:
@@ -47,7 +47,7 @@ jobs:
           UNIQUE_TAG="$IMAGE_TAG:$YEAR-${{ github.run_id }}-git-$COMMIT_HASH"
 
           # Build and tag with both staging and unique tags
-          docker build -t "$IMAGE_TAG:staging" -t "$UNIQUE_TAG" -f ./keycloak/Dockerfile ./keycloak
+          docker build -t "$IMAGE_TAG:staging" -t "$UNIQUE_TAG" -f ./keycloak-theme-new/Dockerfile ./keycloak-theme-new
 
           # Push the staging and unique tags
           docker push "$IMAGE_TAG:staging"
