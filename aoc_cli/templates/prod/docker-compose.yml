@@ -41,7 +41,7 @@ services:
       - bitswan_network
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.1.3
+    image: bitswan/bitswan-keycloak:2025-16048144305-git-cbd0bbc
     restart: always
     container_name: aoc-keycloak
     env_file:
@@ -53,7 +53,7 @@ services:
       - "9000:9000"
 
   keycloak-postgres:
-    image: bitswan/bitswan-keycloak:2025-16048144305-git-cbd0bbc
+    image: postgres:12-bullseye
     container_name: aoc-keycloak-postgres
     restart: always
     volumes:
