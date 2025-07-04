@@ -14,7 +14,7 @@ services:
   influxdb:
     image: influxdb:2.0
     restart: always
-    container_name: aoc-influxdb 
+    container_name: aoc-influxdb
     volumes:
       - influx_data:/var/lib/influxdb2
       - influx_config:/etc/influxdb2
@@ -53,7 +53,7 @@ services:
       - "9000:9000"
 
   keycloak-postgres:
-    image: postgres:12-bullseye
+    image: bitswan/bitswan-keycloak:2025-16048144305-git-cbd0bbc
     container_name: aoc-keycloak-postgres
     restart: always
     volumes:

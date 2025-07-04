@@ -46,7 +46,7 @@ services:
       - bitswan_network
 
   keycloak:
-    image: bitswan/bitswan-keycloak:<slug>
+    image: bitswan/bitswan-keycloak:2025-16048144305-git-cbd0bbc
     restart: always
     container_name: aoc-keycloak
     ports:

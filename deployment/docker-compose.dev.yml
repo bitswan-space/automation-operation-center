@@ -119,7 +119,7 @@ services:
       - ./emqx/emqx.conf:/opt/emqx/etc/emqx.conf
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.1.3
+    image: bitswan/bitswan-keycloak:2025-16048144305-git-cbd0bbc
     networks:
       - bitswan_network
     restart: always
