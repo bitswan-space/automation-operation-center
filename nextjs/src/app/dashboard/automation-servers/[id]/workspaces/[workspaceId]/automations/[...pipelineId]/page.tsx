@@ -4,7 +4,9 @@ import { getAutomationServers } from "@/data/automation-server";
 import React from "react";
 import Link from "next/link";
 
-const AutomationDetailPage = async (props: { params: { id: string, workspaceId: string, pipelineId: string[] } }) => {
+const AutomationDetailPage = async (props: {
+  params: { id: string; workspaceId: string; pipelineId: string[] };
+}) => {
   const { id, workspaceId, pipelineId } = props.params;
 
   const automationServers = await getAutomationServers();
@@ -22,21 +24,21 @@ const AutomationDetailPage = async (props: { params: { id: string, workspaceId: 
       return (
         <React.Fragment key={id}>
           <Link
-            href={`/dashboard/automation-servers/${id}`}
+            href={`/dashboard/automation-servers/${automationServer?.automation_server_id}`}
             className="underline"
           >
             {automationServer?.name}
           </Link>
           <span className="text-lg">&#x25B8;</span>
           <Link
-            href={`/dashboard/automation-servers/${id}/workspaces/${workspaceId}/`}
+            href={`/dashboard/automation-servers/${automationServer?.automation_server_id}/workspaces/${workspace?.id}/`}
             className="underline"
           >
             {workspace?.name}
           </Link>
           <span className="text-lg">&#x25B8;</span>
           <Link
-            href={`/dashboard/automation-servers/${id}/workspaces/${workspaceId}/automations/${id}`}
+            href={`/dashboard/automation-servers/${automationServer?.automation_server_id}/workspaces/${workspaceId}/automations/${workspace?.id}`}
             className="underline"
           >
             {id}
