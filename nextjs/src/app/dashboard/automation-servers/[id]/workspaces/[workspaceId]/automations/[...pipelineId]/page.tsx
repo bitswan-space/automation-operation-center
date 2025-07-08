@@ -1,10 +1,50 @@
-import React, { use } from "react";
-
 import { PipelineDetailSection } from "@/components/pipeline/PipelineDetailSection";
 import { TitleBar } from "@/components/layout/TitleBar";
+import { getAutomationServers } from "@/data/automation-server";
+import React from "react";
+import Link from "next/link";
 
-const AutomationDetailPage = (props: { params: Promise<{ id: string, workspaceId: string, pipelineId: string[] }> }) => {
-  const { id, workspaceId, pipelineId } = use(props.params);
+const AutomationDetailPage = async (props: { params: { id: string, workspaceId: string, pipelineId: string[] } }) => {
+  const { id, workspaceId, pipelineId } = props.params;
+
+  const automationServers = await getAutomationServers();
+
+  const automationServer = automationServers.results.find(
+    (server) => server.automation_server_id === id,
+  );
+
+  const workspace = automationServer?.workspaces?.find(
+    (workspace) => workspace.id === workspaceId,
+  );
+
+  const getBreadcrumbs = (pipelineIDs: string[]) => {
+    return pipelineIDs.map((id) => {
+      return (
+        <React.Fragment key={id}>
+          <Link
+            href={`/dashboard/automation-servers/${id}`}
+            className="underline"
+          >
+            {automationServer?.name}
+          </Link>
+          <span className="text-lg">&#x25B8;</span>
+          <Link
+            href={`/dashboard/automation-servers/${id}/workspaces/${workspaceId}/`}
+            className="underline"
+          >
+            {workspace?.name}
+          </Link>
+          <span className="text-lg">&#x25B8;</span>
+          <Link
+            href={`/dashboard/automation-servers/${id}/workspaces/${workspaceId}/automations/${id}`}
+            className="underline"
+          >
+            {id}
+          </Link>
+        </React.Fragment>
+      );
+    });
+  };
 
   return (
     <div className="w-full">
@@ -12,6 +52,9 @@ const AutomationDetailPage = (props: { params: Promise<{ id: string, workspaceId
         Automation
       </h1>
       <TitleBar title={"Automation"} />
+      <div className="space-x-4 py-2 text-sm font-semibold text-neutral-600">
+        {getBreadcrumbs(pipelineId ?? [])}
+      </div>
       <PipelineDetailSection
         automationServerId={id}
         workspaceId={workspaceId}
