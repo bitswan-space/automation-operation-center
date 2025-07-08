@@ -5,9 +5,9 @@ import React from "react";
 import Link from "next/link";
 
 const AutomationDetailPage = async (props: {
-  params: { id: string; workspaceId: string; pipelineId: string[] };
+  params: Promise<{ id: string; workspaceId: string; pipelineId: string[] }>;
 }) => {
-  const { id, workspaceId, pipelineId } = props.params;
+  const { id, workspaceId, pipelineId } = (await props.params);
 
   const automationServers = await getAutomationServers();
 
