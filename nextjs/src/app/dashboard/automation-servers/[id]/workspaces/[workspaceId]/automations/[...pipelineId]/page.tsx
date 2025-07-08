@@ -31,14 +31,14 @@ const AutomationDetailPage = async (props: {
           </Link>
           <span className="text-lg">&#x25B8;</span>
           <Link
-            href={`/dashboard/automation-servers/${automationServer?.automation_server_id}/workspaces/${workspace?.id}/`}
+            href={`/dashboard/automation-servers/${automationServer?.automation_server_id}/workspaces/${workspaceId}/`}
             className="underline"
           >
             {workspace?.name}
           </Link>
           <span className="text-lg">&#x25B8;</span>
           <Link
-            href={`/dashboard/automation-servers/${automationServer?.automation_server_id}/workspaces/${workspaceId}/automations/${workspace?.id}`}
+            href={`/dashboard/automation-servers/${automationServer?.automation_server_id}/workspaces/${workspaceId}/automations/${id}`}
             className="underline"
           >
             {id}
