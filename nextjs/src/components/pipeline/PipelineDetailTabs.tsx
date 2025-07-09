@@ -13,6 +13,8 @@ import {
 import { usePipelineTopology } from "./hooks/usePipelineTopology";
 import { PipelineSummary } from "./PipelineSummary";
 
+import { useRouter, usePathname } from 'next/navigation';
+
 export interface PipelineDetailTabsProps {
   pipeline?: PipelineWithStats;
   pipelineParentIDs: string[];
@@ -21,6 +23,9 @@ export interface PipelineDetailTabsProps {
 }
 
 export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+
   const { pipeline, pipelineParentIDs, automationServerId, workspaceId } = props;
 
   const { pipelineTopology } = usePipelineTopology({
@@ -32,7 +37,10 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
   const [selectedTab, setSelectedTab] = React.useState("summary");
 
   const handlePipelineTopologyClick = () => {
-    setSelectedTab("scheme");
+    if (pipelineTopology[0]?.capabilities?.includes("has-children")) {
+      router.push(`${pathname}/${pipelineTopology[0].id}`);
+    }
+    else setSelectedTab("scheme");
   };
 
   return (
