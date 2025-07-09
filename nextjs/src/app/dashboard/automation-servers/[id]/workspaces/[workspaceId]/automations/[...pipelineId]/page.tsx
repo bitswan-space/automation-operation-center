@@ -20,9 +20,10 @@ const AutomationDetailPage = async (props: {
   );
 
   const getBreadcrumbs = (pipelineIDs: string[]) => {
-    return pipelineIDs.map((id) => {
-      return (
-        <React.Fragment key={id}>
+    return pipelineIDs.map((id, index) => {
+      if (index === 0) {
+        return (
+          <React.Fragment key={id}>
           <Link
             href={`/dashboard/automation-servers/${automationServer?.automation_server_id}`}
             className="underline"
@@ -44,6 +45,19 @@ const AutomationDetailPage = async (props: {
             {id}
           </Link>
         </React.Fragment>
+        )
+      }
+
+      return (
+        <React.Fragment key={id}>
+            <span className="text-lg">&#x25B8;</span>
+            <Link
+              href={`/dashboard/automation-servers/${automationServer?.automation_server_id}/workspaces/${workspaceId}/automations/` + pipelineIDs.join("/")}
+              className="underline"
+            >
+              {id}
+            </Link>
+          </React.Fragment>
       );
     });
   };
