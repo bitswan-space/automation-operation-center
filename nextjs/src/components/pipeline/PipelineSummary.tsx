@@ -110,7 +110,8 @@ export function PipelineSummary(props: PipelineSummaryProps) {
           )}
         </CardContent>
       </Card>
-      <Card className="rounded-md">
+      { /* Hidden until AoC Monitor is set up */ }
+      {/* <Card className="rounded-md">
         <CardHeader>
           <CardTitle className="text-xl">Metrics</CardTitle>
         </CardHeader>
@@ -125,7 +126,7 @@ export function PipelineSummary(props: PipelineSummaryProps) {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 }
