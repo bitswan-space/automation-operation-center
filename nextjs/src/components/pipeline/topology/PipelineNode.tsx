@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  BarChartBig,
   Braces,
   CheckCheck,
   ChevronRight,
@@ -25,23 +24,20 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Handle, type NodeProps, Position } from "reactflow";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { JSONTree } from "react-json-tree";
+import { Handle, Position } from "@xyflow/react";
 import React, { memo } from "react";
-import clsx from "clsx";
-
 import { SiApachekafka, SiJavascript } from "react-icons/si";
 import { jsonTreeTheme, outputSampleJSON } from "@/utils/jsonTree";
-
-import { joinIDsWithDelimiter } from "@/utils/pipelineUtils";
-import { epochToFormattedTime } from "@/utils/time";
-import { useClipboard } from "use-clipboard-copy";
-import { handleError } from "@/utils/errors";
-import { useMQTTRequestResponse } from "@/shared/hooks/useMQTTRequestResponse";
 import { usePathname, useRouter } from "next/navigation";
+
+import { Button } from "@/components/ui/button";
+import { JSONTree } from "react-json-tree";
+import clsx from "clsx";
+import { epochToFormattedTime } from "@/utils/time";
+import { handleError } from "@/utils/errors";
+import { joinIDsWithDelimiter } from "@/utils/pipelineUtils";
+import { useClipboard } from "use-clipboard-copy";
+import { useMQTTRequestResponse } from "@/shared/hooks/useMQTTRequestResponse";
 
 type Section = "stats" | "properties" | "data";
 type PipelineNodeActionType =
@@ -123,9 +119,11 @@ export type NodeData = {
   capabilities: string[];
   id: string;
   properties: Record<string, unknown>;
+  width?: number;
+  height?: number;
 };
 
-export function PipelineNode({ data }: NodeProps<NodeData>) {
+export function PipelineNode({ data }: { data: NodeData }) {
   const {
     type: nodeType,
     name: nodeName,
@@ -257,20 +255,6 @@ export function PipelineNode({ data }: NodeProps<NodeData>) {
         </div>
       </CardHeader>
       <CardContent className="r-2 divide-y p-0">
-        <CollapsibleSection
-          title="Stats"
-          icon={<BarChartBig size={18} className="text-neutral-600" />}
-          expanded={state.expandedSections.includes("stats")}
-          onToggleExpanded={() => dispatch({ type: "toggleExpandStats" })}
-        >
-          <div className="space-y-1.5 text-sm">
-            <StatItem label="Input" value="234,234" />
-            <StatItem label="Output" value="234,234" />
-            <StatItem label="Topic" value="RawDataWMS" />
-            <StatItem label="Avg delay" value="0.23s" />
-            <StatItem label="Status" value={<Badge>Running</Badge>} />
-          </div>
-        </CollapsibleSection>
         <CollapsibleSection
           title="Properties"
           icon={<SlidersHorizontal size={18} className="text-neutral-600" />}

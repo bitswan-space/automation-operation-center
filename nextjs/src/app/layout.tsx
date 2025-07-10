@@ -1,6 +1,6 @@
 import ReactQueryProvider from "@/context/ReactQueryProvider";
 import "@/styles/globals.css";
-import "reactflow/dist/base.css";
+import "@xyflow/react/dist/base.css";
 
 import { GeistSans } from "geist/font/sans";
 

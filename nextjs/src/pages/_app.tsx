@@ -2,14 +2,14 @@ import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import { type AppInitialProps } from "next/app";
 import "@/styles/globals.css";
-import "reactflow/dist/base.css";
+import "@xyflow/react/dist/base.css";
 import { type ReactElement, type ReactNode } from "react";
 import { type NextComponentType, type NextPage } from "next";
 import { type AppContextType } from "next/dist/shared/lib/utils";
 
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactFlowProvider } from "reactflow";
+import { ReactFlowProvider } from "@xyflow/react";
 import React from "react";
 
 const queryClient = new QueryClient();

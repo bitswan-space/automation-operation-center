@@ -1,4 +1,5 @@
-import ReactFlow, {
+import {
+  ReactFlow,
   Background,
   Controls,
   type Node,
@@ -7,14 +8,15 @@ import ReactFlow, {
   addEdge,
   applyNodeChanges,
   type NodeChange,
-  useNodesState,
-  useEdgesState,
   SelectionMode,
   BackgroundVariant,
-} from "reactflow";
+  type OnNodesChange,
+  applyEdgeChanges,
+  type OnEdgesChange,
+} from "@xyflow/react";
 
 import React, { useCallback } from "react";
-import PipelineNode, { type NodeData } from "./PipelineNode";
+import PipelineNode from "./PipelineNode";
 
 // we define the nodeTypes outside of the component to prevent re-renderings
 // you could also use useMemo inside the component
@@ -35,35 +37,26 @@ const panOnDrag = [1, 2];
 export const PipelineTopologyDisplay = (
   props: PipelineTopologyDisplayProps,
 ) => {
-  const { initialNodes, initialEdges, pipelineParentIDs, automationServerId, workspaceId } = props;
+  const {
+    initialNodes,
+    initialEdges,
+    // pipelineParentIDs,
+    // automationServerId,
+    // workspaceId,
+  } = props;
 
-  const [initialNodesCopy, setInitialNodesCopy] = React.useState<Node[]>([]);
-  const [initialEdgesCopy, setInitialEdgesCopy] = React.useState<Edge[]>([]);
+  const [nodes, setNodes] = React.useState<Node[]>(initialNodes);
+  const [edges, setEdges] = React.useState<Edge[]>(initialEdges);
 
-  React.useEffect(() => {
-    setInitialNodesCopy(
-      initialNodes.map((node) => ({
-        ...node,
-        data: { ...node.data, parentIDs: pipelineParentIDs, automationServerId, workspaceId } as NodeData,
-      })),
-    );
-    setInitialEdgesCopy(initialEdges);
-  }, [initialNodes, initialEdges, pipelineParentIDs, automationServerId, workspaceId]);
-
-  const [nodes, setNodes] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
-  React.useEffect(() => {
-    setNodes(initialNodesCopy);
-    setEdges(initialEdgesCopy);
-  }, [setNodes, setEdges, initialNodesCopy, initialEdgesCopy]);
+  console.log("nodes", nodes);
+  console.log("edges", edges);
 
   const onConnect: OnConnect = useCallback(
-    (connection) => setEdges((eds) => addEdge(connection, eds)),
-    [setEdges],
+    (params) => setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
+    [],
   );
 
-  const onNodesChange = useCallback(
+  const onNodesChange: OnNodesChange = useCallback(
     (changes: NodeChange[]) => {
       return setNodes((nds) => {
         const newChanges: NodeChange[] = [];
@@ -101,6 +94,12 @@ export const PipelineTopologyDisplay = (
       });
     },
     [setNodes],
+  );
+
+  const onEdgesChange: OnEdgesChange = useCallback(
+    (changes) =>
+      setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
+    [],
   );
 
   return (
