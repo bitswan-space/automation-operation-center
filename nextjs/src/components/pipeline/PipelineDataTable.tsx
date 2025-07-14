@@ -108,40 +108,44 @@ export const columns = [
       return <div className="text-xs capitalize">{createdAt}</div>;
     },
   }),
-  columnHelper.display({
-    id: "pipelineStatEpsIn",
-    header: "eps.in",
-    cell: ({ row }) => {
-      const epsInStat = row.original.pipelineStat?.filter(
-        (stat) => stat._field === "eps.in",
-      );
-      const latestEpsIn = epsInStat?.[epsInStat.length - 1]?._value;
-      return (
-        <div className="text-start">
-          <EpsTinyLineChart data={row.original.pipelineStat} type="in" />
-          <div className="text-xs font-semibold">: {latestEpsIn}</div>
-        </div>
-      );
-    },
-  }),
-  columnHelper.display({
-    id: "pipelineStatEpsOut",
-    header: "eps.out",
-    cell: ({ row }) => {
-      const epsOutStat = row.original.pipelineStat?.filter(
-        (stat) => stat._field === "eps.out",
-      );
-      const latestEpsOut = epsOutStat?.[epsOutStat.length - 1]?._value;
-      return (
-        <div>
-          <EpsTinyLineChart data={row.original.pipelineStat} type="out" />
-          <div className="text-xs font-semibold" title="Latest value">
-            : {latestEpsOut}
-          </div>
-        </div>
-      );
-    },
-  }),
+
+  // COMMENTED OUT UNTIL AOC MONITOR IS SET UP
+
+  // columnHelper.display({
+  //   id: "pipelineStatEpsIn",
+  //   header: "eps.in",
+  //   cell: ({ row }) => {
+  //     const epsInStat = row.original.pipelineStat?.filter(
+  //       (stat) => stat._field === "eps.in",
+  //     );
+  //     const latestEpsIn = epsInStat?.[epsInStat.length - 1]?._value;
+  //     return (
+  //       <div className="text-start">
+  //         <EpsTinyLineChart data={row.original.pipelineStat} type="in" />
+  //         <div className="text-xs font-semibold">: {latestEpsIn}</div>
+  //       </div>
+  //     );
+  //   },
+  // }),
+  // columnHelper.display({
+  //   id: "pipelineStatEpsOut",
+  //   header: "eps.out",
+  //   cell: ({ row }) => {
+  //     const epsOutStat = row.original.pipelineStat?.filter(
+  //       (stat) => stat._field === "eps.out",
+  //     );
+  //     const latestEpsOut = epsOutStat?.[epsOutStat.length - 1]?._value;
+  //     return (
+  //       <div>
+  //         <EpsTinyLineChart data={row.original.pipelineStat} type="out" />
+  //         <div className="text-xs font-semibold" title="Latest value">
+  //           : {latestEpsOut}
+  //         </div>
+  //       </div>
+  //     );
+  //   },
+  // }),
+  
   columnHelper.accessor("properties.status", {
     header: "Uptime",
     cell: ({ row }) => {
