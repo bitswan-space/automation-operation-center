@@ -45,6 +45,7 @@ import {
   type UserGroup,
   type UserGroupsListResponse,
 } from "@/server/actions/groups";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 
 type OrgUserFull = OrgUser & { nonMemberGroups: UserGroup[] };
 
@@ -248,12 +249,10 @@ function UserActions(props: UserActionProps) {
   const hasPerms = canMutateUsers(session) && activeUserId !== id;
 
   return (
-    <form action={formAction} className="flex justify-end gap-2 px-4 text-end">
-      <input type="hidden" name="id" defaultValue={id} />
-      {hasPerms && (
+    <Dialog>
+      <DialogTrigger asChild>
         <Button
           variant={"ghost"}
-          type="submit"
           disabled={isPending || !hasPerms}
         >
           {isPending ? (
@@ -262,7 +261,30 @@ function UserActions(props: UserActionProps) {
             <Trash2 size={20} className="text-neutral-500" />
           )}
         </Button>
-      )}
-    </form>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <form action={formAction} className="flex flex-col gap-4">
+          <DialogHeader>
+            <DialogTitle>Delete user</DialogTitle>
+            <DialogDescription>
+              Do you really want to delete the user?
+            </DialogDescription>
+          </DialogHeader>
+          <input type="hidden" name="id" defaultValue={id} />
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline" type="button">Cancel</Button>
+            </DialogClose>
+            <Button variant="destructive" type="submit" disabled={isPending}>
+              {isPending ? (
+                <Loader2 size={20} className="mr-2 animate-spin" />
+              ) : (
+                "Confirm"
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
