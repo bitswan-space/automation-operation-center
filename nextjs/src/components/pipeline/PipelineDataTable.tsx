@@ -73,7 +73,7 @@ export const columns = [
     header: "Workspace Name",
     cell: ({ row }) => {
       const machineName = row.original.properties["endpoint-name"];
-      return <div className="text-xs capitalize">{machineName}</div>;
+      return <div className="text-xs">{machineName}</div>;
     },
   }),
   columnHelper.accessor("properties.state", {
