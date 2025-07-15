@@ -126,6 +126,9 @@ importers:
       '@tanstack/react-table':
         specifier: ^8.20.6
         version: 8.20.6(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@xyflow/react':
+        specifier: ^12.8.1
+        version: 12.8.1(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       ahooks:
         specifier: ^3.8.4
         version: 3.8.4(react@19.0.0)
@@ -222,9 +225,6 @@ importers:
       react-use-clipboard:
         specifier: ^1.0.9
         version: 1.0.9(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      reactflow:
-        specifier: ^11.11.4
-        version: 11.11.4(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       recharts:
         specifier: ^2.15.1
         version: 2.15.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -2153,42 +2153,6 @@ packages:
   '@react-dnd/shallowequal@4.0.2':
     resolution: {integrity: sha512-/RVXdLvJxLg4QKvMoM5WlwNR9ViO9z8B/qPcc+C0Sa/teJY7QG7kJ441DwzOjMYEY7GmU4dj5EcGHIkKZiQZCA==}
 
-  '@reactflow/background@11.3.14':
-    resolution: {integrity: sha512-Gewd7blEVT5Lh6jqrvOgd4G6Qk17eGKQfsDXgyRSqM+CTwDqRldG2LsWN4sNeno6sbqVIC2fZ+rAUBFA9ZEUDA==}
-    peerDependencies:
-      react: '>=17'
-      react-dom: '>=17'
-
-  '@reactflow/controls@11.2.14':
-    resolution: {integrity: sha512-MiJp5VldFD7FrqaBNIrQ85dxChrG6ivuZ+dcFhPQUwOK3HfYgX2RHdBua+gx+40p5Vw5It3dVNp/my4Z3jF0dw==}
-    peerDependencies:
-      react: '>=17'
-      react-dom: '>=17'
-
-  '@reactflow/core@11.11.4':
-    resolution: {integrity: sha512-H4vODklsjAq3AMq6Np4LE12i1I4Ta9PrDHuBR9GmL8uzTt2l2jh4CiQbEMpvMDcp7xi4be0hgXj+Ysodde/i7Q==}
-    peerDependencies:
-      react: '>=17'
-      react-dom: '>=17'
-
-  '@reactflow/minimap@11.7.14':
-    resolution: {integrity: sha512-mpwLKKrEAofgFJdkhwR5UQ1JYWlcAAL/ZU/bctBkuNTT1yqV+y0buoNVImsRehVYhJwffSWeSHaBR5/GJjlCSQ==}
-    peerDependencies:
-      react: '>=17'
-      react-dom: '>=17'
-
-  '@reactflow/node-resizer@2.2.14':
-    resolution: {integrity: sha512-fwqnks83jUlYr6OHcdFEedumWKChTHRGw/kbCxj0oqBd+ekfs+SIp4ddyNU0pdx96JIm5iNFS0oNrmEiJbbSaA==}
-    peerDependencies:
-      react: '>=17'
-      react-dom: '>=17'
-
-  '@reactflow/node-toolbar@1.3.14':
-    resolution: {integrity: sha512-rbynXQnH/xFNu4P9H+hVqlEUafDCkEoCy0Dg9mG22Sg+rY/0ck6KkrAQrYrTgXusd+cEJOMK0uOOFCK2/5rSGQ==}
-    peerDependencies:
-      react: '>=17'
-      react-dom: '>=17'
-
   '@rollup/plugin-commonjs@28.0.1':
     resolution: {integrity: sha512-+tNWdlWKbpB3WgBN7ijjYkq9X5uhjmcvyjEght4NmH5fAU++zfQzAJ6wumLS+dNcvwEZhKx2Z+skY8m7v0wGSA==}
     engines: {node: '>=16.0.0 || 14 >= 14.17'}
@@ -2758,6 +2722,15 @@ packages:
 
   '@xtuc/long@4.2.2':
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
+
+  '@xyflow/react@12.8.1':
+    resolution: {integrity: sha512-t5Rame4Gc/540VcOZd28yFe9Xd8lyjKUX+VTiyb1x4ykNXZH5zyDmsu+lj9je2O/jGBVb0pj1Vjcxrxyn+Xk2g==}
+    peerDependencies:
+      react: '>=17'
+      react-dom: '>=17'
+
+  '@xyflow/system@0.0.65':
+    resolution: {integrity: sha512-AliQPQeurQMoNlOdySnRoDQl9yDSA/1Lqi47Eo0m98lHcfrTdD9jK75H0tiGj+0qRC10SKNUXyMkT0KL0opg4g==}
 
   abort-controller@3.0.0:
     resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
@@ -5076,12 +5049,6 @@ packages:
     resolution: {integrity: sha512-V8AVnmPIICiWpGfm6GLzCR/W5FXLchHop40W4nXBmdlEceh16rCN8O8LNWm5bh5XUX91fh7KpA+W0TgMKmgTpQ==}
     engines: {node: '>=0.10.0'}
 
-  reactflow@11.11.4:
-    resolution: {integrity: sha512-70FOtJkUWH3BAOsN+LU9lCrKoKbtOPnz2uq0CV2PLdNSwxTXOhCbsZr50GmZ+Rtw3jx8Uv7/vBFtCGixLfd4Og==}
-    peerDependencies:
-      react: '>=17'
-      react-dom: '>=17'
-
   read-cache@1.0.0:
     resolution: {integrity: sha512-Owdv/Ft7IjOgm/i0xvNDZ1LrRANRfew4b2prF3OWMQLxLfu3bS8FVhCsrSCMK4lR56Y9ya+AThoTpDCTxCmpRA==}
 
@@ -5586,8 +5553,8 @@ packages:
       '@types/react':
         optional: true
 
-  use-sync-external-store@1.4.0:
-    resolution: {integrity: sha512-9WXSPC5fMv61vaupRkCKCxsPxBocVnwakBEkMIHHpkTTg6icbJtg6jzgtLDm4bl3cSHAca52rYWih0k4K3PfHw==}
+  use-sync-external-store@1.5.0:
+    resolution: {integrity: sha512-Rb46I4cGGVBmjamjphe8L/UnvJD+uPPtTkNvX5mZgqdbavhI4EbgIWJiIHXJ8bc/i9EQGPRh4DwEURJ552Do0A==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -5742,8 +5709,8 @@ packages:
   zod@3.25.67:
     resolution: {integrity: sha512-idA2YXwpCdqUSKRCACDE6ItZD9TZzy3OZMtpfLoh6oPR47lipysRrJfjzMqFxQ3uJuUPyUeWe1r9vLH33xO/Qw==}
 
-  zustand@4.5.6:
-    resolution: {integrity: sha512-ibr/n1hBzLLj5Y+yUcU7dYw8p6WnIVzdJbnX+1YpaScvZVF2ziugqHs+LAmHw4lWO9c/zRj+K1ncgWDQuthEdQ==}
+  zustand@4.5.7:
+    resolution: {integrity: sha512-CHOUy7mu3lbD6o6LJLfllpjkzhHXSBlX8B9+qPddUsIfeF5S/UZ5q0kmCsnRqT1UHFQZchNFDDzMbQsuesHWlw==}
     engines: {node: '>=12.7.0'}
     peerDependencies:
       '@types/react': 19.0.8
@@ -7508,84 +7475,6 @@ snapshots:
 
   '@react-dnd/shallowequal@4.0.2': {}
 
-  '@reactflow/background@11.3.14(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      '@reactflow/core': 11.11.4(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      classcat: 5.0.5
-      react: 19.0.0
-      react-dom: 19.0.0(react@19.0.0)
-      zustand: 4.5.6(@types/react@19.0.8)(react@19.0.0)
-    transitivePeerDependencies:
-      - '@types/react'
-      - immer
-
-  '@reactflow/controls@11.2.14(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      '@reactflow/core': 11.11.4(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      classcat: 5.0.5
-      react: 19.0.0
-      react-dom: 19.0.0(react@19.0.0)
-      zustand: 4.5.6(@types/react@19.0.8)(react@19.0.0)
-    transitivePeerDependencies:
-      - '@types/react'
-      - immer
-
-  '@reactflow/core@11.11.4(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      '@types/d3': 7.4.3
-      '@types/d3-drag': 3.0.7
-      '@types/d3-selection': 3.0.11
-      '@types/d3-zoom': 3.0.8
-      classcat: 5.0.5
-      d3-drag: 3.0.0
-      d3-selection: 3.0.0
-      d3-zoom: 3.0.0
-      react: 19.0.0
-      react-dom: 19.0.0(react@19.0.0)
-      zustand: 4.5.6(@types/react@19.0.8)(react@19.0.0)
-    transitivePeerDependencies:
-      - '@types/react'
-      - immer
-
-  '@reactflow/minimap@11.7.14(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      '@reactflow/core': 11.11.4(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      '@types/d3-selection': 3.0.11
-      '@types/d3-zoom': 3.0.8
-      classcat: 5.0.5
-      d3-selection: 3.0.0
-      d3-zoom: 3.0.0
-      react: 19.0.0
-      react-dom: 19.0.0(react@19.0.0)
-      zustand: 4.5.6(@types/react@19.0.8)(react@19.0.0)
-    transitivePeerDependencies:
-      - '@types/react'
-      - immer
-
-  '@reactflow/node-resizer@2.2.14(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      '@reactflow/core': 11.11.4(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      classcat: 5.0.5
-      d3-drag: 3.0.0
-      d3-selection: 3.0.0
-      react: 19.0.0
-      react-dom: 19.0.0(react@19.0.0)
-      zustand: 4.5.6(@types/react@19.0.8)(react@19.0.0)
-    transitivePeerDependencies:
-      - '@types/react'
-      - immer
-
-  '@reactflow/node-toolbar@1.3.14(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      '@reactflow/core': 11.11.4(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      classcat: 5.0.5
-      react: 19.0.0
-      react-dom: 19.0.0(react@19.0.0)
-      zustand: 4.5.6(@types/react@19.0.8)(react@19.0.0)
-    transitivePeerDependencies:
-      - '@types/react'
-      - immer
-
   '@rollup/plugin-commonjs@28.0.1(rollup@3.29.5)':
     dependencies:
       '@rollup/pluginutils': 5.1.4(rollup@3.29.5)
@@ -8271,6 +8160,29 @@ snapshots:
   '@xtuc/ieee754@1.2.0': {}
 
   '@xtuc/long@4.2.2': {}
+
+  '@xyflow/react@12.8.1(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@xyflow/system': 0.0.65
+      classcat: 5.0.5
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+      zustand: 4.5.7(@types/react@19.0.8)(react@19.0.0)
+    transitivePeerDependencies:
+      - '@types/react'
+      - immer
+
+  '@xyflow/system@0.0.65':
+    dependencies:
+      '@types/d3-drag': 3.0.7
+      '@types/d3-interpolate': 3.0.4
+      '@types/d3-selection': 3.0.11
+      '@types/d3-transition': 3.0.9
+      '@types/d3-zoom': 3.0.8
+      d3-drag: 3.0.0
+      d3-interpolate: 3.0.1
+      d3-selection: 3.0.0
+      d3-zoom: 3.0.0
 
   abort-controller@3.0.0:
     dependencies:
@@ -10680,20 +10592,6 @@ snapshots:
 
   react@19.0.0: {}
 
-  reactflow@11.11.4(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
-    dependencies:
-      '@reactflow/background': 11.3.14(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      '@reactflow/controls': 11.2.14(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      '@reactflow/core': 11.11.4(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      '@reactflow/minimap': 11.7.14(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      '@reactflow/node-resizer': 2.2.14(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      '@reactflow/node-toolbar': 1.3.14(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      react: 19.0.0
-      react-dom: 19.0.0(react@19.0.0)
-    transitivePeerDependencies:
-      - '@types/react'
-      - immer
-
   read-cache@1.0.0:
     dependencies:
       pify: 2.3.0
@@ -11296,7 +11194,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.0.8
 
-  use-sync-external-store@1.4.0(react@19.0.0):
+  use-sync-external-store@1.5.0(react@19.0.0):
     dependencies:
       react: 19.0.0
 
@@ -11488,9 +11386,9 @@ snapshots:
 
   zod@3.25.67: {}
 
-  zustand@4.5.6(@types/react@19.0.8)(react@19.0.0):
+  zustand@4.5.7(@types/react@19.0.8)(react@19.0.0):
     dependencies:
-      use-sync-external-store: 1.4.0(react@19.0.0)
+      use-sync-external-store: 1.5.0(react@19.0.0)
     optionalDependencies:
       '@types/react': 19.0.8
       react: 19.0.0

@@ -10,7 +10,7 @@ export type MQTTProfile = {
   id: string;
   name: string;
   group_id: string;
-  isAdmin: string;
+  is_admin: string;
   nav_items: RawNavItem[];
 };
 export type MQTTProfileListResponse = {
@@ -48,7 +48,9 @@ export const fetchMQTTProfiles = async (session: Session | null) => {
     };
   }
 
-  const data = (await res.json()) as MQTTProfileListResponse;
+  const jsonData = (await res.json()) as unknown;
+  console.log("jsonData", jsonData);
+  const data = jsonData as MQTTProfileListResponse;
 
   return data;
 };

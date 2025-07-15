@@ -1,7 +1,13 @@
-import { type Edge } from "reactflow";
+import { type Edge, type Node } from "@xyflow/react";
 import { type PipelineNode } from "@/types";
+import { type NodeData } from "@/components/pipeline/topology/PipelineNode";
 
-export const transformTopologyToFlowNodes = (topology: PipelineNode[]) => {
+export const transformTopologyToFlowNodes = (
+  topology: PipelineNode[],
+  parentIDs: string[] = [],
+  automationServerId = "",
+  workspaceId = "",
+): Node[] => {
   // Define the initial Y position and the spacing between nodes
   // Assumption here is that the nodes are always ordered by their index
   // The second assumption is that they're always in a single column
@@ -21,8 +27,11 @@ export const transformTopologyToFlowNodes = (topology: PipelineNode[]) => {
         id: node.id,
         capabilities: node.capabilities,
         properties: node.properties,
-      },
-    };
+        parentIDs,
+        automationServerId,
+        workspaceId,
+      } as NodeData,
+    } as Node;
   });
 };
 

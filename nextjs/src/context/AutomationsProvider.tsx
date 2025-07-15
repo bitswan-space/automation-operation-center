@@ -127,12 +127,9 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
 };
 
 export const useAutomations = () => {
-  console.log("useAutomations");
   const context = useContext(AutomationsContext);
   if (!context) {
-    throw new Error(
-      "useAutomations must be used within a AutomationsProvider",
-    );
+    throw new Error("useAutomations must be used within a AutomationsProvider");
   }
   return context;
 };
