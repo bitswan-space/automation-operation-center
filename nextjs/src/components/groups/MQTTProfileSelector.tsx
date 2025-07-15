@@ -67,11 +67,11 @@ export default function MQTTProfileSelector(props: MQTTProfileSelectorProps) {
       <SelectContent className="bg-neutral-100">
         <SelectGroup>
           <SelectLabel>
-            <div>MQTT profiles</div>
+            <div>Groups</div>
             {mqttProfiles?.results?.length === 0 && (
               <div className="mt-2 flex h-16 flex-col items-center justify-center gap-2 rounded border border-dashed">
                 <div className="text-center text-sm font-normal text-neutral-500">
-                  No mqtt profiles found
+                  No groups found
                 </div>
               </div>
             )}
