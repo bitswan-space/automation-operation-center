@@ -40,6 +40,8 @@ export const env = createEnv({
 
     // Bitswan Backend
     BITSWAN_BACKEND_API_URL: z.string().url(),
+
+    AOC_BUILD_NO: z.string().min(1).optional(),
   },
 
   /**
@@ -61,6 +63,8 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     AUTH_SECRET: process.env.AUTH_SECRET,
     AUTH_URL: process.env.AUTH_URL,
+
+    AOC_BUILD_NO: process.env.AOC_BUILD_NO,
 
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
 
