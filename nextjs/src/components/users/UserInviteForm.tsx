@@ -1,29 +1,27 @@
 import * as React from "react";
 
-import {
-  type UserInviteFormActionState,
-  inviteUserAction,
-} from "@/server/actions/users";
-
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Loader } from "lucide-react";
+import { inviteUserAction } from "./actions";
+import { toast } from "sonner";
+import { useAction } from "next-safe-action/hooks";
 
 export function UserInviteForm({}) {
-  const [state, formAction, isPending] = React.useActionState<
-    UserInviteFormActionState,
-    FormData
-  >(inviteUserAction, {});
   const [inputValue, setInputValue] = React.useState("");
 
-  React.useEffect(() => {
-    if (state?.status === "success") {
+  const { execute, isPending, result } = useAction(inviteUserAction, {
+    onSuccess: () => {
       setInputValue("");
-    }
-  }, [state]);
+      toast.success("User invited");
+    },
+    onError: ({ error }) => {
+      toast.error(error.serverError?.message ?? "Error inviting user");
+    },
+  });
 
   return (
-    <form action={formAction}>
+    <form action={execute}>
       <div className="flex items-center gap-4 py-4">
         <Input
           placeholder="Team member email "
@@ -45,8 +43,10 @@ export function UserInviteForm({}) {
           )}
         </Button>
       </div>
-      {state?.errors?.email && (
-        <p className="mb-1 text-xs text-red-400">{state.errors.email[0]}</p>
+      {result?.validationErrors?.email && (
+        <p className="mb-1 text-xs text-red-400">
+          {result?.validationErrors?.email._errors?.[0]}
+        </p>
       )}
     </form>
   );

@@ -1,10 +1,9 @@
 import logging
 import os
-from profile import Profile
-import uuid
 
 from core.pagination import DefaultPagination
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework import views
 from rest_framework import viewsets
@@ -15,6 +14,7 @@ from rest_framework.response import Response
 from bitswan_backend.core.authentication import KeycloakAuthentication
 from bitswan_backend.core.viewmixins import KeycloakMixin
 from bitswan_backend.workspaces.api.serializers import AutomationServerSerializer
+from bitswan_backend.workspaces.api.serializers import CreateAutomationServerSerializer
 from bitswan_backend.workspaces.api.serializers import WorkspaceSerializer
 from bitswan_backend.workspaces.api.services import create_token
 from bitswan_backend.workspaces.models import AutomationServer
@@ -34,14 +34,8 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
     authentication_classes = [KeycloakAuthentication]
 
     def get_queryset(self):
-        org_id = self.get_active_user_org_id()
+        org_id = self.get_org_id()
         return Workspace.objects.filter(keycloak_org_id=org_id).order_by("-updated_at")
-
-    def perform_create(self, serializer):
-        serializer.save(keycloak_org_id=self.get_active_user_org_id())
-
-    def perform_update(self, serializer):
-        serializer.save(keycloak_org_id=self.get_active_user_org_id())
 
     @action(
         detail=True,
@@ -50,9 +44,10 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
         permission_classes=[CanReadWorkspaceEMQXJWT],
     )
     def emqx_jwt(self, request, pk=None):
-        workspace = self.get_object()
+        workspace = get_object_or_404(Workspace, pk=pk)
 
-        org_id = self.get_active_user_org_id()
+        L.info(f"Getting emqx jwt for workspace in: {workspace}")
+        org_id = str(workspace.keycloak_org_id)
 
         mountpoint = (
             f"/orgs/{org_id}/"
@@ -84,7 +79,7 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
     def pipeline_jwt(self, request, pk=None, deployment_id=None):
         workspace = self.get_object()
 
-        org_id = self.get_active_user_org_id()
+        org_id = workspace.keycloak_org_id
 
         mountpoint = (
             f"/orgs/{org_id}/"
@@ -115,10 +110,22 @@ class AutomationServerViewSet(KeycloakMixin, viewsets.ModelViewSet):
     authentication_classes = [KeycloakAuthentication]
 
     def get_queryset(self):
-        org_id = self.get_active_user_org_id()
+        org_id = self.get_org_id()
         return AutomationServer.objects.filter(keycloak_org_id=org_id).order_by(
             "-updated_at",
         )
+
+    def create(self, request):
+        serializer = CreateAutomationServerSerializer(
+            data=request.data,
+            context={"view": self, "request": request},
+        )
+
+        if serializer.is_valid():
+            group = serializer.save()
+            return Response(group, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=["get"], url_path="token")
     def get_token(self, request):
@@ -133,7 +140,7 @@ class AutomationServerViewSet(KeycloakMixin, viewsets.ModelViewSet):
     )
     def emqx_jwt(self, request, pk=None):
         workspace = self.get_object()
-        org_id = self.get_active_user_org_id()
+        org_id = workspace.keycloak_org_id
 
         mountpoint = (
             f"/orgs/{org_id}/"
@@ -162,9 +169,9 @@ class GetProfileEmqxJWTAPIView(KeycloakMixin, views.APIView):
     permission_classes = [CanReadProfileEMQXJWT]
 
     def get(self, request, profile_id):
-        org_id = self.get_active_user_org_id()
+        org_id = self.get_org_id()
         is_admin = self.is_admin(request)
-        
+
         profile_id = f"{org_id}_group_{profile_id}{'_admin' if is_admin else ''}"
 
         mountpoint = f"/orgs/{org_id}/profiles/{profile_id}"
@@ -213,42 +220,19 @@ class RegisterCLIAPIView(KeycloakMixin, views.APIView):
 
     def get(self, request):
         device_code = request.query_params.get("device_code")
-        server_name = request.query_params.get("server_name")
-        if not device_code or not server_name:
+        if not device_code:
             return Response(
-                {"error": "Device code and server name are required."},
+                {"error": "Device code is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         device_registration = self.poll_device_registration(device_code)
         if "error" in device_registration:
             return Response(
                 device_registration,
-                status=device_registration["status_code"],
+                status=device_registration.get("status_code"),
             )
-        if "access_token" in device_registration:
-            # Check if the automation server with same server name already exists
-            # in the same org
-            org_id = self.get_user_org_id(device_registration["access_token"])
-            automation_server = AutomationServer.objects.filter(
-                name=server_name,
-                keycloak_org_id=org_id,
-            ).first()
-            if automation_server:
-                return Response(
-                    {"error": "Automation server already exists."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            automation_server = AutomationServer.objects.create(
-                name=server_name,
-                automation_server_id=uuid.uuid4(),
-                keycloak_org_id=org_id,
-            )
-            device_registration[
-                "automation_server_id"
-            ] = automation_server.automation_server_id
-            return Response(device_registration, status=status.HTTP_200_OK)
 
         return Response(
             device_registration,
-            status=device_registration["status_code"],
+            status=device_registration.get("status_code"),
         )

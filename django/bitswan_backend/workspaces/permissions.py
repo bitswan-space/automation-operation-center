@@ -1,10 +1,12 @@
 import logging
 
+from django.shortcuts import get_object_or_404
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.permissions import BasePermission
 
 from bitswan_backend.core.services.keycloak import KeycloakService
 from bitswan_backend.workspaces.models import AutomationServer
+from bitswan_backend.workspaces.models import Workspace
 
 L = logging.getLogger("workspaces.permissions")
 
@@ -17,11 +19,19 @@ class CanReadOrgEMQXJWT(BasePermission):
     keycloak = KeycloakService()
 
     def has_permission(self, request, view):
-        org_id = self.keycloak.get_active_user_org(request).get("id")
-        workspace = view.get_object()
+        user_orgs = self.keycloak.get_active_user_orgs(request)
+        workspace = get_object_or_404(Workspace, pk=view.kwargs.get("pk"))
+
+        user_is_org_member = False
+        for org in user_orgs:
+            if org.get("id") == workspace.keycloak_org_id:
+                user_is_org_member = True
+                break
+
+        L.info(f"User is org member: {user_is_org_member}")
 
         return (
-            workspace.keycloak_org_id == org_id
+            user_is_org_member
             and request.user.is_active
             and request.user.is_authenticated
             and request.method in SAFE_METHODS

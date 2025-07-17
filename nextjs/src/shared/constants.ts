@@ -4,3 +4,4 @@ export const MQTT_CONFIG_QUERY_KEY = "mqtt-config";
 export const MQTT_PROFILE_QUERY_KEY = "mqtt-profile";
 
 export const ACTIVE_MQTT_PROFILE_STORAGE_KEY = "active-mqtt-profile";
+export const ACTIVE_ORG_COOKIE_NAME = "aoc-active-org";

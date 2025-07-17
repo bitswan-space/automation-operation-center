@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { type UserGroup } from "@/server/actions/groups";
+import { type UserGroup } from "@/data/groups";
 
 import { Button } from "../ui/button";
 import { HexColorPicker } from "react-colorful";

@@ -2,11 +2,7 @@
 
 import * as React from "react";
 
-import {
-  type AddMemberToGroupFormActionState,
-  type UserGroup,
-  addMemberToGroupAction,
-} from "@/server/actions/groups";
+import { type UserGroup } from "@/data/groups";
 import {
   Command,
   CommandEmpty,
@@ -26,6 +22,9 @@ import { Badge } from "../ui/badge";
 import { canMutateUsers } from "@/lib/permissions";
 import { useSession } from "next-auth/react";
 import { Button } from "../ui/button";
+import { useAction } from "next-safe-action/hooks";
+import { addUserToGroupAction } from "./action";
+import { toast } from "sonner";
 
 type GroupComboBoxSelectorProps = {
   groups?: UserGroup[];
@@ -104,19 +103,18 @@ type AddMemberButtonProps = {
 const AddMemberButton = (props: AddMemberButtonProps) => {
   const { group, userId, value, className, onSuccess } = props;
 
-  const [state, formAction, isPending] = React.useActionState<
-    AddMemberToGroupFormActionState,
-    FormData
-  >(addMemberToGroupAction, {});
-
-  React.useEffect(() => {
-    if (state.status === "success") {
+  const { execute, isPending } = useAction(addUserToGroupAction, {
+    onSuccess: () => {
       onSuccess?.();
-    }
-  }, [isPending]);
+      toast.success("User added to group");
+    },
+    onError: ({ error }) => {
+      toast.error(error.serverError?.message ?? "Error adding user to group");
+    },
+  });
 
   return (
-    <form action={formAction}>
+    <form action={execute}>
       <input type="hidden" name="userId" defaultValue={userId} />
       <input type="hidden" name="groupId" defaultValue={group.id} />
       <Button className={className} variant={"ghost"}>

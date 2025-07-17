@@ -34,12 +34,10 @@ import { Separator } from "../ui/separator";
 import { useSession } from "next-auth/react";
 import { canMutateGroups } from "@/lib/permissions";
 
-import {
-  deleteOrgGroupAction,
-  type DeleteOrgGroupFormActionState,
-  type UserGroup,
-  type UserGroupsListResponse,
-} from "@/server/actions/groups";
+import { type UserGroup, type UserGroupsListResponse } from "@/data/groups";
+import { toast } from "sonner";
+import { useAction } from "next-safe-action/hooks";
+import { deleteOrgGroupAction } from "./action";
 
 const columnHelper = createColumnHelper<UserGroup>();
 
@@ -221,10 +219,14 @@ function GroupActions(props: GroupActionProps) {
   const { data: session } = useSession();
   const hasPerms = canMutateGroups(session);
 
-  const [, formAction, isPending] = React.useActionState<
-    DeleteOrgGroupFormActionState,
-    FormData
-  >(deleteOrgGroupAction, {});
+  const { execute, isPending } = useAction(deleteOrgGroupAction, {
+    onSuccess: () => {
+      toast.success("Group deleted");
+    },
+    onError: ({ error }) => {
+      toast.error(error.serverError?.message ?? "Error deleting group");
+    },
+  });
 
   return (
     hasPerms && (
@@ -238,7 +240,7 @@ function GroupActions(props: GroupActionProps) {
           group={group}
         />
         <Separator orientation="vertical" className="h-8 w-px" />
-        <form action={formAction}>
+        <form action={execute}>
           <Button variant={"ghost"} disabled={isPending || !hasPerms}>
             <input type="hidden" name="id" defaultValue={id} />
             {isPending ? (

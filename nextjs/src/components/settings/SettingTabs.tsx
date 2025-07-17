@@ -5,12 +5,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { useState } from "react";
 
 import { GroupDetailTable } from "../groups/GroupDetailTable";
-import { type OrgUsersListResponse } from "@/server/actions/users";
+
 import React from "react";
 import { SwitchForm } from "./EditModeForm";
 import { UserDetailTable } from "../users/UserDetailTable";
-import { type UserGroupsListResponse } from "@/server/actions/groups";
+import { type UserGroupsListResponse } from "@/data/groups";
 import { useQueryState } from "nuqs";
+import { type OrgUsersListResponse } from "@/data/users";
 
 type SettingTabsProps = {
   groupsList?: UserGroupsListResponse;

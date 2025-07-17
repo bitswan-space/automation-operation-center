@@ -21,6 +21,7 @@ import { formatRelative } from "date-fns";
 import { PipelineDataCardList } from "../pipeline/PipelineDataCardList";
 import { PipelineDataTable } from "../pipeline/PipelineDataTable";
 import { useAutomations } from "@/context/AutomationsProvider";
+import { useRouter } from "next/navigation";
 
 type AutomationServerDetailSectionProps = {
   server?: AutomationServer;
@@ -30,11 +31,18 @@ export function AutomationServerDetailSection(
   props: AutomationServerDetailSectionProps,
 ) {
   const { server } = props;
-  server!.is_connected = true;
 
+  const router = useRouter();
   const { automationServers } = useAutomations();
 
-  const automationServerPipelines = automationServers[server?.automation_server_id ?? ""];
+  if (!server) {
+    router.push("/dashboard/automation-servers");
+  } else {
+    server.is_connected = true;
+  }
+
+  const automationServerPipelines =
+    automationServers[server?.automation_server_id ?? ""];
 
   return (
     <div className="container mx-auto flex-1 px-0 py-4">
@@ -63,7 +71,10 @@ export function AutomationServerDetailSection(
                     {(server?.workspaces?.length ?? 0) > 1 && "s"}
                   </span>
                   <span>•</span>
-                  <span>{automationServerPipelines?.pipelines.length ?? 0} automations</span>
+                  <span>
+                    {automationServerPipelines?.pipelines.length ?? 0}{" "}
+                    automations
+                  </span>
                 </div>
               </div>
             </div>
@@ -122,7 +133,10 @@ export function AutomationServerDetailSection(
                             <ArrowUpRight className="h-4 w-4" />
                           </Link>
                         </TableCell>
-                        <TableCell className="text-center">{automationServerPipelines?.workspaces[workspace.id]?.pipelines.length ?? 0}</TableCell>
+                        <TableCell className="text-center">
+                          {automationServerPipelines?.workspaces[workspace.id]
+                            ?.pipelines.length ?? 0}
+                        </TableCell>
                         <TableCell className="text-right font-medium">
                           {formatRelative(
                             new Date(workspace.created_at),
@@ -148,7 +162,9 @@ export function AutomationServerDetailSection(
         </TabsContent>
 
         <TabsContent value="automations">
-          <PipelineDataCardList pipelines={automationServerPipelines?.pipelines ?? []} />
+          <PipelineDataCardList
+            pipelines={automationServerPipelines?.pipelines ?? []}
+          />
           <div className="hidden py-4 lg:block">
             <Card
               className={
@@ -156,7 +172,9 @@ export function AutomationServerDetailSection(
               }
             >
               <CardContent className="p-3">
-                <PipelineDataTable pipelines={automationServerPipelines?.pipelines ?? []} />
+                <PipelineDataTable
+                  pipelines={automationServerPipelines?.pipelines ?? []}
+                />
               </CardContent>
             </Card>
           </div>

@@ -1,4 +1,5 @@
 import { authenticatedBitswanBackendInstance } from "@/server/bitswan-backend";
+import { getActiveOrgFromCookies } from "./organisations";
 
 type AutomationServerListResponse = {
   count: number;
@@ -30,6 +31,14 @@ export type AutomationServer = {
 export async function getAutomationServers() {
   const bitswanBEInstance = await authenticatedBitswanBackendInstance();
 
-  const res = await bitswanBEInstance.get("/automation-servers");
+  const activeOrg = await getActiveOrgFromCookies();
+
+  const res = await bitswanBEInstance.get("/automation-servers", {
+    headers: {
+      "X-Org-Id": activeOrg?.id ?? "",
+      "X-Org-Name": activeOrg?.name ?? "",
+    },
+  });
+
   return res.data as AutomationServerListResponse;
 }
