@@ -2,7 +2,7 @@
 
 import { GroupComboBoxSelector } from "../groups/GroupComboBoxSelector";
 import React from "react";
-import { type UserGroup } from "@/server/actions/groups";
+import { type UserGroup } from "@/data/groups";
 import { UserGroupBadge } from "./UserGroupBadge";
 import { canMutateUsers } from "@/lib/permissions";
 import { useSession } from "next-auth/react";

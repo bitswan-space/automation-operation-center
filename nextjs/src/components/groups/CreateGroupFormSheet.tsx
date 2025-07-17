@@ -9,7 +9,7 @@ import {
 
 import { CreateOrEditGroupForm } from "./CreateOrEditGroupForm";
 import React from "react";
-import { type UserGroup } from "@/server/actions/groups";
+import { type UserGroup } from "@/data/groups";
 
 type CreateGroupFormSheetProps = {
   trigger: React.ReactNode;

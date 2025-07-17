@@ -1,6 +1,7 @@
 import logging
 
 from django.template.defaultfilters import slugify
+from rest_framework.exceptions import PermissionDenied
 
 from bitswan_backend.core.services.keycloak import KeycloakService
 
@@ -24,6 +25,13 @@ class KeycloakMixin:
 
         return org_id
 
+    def get_active_user(self):
+        """
+        Helper method to get the Keycloak user
+        """
+
+        return self.keycloak.get_active_user(self.request)
+
     def get_active_user_org_name_slug(self):
         """
         Helper method to get the Keycloak group name slug
@@ -42,20 +50,20 @@ class KeycloakMixin:
         """
         Helper method to get the Keycloak group ID
         """
-
-        org_id = self.keycloak.get_active_user_org(self.request).get("id")
+        org_id = self.get_org_id()
 
         org_groups = self.keycloak.get_org_groups(org_id=org_id)
         logger.info("Got user org sub groups: %s", org_groups)
 
         return org_groups
 
-    def create_org_group(self, name, attributes):
+    def create_org_group(self, name, attributes, org_id=None):
         """
         Helper method to create a new Keycloak group
         """
 
-        org_id = self.keycloak.get_active_user_org(self.request).get("id")
+        if org_id is None:
+            org_id = self.keycloak.get_active_user_org(self.request).get("id")
 
         org_group = self.keycloak.create_group(
             org_id=org_id,
@@ -104,7 +112,7 @@ class KeycloakMixin:
         Helper method to get the Keycloak group ID
         """
 
-        org_id = self.keycloak.get_active_user_org(self.request).get("id")
+        org_id = self.get_org_id()
 
         return self.keycloak.get_org_users(org_id=org_id)
 
@@ -127,8 +135,7 @@ class KeycloakMixin:
         Helper method to invite a user to the org
         """
 
-        org = self.keycloak.get_active_user_org(self.request)
-        org_id = org.get("id")
+        org_id = self.get_org_id()
 
         self.keycloak.invite_user_to_org(email=email, org_id=org_id)
 
@@ -136,6 +143,8 @@ class KeycloakMixin:
         """
         Helper method to delete a user
         """
+
+        # FIXME: this will delete a user from any org
         self.keycloak.delete_user(user_id=user_id)
 
     def get_org_group_mqtt_profiles(self):
@@ -143,7 +152,9 @@ class KeycloakMixin:
         Helper method to get the Keycloak group ID
         """
 
-        return self.keycloak.get_org_group_mqtt_profiles(self.request)
+        org_id = self.get_org_id()
+
+        return self.keycloak.get_org_group_mqtt_profiles(self.request, org_id)
 
     def start_device_registration(self):
         """
@@ -151,7 +162,7 @@ class KeycloakMixin:
         """
 
         return self.keycloak.start_device_registration()
-    
+
     def get_user_org_id(self, token):
         """
         Helper method to get the user org ID
@@ -172,7 +183,7 @@ class KeycloakMixin:
         """
 
         return self.keycloak.confirm_device_registration(device_code)
-    
+
     def get_token_from_token(self, request):
         """
         Helper method to get a token from a token
@@ -185,3 +196,42 @@ class KeycloakMixin:
         Helper method to check if the user is an admin
         """
         return self.keycloak.is_admin(request)
+
+    def get_active_user_orgs(self):
+        """
+        Helper method to get the active user orgs
+        """
+
+        return self.keycloak.get_active_user_orgs(self.request)
+
+    def create_org(self, name, attributes):
+        """
+        Helper method to create an org
+        """
+
+        return self.keycloak.create_org(name, attributes)
+
+    def get_org_id(self):
+        """
+        Helper method to get the org ID
+        """
+
+        org_id = self.request.headers.get("X-Org-Id")
+        org_name = self.request.headers.get("X-Org-Name")
+        if not org_id or not org_name:
+            msg = (
+                "Missing X-Org-Id header" if not org_id else "Missing X-Org-Name header"
+            )
+            raise PermissionDenied(msg)
+
+        user_info = self.keycloak.get_claims(self.request)
+
+        user_org_memberships = user_info.get("group_membership")
+
+        for group in user_org_memberships:
+            if group == f"/{org_name}":
+                org = self.keycloak.get_org_by_id(org_id)
+                if org.get("name") == org_name:
+                    return org.get("id")
+
+        raise PermissionDenied("User is not a member of the org")

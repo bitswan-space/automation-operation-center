@@ -36,17 +36,22 @@ import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { canMutateUsers } from "@/lib/permissions";
 import { UserInviteForm } from "./UserInviteForm";
+
+import { type UserGroup, type UserGroupsListResponse } from "@/data/groups";
 import {
-  deleteUserAction,
-  type DeleteUserActionState,
-  type OrgUser,
-  type OrgUsersListResponse,
-} from "@/server/actions/users";
-import {
-  type UserGroup,
-  type UserGroupsListResponse,
-} from "@/server/actions/groups";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import { type OrgUser, type OrgUsersListResponse } from "@/data/users";
+import { toast } from "sonner";
+import { useAction } from "next-safe-action/hooks";
+import { deleteUserAction } from "./actions";
 
 type OrgUserFull = OrgUser & { nonMemberGroups: UserGroup[] };
 
@@ -247,10 +252,15 @@ function UserActions(props: UserActionProps) {
 
   const [open, setOpen] = React.useState(false);
 
-  const [state, formAction, isPending] = React.useActionState<
-    DeleteUserActionState,
-    FormData
-  >(deleteUserAction, {});
+  const { execute, isPending } = useAction(deleteUserAction, {
+    onSuccess: () => {
+      setOpen(false);
+      toast.success("User deleted");
+    },
+    onError: ({ error }) => {
+      toast.error(error.serverError?.message ?? "Error deleting user");
+    },
+  });
 
   const { data: session } = useSession();
 
@@ -258,20 +268,10 @@ function UserActions(props: UserActionProps) {
 
   const hasPerms = canMutateUsers(session) && activeUserId !== id;
 
-  // Close dialog after submit completes
-  React.useEffect(() => {
-    if (!isPending && state.status === "success") {
-      setOpen(false);
-    }
-  }, [isPending, state]);
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant={"ghost"}
-          disabled={isPending || !hasPerms}
-        >
+        <Button variant={"ghost"} disabled={isPending || !hasPerms}>
           {isPending ? (
             <Loader2 size={20} className="mr-2 animate-spin" />
           ) : (
@@ -280,7 +280,7 @@ function UserActions(props: UserActionProps) {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
-        <form action={formAction} className="flex flex-col gap-4">
+        <form action={execute} className="flex flex-col gap-4">
           <DialogHeader>
             <DialogTitle>Delete user</DialogTitle>
             <DialogDescription>
@@ -290,7 +290,9 @@ function UserActions(props: UserActionProps) {
           <input type="hidden" name="id" defaultValue={id} />
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline" type="button">Cancel</Button>
+              <Button variant="outline" type="button">
+                Cancel
+              </Button>
             </DialogClose>
             <Button variant="destructive" type="submit" disabled={isPending}>
               {isPending ? (

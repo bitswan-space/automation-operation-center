@@ -10,8 +10,10 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from bitswan_backend.brokers.api.serializers import CreateOrgSerializer
 from bitswan_backend.brokers.api.serializers import CreateUserGroupSerializer
 from bitswan_backend.brokers.api.serializers import MqttProfileSerializer
+from bitswan_backend.brokers.api.serializers import OrgSerializer
 from bitswan_backend.brokers.api.serializers import OrgUserSerializeer
 from bitswan_backend.brokers.api.serializers import UpdateUserGroupSerializer
 from bitswan_backend.brokers.api.serializers import UserGroupSerializer
@@ -49,16 +51,16 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
 
         if serializer.is_valid():
             group = serializer.save()
-            org_id = self.get_active_user_org_id()
+            org_id = self.get_org_id()
             self.mqtt_service.publish_org_profiles(org_id)
             return Response(group, status=status.HTTP_201_CREATED)
-        
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, pk=None):
         try:
             self.delete_org_group(group_id=pk)
-            org_id = self.get_active_user_org_id()
+            org_id = self.get_org_id()
             self.mqtt_service.publish_org_profiles(org_id)
             return Response(status=status.HTTP_204_NO_CONTENT)
         except KeycloakDeleteError as e:
@@ -191,3 +193,36 @@ class OrgUsersViewSet(KeycloakMixin, viewsets.ViewSet):
                 {"error": json.loads(e.error_message).get("errorMessage")},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+
+class OrgViewSet(KeycloakMixin, viewsets.ViewSet):
+    pagination_class = DefaultPagination
+    mqtt_service = MQTTService()
+
+    def list(self, request):
+        try:
+            orgs = self.get_active_user_orgs()
+            paginator = self.pagination_class()
+            paginated_orgs = paginator.paginate_queryset(orgs, request)
+            serializer = OrgSerializer(paginated_orgs, many=True)
+            return paginator.get_paginated_response(serializer.data)
+        except KeycloakGetError as e:
+            e.add_note("Error while getting orgs.")
+            return Response(
+                {"error": json.loads(e.error_message).get("errorMessage")},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    def create(self, request):
+
+        serializer = CreateOrgSerializer(
+            data=request.data,
+            context={"view": self},
+        )
+
+        if serializer.is_valid():
+            group = serializer.save()
+            self.mqtt_service.publish_org_profiles(group.get("id"))
+            return Response(group, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

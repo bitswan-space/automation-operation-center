@@ -1,61 +1,19 @@
 "use server";
 
 import { AppError } from "@/lib/errors";
-import { BITSWAN_BACKEND_API_URL } from "@/server/actions/shared";
 import { CreateOrUpdateOrgGroupFormDataSchema } from "./schema";
-import { NavItem } from "../layout/Sidebar/utils/NavItems";
-import { auth } from "@/server/auth";
+import { type NavItem } from "../layout/Sidebar/utils/NavItems";
 import { authenticatedActionClient } from "@/lib/safe-action";
 import { revalidatePath } from "next/cache";
-
-const createOrgGroup = async (userGroup: {
-  name: string;
-  description?: string;
-  tag_color?: string;
-  nav_items?: string;
-}) => {
-  console.log("createOrgGroup", userGroup);
-
-  const session = await auth();
-
-  const apiToken = session?.access_token;
-
-  return fetch(`${BITSWAN_BACKEND_API_URL}/user-groups/`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      ...userGroup,
-    }),
-  });
-};
-
-const updateOrgGroup = async (userGroup: {
-  id: string;
-  name?: string;
-  description?: string;
-  tag_color?: string;
-  nav_items?: NavItem[];
-}) => {
-  console.log("updateOrgGroup", userGroup);
-
-  const session = await auth();
-
-  const apiToken = session?.access_token;
-
-  return fetch(`${BITSWAN_BACKEND_API_URL}/user-groups/${userGroup.id}/`, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${apiToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      ...userGroup,
-    }),
-  });
-};
+import { z } from "zod";
+import {
+  addUserToGroup,
+  deleteOrgGroup,
+  removeUserFromGroup,
+  updateOrgGroup,
+  createOrgGroup,
+} from "@/data/groups";
+import { zfd } from "zod-form-data";
 
 export const createOrUpdateOrgGroupAction = authenticatedActionClient
   .metadata({
@@ -77,13 +35,10 @@ export const createOrUpdateOrgGroupAction = authenticatedActionClient
           tag_color,
           nav_items: navItems,
         });
-        console.log("update org group res:", await res.text());
-
-        if (!res.ok) {
-          const errorText = await res.text();
+        if (res.status === "error") {
           throw new AppError({
             name: "UpdateGroupError",
-            message: `Error updating group: ${errorText}`,
+            message: `Error updating group`,
             code: "UPDATE_GROUP_ERROR",
           });
         }
@@ -107,9 +62,7 @@ export const createOrUpdateOrgGroupAction = authenticatedActionClient
         tag_color,
         nav_items,
       });
-      const errorText = await res.text();
-      console.error("create org group res:", errorText);
-      if (!res.ok) {
+      if (res.status === "error") {
         throw new AppError({
           name: "CreateGroupError",
           message: "Error creating group",
@@ -130,3 +83,83 @@ export const createOrUpdateOrgGroupAction = authenticatedActionClient
       };
     },
   );
+
+export const deleteOrgGroupAction = authenticatedActionClient
+  .metadata({
+    actionName: "deleteOrgGroupAction",
+  })
+  .inputSchema(
+    zfd.formData({
+      id: z.string(),
+    }),
+  )
+  .action(async ({ parsedInput: { id } }) => {
+    const res = await deleteOrgGroup(id);
+    if (res.status === "error") {
+      throw new AppError({
+        name: "DeleteGroupError",
+        message: "Error deleting group",
+        code: "DELETE_GROUP_ERROR",
+      });
+    }
+
+    revalidatePath("/dashboard/settings");
+    return {
+      message: "Group deleted",
+      status: "success",
+    };
+  });
+
+export const addUserToGroupAction = authenticatedActionClient
+  .metadata({
+    actionName: "addUserToGroupAction",
+  })
+  .inputSchema(
+    zfd.formData({
+      userId: z.string(),
+      groupId: z.string(),
+    }),
+  )
+  .action(async ({ parsedInput: { userId, groupId } }) => {
+    const res = await addUserToGroup(userId, groupId);
+    if (res.status === "error") {
+      throw new AppError({
+        name: "AddUserToGroupError",
+        message: "Error adding user to group",
+        code: "ADD_USER_TO_GROUP_ERROR",
+      });
+    }
+
+    revalidatePath("/dashboard/settings");
+    return {
+      message: "User added to group",
+      status: "success",
+    };
+  });
+
+export const removeUserFromGroupAction = authenticatedActionClient
+  .metadata({
+    actionName: "removeUserFromGroupAction",
+  })
+  .inputSchema(
+    zfd.formData({
+      userId: z.string(),
+      groupId: z.string(),
+    }),
+  )
+  .action(async ({ parsedInput: { userId, groupId } }) => {
+    const res = await removeUserFromGroup(userId, groupId);
+    if (res.status === "error") {
+      throw new AppError({
+        name: "RemoveUserFromGroupError",
+        message: "Error removing user from group",
+        code: "REMOVE_USER_FROM_GROUP_ERROR",
+      });
+    }
+
+    revalidatePath("/dashboard/settings");
+    return {
+      message: "User removed from group",
+      status: "success",
+    };
+  });

@@ -3,23 +3,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import React from "react";
 import { SettingTabs } from "./../../../components/settings/SettingTabs";
 import { TitleBar } from "@/components/layout/TitleBar";
-import { auth } from "@/server/auth";
-import { fetchOrgGroups } from "@/server/actions/groups";
-import { fetchOrgUsers } from "@/server/actions/users";
+import { fetchOrgGroups } from "@/data/groups";
+import { fetchOrgUsers } from "@/data/users";
 
-type SettingsPageProps = {
-  searchParams: Promise<{
-    page?: number;
-  }>;
-};
-
-const SettingsPage = async (props: SettingsPageProps) => {
-  const { page } = (await props.searchParams);
-
-  const session = await auth();
-
-  const groupsList = await fetchOrgGroups(session);
-  const usersList = await fetchOrgUsers(session, page);
+const SettingsPage = async () => {
+  const groupsList = await fetchOrgGroups();
+  const usersList = await fetchOrgUsers();
 
   return (
     <div className="flex w-full flex-col gap-4">

@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework.routers import SimpleRouter
 
 from bitswan_backend.brokers.api.views import OrgUsersViewSet
+from bitswan_backend.brokers.api.views import OrgViewSet
 from bitswan_backend.brokers.api.views import UserGroupViewSet
 from bitswan_backend.dashboard_hub.api.views import DashboardEntryViewSet
 from bitswan_backend.deployments.urls import urlpatterns as deployments_urlpatterns
@@ -19,6 +20,7 @@ router.register("users", UserViewSet)
 router.register("gitops", GitopsViewSet, basename="gitops")
 router.register("user-groups", UserGroupViewSet, basename="user-groups")
 router.register("org-users", OrgUsersViewSet, basename="org-users")
+router.register("orgs", OrgViewSet, basename="orgs")
 router.register(
     "dashboard-entries",
     DashboardEntryViewSet,

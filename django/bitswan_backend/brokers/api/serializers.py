@@ -20,6 +20,62 @@ class MqttProfileSerializer(serializers.Serializer):
     group_id = serializers.CharField(required=True)
 
 
+class OrgSerializer(serializers.Serializer):
+    id = serializers.CharField(required=True)
+    name = serializers.CharField(required=True)
+
+
+class CreateOrgSerializer(serializers.Serializer):
+    name = serializers.CharField(required=True)
+
+    def create(self, validated_data):
+        logger.info("Creating new Org instance.")
+
+        view = self.context["view"]
+
+        try:
+            keycloak_org_id = view.create_org(
+                name=validated_data.get("name"),
+                attributes={
+                    "type": ["org"],
+                },
+            )
+
+            logger.info("Created new Org instance: %s", keycloak_org_id)
+
+            # Create admin group for the org
+            admin_group_id = view.create_org_group(
+                name="admin",
+                org_id=keycloak_org_id,
+                attributes={
+                    "tag_color": ["#2f3b46"],
+                },
+            )
+
+            view.add_user_to_group(
+                group_id=keycloak_org_id,
+                user_id=view.get_active_user(),
+            )
+
+            view.add_user_to_group(
+                group_id=admin_group_id,
+                user_id=view.get_active_user(),
+            )
+
+            org = {
+                "id": keycloak_org_id,
+                "name": validated_data.get("name"),
+            }
+
+        except KeycloakPostError as e:
+            e.add_note("Error while creating new Org.")
+            raise exceptions.APIException(
+                detail={"error": json.loads(e.error_message).get("errorMessage")},
+            ) from e
+
+        return org
+
+
 class UserGroupSerializer(serializers.Serializer):
     id = serializers.UUIDField(required=True)
     name = serializers.CharField(required=True)

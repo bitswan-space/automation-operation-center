@@ -3,15 +3,14 @@
 import * as React from "react";
 
 import { Loader2, X } from "lucide-react";
-import {
-  type RemoveMemberFromGroupFormActionState,
-  type UserGroup,
-  removeMemberFromGroupAction,
-} from "@/server/actions/groups";
+import { type UserGroup } from "@/data/groups";
 
 import { Badge } from "../ui/badge";
 import { canMutateUsers } from "@/lib/permissions";
 import { useSession } from "next-auth/react";
+import { useAction } from "next-safe-action/hooks";
+import { toast } from "sonner";
+import { removeUserFromGroupAction } from "../groups/action";
 
 type UserGroupBadgeProps = {
   group: UserGroup;
@@ -23,10 +22,16 @@ export function UserGroupBadge(props: UserGroupBadgeProps) {
 
   const { data: session } = useSession();
 
-  const [, formAction, isPending] = React.useActionState<
-    RemoveMemberFromGroupFormActionState,
-    FormData
-  >(removeMemberFromGroupAction, {});
+  const { execute, isPending } = useAction(removeUserFromGroupAction, {
+    onSuccess: () => {
+      toast.success("User removed from group");
+    },
+    onError: ({ error }) => {
+      toast.error(
+        error.serverError?.message ?? "Error removing user from group",
+      );
+    },
+  });
 
   const hasPerms = canMutateUsers(session);
 
@@ -42,7 +47,7 @@ export function UserGroupBadge(props: UserGroupBadgeProps) {
     >
       <span>{group.name}</span>
       {hasPerms && (
-        <form action={formAction}>
+        <form action={execute}>
           <input
             type="hidden"
             name="userId"
