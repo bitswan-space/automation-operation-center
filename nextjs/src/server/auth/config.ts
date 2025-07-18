@@ -46,6 +46,7 @@ declare module "next-auth/jwt" {
     refresh_expires_in: number;
     refresh_expires_at: number;
     provider?: string;
+    id: string;
   }
 }
 
@@ -129,13 +130,14 @@ export const authConfig = {
       user: {
         ...session.user,
         group_membership: token.group_membership ?? [],
-        id: token.sub,
+        id: token.id,
       },
     }),
     jwt: ({ token, user, account, profile }) => {
       // Initial sign in
       if (account && user) {
         // Add access_token, refresh_token and expirations to the token right after signin
+        token.id = account.providerAccountId
         token.id_token = account.id_token ?? "";
         token.access_token = account.access_token ?? "";
         token.refresh_token = account.refresh_token ?? "";
