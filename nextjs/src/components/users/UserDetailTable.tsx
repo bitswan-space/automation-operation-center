@@ -237,7 +237,9 @@ type UserActionProps = {
 function UserActions(props: UserActionProps) {
   const { id } = props;
 
-  const [, formAction, isPending] = React.useActionState<
+  const [open, setOpen] = React.useState(false);
+
+  const [state, formAction, isPending] = React.useActionState<
     DeleteUserActionState,
     FormData
   >(deleteUserAction, {});
@@ -248,8 +250,15 @@ function UserActions(props: UserActionProps) {
 
   const hasPerms = canMutateUsers(session) && activeUserId !== id;
 
+  // Close dialog after submit completes
+  React.useEffect(() => {
+    if (!isPending && state.status === "success") {
+      setOpen(false);
+    }
+  }, [isPending, state]);
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           variant={"ghost"}
