@@ -1,4 +1,4 @@
-import { ChevronDownIcon, ChevronRight, FileCog } from "lucide-react";
+import { ArrowDownNarrowWide, ArrowDownUp, ArrowDownWideNarrow, ChevronDownIcon, ChevronRight, FileCog, Filter } from "lucide-react";
 import {
   type ColumnFiltersState,
   type ExpandedState,
@@ -31,6 +31,8 @@ import { type PipelineStat, type PipelineWithStats } from "@/types";
 
 import { Area, AreaChart, XAxis } from "recharts";
 import Link from "next/link";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 const columnHelper = createColumnHelper<PipelineWithStats>();
 
@@ -69,7 +71,7 @@ export const columns = [
       );
     },
   }),
-  columnHelper.accessor("properties.endpoint-id", {
+  columnHelper.accessor("properties.endpoint-name", {
     header: "Workspace Name",
     cell: ({ row }) => {
       const machineName = row.original.properties["endpoint-name"];
@@ -196,6 +198,17 @@ type PipelineDataTableProps = {
 export function PipelineDataTable(props: PipelineDataTableProps) {
   const data = React.useMemo(() => props.pipelines, [props.pipelines]);
 
+  // Get unique workspace IDs for the filter dropdown
+  const workspaceIds = React.useMemo(
+    () =>
+      Array.from(
+        new Set(
+          data.map((row) => row.properties["endpoint-name"]).filter(Boolean)
+        )
+      ),
+    [data]
+  );
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -227,6 +240,8 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
     },
   });
 
+  const isSortable = ["properties_name", "properties_endpoint-name", "properties_created-at", "properties_status"]
+
   return (
     <div className="w-full">
       <div className="flex items-center pb-4">
@@ -254,10 +269,88 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
                     <TableHead key={header.id} className="font-semibold">
                       {header.isPlaceholder
                         ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
+                        : (
+                            <span className="inline-flex items-center gap-2">
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
+                              {isSortable.includes(header.id) ? (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={header.column.getToggleSortingHandler()}
+                                  className="focus:outline-none p-0 h-6 w-6"
+                                >
+                                  {header.column.getIsSorted() === "asc" ? (
+                                    <ArrowDownNarrowWide size={16} />
+                                  ) : header.column.getIsSorted() === "desc" ? (
+                                    <ArrowDownWideNarrow size={16} />
+                                  ) : (
+                                    <ArrowDownUp size={16} />
+                                  )}
+                                </Button>
+                              ) : null}
+
+                              {header.id === "properties_endpoint-name" ? (
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="p-0 h-6 w-6">
+                                      <Filter size={16} />
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-48 p-2">
+                                    <div className="flex flex-col gap-1">
+                                      <Button
+                                        variant={((table.getColumn(header.id)?.getFilterValue()) ?? "all") === "all" ? "secondary" : "ghost"}
+                                        size="sm"
+                                        className="justify-start"
+                                        onClick={() =>
+                                          table.getColumn(header.id)?.setFilterValue(undefined)
+                                        }
+                                      >
+                                        All Workspaces
+                                      </Button>
+                                      {workspaceIds.map((ws) => (
+                                        <Button
+                                          key={ws}
+                                          variant={(table.getColumn(header.id)?.getFilterValue()) === ws ? "secondary" : "ghost"}
+                                          size="sm"
+                                          className="justify-start"
+                                          onClick={() =>
+                                            table.getColumn(header.id)?.setFilterValue(ws)
+                                          }
+                                        >
+                                          {ws}
+                                        </Button>
+                                      ))}
+                                    </div>
+                                  </PopoverContent>
+                                </Popover>
+                              ) : null}
+
+                              {header.id === "properties_state" ? (
+                                <Select
+                                  value={
+                                    (table.getColumn(header.id)?.getFilterValue() as string) || "all"
+                                  }
+                                  onValueChange={value => {
+                                    table.getColumn(header.id)?.setFilterValue(value === "all" ? undefined : value);
+                                  }}
+                                >
+                                  <SelectTrigger className="h-6 w-28 text-xs">
+                                    <SelectValue placeholder="All" />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-white">
+                                    <SelectItem value="all">All</SelectItem>
+                                    <SelectItem value="running">Running</SelectItem>
+                                    <SelectItem value="stopped">Stopped</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              ) : null}
+                            </span>
+                          )
+                      }
                     </TableHead>
                   );
                 })}
