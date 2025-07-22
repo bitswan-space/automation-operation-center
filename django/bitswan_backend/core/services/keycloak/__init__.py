@@ -279,8 +279,13 @@ class KeycloakService:
 
         self.keycloak_admin.group_user_add(user_id=user_id, group_id=org_id)
 
-        self.keycloak_admin.send_verify_email(
+        self.keycloak_admin.send_update_account(
             user_id=user_id,
+            payload=[
+                "UPDATE_PASSWORD",
+                "VERIFY_EMAIL",
+            ],
+            lifespan=172800,
         )
 
     def delete_user(self, user_id):
