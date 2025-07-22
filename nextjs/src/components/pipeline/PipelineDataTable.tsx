@@ -1,4 +1,4 @@
-import { ArrowDownNarrowWide, ArrowDownUp, ArrowDownWideNarrow, ChevronDownIcon, ChevronRight, FileCog, Filter } from "lucide-react";
+import { ArrowDownNarrowWide, ArrowDownUp, ArrowDownWideNarrow, Check, ChevronDownIcon, ChevronRight, FileCog, Filter } from "lucide-react";
 import {
   type ColumnFiltersState,
   type ExpandedState,
@@ -12,6 +12,8 @@ import {
   getSortedRowModel,
   useReactTable,
   createColumnHelper,
+  type Row,
+  type Table as TableT
 } from "@tanstack/react-table";
 import {
   TableBody,
@@ -76,6 +78,14 @@ export const columns = [
     cell: ({ row }) => {
       const machineName = row.original.properties["endpoint-name"];
       return <div className="text-xs">{machineName}</div>;
+    },
+    filterFn: (
+      row: Row<PipelineWithStats>,
+      columnId: string,
+      filterValue: string[]
+    ) => {
+      if (!filterValue || filterValue.length === 0) return true;
+      return filterValue.includes(row.getValue(columnId));
     },
   }),
   columnHelper.accessor("properties.state", {
@@ -293,60 +303,14 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
                               ) : null}
 
                               {header.id === "properties_endpoint-name" ? (
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="p-0 h-6 w-6">
-                                      <Filter size={16} />
-                                    </Button>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-48 p-2">
-                                    <div className="flex flex-col gap-1">
-                                      <Button
-                                        variant={((table.getColumn(header.id)?.getFilterValue()) ?? "all") === "all" ? "secondary" : "ghost"}
-                                        size="sm"
-                                        className="justify-start"
-                                        onClick={() =>
-                                          table.getColumn(header.id)?.setFilterValue(undefined)
-                                        }
-                                      >
-                                        All Workspaces
-                                      </Button>
-                                      {workspaceIds.map((ws) => (
-                                        <Button
-                                          key={ws}
-                                          variant={(table.getColumn(header.id)?.getFilterValue()) === ws ? "secondary" : "ghost"}
-                                          size="sm"
-                                          className="justify-start"
-                                          onClick={() =>
-                                            table.getColumn(header.id)?.setFilterValue(ws)
-                                          }
-                                        >
-                                          {ws}
-                                        </Button>
-                                      ))}
-                                    </div>
-                                  </PopoverContent>
-                                </Popover>
+                                <SelectFilter header_id={header.id} options={workspaceIds} table={table} />
                               ) : null}
 
                               {header.id === "properties_state" ? (
-                                <Select
-                                  value={
-                                    (table.getColumn(header.id)?.getFilterValue() as string) || "all"
-                                  }
-                                  onValueChange={value => {
-                                    table.getColumn(header.id)?.setFilterValue(value === "all" ? undefined : value);
-                                  }}
-                                >
-                                  <SelectTrigger className="h-6 w-28 text-xs">
-                                    <SelectValue placeholder="All" />
-                                  </SelectTrigger>
-                                  <SelectContent className="bg-white">
-                                    <SelectItem value="all">All</SelectItem>
-                                    <SelectItem value="running">Running</SelectItem>
-                                    <SelectItem value="stopped">Stopped</SelectItem>
-                                  </SelectContent>
-                                </Select>
+                                <SelectFilter 
+                                  header_id={header.id} 
+                                  options={["running", "stopped", "restarting"]} 
+                                  table={table} />
                               ) : null}
                             </span>
                           )
@@ -497,3 +461,54 @@ export const EpsTinyLineChart = (props: EpsTinyLineChartProps) => {
     </AreaChart>
   );
 };
+
+interface SelectFilterProps {
+  options: string[];
+  table: TableT<PipelineWithStats>;
+  header_id: string;
+}
+
+const SelectFilter = (props: SelectFilterProps) => {
+  const { options, table, header_id } = props;
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="icon" className="p-0 h-6 w-6">
+          <Filter size={16} />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-48 p-2">
+        <div className="flex flex-col gap-1">
+          {options.map((option) => {
+            const current =
+              (table.getColumn(header_id)?.getFilterValue() as string[]) ?? [];
+            const selected = current.includes(option);
+            return (
+              <Button
+                key={option}
+                variant={selected ? "secondary" : "ghost"}
+                size="sm"
+                className="justify-start"
+                onClick={() => {
+                  if (selected) {
+                    table.getColumn(header_id)?.setFilterValue(
+                      current.filter((id: string) => id !== option)
+                    );
+                  } else {
+                    table.getColumn(header_id)?.setFilterValue([...current, option]);
+                  }
+                }}
+              >
+                <span className="inline-flex items-center justify-between w-full">
+                  <p className="text-left capitalize">{option}</p>
+                  {selected ? <Check /> : null}
+                </span>
+              </Button>
+            );
+          })}
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
