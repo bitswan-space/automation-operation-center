@@ -34,7 +34,6 @@ import { type PipelineStat, type PipelineWithStats } from "@/types";
 import { Area, AreaChart, XAxis } from "recharts";
 import Link from "next/link";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 const columnHelper = createColumnHelper<PipelineWithStats>();
 
@@ -107,6 +106,14 @@ export const columns = [
       };
 
       return <div className="text-xs capitalize">{getStatusBadge(status)}</div>;
+    },
+    filterFn: (
+      row: Row<PipelineWithStats>,
+      columnId: string,
+      filterValue: string[]
+    ) => {
+      if (!filterValue || filterValue.length === 0) return true;
+      return filterValue.includes(row.getValue(columnId));
     },
   }),
   columnHelper.accessor("properties.created-at", {
