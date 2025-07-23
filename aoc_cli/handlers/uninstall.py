@@ -15,7 +15,7 @@ class UninstallCommand:
         self.args = args
 
     def execute(self) -> None:
-        aoc_dir = Path(self.args.aoc_dir)
+        aoc_dir = self.args.aoc_dir
 
         if not aoc_dir.exists():
             print(f"AOC is not installed at path {aoc_dir}")
