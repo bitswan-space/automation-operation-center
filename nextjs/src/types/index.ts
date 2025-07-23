@@ -140,6 +140,7 @@ export type PipelineWithStats = PipelineTopology & {
   _key: string;
   pipelineStat: PipelineStat[];
   automationServerId: string;
+  automationServerName: string;
   workspaceId: string;
 };
 
