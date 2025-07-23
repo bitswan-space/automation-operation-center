@@ -72,7 +72,13 @@ export const columns = [
       );
     },
   }),
-  columnHelper.accessor("properties.endpoint-name", {
+  columnHelper.accessor("automationServerName", {
+    header: "Automation Server",
+    cell: ({ row }) => {
+      return <div className="text-xs">{row.original.automationServerName}</div>;
+    },
+  }),
+  columnHelper.accessor("properties.endpoint-id", {
     header: "Workspace Name",
     cell: ({ row }) => {
       const machineName = row.original.properties["endpoint-name"];
