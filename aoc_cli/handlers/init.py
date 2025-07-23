@@ -20,8 +20,9 @@ from aoc_cli.utils.secrets import generate_secret
 
 
 class InitCommand:
-    def __init__(self, config: InitConfig):
+    def __init__(self, config: InitConfig, continue_from_config: bool = False):
         self.config = config
+        self.continue_from_config = continue_from_config
 
     async def execute(self) -> None:
         # Check if 'aoc' workspace already exists
@@ -45,7 +46,9 @@ class InitCommand:
         self.copy_config_files()
         self.replace_docker_compose_services_versions()
 
-        self.setup_secrets()
+        # Skip secrets setup if continuing from config
+        if not self.continue_from_config:
+            self.setup_secrets()
 
         caddy = CaddyService(self.config)
         keycloak_confirm = click.confirm(

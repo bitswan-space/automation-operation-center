@@ -1,6 +1,5 @@
 import click
 
-from aoc_cli.commands.dev import dev
 from aoc_cli.init import init
 from aoc_cli.uninstall import uninstall
 from aoc_cli.update import update
@@ -15,5 +14,4 @@ def cli() -> None:
 
 cli.add_command(init)
 cli.add_command(uninstall)
-cli.add_command(dev)
 cli.add_command(update)
