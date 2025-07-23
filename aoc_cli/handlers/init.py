@@ -239,24 +239,23 @@ class InitCommand:
 
     def generate_secrets(self, vars: Dict[str, str]) -> Dict[str, str]:
         """Generate all required secrets"""
-        secrets_map = {
-            "KC_DB_PASSWORD": None,
-            "BITSWAN_BACKEND_POSTGRES_PASSWORD": None,
-            "INFLUXDB_PASSWORD": "DOCKER_INFLUXDB_INIT_PASSWORD",
-            "AUTH_SECRET": None,
-            "KEYCLOAK_ADMIN_PASSWORD": None,
-            "CCS_CONFIG_KEY": None,
-            "EMQX_DASHBOARD__DEFAULT_PASSWORD": None,
-            "DJANGO_SECRET_KEY": None,
-            "AUTH_SECRET_KEY": None,
-            "EMQX_AUTHENTICATION__1__SECRET": None,
-        }
+        secrets_map = (
+            ("KC_DB_PASSWORD",),
+            ("BITSWAN_BACKEND_POSTGRES_PASSWORD",),
+            ("INFLUXDB_PASSWORD", "DOCKER_INFLUXDB_INIT_PASSWORD"),
+            ("AUTH_SECRET",),
+            ("KC_BOOTSTRAP_ADMIN_PASSWORD",),
+            ("CCS_CONFIG_KEY",),
+            ("EMQX_DASHBOARD__DEFAULT_PASSWORD",),
+            ("DJANGO_SECRET_KEY",),
+            ("AUTH_SECRET_KEY",),
+            ("EMQX_AUTHENTICATION__1__SECRET",),
+        )        
 
-        for key, linked_key in secrets_map.items():
-            vars[key] = generate_secret()
-            if linked_key:
-                vars[linked_key] = vars[key]
-
+        for secret_tuple in secrets_map:
+            secret = generate_secret()
+            for key in secret_tuple:
+                vars[key] = secret
         return vars
 
     def setup_secrets(self) -> None:

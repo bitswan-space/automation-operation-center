@@ -47,7 +47,7 @@ def bootstrap_keycloak(
                 "KC_HOSTNAME_ADMIN",
                 "KC_HOSTNAME_ADMIN_URL",
                 "KC_HTTP_ENABLED",
-                "KEYCLOAK_ADMIN_PASSWORD",
+                "KC_BOOTSTRAP_ADMIN_PASSWORD",
                 "KEYCLOAK_ADMIN",
                 "PROXY_ADDRESS_FORWARDING",
                 "KC_PROXY",

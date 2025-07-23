@@ -92,7 +92,7 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
             "KC_HOSTNAME_STRICT_HTTPS": "false",
             "KC_HEALTH_ENABLED": "true",
             "KC_FEATURES": "preview,token-exchange",
-            "KEYCLOAK_ADMIN": "admin",
+            "KC_BOOTSTRAP_ADMIN_USERNAME": "admin",
             "KEYCLOAK_CLIENT_ID": "aoc-frontend",
             "KEYCLOAK_REFRESH_URL": "{keycloak_url}/realms/master/protocol/openid-connect/token",
             "KEYCLOAK_ISSUER": "{keycloak_url}/realms/master",
