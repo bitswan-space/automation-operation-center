@@ -1,6 +1,6 @@
 "use client";
 
-import { PipelineTopology, type PipelineWithStats, type WorkspaceTopologyResponse } from "@/types";
+import { type PipelineWithStats, type WorkspaceTopologyResponse } from "@/types";
 import {
   createContext,
   useContext,
@@ -11,6 +11,8 @@ import {
 } from "react";
 import { useMQTTRequestResponse } from "@/shared/hooks/useMQTTRequestResponse";
 import { usePipelineStats } from "@/components/pipeline/hooks/usePipelineStats";
+import { type AutomationServer } from "@/data/automation-server";
+import { getAutomationServersAction } from "@/server/actions/automation-servers";
 
 type WorkspaceGroup = {
   workspaceId: string;
@@ -33,7 +35,9 @@ const AutomationsContext = createContext<AutomationsGroups | null>(null);
 
 export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
   const pipelineStats = usePipelineStats();
+
   // Keep track of all workspaces and their pipelines
+  const [automationServers, setAutomationServers] = useState<Record<string, AutomationServer>>({});
   const [workspaces, setWorkspaces] = useState<Record<string, WorkspaceGroup>>({});
 
   const { response: workspaceTopology, messageTopic } =
@@ -41,6 +45,24 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
       requestTopic: `/automation-servers/+/c/+/topology/subscribe`,
       responseTopic: `/automation-servers/+/c/+/topology`,
     });
+
+  // Fetch automation servers data
+  useEffect(() => {
+    const fetchAutomationServers = async () => {
+      try {
+        const servers = await getAutomationServersAction();
+        const serversMap = servers.reduce((acc, server) => {
+          acc[server.automation_server_id] = server;
+          return acc;
+        }, {} as Record<string, AutomationServer>);
+        setAutomationServers(serversMap);
+      } catch (error) {
+        console.error('Failed to fetch automation servers:', error);
+      }
+    };
+
+    void fetchAutomationServers();
+  }, []);
 
   // Extract server and workspace IDs from the MQTT topic
   const topicInfo = useMemo(() => {
@@ -57,6 +79,10 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
     if (workspaceTopology && topicInfo?.workspaceId && topicInfo?.automationServerId) {
       const { workspaceId, automationServerId } = topicInfo;
 
+      // Get the automation server name
+      const automationServer = automationServers[automationServerId];
+      const automationServerName = automationServer?.name ?? automationServerId;
+
       // Process pipelines for this workspace
       // This creates a new array of pipelines that represents the current state of the workspace
       const workspacePipelines = Object.entries(workspaceTopology.topology ?? {}).map(
@@ -67,6 +93,7 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
             value.properties["deployment-id"].startsWith(stat.deployment_id)
           ) || [],
           automationServerId,
+          automationServerName,
           workspaceId,
         }),
       );
@@ -82,7 +109,7 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
         },
       }));
     }
-  }, [workspaceTopology, topicInfo, pipelineStats]);
+  }, [workspaceTopology, topicInfo, pipelineStats, automationServers]);
 
   // Derive automation servers and all lists from workspaces
   const automations = useMemo(() => {
