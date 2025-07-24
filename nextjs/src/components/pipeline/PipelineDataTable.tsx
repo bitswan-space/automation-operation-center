@@ -1,4 +1,13 @@
-import { ArrowDownNarrowWide, ArrowDownUp, ArrowDownWideNarrow, Check, ChevronDownIcon, ChevronRight, FileCog, Filter } from "lucide-react";
+import { 
+  ArrowDownNarrowWide, 
+  ArrowDownUp, 
+  ArrowDownWideNarrow, 
+  Check, 
+  ChevronDownIcon, 
+  ChevronRight, 
+  FileCog, 
+  Filter
+} from "lucide-react";
 import {
   type ColumnFiltersState,
   type ExpandedState,
@@ -77,8 +86,16 @@ export const columns = [
     cell: ({ row }) => {
       return <div className="text-xs">{row.original.automationServerName}</div>;
     },
+    filterFn: (
+      row: Row<PipelineWithStats>,
+      columnId: string,
+      filterValue: string[]
+    ) => {
+      if (!filterValue || filterValue.length === 0) return true;
+      return filterValue.includes(row.getValue(columnId));
+    },
   }),
-  columnHelper.accessor("properties.endpoint-id", {
+  columnHelper.accessor("properties.endpoint-name", {
     header: "Workspace Name",
     cell: ({ row }) => {
       const machineName = row.original.properties["endpoint-name"];
@@ -232,6 +249,17 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
     [data]
   );
 
+  // Get unique automation server names for the filter dropdown
+  const automationServerNames = React.useMemo(
+    () =>
+      Array.from(
+        new Set(
+          data.map((row) => row.automationServerName).filter(Boolean)
+        )
+      ),
+    [data]
+  );
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -263,7 +291,14 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
     },
   });
 
-  const isSortable = ["properties_name", "properties_endpoint-name", "properties_created-at", "properties_status"]
+  const isSortable = [
+    "properties_name", 
+    "automationServerName", 
+    "properties_endpoint-name", 
+    "properties_created-at", 
+    "properties_status",
+    "properties_state"
+  ]
 
   return (
     <div className="w-full">
@@ -313,6 +348,10 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
                                     <ArrowDownUp size={16} />
                                   )}
                                 </Button>
+                              ) : null}
+
+                              {header.id === "automationServerName" ? (
+                                <SelectFilter header_id={header.id} options={automationServerNames} table={table} />
                               ) : null}
 
                               {header.id === "properties_endpoint-name" ? (
@@ -514,7 +553,7 @@ const SelectFilter = (props: SelectFilterProps) => {
                 }}
               >
                 <span className="inline-flex items-center justify-between w-full">
-                  <p className="text-left capitalize">{option}</p>
+                  <p className="text-left">{option}</p>
                   {selected ? <Check /> : null}
                 </span>
               </Button>
