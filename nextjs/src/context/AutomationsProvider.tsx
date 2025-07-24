@@ -29,6 +29,7 @@ type AutomationServerGroup = {
 type AutomationsGroups = {
   all: PipelineWithStats[];
   automationServers: Record<string, AutomationServerGroup>;
+  isLoading: boolean;
 }
 
 const AutomationsContext = createContext<AutomationsGroups | null>(null);
@@ -39,6 +40,7 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
   // Keep track of all workspaces and their pipelines
   const [automationServers, setAutomationServers] = useState<Record<string, AutomationServer>>({});
   const [workspaces, setWorkspaces] = useState<Record<string, WorkspaceGroup>>({});
+  const [isLoading, setIsLoading] = useState(true)
 
   const { response: workspaceTopology, messageTopic } =
     useMQTTRequestResponse<WorkspaceTopologyResponse>({
@@ -63,6 +65,29 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
 
     void fetchAutomationServers();
   }, []);
+
+  useEffect(() => {
+    // Calculate expected workspaces from automation servers (only those with automations)
+    const expectedWorkspaces = Object.values(automationServers).reduce((total, server) => {
+      // Only count workspaces that have pipelines/automations
+      const workspacesWithAutomations = server.workspaces?.filter(workspace => {
+        // Check if this workspace has any pipelines loaded
+        const loadedWorkspace = workspaces[workspace.id];
+        return loadedWorkspace && loadedWorkspace.pipelines.length > 0;
+      }) ?? [];
+      return total + workspacesWithAutomations.length;
+    }, 0);
+    
+    // Count only loaded workspaces that have pipelines
+    const loadedWorkspacesWithAutomations = Object.values(workspaces).filter(
+      workspace => workspace.pipelines.length > 0
+    ).length;
+    
+    // Set isLoading to false when all expected workspaces with automations are loaded
+    if (expectedWorkspaces > 0 && loadedWorkspacesWithAutomations >= expectedWorkspaces) {
+      setIsLoading(false);
+    }
+  }, [workspaces, automationServers])
 
   // Extract server and workspace IDs from the MQTT topic
   const topicInfo = useMemo(() => {
@@ -143,6 +168,7 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
     return {
       all: allPipelines,
       automationServers: serverGroups,
+      isLoading,
     };
   }, [workspaces]);
 
