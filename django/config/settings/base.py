@@ -355,3 +355,7 @@ CORS_ALLOWED_ORIGINS = env.list(
 
 EMQX_JWT_SECRET = os.environ.get("EMQX_JWT_SECRET")
 EMQX_INTERNAL_URL = os.environ.get("EMQX_INTERNAL_URL", "aoc-emqx:1883")
+
+# Update Webhook Settings
+# ------------------------------------------------------------------------------
+UPDATE_WEBHOOK_SECRET = os.environ.get("UPDATE_WEBHOOK_SECRET")

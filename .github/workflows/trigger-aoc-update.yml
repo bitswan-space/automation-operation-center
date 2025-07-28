@@ -1,0 +1,26 @@
+name: Trigger AOC Update
+
+on:
+  workflow_run:
+    workflows: ["AOC UI Build and Push", "BitSwan Backend Build and Push", "Keycloak Build and Push", "BitSwan Profile Manager Build and Push"]
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  trigger-update:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
+    
+    steps:
+      - name: Trigger AOC Update
+        run: |
+          # Generate signature for empty payload (webhook only validates signature)
+          SIGNATURE=$(echo -n "" | openssl dgst -sha256 -hmac "${{ secrets.UPDATE_WEBHOOK_SECRET }}" | cut -d' ' -f2)
+          
+          # Trigger the AOC update webhook
+          curl -X POST ${{ secrets.AOC_WEBHOOK_URL }} \
+            -H "X-Hub-Signature-256: sha256=$SIGNATURE"
+          
+          echo "AOC update webhook triggered successfully for staging" 
