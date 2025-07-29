@@ -1,16 +1,11 @@
 import logging
 import os
-import hmac
-import hashlib
-import subprocess
 
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework.permissions import AllowAny
 from django.http import JsonResponse
 
 from bitswan_backend.core.authentication import KeycloakAuthentication
@@ -60,91 +55,6 @@ class PipelineIDEStartView(KeycloakMixin, APIView):
             },
             status=status.HTTP_200_OK,
         )
-
-
-@api_view(['POST'])
-@authentication_classes([])
-@permission_classes([AllowAny])
-def update_webhook(request):
-    """
-    Update webhook endpoint to trigger AOC updates when changes are merged to main.
-    """
-    # Validate webhook signature
-    signature = request.headers.get('X-Hub-Signature-256')
-    if not signature:
-        logger.warning("Update webhook called without signature")
-        return Response(
-            {"error": "Missing signature"}, 
-            status=status.HTTP_401_UNAUTHORIZED
-        )
-    
-    # Get the webhook secret from settings
-    webhook_secret = getattr(settings, 'UPDATE_WEBHOOK_SECRET', None)
-    if not webhook_secret:
-        logger.error("UPDATE_WEBHOOK_SECRET not configured")
-        return Response(
-            {"error": "Webhook not configured"}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-    
-    # Validate signature
-    expected_signature = 'sha256=' + hmac.new(
-        webhook_secret.encode('utf-8'),
-        request.body,
-        hashlib.sha256
-    ).hexdigest()
-    
-    if not hmac.compare_digest(signature, expected_signature):
-        logger.warning("Invalid update webhook signature")
-        return Response(
-            {"error": "Invalid signature"}, 
-            status=status.HTTP_401_UNAUTHORIZED
-        )
-    
-    try:
-        # Trigger the AOC update
-        logger.info("Triggering AOC update via webhook")
-        
-        # Run the update command
-        result = subprocess.run(
-            ["bitswan", "on-prem-aoc", "update"],
-            capture_output=True,
-            text=True,
-            timeout=300  # 5 minute timeout
-        )
-        
-        if result.returncode == 0:
-            logger.info("AOC update completed successfully")
-            return Response(
-                {
-                    "message": "AOC update triggered successfully",
-                    "output": result.stdout
-                }, 
-                status=status.HTTP_200_OK
-            )
-        else:
-            logger.error(f"AOC update failed: {result.stderr}")
-            return Response(
-                {
-                    "error": "AOC update failed",
-                    "stderr": result.stderr
-                }, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-            
-    except subprocess.TimeoutExpired:
-        logger.error("AOC update timed out")
-        return Response(
-            {"error": "AOC update timed out"}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-    except Exception as e:
-        logger.error(f"Error triggering AOC update: {str(e)}")
-        return Response(
-            {"error": f"Error triggering update: {str(e)}"}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
 
 def current_deployed_version(request):
     versions = {}
