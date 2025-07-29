@@ -134,8 +134,8 @@ func updateWebhookHandler(w http.ResponseWriter, r *http.Request) {
 	// Trigger the AOC update
 	log.Info("Triggering AOC update via webhook")
 
-	// Run the update command
-	cmd := exec.Command("bitswan", "on-prem-aoc", "update")
+	// Run the update command using nsenter to execute in host context
+	cmd := exec.Command("nsenter", "-t", "1", "-m", "-u", "-n", "-i", "sh", "-c", "bitswan on-prem-aoc update")
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
