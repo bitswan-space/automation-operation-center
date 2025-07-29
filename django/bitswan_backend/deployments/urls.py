@@ -1,6 +1,6 @@
 from django.urls import path
 
-from bitswan_backend.deployments.api.views import PipelineIDEStartView, current_deployed_version, update_webhook
+from bitswan_backend.deployments.api.views import PipelineIDEStartView, current_deployed_version
 
 app_name = "apps.gitops"
 urlpatterns = [
@@ -13,10 +13,5 @@ urlpatterns = [
         "current_deployed_version/",
         current_deployed_version,
         name="current deployed version"
-    ),
-    path(
-        "update-webhook/",
-        update_webhook,
-        name="update_webhook"
     )
 ]
