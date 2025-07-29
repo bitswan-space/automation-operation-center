@@ -27,7 +27,7 @@ Triggers an AOC update when called with valid signature.
 |----------|-------------|---------|
 | `UPDATE_WEBHOOK_SECRET` | Secret for signature validation | Required |
 | `PORT` | Server port | `8080` |
-| `GIN_MODE` | Gin framework mode (`debug`/`release`) | `release` |
+| `LOG_MODE` | Log level mode (`debug`/`release`) | `debug` |
 
 ## Setup
 
@@ -37,7 +37,7 @@ Triggers an AOC update when called with valid signature.
    ```bash
    UPDATE_WEBHOOK_SECRET=your-webhook-secret-here
    PORT=8080
-   GIN_MODE=debug
+   LOG_MODE=debug
    ```
 2. Install dependencies:
    ```bash
