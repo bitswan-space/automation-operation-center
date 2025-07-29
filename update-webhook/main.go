@@ -4,12 +4,13 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
+	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 )
@@ -26,7 +27,7 @@ func init() {
 	log.SetOutput(os.Stdout)
 
 	// Set log level based on environment
-	if os.Getenv("GIN_MODE") == "release" {
+	if os.Getenv("LOG_MODE") == "release" {
 		log.SetLevel(logrus.InfoLevel)
 	} else {
 		log.SetLevel(logrus.DebugLevel)
@@ -41,28 +42,14 @@ func init() {
 }
 
 func main() {
-	// Set Gin mode
-	if os.Getenv("GIN_MODE") == "release" {
-		gin.SetMode(gin.ReleaseMode)
-	}
+	// Create HTTP server
+	mux := http.NewServeMux()
 
-	r := gin.Default()
+	// Add routes
+	mux.HandleFunc("POST /update", updateWebhookHandler)
 
 	// Add logging middleware
-	r.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-		log.WithFields(logrus.Fields{
-			"status":     param.StatusCode,
-			"latency":    param.Latency,
-			"client_ip":  param.ClientIP,
-			"method":     param.Method,
-			"path":       param.Path,
-			"user_agent": param.Request.UserAgent(),
-		}).Info("HTTP Request")
-		return ""
-	}))
-
-	// Update webhook endpoint
-	r.POST("/update", updateWebhookHandler)
+	handler := loggingMiddleware(mux)
 
 	// Get port from environment or use default
 	port := os.Getenv("PORT")
@@ -71,27 +58,63 @@ func main() {
 	}
 
 	log.Infof("Starting update webhook server on port %s", port)
-	if err := r.Run(":" + port); err != nil {
+	if err := http.ListenAndServe(":"+port, handler); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }
 
-func updateWebhookHandler(c *gin.Context) {
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+
+		// Create a response writer wrapper to capture status code
+		wrapped := &responseWriter{ResponseWriter: w, statusCode: http.StatusOK}
+
+		next.ServeHTTP(wrapped, r)
+
+		// Log the request
+		log.WithFields(logrus.Fields{
+			"status":     wrapped.statusCode,
+			"latency":    time.Since(start),
+			"client_ip":  r.RemoteAddr,
+			"method":     r.Method,
+			"path":       r.URL.Path,
+			"user_agent": r.UserAgent(),
+		}).Info("HTTP Request")
+	})
+}
+
+type responseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (rw *responseWriter) WriteHeader(code int) {
+	rw.statusCode = code
+	rw.ResponseWriter.WriteHeader(code)
+}
+
+func updateWebhookHandler(w http.ResponseWriter, r *http.Request) {
+	// Set content type
+	w.Header().Set("Content-Type", "application/json")
+
 	// Validate webhook signature
-	signature := c.GetHeader("X-Hub-Signature-256")
+	signature := r.Header.Get("X-Hub-Signature-256")
 	if signature == "" {
 		log.Warn("Update webhook called without signature")
-		c.JSON(http.StatusUnauthorized, gin.H{
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{
 			"error": "Missing signature",
 		})
 		return
 	}
 
 	// Read request body
-	body, err := io.ReadAll(c.Request.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Errorf("Failed to read request body: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
 			"error": "Failed to read request body",
 		})
 		return
@@ -101,7 +124,8 @@ func updateWebhookHandler(c *gin.Context) {
 	expectedSignature := "sha256=" + generateHMAC(body, webhookSecret)
 	if !hmac.Equal([]byte(signature), []byte(expectedSignature)) {
 		log.Warn("Invalid update webhook signature")
-		c.JSON(http.StatusUnauthorized, gin.H{
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{
 			"error": "Invalid signature",
 		})
 		return
@@ -116,7 +140,8 @@ func updateWebhookHandler(c *gin.Context) {
 
 	if err != nil {
 		log.Errorf("AOC update failed: %v, output: %s", err, string(output))
-		c.JSON(http.StatusInternalServerError, gin.H{
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
 			"error":  "AOC update failed",
 			"stderr": string(output),
 		})
@@ -124,7 +149,8 @@ func updateWebhookHandler(c *gin.Context) {
 	}
 
 	log.Info("AOC update completed successfully")
-	c.JSON(http.StatusOK, gin.H{
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
 		"message": "AOC update triggered successfully",
 		"output":  string(output),
 	})
