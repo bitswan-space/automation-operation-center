@@ -8,13 +8,13 @@ import { fetchOrgGroups } from "@/server/actions/groups";
 import { fetchOrgUsers } from "@/server/actions/users";
 
 type SettingsPageProps = {
-  searchParams: {
-    page: number;
-  };
+  searchParams: Promise<{
+    page?: number;
+  }>;
 };
 
 const SettingsPage = async (props: SettingsPageProps) => {
-  const { page } = props.searchParams;
+  const { page } = (await props.searchParams);
 
   const session = await auth();
 
