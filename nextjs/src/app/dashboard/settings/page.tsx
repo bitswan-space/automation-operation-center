@@ -7,11 +7,19 @@ import { auth } from "@/server/auth";
 import { fetchOrgGroups } from "@/server/actions/groups";
 import { fetchOrgUsers } from "@/server/actions/users";
 
-const SettingsPage = async () => {
+type SettingsPageProps = {
+  searchParams: {
+    page: number;
+  };
+};
+
+const SettingsPage = async (props: SettingsPageProps) => {
+  const { page } = props.searchParams;
+
   const session = await auth();
 
   const groupsList = await fetchOrgGroups(session);
-  const usersList = await fetchOrgUsers(session);
+  const usersList = await fetchOrgUsers(session, page);
 
   return (
     <div className="flex w-full flex-col gap-4">
