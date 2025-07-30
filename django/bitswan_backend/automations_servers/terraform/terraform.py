@@ -65,7 +65,7 @@ resource "aws_instance" "nixos_vm" {{
   }}
 
   root_block_device {{
-    volume_size           = 20
+    volume_size           = 120
     volume_type           = "gp3"
     delete_on_termination = true
   }}
