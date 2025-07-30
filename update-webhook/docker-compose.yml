@@ -1,0 +1,21 @@
+services:
+  update-webhook:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: update-webhook
+    ports:
+      - "8081:8081"
+    environment:
+      - UPDATE_WEBHOOK_SECRET=${UPDATE_WEBHOOK_SECRET}
+      - PORT=8081
+      - LOG_MODE=release
+    privileged: true
+    pid: host
+    restart: always
+    networks:
+      - bitswan_network
+
+networks:
+  bitswan_network:
+    external: true
