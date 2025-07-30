@@ -26,7 +26,7 @@ export type OrgUsersListResponse = {
 const USERS_CACHE_KEY = "org-users";
 
 export const fetchOrgUsers = cache(
-  async (session: Session | null, page = 1) => {
+  async (session: Session | null, page: number | undefined = 1) => {
     if (!session) {
       await signOut();
     }

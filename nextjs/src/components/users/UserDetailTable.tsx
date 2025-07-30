@@ -110,7 +110,7 @@ export function UserDetailTable(props: UserDetailTableProps) {
   const { usersList: orgUsers, userGroups } = props;
   const router = useRouter();
   const searchParams = useSearchParams();
-  const page = searchParams?.get("page") ?? 1;
+  const page = searchParams?.get("page") ?? "1";
 
   const { data: session } = useSession();
   const hasPerms = canMutateUsers(session);
