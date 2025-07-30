@@ -3,6 +3,7 @@
 import { UserGroupsBadgeList } from "./UserGroupsBadgeList";
 
 import * as React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import {
   type ColumnDef,
@@ -107,20 +108,23 @@ type UserDetailTableProps = {
 
 export function UserDetailTable(props: UserDetailTableProps) {
   const { usersList: orgUsers, userGroups } = props;
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const page = searchParams?.get("page") ?? 1;
 
   const { data: session } = useSession();
   const hasPerms = canMutateUsers(session);
 
   const orgUsersData = React.useMemo(
     () =>
-      orgUsers?.results.map((user) => ({
+      orgUsers?.results?.map((user) => ({
         ...user,
         nonMemberGroups:
           userGroups?.results.filter(
             (group) => !user.groups.find((g) => g.id === group.id),
           ) ?? [],
       })) ?? [],
-    [orgUsers],
+    [orgUsers, userGroups],
   );
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -149,6 +153,10 @@ export function UserDetailTable(props: UserDetailTableProps) {
       rowSelection,
     },
   });
+
+  const handlePageChange = (page: number) => {
+    router.push(`/dashboard/settings?activeTab=users&page=${page}`);
+  };
 
   return (
     <div className="w-full">
@@ -211,16 +219,16 @@ export function UserDetailTable(props: UserDetailTableProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            onClick={() => handlePageChange(Number(page) - 1)}
+            disabled={page === "1"}
           >
             Previous
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            onClick={() => handlePageChange(Number(page) + 1)}
+            disabled={!orgUsers?.next}
           >
             Next
           </Button>

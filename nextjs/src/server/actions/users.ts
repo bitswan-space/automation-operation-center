@@ -26,14 +26,14 @@ export type OrgUsersListResponse = {
 const USERS_CACHE_KEY = "org-users";
 
 export const fetchOrgUsers = cache(
-  async (session: Session | null) => {
+  async (session: Session | null, page = 1) => {
     if (!session) {
       await signOut();
     }
 
     const apiToken = session?.access_token;
 
-    const data = await fetch(`${BITSWAN_BACKEND_API_URL}/org-users`, {
+    const data = await fetch(`${BITSWAN_BACKEND_API_URL}/org-users?page=${page}`, {
       headers: {
         Authorization: `Bearer ${apiToken}`,
       },
