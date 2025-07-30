@@ -18,6 +18,11 @@ import (
 var log = logrus.New()
 var webhookSecret string
 
+// WebhookPayload represents the expected webhook payload
+type WebhookPayload struct {
+	Timestamp int64 `json:"timestamp"`
+}
+
 func init() {
 	// Load environment variables from .env file if it exists
 	godotenv.Load()
@@ -127,6 +132,30 @@ func updateWebhookHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "Invalid signature",
+		})
+		return
+	}
+
+	// Parse JSON payload
+	var payload WebhookPayload
+	if err := json.Unmarshal(body, &payload); err != nil {
+		log.Errorf("Failed to parse JSON payload: %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Invalid JSON payload",
+		})
+		return
+	}
+
+	// Validate timestamp (within 5 minutes)
+	currentTime := time.Now().Unix()
+	timeDiff := currentTime - payload.Timestamp
+	if timeDiff < -300 || timeDiff > 300 { // 5 minutes = 300 seconds
+		log.Warnf("Webhook timestamp validation failed: current=%d, received=%d, diff=%d",
+			currentTime, payload.Timestamp, timeDiff)
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Timestamp validation failed",
 		})
 		return
 	}
