@@ -12,25 +12,25 @@ import {
 import { useMQTTRequestResponse } from "@/shared/hooks/useMQTTRequestResponse";
 import { usePipelineStats } from "@/components/pipeline/hooks/usePipelineStats";
 import { type AutomationServer } from "@/data/automation-server";
-import { getAutomationServersAction } from "@/server/actions/automation-servers";
+import { getAutomationServersAction } from "@/data/automation-servers";
 
 type WorkspaceGroup = {
   workspaceId: string;
   automationServerId: string;
   pipelines: PipelineWithStats[];
-}
+};
 
 type AutomationServerGroup = {
   serverId: string;
   workspaces: Record<string, WorkspaceGroup>;
   pipelines: PipelineWithStats[]; // All pipelines in this server across workspaces
-}
+};
 
 type AutomationsGroups = {
   all: PipelineWithStats[];
   automationServers: Record<string, AutomationServerGroup>;
   isLoading: boolean;
-}
+};
 
 const AutomationsContext = createContext<AutomationsGroups | null>(null);
 
@@ -38,10 +38,15 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
   const pipelineStats = usePipelineStats();
 
   // Keep track of all workspaces and their pipelines
-  const [automationServers, setAutomationServers] = useState<Record<string, AutomationServer>>({});
-  const [automationServersAreFetched, setAutomationServersAreFetched] = useState(false);
-  const [workspaces, setWorkspaces] = useState<Record<string, WorkspaceGroup>>({});
-  const [isLoading, setIsLoading] = useState(true)
+  const [automationServers, setAutomationServers] = useState<
+    Record<string, AutomationServer>
+  >({});
+  const [automationServersAreFetched, setAutomationServersAreFetched] =
+    useState(false);
+  const [workspaces, setWorkspaces] = useState<Record<string, WorkspaceGroup>>(
+    {},
+  );
+  const [isLoading, setIsLoading] = useState(true);
 
   const { response: workspaceTopology, messageTopic } =
     useMQTTRequestResponse<WorkspaceTopologyResponse>({
@@ -54,14 +59,17 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
     const fetchAutomationServers = async () => {
       try {
         const servers = await getAutomationServersAction();
-        const serversMap = servers.reduce((acc, server) => {
-          acc[server.automation_server_id] = server;
-          setAutomationServersAreFetched(true);
-          return acc;
-        }, {} as Record<string, AutomationServer>);
+        const serversMap = servers.reduce(
+          (acc, server) => {
+            acc[server.automation_server_id] = server;
+            setAutomationServersAreFetched(true);
+            return acc;
+          },
+          {} as Record<string, AutomationServer>,
+        );
         setAutomationServers(serversMap);
       } catch (error) {
-        console.error('Failed to fetch automation servers:', error);
+        console.error("Failed to fetch automation servers:", error);
       }
     };
 
@@ -70,20 +78,23 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (!automationServersAreFetched) return;
-    
+
     // Calculate expected workspaces from automation servers
-    const expectedWorkspaces = Object.values(automationServers).reduce((total, server) => {
-      return total + (server.workspaces?.length ?? 0);
-    }, 0);
-    
+    const expectedWorkspaces = Object.values(automationServers).reduce(
+      (total, server) => {
+        return total + (server.workspaces?.length ?? 0);
+      },
+      0,
+    );
+
     // Count all loaded workspaces
     const loadedWorkspaces = Object.keys(workspaces).length;
-    
+
     // Set isLoading to false when all expected workspaces are loaded
     if (loadedWorkspaces >= expectedWorkspaces) {
       setIsLoading(false);
     }
-  }, [workspaces, automationServers, automationServersAreFetched])
+  }, [workspaces, automationServers, automationServersAreFetched]);
 
   // Timer to automatically unset isLoading after 10 seconds
   useEffect(() => {
@@ -97,7 +108,7 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
   // Extract server and workspace IDs from the MQTT topic
   const topicInfo = useMemo(() => {
     if (!messageTopic) return null;
-    const parts = messageTopic.split('/');
+    const parts = messageTopic.split("/");
     return {
       automationServerId: parts[2], // Index 2 contains server ID
       workspaceId: parts[4], // Index 4 contains workspace ID
@@ -106,7 +117,11 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
 
   // Update workspaces when we receive new topology
   useEffect(() => {
-    if (workspaceTopology && topicInfo?.workspaceId && topicInfo?.automationServerId) {
+    if (
+      workspaceTopology &&
+      topicInfo?.workspaceId &&
+      topicInfo?.automationServerId
+    ) {
       const { workspaceId, automationServerId } = topicInfo;
 
       // Get the automation server name
@@ -115,22 +130,23 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
 
       // Process pipelines for this workspace
       // This creates a new array of pipelines that represents the current state of the workspace
-      const workspacePipelines = Object.entries(workspaceTopology.topology ?? {}).map(
-        ([_, value]) => ({
-          _key: value.properties["container-id"],
-          ...value,
-          pipelineStat: pipelineStats?.filter((stat) =>
-            value.properties["deployment-id"].startsWith(stat.deployment_id)
+      const workspacePipelines = Object.entries(
+        workspaceTopology.topology ?? {},
+      ).map(([_, value]) => ({
+        _key: value.properties["container-id"],
+        ...value,
+        pipelineStat:
+          pipelineStats?.filter((stat) =>
+            value.properties["deployment-id"].startsWith(stat.deployment_id),
           ) || [],
-          automationServerId,
-          automationServerName,
-          workspaceId,
-        }),
-      );
+        automationServerId,
+        automationServerName,
+        workspaceId,
+      }));
 
       // Update workspaces state by replacing the entire workspace entry
       // This ensures we only keep the current state of the workspace's pipelines
-      setWorkspaces(prev => ({
+      setWorkspaces((prev) => ({
         ...prev,
         [workspaceId]: {
           workspaceId,
@@ -144,28 +160,33 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
   // Derive automation servers and all lists from workspaces
   const automations = useMemo(() => {
     // First, group workspaces by server to build the server structure
-    const serverGroups = Object.values(workspaces).reduce((acc, workspace) => {
-      const { automationServerId } = workspace;
+    const serverGroups = Object.values(workspaces).reduce(
+      (acc, workspace) => {
+        const { automationServerId } = workspace;
 
-      if (!acc[automationServerId]) {
-        acc[automationServerId] = {
-          serverId: automationServerId,
-          workspaces: {},
-          pipelines: [],
-        };
-      }
+        if (!acc[automationServerId]) {
+          acc[automationServerId] = {
+            serverId: automationServerId,
+            workspaces: {},
+            pipelines: [],
+          };
+        }
 
-      acc[automationServerId].workspaces[workspace.workspaceId] = workspace;
-      return acc;
-    }, {} as Record<string, AutomationServerGroup>);
+        acc[automationServerId].workspaces[workspace.workspaceId] = workspace;
+        return acc;
+      },
+      {} as Record<string, AutomationServerGroup>,
+    );
 
     // Now calculate the pipelines for each server and the total
     const allPipelines: PipelineWithStats[] = [];
 
     // Update server pipelines and collect all pipelines
-    Object.values(serverGroups).forEach(server => {
+    Object.values(serverGroups).forEach((server) => {
       // Get all pipelines for this server from its workspaces
-      server.pipelines = Object.values(server.workspaces).flatMap(workspace => workspace.pipelines);
+      server.pipelines = Object.values(server.workspaces).flatMap(
+        (workspace) => workspace.pipelines,
+      );
       // Add them to the total
       allPipelines.push(...server.pipelines);
     });
