@@ -11,13 +11,14 @@ import { Button } from "../ui/button";
 import { EPSSyncAreaChart } from "../metrics/charts/EPSSyncAreaChart";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { PencilLine } from "lucide-react";
+import { ExternalLink, PencilLine } from "lucide-react";
 import React from "react";
 import { Skeleton } from "../ui/skeleton";
 import { Textarea } from "../ui/textarea";
 import { convertTopologyToMermaidGraph } from "@/utils/mermaid";
 import dynamic from "next/dynamic";
 import { formatPipelineName } from "@/utils/pipelineUtils";
+import Link from "next/link";
 
 const MermaidTopologyOverview = dynamic(
   () => import("./overview/TopologyOverview"),
@@ -71,6 +72,20 @@ export function PipelineSummary(props: PipelineSummaryProps) {
             </div>
           </CardTitle>
           <CardDescription>
+            {pipeline?.properties["automation-url"] &&
+              <div className="pb-5 pt-2">
+                <Link
+                  href={pipeline.properties["automation-url"]}
+                  target="_blak"
+                >
+                  <span className="inline-flex gap-2 hover:underline">
+                    <ExternalLink size={18} />
+                    <span>Open automation web form</span>
+                  </span>
+                </Link>
+              </div>
+            }
+
             <div className="pb-10">
               This is a sample description of the pipeline. It describes what
               the pipeline does with more detail

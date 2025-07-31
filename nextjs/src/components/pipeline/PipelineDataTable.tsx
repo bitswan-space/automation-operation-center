@@ -5,6 +5,7 @@ import {
   Check, 
   ChevronDownIcon, 
   ChevronRight, 
+  ExternalLink, 
   FileCog, 
   Filter
 } from "lucide-react";
@@ -80,6 +81,20 @@ export const columns = [
         </Link>
       );
     },
+  }),
+  columnHelper.accessor("properties.automation-url", {
+    header: "URL",
+    cell: ({row}) => {
+      return (
+        row.original.properties["automation-url"] &&
+        <Link
+          href={row.original.properties["automation-url"]}
+          target="_blak"
+        >
+          <ExternalLink size={18} />
+        </Link>
+      )
+    }
   }),
   columnHelper.accessor("automationServerName", {
     header: "Automation Server",
