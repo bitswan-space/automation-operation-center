@@ -229,6 +229,7 @@ export interface Properties {
   "endpoint-name": string;
   "deployment-id": string;
   "created-at": Date;
+  "automation-url"?: string;
   name: string;
   state: string;
   status: string;
