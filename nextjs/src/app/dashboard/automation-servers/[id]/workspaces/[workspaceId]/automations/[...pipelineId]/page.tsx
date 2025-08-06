@@ -72,6 +72,7 @@ const AutomationDetailPage = async (props: {
         {getBreadcrumbs(pipelineId ?? [])}
       </div>
       <PipelineDetailSection
+        editor_url={workspace?.editor_url}
         automationServerId={id}
         workspaceId={workspaceId}
         ids={pipelineId}

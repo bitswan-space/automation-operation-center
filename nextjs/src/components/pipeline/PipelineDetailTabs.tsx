@@ -20,13 +20,14 @@ export interface PipelineDetailTabsProps {
   pipelineParentIDs: string[];
   automationServerId: string;
   workspaceId: string;
+  vscode_link?: string | null;
 }
 
 export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const { pipeline, pipelineParentIDs, automationServerId, workspaceId } = props;
+  const { pipeline, pipelineParentIDs, automationServerId, workspaceId, vscode_link } = props;
 
   const { pipelineTopology } = usePipelineTopology({
     automationServerId,
@@ -68,6 +69,7 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
           pipeline={pipeline}
           pipelineTopology={pipelineTopology ?? []}
           onClickPipelineTopology={handlePipelineTopologyClick}
+          vscode_link={vscode_link}
         />
       </TabsContent>
       <TabsContent value="scheme" className="h-5/6">

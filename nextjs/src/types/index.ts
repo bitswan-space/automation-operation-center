@@ -230,6 +230,7 @@ export interface Properties {
   "deployment-id": string;
   "created-at": Date;
   "automation-url"?: string;
+  "relative-path"?: string;
   name: string;
   state: string;
   status: string;
