@@ -31,6 +31,8 @@ export function OrgSwitcher({
   const { execute: switchOrg, isPending } = useAction(switchOrgAction, {
     onSuccess: () => {
       toast.success("Organization switched");
+      // Force a full page refresh
+      window.location.reload();
     },
     onError: ({ error }) => {
       toast.error(
