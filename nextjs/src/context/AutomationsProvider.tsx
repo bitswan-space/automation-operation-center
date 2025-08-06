@@ -62,13 +62,14 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
         const serversMap = servers.reduce(
           (acc, server) => {
             acc[server.automation_server_id] = server;
-            setAutomationServersAreFetched(true);
             return acc;
           },
           {} as Record<string, AutomationServer>,
         );
         setAutomationServers(serversMap);
+        setAutomationServersAreFetched(true);
       } catch (error) {
+        setAutomationServersAreFetched(true);
         console.error("Failed to fetch automation servers:", error);
       }
     };
@@ -196,7 +197,7 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
       automationServers: serverGroups,
       isLoading,
     };
-  }, [workspaces]);
+  }, [workspaces, isLoading]);
 
   return (
     <AutomationsContext.Provider value={automations}>
