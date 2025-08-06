@@ -19,6 +19,7 @@ import { convertTopologyToMermaidGraph } from "@/utils/mermaid";
 import dynamic from "next/dynamic";
 import { formatPipelineName } from "@/utils/pipelineUtils";
 import Link from "next/link";
+import { VscVscode } from "react-icons/vsc";
 
 const MermaidTopologyOverview = dynamic(
   () => import("./overview/TopologyOverview"),
@@ -29,10 +30,11 @@ interface PipelineSummaryProps {
   pipeline?: PipelineWithStats;
   pipelineTopology: PipelineNode[];
   onClickPipelineTopology?: () => void;
+  vscode_link?: string | null;
 }
 
 export function PipelineSummary(props: PipelineSummaryProps) {
-  const { pipeline, pipelineTopology, onClickPipelineTopology } = props;
+  const { pipeline, pipelineTopology, onClickPipelineTopology, vscode_link } = props;
 
   const [mermaidChart, setMermaidChart] = React.useState("");
   const [showMermaid, setShowMermaid] = React.useState(false);
@@ -70,6 +72,15 @@ export function PipelineSummary(props: PipelineSummaryProps) {
                 <PencilLine size={18} xlinkTitle="edit" />
               </button>
             </div>
+            {vscode_link && (
+              <Link href={vscode_link} target="_blank">
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  <div className="flex items-center gap-2">
+                    <VscVscode size={20} /> Open in editor
+                  </div>
+                </Button>
+              </Link>
+            )}
           </CardTitle>
           <CardDescription>
             {pipeline?.properties["automation-url"] &&
