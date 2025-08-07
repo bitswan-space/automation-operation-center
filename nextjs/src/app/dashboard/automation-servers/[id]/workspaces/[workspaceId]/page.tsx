@@ -24,7 +24,7 @@ const WorkspacePage = async (props: {
       <h1 className="text-2xl font-bold text-stone-700 md:hidden">
         Workspace Details
       </h1>
-      <TitleBar title="Automation Servers" />
+      <TitleBar title="Workspace Details" />
       <div className="flex py-4 pt-6 lg:hidden">
         <Input
           placeholder="Find automation"
