@@ -7,7 +7,8 @@ import {
   ChevronRight, 
   ExternalLink, 
   FileCog, 
-  Filter
+  Filter,
+  Loader2
 } from "lucide-react";
 import {
   type ColumnFiltersState,
@@ -44,7 +45,6 @@ import { type PipelineStat, type PipelineWithStats } from "@/types";
 import { Area, AreaChart, XAxis } from "recharts";
 import Link from "next/link";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { TableSkeleton } from "../ui/TableSkeleton";
 
 const columnHelper = createColumnHelper<PipelineWithStats>();
 
@@ -319,7 +319,6 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
   ]
 
   return (
-    isLoading ? <TableSkeleton /> :
     <div className="w-full">
       <div className="flex items-center pb-4">
         <Input
@@ -431,9 +430,33 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
                       </TableCell>
                     </TableRow>
                   )}
+                  {isLoading && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        className="h-16 text-center text-slate-500"
+                      >
+                        <div className="flex justify-center items-center w-full h-full">
+                          <Loader2 size={16} className="animate-spin" />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </React.Fragment>
               ))
             ) : (
+              isLoading ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-16 text-center text-slate-500"
+                  >
+                    <div className="flex justify-center items-center w-full h-full">
+                      <Loader2 size={16} className="animate-spin" />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
@@ -442,6 +465,7 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
                   No results.
                 </TableCell>
               </TableRow>
+              )
             )}
           </TableBody>
         </Table>
