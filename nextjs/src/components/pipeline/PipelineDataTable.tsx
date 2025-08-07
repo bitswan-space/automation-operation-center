@@ -7,7 +7,8 @@ import {
   ChevronRight, 
   ExternalLink, 
   FileCog, 
-  Filter
+  Filter,
+  Loader2
 } from "lucide-react";
 import {
   type ColumnFiltersState,
@@ -248,9 +249,11 @@ export const columns = [
 
 type PipelineDataTableProps = {
   pipelines: PipelineWithStats[];
+  isLoading: boolean;
 };
 
 export function PipelineDataTable(props: PipelineDataTableProps) {
+  const { isLoading } = props;
   const data = React.useMemo(() => props.pipelines, [props.pipelines]);
 
   // Get unique workspace IDs for the filter dropdown
@@ -389,46 +392,60 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <React.Fragment key={`dt_fragment_${row.id}`}>
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                    className="rounded font-mono"
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                  {row.getIsExpanded() && (
+            {table.getRowModel().rows?.length || isLoading ? (
+              <>
+                {table.getRowModel().rows.map((row) => (
+                  <React.Fragment key={`dt_fragment_${row.id}`}>
                     <TableRow
-                      className="bg-blue-100/20 hover:bg-blue-50/50"
-                      key={`expandable-${row.id}`}
+                      key={row.id}
+                      data-state={row.getIsSelected() && "selected"}
+                      className="rounded font-mono"
                     >
-                      <TableCell colSpan={columns.length}>
-                        <Table>
-                          <TableBody>
-                            <TableRow>
-                              <TableCell
-                                colSpan={columns.length}
-                                className="h-24 text-center"
-                              >
-                                No displayable data.
-                              </TableCell>
-                            </TableRow>
-                          </TableBody>
-                        </Table>
-                      </TableCell>
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </TableCell>
+                      ))}
                     </TableRow>
-                  )}
-                </React.Fragment>
-              ))
+                    {row.getIsExpanded() && (
+                      <TableRow
+                        className="bg-blue-100/20 hover:bg-blue-50/50"
+                        key={`expandable-${row.id}`}
+                      >
+                        <TableCell colSpan={columns.length}>
+                          <Table>
+                            <TableBody>
+                              <TableRow>
+                                <TableCell
+                                  colSpan={columns.length}
+                                  className="h-24 text-center"
+                                >
+                                  No displayable data.
+                                </TableCell>
+                              </TableRow>
+                            </TableBody>
+                          </Table>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </React.Fragment>
+                ))}
+                {isLoading && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-16 text-center text-slate-500"
+                    >
+                      <div className="flex justify-center items-center w-full h-full">
+                        <Loader2 size={16} className="animate-spin" />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </>
             ) : (
               <TableRow>
                 <TableCell

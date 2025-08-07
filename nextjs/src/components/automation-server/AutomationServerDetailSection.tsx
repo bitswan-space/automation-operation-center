@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowUpRight, Server, Users, Zap } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Loader2, Server, Users, Zap } from "lucide-react";
 import { VscVscode } from "react-icons/vsc";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
@@ -33,7 +33,7 @@ export function AutomationServerDetailSection(
   const { server } = props;
 
   const router = useRouter();
-  const { automationServers } = useAutomations();
+  const { automationServers, isLoading } = useAutomations();
 
   if (!server) {
     router.push("/dashboard/automation-servers");
@@ -100,7 +100,7 @@ export function AutomationServerDetailSection(
           </TabsTrigger>
           <TabsTrigger value="automations" className="flex items-center">
             <Zap className="mr-2 h-4 w-4" />
-            Automations ({automationServerPipelines?.pipelines.length ?? 0})
+            Automations {isLoading ? <Loader2 size={16} className="animate-spin ml-1" /> : `(${automationServerPipelines?.pipelines.length ?? 0})`}
           </TabsTrigger>
         </TabsList>
 
@@ -134,8 +134,14 @@ export function AutomationServerDetailSection(
                           </Link>
                         </TableCell>
                         <TableCell className="text-center">
-                          {automationServerPipelines?.workspaces[workspace.id]
-                            ?.pipelines.length ?? 0}
+                          {isLoading ? (
+                            <div className="flex items-center justify-center">
+                              <Loader2 size={16} className="animate-spin" />
+                            </div>
+                          ) : (
+                            automationServerPipelines?.workspaces[workspace.id]
+                              ?.pipelines.length ?? 0
+                          )}
                         </TableCell>
                         <TableCell className="text-right font-medium">
                           {formatRelative(
@@ -174,6 +180,7 @@ export function AutomationServerDetailSection(
               <CardContent className="p-3">
                 <PipelineDataTable
                   pipelines={automationServerPipelines?.pipelines ?? []}
+                  isLoading={isLoading}
                 />
               </CardContent>
             </Card>
