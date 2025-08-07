@@ -44,6 +44,7 @@ import { type PipelineStat, type PipelineWithStats } from "@/types";
 import { Area, AreaChart, XAxis } from "recharts";
 import Link from "next/link";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { TableSkeleton } from "../ui/TableSkeleton";
 
 const columnHelper = createColumnHelper<PipelineWithStats>();
 
@@ -248,9 +249,11 @@ export const columns = [
 
 type PipelineDataTableProps = {
   pipelines: PipelineWithStats[];
+  isLoading: boolean;
 };
 
 export function PipelineDataTable(props: PipelineDataTableProps) {
+  const { isLoading } = props;
   const data = React.useMemo(() => props.pipelines, [props.pipelines]);
 
   // Get unique workspace IDs for the filter dropdown
@@ -316,6 +319,7 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
   ]
 
   return (
+    isLoading ? <TableSkeleton /> :
     <div className="w-full">
       <div className="flex items-center pb-4">
         <Input

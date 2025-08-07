@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "../ui/card";
-import { Search, Server, Settings, RotateCcw } from "lucide-react";
+import { Search, Server, Settings, RotateCcw, Loader2 } from "lucide-react";
 
 import { type AutomationServer } from "@/data/automation-server";
 import { Badge } from "../ui/badge";
@@ -18,7 +18,7 @@ export function AutomationServerListSection(
   props: AutomationServerListSectionProps,
 ) {
   const { servers } = props;
-  const { automationServers: automationServersGroup } = useAutomations();
+  const { automationServers: automationServersGroup, isLoading } = useAutomations();
 
   const [searchQuery, setSearchQuery] = React.useState("");
 
@@ -95,8 +95,12 @@ export function AutomationServerListSection(
                           Automations
                         </p>
                         <p className="text-lg font-semibold">
-                          {automationServersGroup[server.automation_server_id]
-                            ?.pipelines.length ?? 0}
+                          {isLoading ? (
+                            <Loader2 size={22} className="animate-spin mb-1" />
+                          ) : (
+                            automationServersGroup[server.automation_server_id]
+                              ?.pipelines.length ?? 0
+                          )}
                         </p>
                       </div>
                     </div>

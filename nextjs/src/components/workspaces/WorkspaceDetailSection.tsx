@@ -21,7 +21,7 @@ export function WorkspaceDetailSection(
 ) {
   const { workspace } = props;
 
-  const { automationServers } = useAutomations();
+  const { automationServers, isLoading } = useAutomations();
 
   const automationServer = automationServers[workspace?.automation_server ?? ""];
   const workspacePipelines = automationServer?.workspaces[workspace?.id ?? ""]?.pipelines;
@@ -74,7 +74,7 @@ export function WorkspaceDetailSection(
           }
         >
           <CardContent className="p-3">
-            <PipelineDataTable pipelines={workspacePipelines ?? []} />
+            <PipelineDataTable pipelines={workspacePipelines ?? []} isLoading={isLoading} />
           </CardContent>
         </Card>
       </div>
