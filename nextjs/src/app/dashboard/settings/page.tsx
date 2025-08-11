@@ -6,9 +6,17 @@ import { TitleBar } from "@/components/layout/TitleBar";
 import { fetchOrgGroups } from "@/data/groups";
 import { fetchOrgUsers } from "@/data/users";
 
-const SettingsPage = async () => {
+type SettingsPageProps = {
+  searchParams: Promise<{
+    page?: number;
+  }>;
+};
+
+const SettingsPage = async ({ searchParams }: SettingsPageProps) => {
+  const { page } = await searchParams;
+
   const groupsList = await fetchOrgGroups();
-  const usersList = await fetchOrgUsers();
+  const usersList = await fetchOrgUsers(page);
 
   return (
     <div className="flex w-full flex-col gap-4">

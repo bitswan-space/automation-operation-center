@@ -3,6 +3,7 @@ import { type ApiListResponse, type ApiResponse } from "./shared";
 import { type UserGroup } from "./groups";
 import { authenticatedBitswanBackendInstance } from "@/server/bitswan-backend";
 import { getActiveOrgFromCookies } from "./organisations";
+import { revalidateTag } from "next/cache";
 
 export type OrgUser = {
   name: string;
@@ -14,13 +15,15 @@ export type OrgUser = {
 
 export type OrgUsersListResponse = ApiListResponse<OrgUser>;
 
-export const fetchOrgUsers = async () => {
+const USERS_CACHE_KEY = "org-users";
+
+export const fetchOrgUsers = async (page: number | undefined = 1) => {
   const bitswanBEInstance = await authenticatedBitswanBackendInstance();
   const activeOrg = await getActiveOrgFromCookies();
 
   try {
     const res = await bitswanBEInstance.get<ApiListResponse<OrgUser>>(
-      "/org-users",
+      `/org-users?page=${page}`,
       {
         headers: {
           "X-Org-Id": activeOrg?.id ?? "",
@@ -58,6 +61,9 @@ export const inviteUser = async (email: string) => {
         },
       },
     );
+
+    revalidateTag(USERS_CACHE_KEY);
+
     return { ...res.data, status: "success" as const };
   } catch (error) {
     console.error("Error inviting user", error);
@@ -82,6 +88,9 @@ export const deleteUser = async (id: string) => {
         },
       },
     );
+    
+    revalidateTag(USERS_CACHE_KEY);
+    
     return { ...res.data, status: "success" as const };
   } catch (error) {
     console.error("Error deleting user", error);
