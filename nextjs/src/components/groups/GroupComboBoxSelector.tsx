@@ -38,17 +38,6 @@ export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
   const hasPerms = canMutateUsers(session);
 
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
-
-  const onAddMemberClick = (groupId?: string) => {
-    setValue(groupId ?? "");
-    setOpen(true);
-  };
-
-  const onSuccess = () => {
-    setOpen(false);
-    setValue("");
-  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -72,14 +61,13 @@ export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
                 <CommandItem
                   key={group.id}
                   value={group.id}
-                  onSelect={onAddMemberClick}
+                  onSelect={() => setOpen(true)}
                   asChild
                 >
                   <AddMemberButton
                     group={group}
                     userId={userId}
-                    value={value}
-                    onSuccess={onSuccess}
+                    onSuccess={() => setOpen(false)}
                     className="h-full w-full cursor-pointer justify-start text-left"
                   />
                 </CommandItem>
@@ -95,13 +83,12 @@ export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
 type AddMemberButtonProps = {
   group: UserGroup;
   userId: string;
-  value: string;
   className?: string;
   onSuccess?: () => void;
 };
 
 const AddMemberButton = (props: AddMemberButtonProps) => {
-  const { group, userId, value, className, onSuccess } = props;
+  const { group, userId, className, onSuccess } = props;
 
   const { execute, isPending } = useAction(addUserToGroupAction, {
     onSuccess: () => {
@@ -118,7 +105,7 @@ const AddMemberButton = (props: AddMemberButtonProps) => {
       <input type="hidden" name="userId" defaultValue={userId} />
       <input type="hidden" name="groupId" defaultValue={group.id} />
       <Button className={className} variant={"ghost"}>
-        {isPending && value === group.id && (
+        {isPending && (
           <Loader2 size={20} className="mr-2 h-4 w-4 animate-spin" />
         )}
         {group.name}
