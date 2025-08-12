@@ -19,7 +19,9 @@ export const PipelineDetailSection = (props: PipelineDetailSectionProps) => {
   const automationServer = automationServers[automationServerId];
   const workspace = automationServer?.workspaces[workspaceId];
   const automation = workspace?.pipelines.find((p) => p.properties["deployment-id"] === ids?.[0]);
-  const vscode_link = editor_url && editor_url + `?folder=${automation?.properties["relative-path"]}`;
+  const vscode_link = editor_url && automation?.properties["relative-path"] &&
+    editor_url + "?folder=/home/coder/workspace" + 
+    `&payload=[["openFile","vscode-remote:///home/coder/workspace/${automation?.properties["relative-path"]}/main.ipynb"]]`;
 
   return (
     <div className="h-full py-2">
