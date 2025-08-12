@@ -77,7 +77,7 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
         permission_classes=[CanReadWorkspacePipelineEMQXJWT],
     )
     def pipeline_jwt(self, request, pk=None, deployment_id=None):
-        workspace = self.get_object()
+        workspace = get_object_or_404(Workspace, pk=pk)
 
         org_id = workspace.keycloak_org_id
 
