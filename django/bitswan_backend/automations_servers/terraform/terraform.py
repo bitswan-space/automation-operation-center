@@ -1,6 +1,6 @@
-import os
-import subprocess
 import json
+import subprocess
+
 import click
 
 # Terraform Configuration Template

@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from bitswan_backend.workspaces.models import AutomationServer
-from bitswan_backend.workspaces.models import Workspace
+from bitswan_backend.core.models import AutomationServer
+from bitswan_backend.core.models import Workspace
 
 
 @admin.register(Workspace)

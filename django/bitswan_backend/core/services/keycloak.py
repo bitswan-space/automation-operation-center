@@ -1,15 +1,13 @@
 import json
 import logging
 
-from keycloak import (
-    KeycloakAdmin,
-    KeycloakOpenID,
-    KeycloakOpenIDConnection,
-    KeycloakPostError,
-)
+from django.conf import settings
+from keycloak import KeycloakAdmin
+from keycloak import KeycloakOpenID
+from keycloak import KeycloakOpenIDConnection
+from keycloak import KeycloakPostError
 
 from bitswan_backend.core.utils import encryption
-from django.conf import settings
 
 logger = logging.getLogger(__name__)
 

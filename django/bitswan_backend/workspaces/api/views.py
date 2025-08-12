@@ -12,13 +12,13 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from bitswan_backend.core.authentication import KeycloakAuthentication
+from bitswan_backend.core.models import AutomationServer
+from bitswan_backend.core.models import Workspace
 from bitswan_backend.core.viewmixins import KeycloakMixin
 from bitswan_backend.workspaces.api.serializers import AutomationServerSerializer
 from bitswan_backend.workspaces.api.serializers import CreateAutomationServerSerializer
 from bitswan_backend.workspaces.api.serializers import WorkspaceSerializer
 from bitswan_backend.workspaces.api.services import create_token
-from bitswan_backend.workspaces.models import AutomationServer
-from bitswan_backend.workspaces.models import Workspace
 from bitswan_backend.workspaces.permissions import CanReadProfileEMQXJWT
 from bitswan_backend.workspaces.permissions import CanReadWorkspaceEMQXJWT
 from bitswan_backend.workspaces.permissions import CanReadWorkspacePipelineEMQXJWT

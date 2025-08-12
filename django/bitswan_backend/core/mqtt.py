@@ -64,7 +64,7 @@ class MQTTClient:
     def disconnect(self):
         if self.client:
             self.client.loop_stop()
-            self.client.disconnect() 
+            self.client.disconnect()
 
 class MQTTService:
     _instance = None
@@ -73,7 +73,7 @@ class MQTTService:
         if cls._instance is None:
             cls._instance = super(MQTTService, cls).__new__(cls)
         return cls._instance
-    
+
     def __init__(self):
         self.mqtt_client = MQTTClient()
         self.keycloak_service = KeycloakService()
@@ -98,4 +98,3 @@ class MQTTService:
                 self.publish_org_profiles(org['id'])
         except Exception as e:
             logger.error(f"Error publishing organizations profiles: {e}")
-    
