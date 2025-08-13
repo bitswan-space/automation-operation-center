@@ -14,7 +14,7 @@ import {
 
 import Link from "next/link";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
-import { useRouter } from "next/navigation";
+import { handleLogout } from "@/lib/auth";
 
 type SidebarFooterMenuProps = {
   name?: string | null;
@@ -23,10 +23,8 @@ type SidebarFooterMenuProps = {
 export const SidebarFooterMenu = (props: SidebarFooterMenuProps) => {
   const { name, email } = props;
 
-  const router = useRouter();
-
   const handleSignOut = () => {
-    router.push("/api/keycloak-logout");
+    void handleLogout();
   };
 
   const getInitials = (name: string) => {
