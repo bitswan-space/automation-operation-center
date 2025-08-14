@@ -8,6 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("brokers", "0011_groupnavigation_remove_usergroup_broker_and_more"),
+        ('core', '0001_initial'),
     ]
 
     operations = [

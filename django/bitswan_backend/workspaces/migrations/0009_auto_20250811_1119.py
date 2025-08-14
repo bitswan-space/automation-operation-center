@@ -8,6 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("workspaces", "0008_alter_workspace_id"),
+        ('core', '0001_initial'),
     ]
 
     operations = [
