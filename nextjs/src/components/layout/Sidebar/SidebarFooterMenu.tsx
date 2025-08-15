@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { handleLogout } from "@/lib/auth";
+import { toast } from "sonner";
 
 type SidebarFooterMenuProps = {
   name?: string | null;
@@ -24,6 +25,7 @@ export const SidebarFooterMenu = (props: SidebarFooterMenuProps) => {
   const { name, email } = props;
 
   const handleSignOut = () => {
+    toast.loading("Logging out...");
     void handleLogout();
   };
 
@@ -39,7 +41,7 @@ export const SidebarFooterMenu = (props: SidebarFooterMenuProps) => {
           className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
         >
           <Avatar className="h-8 w-8 rounded-lg">
-            <AvatarImage src={"#"} alt={"Mike Farad"} />
+            <AvatarImage src={"#"} alt={"Avatar"} />
             <AvatarFallback className="rounded-lg">
               {getInitials(name ?? "")}
             </AvatarFallback>
@@ -60,7 +62,7 @@ export const SidebarFooterMenu = (props: SidebarFooterMenuProps) => {
         <DropdownMenuLabel className="p-0 font-normal">
           <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
             <Avatar className="h-8 w-8 rounded-lg">
-              <AvatarImage src={"#"} alt={"Mike Farad"} />
+              <AvatarImage src={"#"} alt={"Avatar"} />
               <AvatarFallback className="rounded-lg">
                 {getInitials(name ?? "")}
               </AvatarFallback>
