@@ -26,7 +26,7 @@ export default async function DashboardLayout({
   }
 
   if (session.error === "RefreshAccessTokenError") {
-    redirect("/api/keycloak-logout");
+    redirect("/auth/signout");
   }
 
   return (
