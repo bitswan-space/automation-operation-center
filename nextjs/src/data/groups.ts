@@ -124,6 +124,63 @@ export const removeUserFromGroup = async (userId: string, groupId: string) => {
   }
 };
 
+export const addWorkspaceToGroup = async (workspaceId: string, groupId: string) => {
+  const bitswanBEInstance = await authenticatedBitswanBackendInstance();
+  const activeOrg = await getActiveOrgFromCookies();
+
+  try {
+    const res = await bitswanBEInstance.post<ApiResponse>(
+      `/workspaces/${workspaceId}/add_to_group/`,
+      {
+        group_id: groupId,
+      },
+      {
+        headers: {
+          "X-Org-Id": activeOrg?.id ?? "",
+          "X-Org-Name": activeOrg?.name ?? "",
+        },
+      },
+    );
+    return { ...res.data, status: "success" as const };
+  } catch (error) {
+    console.error("Error adding workspace to group", error);
+    return {
+      status: "error" as const,
+      message: "Error adding workspace to group",
+      data: null,
+    };
+  }
+};
+
+export const removeWorkspaceFromGroup = async (workspaceId: string, groupId: string) => {
+  const bitswanBEInstance = await authenticatedBitswanBackendInstance();
+  const activeOrg = await getActiveOrgFromCookies();
+
+  try {
+    const res = await bitswanBEInstance.post<ApiResponse>(
+      `/workspaces/${workspaceId}/remove_from_group/`,
+      {
+        group_id: groupId,
+      },
+      {
+        headers: {
+          "X-Org-Id": activeOrg?.id ?? "",
+          "X-Org-Name": activeOrg?.name ?? "",
+        },
+      },
+    );
+    return { ...res.data, status: "success" as const };
+  } catch (error) {
+
+    console.error("Error removing workspace from group", error);
+    return {
+      status: "error" as const,
+      message: "Error removing workspace from group",
+      data: null,
+    };
+  }
+};
+
 export const createOrgGroup = async (userGroup: {
   name: string;
   description?: string;

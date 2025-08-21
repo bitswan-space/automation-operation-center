@@ -4,12 +4,14 @@ import { Input } from "@/components/ui/input";
 import React from "react";
 import { TitleBar } from "@/components/layout/TitleBar";
 import { getAutomationServers } from "@/data/automation-server";
+import { fetchOrgGroups } from "@/data/groups";
 
 const AutomationServersPage = async (props: {
   params: Promise<{ id: string }>;
 }) => {
   const { id } = await props.params;
   const automationServers = await getAutomationServers();
+  const groupsList = (await fetchOrgGroups()).results;
 
   const automationServer = automationServers.results.find(
     (server) => server.automation_server_id === id,
@@ -30,7 +32,10 @@ const AutomationServersPage = async (props: {
           Search
         </Button>
       </div>
-      <AutomationServerDetailSection server={automationServer} />
+      <AutomationServerDetailSection
+        server={automationServer}
+        groupsList={groupsList ?? []}
+      />
     </div>
   );
 };

@@ -52,6 +52,10 @@ import { type OrgUser, type OrgUsersListResponse } from "@/data/users";
 import { toast } from "sonner";
 import { useAction } from "next-safe-action/hooks";
 import { deleteUserAction } from "./actions";
+import {
+  addUserToGroupAction,
+  removeUserFromGroupAction,
+} from "../groups/action";
 
 type OrgUserFull = OrgUser & { nonMemberGroups: UserGroup[] };
 
@@ -91,8 +95,10 @@ export const columns: ColumnDef<OrgUserFull>[] = [
       return (
         <UserGroupsBadgeList
           memberGroups={groups}
-          userId={userId}
+          id={userId}
           nonMemberGroups={nonMemberGroups}
+          addAction={addUserToGroupAction}
+          removeAction={removeUserFromGroupAction}
         />
       );
     },
