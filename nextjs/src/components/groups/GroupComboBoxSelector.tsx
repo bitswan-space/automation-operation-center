@@ -23,16 +23,20 @@ import { canMutateUsers } from "@/lib/permissions";
 import { useSession } from "next-auth/react";
 import { Button } from "../ui/button";
 import { useAction } from "next-safe-action/hooks";
-import { addUserToGroupAction } from "./action";
+import {
+  type AddWorkspaceToGroupActionType,
+  type AddUserToGroupActionType,
+} from "./action";
 import { toast } from "sonner";
 
 type GroupComboBoxSelectorProps = {
   groups?: UserGroup[];
-  userId: string;
+  id: string;
+  action: AddUserToGroupActionType | AddWorkspaceToGroupActionType;
 };
 
 export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
-  const { groups, userId } = props;
+  const { groups, id, action } = props;
 
   const { data: session } = useSession();
   const hasPerms = canMutateUsers(session);
@@ -66,9 +70,10 @@ export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
                 >
                   <AddMemberButton
                     group={group}
-                    userId={userId}
+                    id={id}
                     onSuccess={() => setOpen(false)}
                     className="h-full w-full cursor-pointer justify-start text-left"
+                    action={action}
                   />
                 </CommandItem>
               ))}
@@ -82,15 +87,16 @@ export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
 
 type AddMemberButtonProps = {
   group: UserGroup;
-  userId: string;
+  id: string;
   className?: string;
   onSuccess?: () => void;
+  action: AddUserToGroupActionType | AddWorkspaceToGroupActionType;
 };
 
 const AddMemberButton = (props: AddMemberButtonProps) => {
-  const { group, userId, className, onSuccess } = props;
+  const { group, id, className, onSuccess, action } = props;
 
-  const { execute, isPending } = useAction(addUserToGroupAction, {
+  const { execute, isPending } = useAction(action, {
     onSuccess: () => {
       onSuccess?.();
       toast.success("User added to group");
@@ -102,7 +108,7 @@ const AddMemberButton = (props: AddMemberButtonProps) => {
 
   return (
     <form action={execute}>
-      <input type="hidden" name="userId" defaultValue={userId} />
+      <input type="hidden" name="id" defaultValue={id} />
       <input type="hidden" name="groupId" defaultValue={group.id} />
       <Button className={className} variant={"ghost"}>
         {isPending && (

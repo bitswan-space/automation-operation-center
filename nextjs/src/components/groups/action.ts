@@ -12,6 +12,8 @@ import {
   removeUserFromGroup,
   updateOrgGroup,
   createOrgGroup,
+  addWorkspaceToGroup,
+  removeWorkspaceFromGroup,
 } from "@/data/groups";
 import { zfd } from "zod-form-data";
 
@@ -116,11 +118,11 @@ export const addUserToGroupAction = authenticatedActionClient
   })
   .inputSchema(
     zfd.formData({
-      userId: z.string(),
+      id: z.string(),
       groupId: z.string(),
     }),
   )
-  .action(async ({ parsedInput: { userId, groupId } }) => {
+  .action(async ({ parsedInput: { id: userId, groupId } }) => {
     const res = await addUserToGroup(userId, groupId);
     if (res.status === "error") {
       throw new AppError({
@@ -137,17 +139,19 @@ export const addUserToGroupAction = authenticatedActionClient
     };
   });
 
+export type AddUserToGroupActionType = typeof addUserToGroupAction;
+
 export const removeUserFromGroupAction = authenticatedActionClient
   .metadata({
     actionName: "removeUserFromGroupAction",
   })
   .inputSchema(
     zfd.formData({
-      userId: z.string(),
+      id: z.string(),
       groupId: z.string(),
     }),
   )
-  .action(async ({ parsedInput: { userId, groupId } }) => {
+  .action(async ({ parsedInput: { id: userId, groupId } }) => {
     const res = await removeUserFromGroup(userId, groupId);
     if (res.status === "error") {
       throw new AppError({
@@ -163,3 +167,63 @@ export const removeUserFromGroupAction = authenticatedActionClient
       status: "success",
     };
   });
+
+export type RemoveUserFromGroupActionType = typeof removeUserFromGroupAction;
+
+export const addWorkspaceToGroupAction = authenticatedActionClient
+  .metadata({
+    actionName: "addWorkspaceToGroupAction",
+  })
+  .inputSchema(
+    zfd.formData({
+      id: z.string(),
+      groupId: z.string(),
+    }),
+  )
+  .action(async ({ parsedInput: { id: workspaceId, groupId } }) => {
+    const res = await addWorkspaceToGroup(workspaceId, groupId);
+    if (res.status === "error") {
+      throw new AppError({
+        name: "AddWorkspaceToGroupError",
+        message: "Error adding workspace to group",
+        code: "ADD_WORKSPACE_TO_GROUP_ERROR",
+      });
+    }
+
+    revalidatePath("/dashboard/automation-servers/");
+    return {
+      message: "Workspace added to group",
+      status: "success",
+    };
+  });
+
+export type AddWorkspaceToGroupActionType = typeof addWorkspaceToGroupAction;
+
+export const removeWorkspaceFromGroupAction = authenticatedActionClient
+  .metadata({
+    actionName: "removeWorkspaceFromGroupAction",
+  })
+  .inputSchema(
+    zfd.formData({
+      id: z.string(),
+      groupId: z.string(),
+    }),
+  )
+  .action(async ({ parsedInput: { id: workspaceId, groupId } }) => {
+    const res = await removeWorkspaceFromGroup(workspaceId, groupId);
+    if (res.status === "error") {
+      throw new AppError({
+        name: "RemoveWorkspaceFromGroupError",
+        message: "Error removing workspace from group",
+        code: "REMOVE_WORKSPACE_FROM_GROUP_ERROR",
+      });
+    }
+
+    revalidatePath("/dashboard/automation-servers/");
+    return {
+      message: "Workspace removed from group",
+      status: "success",
+    };
+  });
+
+export type RemoveWorkspaceFromGroupActionType = typeof removeWorkspaceFromGroupAction;

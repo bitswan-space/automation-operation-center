@@ -11,6 +11,7 @@ type AutomationServerListResponse = {
 export type Workspace = {
   id: string;
   name: string;
+  group_memberships?: WorkspaceGroupMembership[];
   keycloak_org_id: string;
   automation_server: string;
   created_at: string;
@@ -26,6 +27,12 @@ export type AutomationServer = {
   is_connected: boolean;
   updated_at: string;
   created_at: string;
+};
+
+export type WorkspaceGroupMembership = {
+  id: number;
+  workspace: string;
+  keycloak_group_id: string;
 };
 
 export async function getAutomationServers() {

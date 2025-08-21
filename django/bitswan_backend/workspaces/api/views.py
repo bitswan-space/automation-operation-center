@@ -23,6 +23,9 @@ from bitswan_backend.workspaces.permissions import CanReadProfileEMQXJWT
 from bitswan_backend.workspaces.permissions import CanReadWorkspaceEMQXJWT
 from bitswan_backend.workspaces.permissions import CanReadWorkspacePipelineEMQXJWT
 
+from bitswan_backend.core.models.workspaces import WorkspaceGroupMembership
+
+
 L = logging.getLogger("workspaces.api.views")
 
 
@@ -101,6 +104,97 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+    @action(detail=True, methods=["POST"], url_path="add_to_group")
+    def add_to_group(self, request, pk=None):
+        """
+        Add workspace to a group by creating a WorkspaceGroupMembership entry
+        """
+        try:
+            workspace = get_object_or_404(Workspace, pk=pk)
+            group_id = request.data.get("group_id")
+            
+            if not group_id:
+                return Response(
+                    {"error": "group_id is required"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Validate that the group_id is a valid Keycloak group
+            try:
+                # This will raise an exception if the group doesn't exist
+                self.keycloak.get_org_group(group_id)
+            except Exception as e:
+                L.warning(f"Invalid group_id provided: {group_id}, error: {str(e)}")
+                return Response(
+                    {"error": "Invalid group_id: Group does not exist in Keycloak"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Check if membership already exists
+            existing_membership = WorkspaceGroupMembership.objects.filter(
+                workspace=workspace,
+                keycloak_group_id=group_id
+            ).first()
+            
+            if existing_membership:
+                return Response(
+                    {"error": "Workspace is already a member of this group"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Create new membership
+            membership = WorkspaceGroupMembership.objects.create(
+                workspace=workspace,
+                keycloak_group_id=group_id
+            )
+            
+            return Response(status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            L.error(f"Error adding workspace to group: {str(e)}")
+            return Response(
+                {"error": "Failed to add workspace to group"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=True, methods=["POST"], url_path="remove_from_group")
+    def remove_from_group(self, request, pk=None):
+        """
+        Remove workspace from a group by deleting the WorkspaceGroupMembership entry
+        """
+        try:
+            workspace = get_object_or_404(Workspace, pk=pk)
+            group_id = request.data.get("group_id")
+            
+            if not group_id:
+                return Response(
+                    {"error": "group_id is required"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Check if membership exists
+            membership = WorkspaceGroupMembership.objects.filter(
+                workspace=workspace,
+                keycloak_group_id=group_id
+            ).first()
+            
+            if not membership:
+                return Response(
+                    {"error": "Workspace is not a member of this group"}, 
+                    status=status.HTTP_400_BAD_REQUEST)
+            
+            # Delete the membership
+            membership.delete()
+            
+            return Response(status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            L.error(f"Error removing workspace from group: {str(e)}")
+            return Response(
+                {"error": "Failed to remove workspace from group"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class AutomationServerViewSet(KeycloakMixin, viewsets.ModelViewSet):
