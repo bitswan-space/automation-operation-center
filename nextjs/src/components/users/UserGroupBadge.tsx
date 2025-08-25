@@ -13,12 +13,16 @@ import { toast } from "sonner";
 import {
   type RemoveUserFromGroupActionType,
   type RemoveWorkspaceFromGroupActionType,
+  type RemoveAutomationServerFromGroupActionType,
 } from "../groups/action";
 
 type UserGroupBadgeProps = {
   group: UserGroup;
   id: string;
-  action: RemoveUserFromGroupActionType | RemoveWorkspaceFromGroupActionType;
+  action:
+    | RemoveUserFromGroupActionType
+    | RemoveWorkspaceFromGroupActionType
+    | RemoveAutomationServerFromGroupActionType;
 };
 
 export function UserGroupBadge(props: UserGroupBadgeProps) {

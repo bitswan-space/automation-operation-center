@@ -24,6 +24,7 @@ from bitswan_backend.workspaces.permissions import CanReadWorkspaceEMQXJWT
 from bitswan_backend.workspaces.permissions import CanReadWorkspacePipelineEMQXJWT
 
 from bitswan_backend.core.models.workspaces import WorkspaceGroupMembership
+from bitswan_backend.core.models.automation_server import AutomationServerGroupMembership
 
 
 L = logging.getLogger("workspaces.api.views")
@@ -144,7 +145,7 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
                 )
             
             # Create new membership
-            membership = WorkspaceGroupMembership.objects.create(
+            WorkspaceGroupMembership.objects.create(
                 workspace=workspace,
                 keycloak_group_id=group_id
             )
@@ -256,6 +257,86 @@ class AutomationServerViewSet(KeycloakMixin, viewsets.ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+    
+    @action(detail=True, methods=["POST"], url_path="add_to_group")
+    def add_to_group(self, request, pk=None):
+        """
+        Add automation server to a group by creating a AutomationServerGroupMembership entry
+        """
+        try:
+            automation_server = get_object_or_404(AutomationServer, automation_server_id=pk)
+            group_id = request.data.get("group_id")
+            
+            if not group_id:
+                return Response(
+                    {"error": "group_id is required"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Check if membership already exists
+            existing_membership = AutomationServerGroupMembership.objects.filter(
+                automation_server=automation_server,
+                keycloak_group_id=group_id
+            ).first()
+            
+            if existing_membership:
+                return Response(
+                    {"error": "Automation server is already a member of this group"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Create new membership
+            AutomationServerGroupMembership.objects.create(
+                automation_server=automation_server,
+                keycloak_group_id=group_id
+            )
+            
+            return Response(status=status.HTTP_201_CREATED)
+        except Exception as e:
+            L.error(f"Error adding automation server to group: {str(e)}")
+            return Response(
+                {"error": "Failed to add automation server to group"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=True, methods=["POST"], url_path="remove_from_group")
+    def remove_from_group(self, request, pk=None):
+        """
+        Remove automation server from a group by deleting the AutomationServerGroupMembership entry
+        """
+        try:
+            automation_server = get_object_or_404(AutomationServer, automation_server_id=pk)
+            group_id = request.data.get("group_id")
+
+            if not group_id:
+                return Response(
+                    {"error": "group_id is required"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+
+            # Check if membership exists
+            membership = AutomationServerGroupMembership.objects.filter(
+                automation_server=automation_server,
+                keycloak_group_id=group_id
+            ).first()
+
+            if not membership:
+                return Response(
+                    {"error": "Automation server is not a member of this group"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Delete the membership
+            membership.delete()
+
+            return Response(status=status.HTTP_200_OK)
+        except Exception as e:
+            L.error(f"Error removing automation server from group: {str(e)}")
+            return Response(
+                {"error": "Failed to remove automation server from group"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class GetProfileEmqxJWTAPIView(KeycloakMixin, views.APIView):

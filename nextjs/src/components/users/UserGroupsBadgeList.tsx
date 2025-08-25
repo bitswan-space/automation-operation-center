@@ -9,6 +9,8 @@ import { useSession } from "next-auth/react";
 import {
   type AddWorkspaceToGroupActionType,
   type RemoveWorkspaceFromGroupActionType,
+  type AddAutomationServerToGroupActionType,
+  type RemoveAutomationServerFromGroupActionType,
   type AddUserToGroupActionType,
   type RemoveUserFromGroupActionType,
 } from "../groups/action";
@@ -17,8 +19,14 @@ export type UserGroupsBadgeListProps = {
   memberGroups: UserGroup[];
   id: string;
   nonMemberGroups: UserGroup[];
-  addAction: AddUserToGroupActionType | AddWorkspaceToGroupActionType;
-  removeAction: RemoveUserFromGroupActionType | RemoveWorkspaceFromGroupActionType;
+  addAction:
+    | AddUserToGroupActionType
+    | AddWorkspaceToGroupActionType
+    | AddAutomationServerToGroupActionType;
+  removeAction:
+    | RemoveUserFromGroupActionType
+    | RemoveWorkspaceFromGroupActionType
+    | RemoveAutomationServerFromGroupActionType;
 };
 
 export function UserGroupsBadgeList(props: UserGroupsBadgeListProps) {

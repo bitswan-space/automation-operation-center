@@ -26,7 +26,9 @@ import { UserGroupsBadgeList } from "../users/UserGroupsBadgeList";
 import { type UserGroup } from "@/data/groups";
 import {
   addWorkspaceToGroupAction,
+  addAutomationServerToGroupAction,
   removeWorkspaceFromGroupAction,
+  removeAutomationServerFromGroupAction,
 } from "../groups/action";
 import React from "react";
 
@@ -56,17 +58,34 @@ export function AutomationServerDetailSection(
     () =>
       server?.workspaces?.map((workspace) => ({
         ...workspace,
-        group_memberships: (groupsList ?? []).filter((group) =>
+        group_memberships: groupsList.filter((group) =>
           workspace.group_memberships?.find(
             (g) => g.keycloak_group_id === group.id
           )
         ),
-        nonMemberGroups: (groupsList ?? []).filter((group) =>
+        nonMemberGroups: groupsList.filter((group) =>
           !workspace.group_memberships?.find(
             (g) => g.keycloak_group_id === group.id
           )
         ),
       })) ?? [],
+    [server, groupsList],
+  );
+
+  const automationServerGroups = React.useMemo(
+    () => {
+      const memberGroups = groupsList.filter((group) =>
+        server?.group_memberships?.find(
+          (g) => g.keycloak_group_id === group.id
+        )
+      );
+      const nonMemberGroups = groupsList.filter((group) =>
+        !server?.group_memberships?.find(
+          (g) => g.keycloak_group_id === group.id
+        )
+      );
+      return { memberGroups, nonMemberGroups };
+    },
     [server, groupsList],
   );
 
@@ -83,25 +102,37 @@ export function AutomationServerDetailSection(
             </Button>
           </div>
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="mr-3 flex h-10 w-10 items-center justify-center rounded bg-blue-100 text-blue-600">
-                <Server className="h-5 w-5" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-semibold text-gray-900">
-                  {server?.name}
-                </h1>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <span>
-                    {server?.workspaces?.length} workspace
-                    {(server?.workspaces?.length ?? 0) > 1 && "s"}
-                  </span>
-                  <span>•</span>
-                  <span>
-                    {automationServerPipelines?.pipelines.length ?? 0}{" "}
-                    automations
-                  </span>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center">
+                <div className="mr-3 flex h-10 w-10 items-center justify-center rounded bg-blue-100 text-blue-600">
+                  <Server className="h-5 w-5" />
                 </div>
+                <div>
+                  <h1 className="text-2xl font-semibold text-gray-900">
+                    {server?.name}
+                  </h1>
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <span>
+                      {server?.workspaces?.length} workspace
+                      {(server?.workspaces?.length ?? 0) > 1 && "s"}
+                    </span>
+                    <span>•</span>
+                    <span>
+                      {automationServerPipelines?.pipelines.length ?? 0}{" "}
+                      automations
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-sm text-gray-500">Groups:</span>
+                <UserGroupsBadgeList
+                  memberGroups={automationServerGroups.memberGroups}
+                  id={server?.automation_server_id ?? ""}
+                  nonMemberGroups={automationServerGroups.nonMemberGroups}
+                  addAction={addAutomationServerToGroupAction}
+                  removeAction={removeAutomationServerFromGroupAction}
+                />
               </div>
             </div>
             <div className="flex items-center gap-2">
