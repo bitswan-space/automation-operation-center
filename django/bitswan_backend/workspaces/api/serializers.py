@@ -4,7 +4,20 @@ from rest_framework import serializers
 
 from bitswan_backend.core.models import AutomationServer
 from bitswan_backend.core.models import Workspace
+from bitswan_backend.core.models.workspaces import WorkspaceGroupMembership
+from bitswan_backend.core.models.automation_server import AutomationServerGroupMembership
 from bitswan_backend.core.services.keycloak import KeycloakService
+
+
+class WorkspaceGroupMembershipSerializer(serializers.ModelSerializer):
+    """Serializer for WorkspaceGroupMembership model"""
+    
+    class Meta:
+        model = WorkspaceGroupMembership
+        fields = [
+            "id",
+            "keycloak_group_id",
+        ]
 
 
 class WorkspaceSerializer(serializers.ModelSerializer):
@@ -20,6 +33,8 @@ class WorkspaceSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     keycloak_org_id = serializers.CharField(read_only=True)
+    
+    group_memberships = WorkspaceGroupMembershipSerializer(many=True, read_only=True)
 
     def validate(self, attrs):
         if not attrs.get("automation_server"):
@@ -46,13 +61,26 @@ class WorkspaceSerializer(serializers.ModelSerializer):
             "editor_url",
             "created_at",
             "updated_at",
+            "group_memberships",
         ]
         read_only_fields = ["created_at", "updated_at"]
 
 
+class AutomationServerGroupMembershipSerializer(serializers.ModelSerializer):
+    """Serializer for AutomationServerGroupMembership model"""
+    
+    class Meta:
+        model = AutomationServerGroupMembership
+        fields = [
+            "id",
+            "keycloak_group_id",
+        ]
+
+
 class AutomationServerSerializer(serializers.ModelSerializer):
     workspaces = WorkspaceSerializer(many=True, read_only=True)
-
+    group_memberships = AutomationServerGroupMembershipSerializer(many=True, read_only=True)
+    
     class Meta:
         model = AutomationServer
         fields = [
@@ -61,6 +89,7 @@ class AutomationServerSerializer(serializers.ModelSerializer):
             "automation_server_id",
             "keycloak_org_id",
             "workspaces",
+            "group_memberships",
             "created_at",
             "updated_at",
         ]
@@ -111,3 +140,4 @@ class CreateAutomationServerSerializer(serializers.ModelSerializer):
         return {
             "automation_server_id": server.automation_server_id,
         }
+

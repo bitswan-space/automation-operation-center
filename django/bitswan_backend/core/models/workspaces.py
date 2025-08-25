@@ -21,3 +21,15 @@ class Workspace(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class WorkspaceGroupMembership(models.Model):
+    id = models.AutoField(primary_key=True)
+    workspace = models.ForeignKey(
+        "Workspace",
+        on_delete=models.CASCADE,
+        related_name="group_memberships",
+        null=False,
+        blank=False,
+    )
+    keycloak_group_id = models.CharField(max_length=255, unique=True)

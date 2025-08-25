@@ -22,15 +22,25 @@ import { PipelineDataCardList } from "../pipeline/PipelineDataCardList";
 import { PipelineDataTable } from "../pipeline/PipelineDataTable";
 import { useAutomations } from "@/context/AutomationsProvider";
 import { useRouter } from "next/navigation";
+import { UserGroupsBadgeList } from "../users/UserGroupsBadgeList";
+import { type UserGroup } from "@/data/groups";
+import {
+  addWorkspaceToGroupAction,
+  addAutomationServerToGroupAction,
+  removeWorkspaceFromGroupAction,
+  removeAutomationServerFromGroupAction,
+} from "../groups/action";
+import React from "react";
 
 type AutomationServerDetailSectionProps = {
   server?: AutomationServer;
+  groupsList: UserGroup[];
 };
 
 export function AutomationServerDetailSection(
   props: AutomationServerDetailSectionProps,
 ) {
-  const { server } = props;
+  const { server, groupsList } = props;
 
   const router = useRouter();
   const { automationServers, isLoading } = useAutomations();
@@ -43,6 +53,41 @@ export function AutomationServerDetailSection(
 
   const automationServerPipelines =
     automationServers[server?.automation_server_id ?? ""];
+
+  const workspaces = React.useMemo(
+    () =>
+      server?.workspaces?.map((workspace) => ({
+        ...workspace,
+        group_memberships: groupsList.filter((group) =>
+          workspace.group_memberships?.find(
+            (g) => g.keycloak_group_id === group.id
+          )
+        ),
+        nonMemberGroups: groupsList.filter((group) =>
+          !workspace.group_memberships?.find(
+            (g) => g.keycloak_group_id === group.id
+          )
+        ),
+      })) ?? [],
+    [server, groupsList],
+  );
+
+  const automationServerGroups = React.useMemo(
+    () => {
+      const memberGroups = groupsList.filter((group) =>
+        server?.group_memberships?.find(
+          (g) => g.keycloak_group_id === group.id
+        )
+      );
+      const nonMemberGroups = groupsList.filter((group) =>
+        !server?.group_memberships?.find(
+          (g) => g.keycloak_group_id === group.id
+        )
+      );
+      return { memberGroups, nonMemberGroups };
+    },
+    [server, groupsList],
+  );
 
   return (
     <div className="container mx-auto flex-1 px-0 py-4">
@@ -57,25 +102,37 @@ export function AutomationServerDetailSection(
             </Button>
           </div>
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="mr-3 flex h-10 w-10 items-center justify-center rounded bg-blue-100 text-blue-600">
-                <Server className="h-5 w-5" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-semibold text-gray-900">
-                  {server?.name}
-                </h1>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <span>
-                    {server?.workspaces?.length} workspace
-                    {(server?.workspaces?.length ?? 0) > 1 && "s"}
-                  </span>
-                  <span>•</span>
-                  <span>
-                    {automationServerPipelines?.pipelines.length ?? 0}{" "}
-                    automations
-                  </span>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center">
+                <div className="mr-3 flex h-10 w-10 items-center justify-center rounded bg-blue-100 text-blue-600">
+                  <Server className="h-5 w-5" />
                 </div>
+                <div>
+                  <h1 className="text-2xl font-semibold text-gray-900">
+                    {server?.name}
+                  </h1>
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <span>
+                      {server?.workspaces?.length} workspace
+                      {(server?.workspaces?.length ?? 0) > 1 && "s"}
+                    </span>
+                    <span>•</span>
+                    <span>
+                      {automationServerPipelines?.pipelines.length ?? 0}{" "}
+                      automations
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-sm text-gray-500">Groups:</span>
+                <UserGroupsBadgeList
+                  memberGroups={automationServerGroups.memberGroups}
+                  id={server?.automation_server_id ?? ""}
+                  nonMemberGroups={automationServerGroups.nonMemberGroups}
+                  addAction={addAutomationServerToGroupAction}
+                  removeAction={removeAutomationServerFromGroupAction}
+                />
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -115,19 +172,19 @@ export function AutomationServerDetailSection(
                   <TableHeader className="bg-gray-100 text-gray-600">
                     <TableRow>
                       <TableHead>Name</TableHead>
-
                       <TableHead className="text-center">Automations</TableHead>
+                      <TableHead className="text-left">Groups</TableHead>
                       <TableHead className="text-right">Created</TableHead>
                       <TableHead className="text-right"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {server?.workspaces?.map((workspace) => (
+                    {workspaces?.map((workspace) => (
                       <TableRow key={workspace.id}>
                         <TableCell className="items-center text-blue-600 underline underline-offset-2">
                           <Link
                             className="flex items-center gap-1"
-                            href={`/dashboard/automation-servers/${server.automation_server_id}/workspaces/${workspace.id}`}
+                            href={`/dashboard/automation-servers/${server!.automation_server_id}/workspaces/${workspace.id}`}
                           >
                             {workspace.name}
                             <ArrowUpRight className="h-4 w-4" />
@@ -142,6 +199,15 @@ export function AutomationServerDetailSection(
                             automationServerPipelines?.workspaces[workspace.id]
                               ?.pipelines.length ?? 0
                           )}
+                        </TableCell>
+                        <TableCell className="text-left">
+                          <UserGroupsBadgeList
+                            memberGroups={workspace.group_memberships}
+                            id={workspace.id}
+                            nonMemberGroups={workspace.nonMemberGroups}
+                            addAction={addWorkspaceToGroupAction}
+                            removeAction={removeWorkspaceFromGroupAction}
+                          />
                         </TableCell>
                         <TableCell className="text-right font-medium">
                           {formatRelative(

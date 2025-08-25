@@ -16,3 +16,15 @@ class AutomationServer(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class AutomationServerGroupMembership(models.Model):
+    id = models.AutoField(primary_key=True)
+    automation_server = models.ForeignKey(
+        "AutomationServer",
+        on_delete=models.CASCADE,
+        related_name="group_memberships",
+        null=False,
+        blank=False,
+    )
+    keycloak_group_id = models.CharField(max_length=255, unique=True)
