@@ -14,6 +14,8 @@ import {
   createOrgGroup,
   addWorkspaceToGroup,
   removeWorkspaceFromGroup,
+  addAutomationServerToGroup,
+  removeAutomationServerFromGroup,
 } from "@/data/groups";
 import { zfd } from "zod-form-data";
 
@@ -106,6 +108,7 @@ export const deleteOrgGroupAction = authenticatedActionClient
     }
 
     revalidatePath("/dashboard/settings");
+    revalidatePath("/dashboard/automation-servers/");
     return {
       message: "Group deleted",
       status: "success",
@@ -227,3 +230,61 @@ export const removeWorkspaceFromGroupAction = authenticatedActionClient
   });
 
 export type RemoveWorkspaceFromGroupActionType = typeof removeWorkspaceFromGroupAction;
+
+export const addAutomationServerToGroupAction = authenticatedActionClient
+  .metadata({
+    actionName: "addAutomationServerToGroupAction",
+  })
+  .inputSchema(
+    zfd.formData({
+      id: z.string(),
+      groupId: z.string(),
+    }),
+  )
+  .action(async ({ parsedInput: { id: automationServerId, groupId } }) => {
+    const res = await addAutomationServerToGroup(automationServerId, groupId);
+    if (res.status === "error") {
+      throw new AppError({
+        name: "AddAutomationServerToGroupError",
+        message: "Error adding automation server to group",
+        code: "ADD_AUTOMATION_SERVER_TO_GROUP_ERROR",
+      });
+    }
+
+    revalidatePath("/dashboard/automation-servers/");
+    return {
+      message: "Automation server added to group",
+      status: "success",
+    };
+  });
+
+export type AddAutomationServerToGroupActionType = typeof addAutomationServerToGroupAction;
+
+export const removeAutomationServerFromGroupAction = authenticatedActionClient
+  .metadata({
+    actionName: "removeAutomationServerFromGroupAction",
+  })
+  .inputSchema(
+    zfd.formData({
+      id: z.string(),
+      groupId: z.string(),
+    }),
+  )
+  .action(async ({ parsedInput: { id: automationServerId, groupId } }) => {
+    const res = await removeAutomationServerFromGroup(automationServerId, groupId);
+    if (res.status === "error") {
+      throw new AppError({
+        name: "RemoveAutomationServerFromGroupError",
+        message: "Error removing automation server from group",
+        code: "REMOVE_AUTOMATION_SERVER_FROM_GROUP_ERROR",
+      });
+    }
+
+    revalidatePath("/dashboard/automation-servers/");
+    return {
+      message: "Automation server removed from group",
+      status: "success",
+    };
+  });
+
+export type RemoveAutomationServerFromGroupActionType = typeof removeAutomationServerFromGroupAction;

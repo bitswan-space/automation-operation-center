@@ -26,13 +26,17 @@ import { useAction } from "next-safe-action/hooks";
 import {
   type AddWorkspaceToGroupActionType,
   type AddUserToGroupActionType,
+  type AddAutomationServerToGroupActionType,
 } from "./action";
 import { toast } from "sonner";
 
 type GroupComboBoxSelectorProps = {
   groups?: UserGroup[];
   id: string;
-  action: AddUserToGroupActionType | AddWorkspaceToGroupActionType;
+  action:
+    | AddUserToGroupActionType
+    | AddWorkspaceToGroupActionType
+    | AddAutomationServerToGroupActionType;
 };
 
 export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
@@ -90,7 +94,10 @@ type AddMemberButtonProps = {
   id: string;
   className?: string;
   onSuccess?: () => void;
-  action: AddUserToGroupActionType | AddWorkspaceToGroupActionType;
+  action:
+    | AddUserToGroupActionType
+    | AddWorkspaceToGroupActionType
+    | AddAutomationServerToGroupActionType;
 };
 
 const AddMemberButton = (props: AddMemberButtonProps) => {

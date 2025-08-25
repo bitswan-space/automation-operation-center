@@ -22,6 +22,7 @@ export type Workspace = {
 export type AutomationServer = {
   id: number;
   name: string;
+  group_memberships?: AutomationServerGroupMembership[];
   workspaces?: Workspace[];
   automation_server_id: string;
   is_connected: boolean;
@@ -32,6 +33,12 @@ export type AutomationServer = {
 export type WorkspaceGroupMembership = {
   id: number;
   workspace: string;
+  keycloak_group_id: string;
+};
+
+export type AutomationServerGroupMembership = {
+  id: number;
+  automation_server: string;
   keycloak_group_id: string;
 };
 

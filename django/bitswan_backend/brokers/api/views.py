@@ -20,6 +20,8 @@ from bitswan_backend.brokers.api.serializers import UserGroupSerializer
 from bitswan_backend.brokers.api.service import GroupNavigationService
 from bitswan_backend.core.pagination import DefaultPagination
 from bitswan_backend.core.viewmixins import KeycloakMixin
+from bitswan_backend.core.models.workspaces import WorkspaceGroupMembership
+from bitswan_backend.core.models.automation_server import AutomationServerGroupMembership
 
 
 class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
@@ -60,6 +62,10 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
     def destroy(self, request, pk=None):
         try:
             self.delete_org_group(group_id=pk)
+            
+            WorkspaceGroupMembership.objects.filter(keycloak_group_id=pk).delete()
+            AutomationServerGroupMembership.objects.filter(keycloak_group_id=pk).delete()
+            
             org_id = self.get_org_id()
             self.mqtt_service.publish_org_profiles(org_id)
             return Response(status=status.HTTP_204_NO_CONTENT)

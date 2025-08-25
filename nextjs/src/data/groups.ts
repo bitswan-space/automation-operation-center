@@ -181,6 +181,62 @@ export const removeWorkspaceFromGroup = async (workspaceId: string, groupId: str
   }
 };
 
+export const addAutomationServerToGroup = async (automationServerId: string, groupId: string) => {
+  const bitswanBEInstance = await authenticatedBitswanBackendInstance();
+  const activeOrg = await getActiveOrgFromCookies();
+
+  try {
+    const res = await bitswanBEInstance.post<ApiResponse>(
+      `/automation-servers/${automationServerId}/add_to_group/`,
+      {
+        group_id: groupId,
+      },
+      {
+        headers: {
+          "X-Org-Id": activeOrg?.id ?? "",
+          "X-Org-Name": activeOrg?.name ?? "",
+        },
+      },
+    );
+    return { ...res.data, status: "success" as const };
+  } catch (error) {
+    console.error("Error adding automation server to group", error);
+    return {
+      status: "error" as const,
+      message: "Error adding automation server to group",
+      data: null,
+    };
+  }
+};
+
+export const removeAutomationServerFromGroup = async (automationServerId: string, groupId: string) => {
+  const bitswanBEInstance = await authenticatedBitswanBackendInstance();
+  const activeOrg = await getActiveOrgFromCookies();
+
+  try {
+    const res = await bitswanBEInstance.post<ApiResponse>(
+      `/automation-servers/${automationServerId}/remove_from_group/`,
+      {
+        group_id: groupId,
+      },
+      {
+        headers: {
+          "X-Org-Id": activeOrg?.id ?? "",
+          "X-Org-Name": activeOrg?.name ?? "",
+        },
+      },
+    );
+    return { ...res.data, status: "success" as const };
+  } catch (error) {
+    console.error("Error removing automation server from group", error);
+    return {
+      status: "error" as const,
+      message: "Error removing automation server from group",
+      data: null,
+    };
+  }
+};
+
 export const createOrgGroup = async (userGroup: {
   name: string;
   description?: string;
