@@ -7,4 +7,6 @@ class BrokersConfig(AppConfig):
 
     def ready(self):
         from bitswan_backend.core.mqtt import MQTTService
-        MQTTService().publish_orgs_profiles()
+        mqtt_service = MQTTService()
+        mqtt_service.publish_orgs_profiles()
+        mqtt_service.publish_all_groups()

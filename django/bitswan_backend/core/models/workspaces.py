@@ -1,6 +1,8 @@
 import uuid
 
 from django.db import models
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 
 
 class Workspace(models.Model):
@@ -32,4 +34,20 @@ class WorkspaceGroupMembership(models.Model):
         null=False,
         blank=False,
     )
-    keycloak_group_id = models.CharField(max_length=255, unique=True)
+    keycloak_group_id = models.CharField(max_length=255)
+
+
+# Signal handlers for MQTT publishing
+@receiver([post_save, post_delete], sender=WorkspaceGroupMembership)
+def publish_workspace_groups_on_change(sender, instance, **kwargs):
+    """
+    Automatically publish workspace groups to MQTT when memberships change
+    """
+    try:
+        from bitswan_backend.core.mqtt import MQTTService
+
+        MQTTService().publish_workspace_groups(instance.workspace)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Failed to publish workspace groups to MQTT: {e}")
