@@ -98,3 +98,70 @@ class MQTTService:
                 self.publish_org_profiles(org['id'])
         except Exception as e:
             logger.error(f"Error publishing organizations profiles: {e}")
+
+    def publish_automation_server_groups(self, automation_server):
+        """
+        Publish automation server groups to MQTT with persistent message
+        """
+        try:
+            from bitswan_backend.core.models.automation_server import AutomationServerGroupMembership
+            
+            # Get all group memberships for this automation server
+            memberships = AutomationServerGroupMembership.objects.filter(
+                automation_server=automation_server
+            )
+            
+            # Extract group IDs
+            group_ids = [membership.keycloak_group_id for membership in memberships]
+            
+            topic = f"/orgs/{automation_server.keycloak_org_id}/automation-servers/{automation_server.automation_server_id}/groups"
+            self.mqtt_client.publish(topic, group_ids, retain=True)
+            logger.info(f"Published automation server groups to {topic}: {group_ids}")
+            
+        except Exception as e:
+            logger.error(f"Error publishing automation server groups: {e}")
+
+    def publish_workspace_groups(self, workspace):
+        """
+        Publish workspace groups to MQTT with persistent message
+        """
+        try:
+            from bitswan_backend.core.models.workspaces import WorkspaceGroupMembership
+            
+            # Get all group memberships for this workspace
+            memberships = WorkspaceGroupMembership.objects.filter(
+                workspace=workspace
+            )
+            
+            # Extract group IDs
+            group_ids = [membership.keycloak_group_id for membership in memberships]
+            
+            topic = f"/orgs/{workspace.keycloak_org_id}/automation-servers/{workspace.automation_server_id}/c/{workspace.id}/groups"
+            self.mqtt_client.publish(topic, group_ids, retain=True)
+            logger.info(f"Published workspace groups to {topic}: {group_ids}")
+            
+        except Exception as e:
+            logger.error(f"Error publishing workspace groups: {e}")
+
+    def publish_all_groups(self):
+        """
+        Publish all groups for all organizations on startup
+        """
+        try:
+            from bitswan_backend.core.models.automation_server import AutomationServer
+            from bitswan_backend.core.models.workspaces import Workspace
+            
+            # Publish automation server groups
+            automation_servers = AutomationServer.objects.all()
+            for server in automation_servers:
+                self.publish_automation_server_groups(server)
+            
+            # Publish workspace groups
+            workspaces = Workspace.objects.all()
+            for workspace in workspaces:
+                self.publish_workspace_groups(workspace)
+                
+            logger.info("Successfully published all groups on startup")
+            
+        except Exception as e:
+            logger.error(f"Error publishing all groups on startup: {e}")

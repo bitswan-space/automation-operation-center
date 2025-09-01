@@ -69,6 +69,20 @@ func Init() error {
 			logger.Error.Printf("Subscription failed: %v", token.Error())
 		}
 
+		// Automation server groups
+		// /orgs/{org id}/automation-servers/{automation server id}/groups
+		automationServerGroupsTopic := "/orgs/+/automation-servers/+/groups"
+		if token := client.Subscribe(automationServerGroupsTopic, 0, HandleAutomationServerGroupsMessage); token.Wait() && token.Error() != nil {
+			logger.Error.Printf("Subscription failed: %v", token.Error())
+		}
+
+		// Workspace groups
+		// /orgs/{org id}/automation-servers/{automation server id}/c/{workspace id}/groups
+		workspaceGroupsTopic := "/orgs/+/automation-servers/+/c/+/groups"
+		if token := client.Subscribe(workspaceGroupsTopic, 0, HandleWorkspaceGroupsMessage); token.Wait() && token.Error() != nil {
+			logger.Error.Printf("Subscription failed: %v", token.Error())
+		}
+
 		// List of automations for each workspace
 		// /orgs/{org id}/automation-servers/{automation server id}/c/{workspace id}/topology
 		topologyTopic := "/orgs/+/automation-servers/+/c/+/topology"
