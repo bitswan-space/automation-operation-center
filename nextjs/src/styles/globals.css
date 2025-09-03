@@ -26,23 +26,99 @@
 
 @layer base {
   :root {
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Core palette (Light) */
+    --background: 255 255 255;             /* colors/background-light */ 
+    --foreground: 24 24 27;                /* colors/foreground-light */
+  
+    --card: 255 255 255;                   /* colors/card-light */
+    --card-foreground: 9 9 11;             /* colors/card-foreground-light */
+  
+    --popover: 255 255 255;                /* colors/popover-light */
+    --popover-foreground: 9 9 11;          /* colors/popover-foreground-light */
+  
+    --primary: 9 61 245;                   /* colors/primary-light */
+    --primary-foreground: 250 250 250;     /* colors/primary-foreground-light */
+  
+    --secondary: 245 245 246;              /* colors/secondary-light (zinc/100) */
+    --secondary-foreground: 9 61 245;      /* colors/secondary-foreground-light */
+  
+    --muted: 245 245 246;                  /* colors/muted-light (zinc/100) */
+    --muted-foreground: 113 113 122;       /* colors/muted-foreground-light (zinc/500) */
+  
+    --accent: 245 245 246;                 /* colors/accent-light (zinc/100) */
+    --accent-foreground: 24 24 27;         /* colors/accent-foreground-light (zinc/900) */
+  
+    --destructive: 220 38 38;              /* colors/destructive-light (red/600) */
+    --destructive-foreground: 254 242 242; /* colors/destructive-foreground-light (red/50) */
+  
+    --border: 228 228 231;                 /* colors/border-light (zinc/200) */
+    --input: 209 213 219;                  /* colors/input-light (gray/300) */
+    --ring: 59 130 246;                    /* colors/ring-light (blue/500) */
+  
+    /* Radius (Figma: sm=2, md=6, lg=8, xl=12, full=9999) */
+    --radius: 6px; /* default / md */
+    --radius-sm: 2px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+  
+    /* Optional: Sidebar palette (Light) */
+    --sidebar-background: 0 0% 98%;     /* colors/sidebar-background-light */
+    --sidebar-foreground: 240 5.3% 26.1%;          /* colors/sidebar-foreground-light */
+    --sidebar-primary: 240 5.9% 10%;           /* colors/sidebar-primary-light */
+    --sidebar-primary-foreground: 0 0% 98%; /* colors/sidebar-primary-foreground-light */
+    --sidebar-accent: 240 4.8% 95.9%;         /* colors/sidebar-accent-light (zinc/200) */
+    --sidebar-accent-foreground: 240 5.9% 10%; /* colors/sidebar-accent-foreground-light */
+    --sidebar-border: 220 13% 91%;         /* colors/sidebar-border-light */
+    --sidebar-ring: 217.2 91.2% 59.8%;           /* colors/sidebar-ring-light (zinc/400) */
   }
+  
   .dark {
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Core palette (Dark) */
+    --background: 9 9 11;                  /* colors/background-dark (zinc/950) */
+    --foreground: 250 250 250;             /* colors/foreground-dark (zinc/50) */
+  
+    --card: 9 9 11;                        /* colors/card-dark */
+    --card-foreground: 250 250 250;        /* colors/card-foreground-dark */
+  
+    --popover: 9 9 11;                     /* colors/popover-dark */
+    --popover-foreground: 250 250 250;     /* colors/popover-foreground-dark */
+  
+    --primary: 250 250 250;                /* colors/primary-dark (zinc/50) */
+    --primary-foreground: 24 24 27;        /* colors/primary-foreground-dark (zinc/900) */
+  
+    --secondary: 39 39 42;                 /* colors/secondary-dark (zinc/800) */
+    --secondary-foreground: 250 250 250;   /* colors/secondary-foreground-dark (zinc/50) */
+  
+    --muted: 39 39 42;                     /* colors/muted-dark (zinc/800) */
+    --muted-foreground: 161 161 170;       /* colors/muted-foreground-dark (zinc/400) */
+  
+    --accent: 39 39 42;                    /* colors/accent-dark (zinc/800) */
+    --accent-foreground: 250 250 250;      /* colors/accent-foreground-dark (zinc/50) */
+  
+    --destructive: 127 29 29;              /* colors/destructive-dark (red/900) */
+    --destructive-foreground: 254 242 242; /* colors/destructive-foreground-dark (red/50) */
+  
+    --border: 39 39 42;                    /* colors/border-dark (zinc/800) */
+    --input: 39 39 42;                     /* colors/input-dark (zinc/800) */
+    --ring: 212 212 216;                   /* colors/ring-dark (zinc/300) */
+  
+    /* Optional: Sidebar palette (Dark) */
+    --sidebar-background: 240 5.9% 10%;        /* colors/sidebar-background-dark */
+    --sidebar-foreground: 240 4.8% 95.9%;     /* colors/sidebar-foreground-dark (zinc/100) */
+    --sidebar-primary: 224.3 76.3% 48%;             /* colors/sidebar-primary-dark */
+    --sidebar-primary-foreground: 0 0% 100%; /* colors/sidebar-primary-foreground-dark */
+    --sidebar-accent: 240 3.7% 15.9%;            /* colors/sidebar-accent-dark */
+    --sidebar-accent-foreground: 240 4.8% 95.9%; /* colors/sidebar-accent-foreground-dark */
+    --sidebar-border: 240 3.7% 15.9%;            /* colors/sidebar-border-dark */
+    --sidebar-ring: 217.2 91.2% 59.8%;           /* colors/sidebar-ring-dark */
+  }  
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }
