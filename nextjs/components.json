@@ -7,10 +7,18 @@
     "config": "tailwind.config.ts",
     "css": "src/styles/globals.css",
     "baseColor": "neutral",
-    "cssVariables": false
+    "cssVariables": true
   },
   "aliases": {
     "components": "@/components",
     "utils": "@/lib/utils"
+  },
+  "registries": {
+    "@shadcndesign": {
+      "url": "https://shadcndesign-registry.vercel.app/api/registry/{name}",
+      "headers": {
+        "X-License-Key": "${SHADCNDESIGN_LICENSE_KEY}"
+      }
+    }
   }
 }
