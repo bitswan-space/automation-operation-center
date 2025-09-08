@@ -27,7 +27,7 @@ export default async function RootLayout({
           <NuqsAdapter>
             <html
               lang="en"
-              className={`${GeistSans.variable} bg-neutral-200/50`}
+              className={`${GeistSans.variable}`}
             >
               <body className="">
                 <main>{children}</main>

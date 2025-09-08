@@ -31,15 +31,15 @@ export const CreateSidebarItem: React.FC = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <SidebarMenuItem className="list-none">
-          <SidebarMenuButton className="transform bg-blue-700 duration-150 ease-in-out hover:bg-blue-600">
+          <SidebarMenuButton>
             <Plus size={16} />
-            <span className="my-auto">New</span>
+            <span className="my-auto">New shortcut</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         side="left"
-        className="mt-8 w-[200px] border-neutral-900 bg-neutral-900 p-0 text-neutral-50"
+        className="mt-8 w-[200px]"
       >
         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
           <CreateFolderFormDialog />
@@ -83,14 +83,14 @@ export const SidebarItemActions: React.FC<SidebarItemActionsProps> = (
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild className="text-stone-50">
+      <DropdownMenuTrigger asChild>
         <SidebarMenuAction className="my-auto">
-          <MoreVertical size={20} className="my-auto text-neutral-300" />
+          <MoreVertical size={20} className="my-auto" />
         </SidebarMenuAction>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         side="right"
-        className="mt-16 w-[200px] border-neutral-900 bg-neutral-900 p-0 text-neutral-50"
+        className="mt-16 w-[200px]"
       >
         {type === "folder" && (
           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -147,7 +147,7 @@ export const CreateInFolder: React.FC<CreateInFolderProps> = (props) => {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         side="right"
-        className="mt-8 w-[200px] border-neutral-900 bg-neutral-900 p-0 text-neutral-50"
+        className="mt-8 w-[200px]"
       >
         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
           <CreateFolderFormDialog parentId={parentId} />

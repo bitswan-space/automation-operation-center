@@ -39,6 +39,9 @@ type SidebarContextProps = {
   setOpenMobile: (open: boolean) => void
   isMobile: boolean
   toggleSidebar: () => void
+  editMode: boolean
+  setEditMode: (editMode: boolean) => void
+  toggleEditMode: () => void
 }
 
 const SidebarContext = React.createContext<SidebarContextProps | null>(null)
@@ -94,6 +97,21 @@ const SidebarProvider = React.forwardRef<
       [setOpenProp, open]
     )
 
+
+    const [_editMode, _setEditMode] = React.useState(false);
+    const editMode = _editMode;
+
+    const setEditMode = React.useCallback(
+      (value: boolean | ((value: boolean) => boolean)) => {
+        _setEditMode(value);
+      },
+      [],
+    );
+
+    const toggleEditMode = React.useCallback(() => {
+      setEditMode((editMode) => !editMode);
+    }, [setEditMode]);
+
     // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
       return isMobile
@@ -130,8 +148,11 @@ const SidebarProvider = React.forwardRef<
         openMobile,
         setOpenMobile,
         toggleSidebar,
+        editMode,
+        setEditMode,
+        toggleEditMode,
       }),
-      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, editMode, setEditMode, toggleEditMode]
     )
 
     return (
