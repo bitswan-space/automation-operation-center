@@ -51,3 +51,57 @@ def publish_workspace_groups_on_change(sender, instance, **kwargs):
         import logging
         logger = logging.getLogger(__name__)
         logger.warning(f"Failed to publish workspace groups to MQTT: {e}")
+
+@receiver([post_save], sender=Workspace)
+def create_workspace_groups(sender, instance, created, **kwargs):
+    """
+    Create workspace groups for the workspace
+    """
+    if not created:
+        return
+    
+    try:
+        from bitswan_backend.core.services.keycloak import KeycloakService
+        
+        keycloak_service = KeycloakService()
+        workspace_name = instance.name
+        
+        # Create read group
+        read_group_id = keycloak_service.create_group(
+            org_id=instance.keycloak_org_id,
+            name=f"{workspace_name}-read",
+            attributes={
+                "tag_color": ["#4CAF50"],  # Green color for read
+                "description": [f"Read access to workspace {workspace_name}"],
+            }
+        )
+        
+        # Create admin group
+        admin_group_id = keycloak_service.create_group(
+            org_id=instance.keycloak_org_id,
+            name=f"{workspace_name}-admin",
+            attributes={
+                "tag_color": ["#F44336"],  # Red color for admin
+                "description": [f"Admin access to workspace {workspace_name}"],
+            }
+        )
+        
+        # Store group memberships in the database
+        WorkspaceGroupMembership.objects.create(
+            workspace=instance,
+            keycloak_group_id=read_group_id
+        )
+        
+        WorkspaceGroupMembership.objects.create(
+            workspace=instance,
+            keycloak_group_id=admin_group_id
+        )
+        
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Created workspace groups for {workspace_name}: read={read_group_id}, admin={admin_group_id}")
+        
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Failed to create workspace groups for {instance.name}: {e}")
