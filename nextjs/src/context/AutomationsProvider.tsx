@@ -34,7 +34,7 @@ type AutomationsGroups = {
 
 const AutomationsContext = createContext<AutomationsGroups | null>(null);
 
-export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
+export const AutomationsProvider = ({ children, tokens }: { children: ReactNode, tokens: string[] }) => {
   const pipelineStats = usePipelineStats();
 
   // Keep track of all workspaces and their pipelines
@@ -50,8 +50,9 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
 
   const { response: workspaceTopology, messageTopic } =
     useMQTTRequestResponse<WorkspaceTopologyResponse>({
-      requestTopic: `/automation-servers/+/c/+/topology/subscribe`,
-      responseTopic: `/automation-servers/+/c/+/topology`,
+      requestTopic: `/topology/subscribe`,
+      responseTopic: `/topology`,
+      tokens: tokens,
     });
 
   // Fetch automation servers data
@@ -111,8 +112,8 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
     if (!messageTopic) return null;
     const parts = messageTopic.split("/");
     return {
-      automationServerId: parts[2], // Index 2 contains server ID
-      workspaceId: parts[4], // Index 4 contains workspace ID
+      automationServerId: parts[4], // Index 4 contains server ID
+      workspaceId: parts[6], // Index 6 contains workspace ID
     };
   }, [messageTopic]);
 

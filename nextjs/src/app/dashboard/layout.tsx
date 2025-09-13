@@ -14,6 +14,7 @@ import { Toaster } from "sonner";
 import { auth } from "@/server/auth";
 import { env } from "@/env.mjs";
 import { redirect } from "next/navigation";
+import { getMQTTTokens } from "@/data/mqtt";
 
 export default async function DashboardLayout({
   children,
@@ -29,13 +30,16 @@ export default async function DashboardLayout({
     redirect("/auth/signout");
   }
 
+  const tokens = await getMQTTTokens();
+  console.log("tokens", tokens);
+
   return (
     <SidebarProvider>
       <SidebarItemsProvider>
         {/* Sidebar */}
         <AppSidebar session={session} />
         <SidebarRail />
-        <AutomationsProvider>
+        <AutomationsProvider tokens={tokens}>
           <SidebarInset className="bg-neutral-200/50">
             <div className="flex-1 p-4 py-0">
               <div className="flex items-center justify-between pb-1">

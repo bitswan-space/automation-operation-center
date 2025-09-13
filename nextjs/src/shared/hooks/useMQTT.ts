@@ -1,6 +1,13 @@
 import mqtt, { type MqttClient } from "mqtt";
 import { type QoS } from "mqtt-packet";
 import React from "react";
+import { decode } from "jsonwebtoken";
+
+interface JwtPayload {
+  client_attrs: {
+    mountpoint: string;
+  };
+}
 
 export function useMQTT<PayloadT>() {
   const clientRef = React.useRef<MqttClient | null>(null);
@@ -31,14 +38,15 @@ export function useMQTT<PayloadT>() {
       });
 
       newClient.on("message", (topic, message) => {
+        // When used mountpoin without wildcard, we need to parse the token to get the full topic path
+        if (topic.startsWith("/topology")) {
+          topic = (decode(mqttOption.password as string) as JwtPayload).client_attrs?.mountpoint + topic;
+        }
         const payload = {
           topic,
           message: JSON.parse(message.toString()) as PayloadT,
         };
         setPayload(() => payload);
-        // console.log(
-        //   `received message: ${message.toString()} from topic: ${topic}`,
-        // );
       });
 
       clientRef.current = newClient;

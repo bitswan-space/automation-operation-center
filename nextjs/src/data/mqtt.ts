@@ -8,6 +8,10 @@ type GetMQTTTokenResponse = {
   token: string;
 };
 
+type GetMQTTTokensResponse = {
+  tokens: string[];
+};
+
 export async function getMQTTToken(activeMQTTProfile: MQTTProfile | null) {
   const bitswanBEInstance = await authenticatedBitswanBackendInstance();
   const activeOrg = await getActiveOrgFromCookies();
@@ -23,4 +27,21 @@ export async function getMQTTToken(activeMQTTProfile: MQTTProfile | null) {
   );
 
   return res.data?.token ?? null;
+}
+
+export async function getMQTTTokens() {
+  const bitswanBEInstance = await authenticatedBitswanBackendInstance();
+  const activeOrg = await getActiveOrgFromCookies();
+
+  const res = await bitswanBEInstance.get<GetMQTTTokensResponse>(
+    "/user/emqx/jwts",
+    {
+      headers: {
+        "X-Org-Id": activeOrg?.id ?? "",
+        "X-Org-Name": activeOrg?.name ?? "",
+      },
+    },
+  );
+
+  return res.data?.tokens ?? [];
 }
