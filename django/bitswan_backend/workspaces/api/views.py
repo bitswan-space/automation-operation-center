@@ -339,6 +339,139 @@ class AutomationServerViewSet(KeycloakMixin, viewsets.ModelViewSet):
             )
 
 
+class GetUserEmqxJwtsAPIView(KeycloakMixin, views.APIView):
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [AllowAny]
+
+    def get_user_accessible_workspaces(self):
+        """
+        Helper method to get workspaces that the user has access to based on group membership.
+        Returns a list of workspaces with their mountpoint information.
+        """
+        try:
+            # Get the current user's ID
+            user_id = self.get_active_user()
+            
+            # Get all groups the user belongs to
+            user_groups = self.keycloak.get_user_groups(user_id)
+            user_group_ids = [group['id'] for group in user_groups]
+            
+            # Get the organization ID
+            org_id = self.get_org_id()
+            
+            # Get all workspaces for the organization
+            all_workspaces = Workspace.objects.filter(keycloak_org_id=org_id).select_related('automation_server')
+            
+            if not all_workspaces.exists():
+                return []
+            
+            # Build the filtered list
+            accessible_workspaces = []
+            
+            for workspace in all_workspaces:
+                # Get automation server groups for this workspace's automation server
+                automation_server_groups = AutomationServerGroupMembership.objects.filter(
+                    automation_server=workspace.automation_server
+                ).values_list('keycloak_group_id', flat=True)
+                
+                # Get workspace groups for this workspace
+                workspace_groups = WorkspaceGroupMembership.objects.filter(
+                    workspace=workspace
+                ).values_list('keycloak_group_id', flat=True)
+                
+                automation_server_match = len(automation_server_groups) == 0  # If no groups, allow all
+                if automation_server_groups:
+                    # Check if user has access to any automation server group
+                    automation_server_match = any(group_id in user_group_ids for group_id in automation_server_groups)
+                
+                workspace_match = len(workspace_groups) == 0  # If no groups, allow all
+                if workspace_groups:
+                    # Check if user has access to any workspace group
+                    workspace_match = any(group_id in user_group_ids for group_id in workspace_groups)
+                
+                # Workspace must match both automation server and workspace groups
+                if automation_server_match and workspace_match:
+                    mountpoint = (
+                        f"/orgs/{org_id}/"
+                        f"automation-servers/{workspace.automation_server_id}/"
+                        f"c/{str(workspace.id)}"
+                    )
+                    
+                    accessible_workspaces.append({
+                        'workspace_id': str(workspace.id),
+                        'mountpoint': mountpoint
+                    })
+            
+            return accessible_workspaces
+            
+        except Exception as e:
+            L.error(f"Error getting user accessible workspaces: {str(e)}")
+            return []
+
+    def get(self, request):
+        """
+        GET /user/emqx/jwts
+        Returns a list of JWT tokens with mountpoints for workspaces the user has access to.
+        """
+        try:
+            org_id = self.get_org_id()
+            
+            # If the user is an admin, return a JWT with mountpoint to all workspaces
+            if self.is_admin(request):
+                admin_token = create_token(
+                    secret=settings.EMQX_JWT_SECRET,
+                    username="admin",
+                    mountpoint=f"/orgs/{org_id}/automation-servers/+/c/+",
+                )
+                
+                return Response(
+                    {
+                        'url': os.getenv("EMQX_EXTERNAL_URL"),
+                        "tokens": [admin_token]
+                    },
+                    status=status.HTTP_200_OK
+                )
+            
+            # Get accessible workspaces
+            accessible_workspaces = self.get_user_accessible_workspaces()
+            
+            if not accessible_workspaces:
+                return Response(
+                    {
+                        "url": os.getenv("EMQX_EXTERNAL_URL"),
+                        "tokens": []
+                    },
+                    status=status.HTTP_200_OK
+                )
+            
+            # Generate JWT tokens for each workspace
+            tokens = []
+            for workspace_info in accessible_workspaces:
+                # Create JWT token for this workspace
+                token = create_token(
+                    secret=settings.EMQX_JWT_SECRET,
+                    username=workspace_info['workspace_id'],
+                    mountpoint=workspace_info['mountpoint'],
+                )
+                
+                tokens.append(token)
+            
+            return Response(
+                {
+                    "url": os.getenv("EMQX_EXTERNAL_URL"),
+                    "tokens": tokens,
+                },
+                status=status.HTTP_200_OK
+            )
+            
+        except Exception as e:
+            L.error(f"Error generating user EMQX JWTs: {str(e)}")
+            return Response(
+                {"error": "Failed to generate EMQX JWTs"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
 class GetProfileEmqxJWTAPIView(KeycloakMixin, views.APIView):
     authentication_classes = [KeycloakAuthentication]
     permission_classes = [CanReadProfileEMQXJWT]
