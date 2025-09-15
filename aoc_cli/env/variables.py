@@ -17,6 +17,12 @@ class ServiceConfig:
 
     def get_url(self, config: "InitConfig", internal: bool = False) -> str:
         """Generate URL for this service based on environment"""
+        if internal:
+            # For internal Docker networking, use container name and port
+            return f"http://{self.name}:{self.port}"
+        elif config.env == Environment.DEV:
+            # For dev environment, use localhost for external access
+            return f"http://localhost:{self.port}"
         return f"{config.protocol.value}://{self.url_pattern.format(domain=config.domain)}"
 
     def get_env_vars(
@@ -215,6 +221,30 @@ def create_service_configs(env_name: str, env: Environment) -> Dict[str, Service
                 "bitswan_backend"
             ].get_url(cfg, internal=True),
             "SENTRY_DSN": "",
+        },
+    )
+
+    # Local Next.js Development (for host machine) - inherits from main aoc service
+    # but overrides URLs to use localhost for local development
+    aoc_service = services["aoc"]
+    services["nextjs_local"] = ServiceConfig(
+        name="nextjs-local",
+        url_pattern="localhost",
+        port=3000,
+        env_vars={
+            # Inherit all environment variables from the main aoc service
+            **aoc_service.env_vars,
+            # Override only the URLs that need to be localhost for local development
+            "NEXTAUTH_URL": "http://localhost:3000",
+            "AUTH_URL": "http://localhost:3000",
+            "KEYCLOAK_POST_LOGOUT_REDIRECT_URI": "http://localhost:3000",
+            "BITSWAN_BACKEND_API_URL": "http://localhost:8000",
+            "NEXT_PUBLIC_BITSWAN_BACKEND_API_URL": "http://localhost:8000",
+            "INFLUXDB_URL": "http://localhost:8086/",
+            "EMQX_MQTT_URL": "ws://localhost:8083/mqtt",
+            "KEYCLOAK_ISSUER": "http://localhost:8080/realms/master",
+            "KEYCLOAK_REFRESH_URL": "http://localhost:8080/realms/master/protocol/openid-connect/token",
+            "KEYCLOAK_END_SESSION_URL": "http://localhost:8080/realms/master/protocol/openid-connect/logout",
         },
     )
 

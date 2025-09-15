@@ -111,16 +111,32 @@ class InitCommand:
         Admin password: {admin_password}"""
 
             if self.config.env == Environment.DEV:
-                # Copy env file to nextjs directory for local development
-                # Find the project root by going up from the aoc_cli directory to the cleanup directory
+                # Generate local development environment file for Next.js
+                from aoc_cli.env.services import bootstrap_nextjs_local
+                from aoc_cli.env.variables import get_var_defaults
+                
+                # Get environment variables with localhost URLs for Next.js
+                local_vars = get_var_defaults(self.config)
+                
+                # Create a temporary config for local development
+                local_config = self.config
+                local_config.aoc_dir = self.config.aoc_dir / "local"
+                local_config.aoc_dir.mkdir(exist_ok=True)
+                
+                # Bootstrap the local Next.js environment
+                bootstrap_nextjs_local(local_config, local_vars)
+                
+                # Copy the generated local env file to nextjs directory
                 project_root = Path(__file__).parent.parent.parent
                 nextjs_env_path = project_root / "nextjs" / ".env.local"
+                local_env_path = local_config.aoc_dir / "envs" / "next.js-local-development.env"
+                
                 try:
-                    shutil.copy2(ops_env_path, nextjs_env_path)
-                    click.echo(f"✓ Copied environment variables to {nextjs_env_path}")
+                    shutil.copy2(local_env_path, nextjs_env_path)
+                    click.echo(f"✓ Created local development environment file at {nextjs_env_path}")
                 except Exception as copy_error:
-                    click.echo(f"⚠️  Could not copy env file: {copy_error}")
-                    click.echo(f"   Please manually copy {ops_env_path} to nextjs/.env.local")
+                    click.echo(f"⚠️  Could not create local env file: {copy_error}")
+                    click.echo(f"   Please manually copy {ops_env_path} to nextjs/.env.local and update URLs to localhost")
 
                 access_message = f"""
         Next.js Development Setup:

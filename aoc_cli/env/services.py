@@ -256,6 +256,52 @@ def bootstrap_profile_manager(
     )
 
 
+def bootstrap_nextjs_local(
+    init_config: InitConfig, env_config: dict[str, str] = None
+) -> None:
+    """Bootstrap Next.js local development environment variables."""
+    # Use the same bootstrap structure as the main operations centre
+    bootstrap_service(
+        service_name="Next.js Local Development",
+        init_config=init_config,
+        env_config=merged_env,
+        env_vars={
+            "NextAuth": [
+                "AUTH_URL",
+                "AUTH_SECRET",
+            ],
+            "InfluxDB": [
+                "INFLUXDB_URL",
+                "INFLUXDB_ORG",
+                "INFLUXDB_BUCKET",
+                "INFLUXDB_USERNAME",
+                "INFLUXDB_TOKEN",
+            ],
+            "Bitswan Backend": [
+                "NEXT_PUBLIC_BITSWAN_BACKEND_API_URL",
+                "BITSWAN_BACKEND_API_URL",
+            ],
+            "EMQX": [
+                ("EMQX_JWT_SECRET", merged_env.get("EMQX_AUTHENTICATION__1__SECRET")),
+                "EMQX_MQTT_URL",
+            ],
+            "Keycloak": [
+                "KEYCLOAK_ISSUER",
+                "KEYCLOAK_CLIENT_ID",
+                "KEYCLOAK_REFRESH_URL",
+                "KEYCLOAK_END_SESSION_URL",
+                "KEYCLOAK_POST_LOGOUT_REDIRECT_URI",
+                "KEYCLOAK_CLIENT_SECRET",
+            ],
+            "Sentry": [
+                "SENTRY_IGNORE_API_RESOLUTION_ERROR",
+                "SENTRY_AUTH_TOKEN",
+                "SENTRY_DSN",
+            ],
+        },
+    )
+
+
 def bootstrap_services(
     init_config: InitConfig, env_config: dict[str, str] = None
 ) -> None:
