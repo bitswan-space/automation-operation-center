@@ -13,7 +13,7 @@ import yaml
 from aoc_cli.env.config import Environment, InitConfig
 from aoc_cli.env.services import bootstrap_services
 from aoc_cli.env.utils import get_env_path
-from aoc_cli.utils.env import get_env_value
+from aoc_cli.utils.env import get_env_value, get_env_map
 from aoc_cli.env.variables import get_var_defaults
 from aoc_cli.services.ingress import IngressService
 from aoc_cli.services.influxdb import InfluxDBService
@@ -117,15 +117,49 @@ class InitCommand:
                 
                 # Get environment variables with localhost URLs for Next.js
                 local_vars = get_var_defaults(self.config)
-                
+
+
+                # Pull values already written into service envs where relevant
+                try:
+                    # operations-centre.env contains AUTH_SECRET and EMQX_JWT_SECRET once bootstrap ran
+                    ops_env_path = get_env_path(self.config.aoc_dir, "Operations Centre")
+                    ops_env = get_env_map(ops_env_path)
+                    local_vars.update({
+                        "AUTH_SECRET": ops_env.get("AUTH_SECRET", local_vars.get("AUTH_SECRET")),
+                        "EMQX_AUTHENTICATION__1__SECRET": ops_env.get("EMQX_JWT_SECRET", local_vars.get("EMQX_AUTHENTICATION__1__SECRET")),
+                        "EMQX_JWT_SECRET": ops_env.get("EMQX_JWT_SECRET", local_vars.get("EMQX_JWT_SECRET")),
+                    })
+                except Exception:
+                    pass
+                try:
+                    # Influx token is generated during influx setup
+                    aoc_env_path = self.config.aoc_dir / "envs" / "aoc.env"
+                    aoc_env = get_env_map(aoc_env_path)
+                    if aoc_env.get("INFLUXDB_TOKEN"):
+                        local_vars["INFLUXDB_TOKEN"] = aoc_env["INFLUXDB_TOKEN"]
+                except Exception:
+                    pass
+                try:
+                    # Keycloak client secret is written into operations-centre and bitswan-backend envs
+                    keycloak_env_path = get_env_path(self.config.aoc_dir, "keycloak")
+                    # not needed here but keep placeholder for future
+                    be_env_path = get_env_path(self.config.aoc_dir, "Bitswan Backend")
+                    ops_env_path = get_env_path(self.config.aoc_dir, "Operations Centre")
+                    ops_env = get_env_map(ops_env_path)
+                    candidate = ops_env.get("KEYCLOAK_CLIENT_SECRET") or ops_env.get("KEYCLOAK_CLIENT_SECRET_KEY")
+                    if candidate:
+                        local_vars["KEYCLOAK_CLIENT_SECRET"] = candidate
+                except Exception:
+                    pass
+ 
                 # Create a temporary config for local development
                 local_config = self.config
                 local_config.aoc_dir = self.config.aoc_dir / "local"
                 local_config.aoc_dir.mkdir(exist_ok=True)
-                
+ 
                 # Bootstrap the local Next.js environment
                 bootstrap_nextjs_local(local_config, local_vars)
-                
+ 
                 # Copy the generated local env file to nextjs directory
                 project_root = Path(__file__).parent.parent.parent
                 nextjs_env_path = project_root / "nextjs" / ".env.local"

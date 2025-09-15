@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict
 
 
 def get_env_value(env_file: str | Path, key: str) -> Optional[str]:
@@ -47,3 +47,29 @@ def get_env_value(env_file: str | Path, key: str) -> Optional[str]:
                 return env_value
 
     return None
+
+
+def get_env_map(env_file: str | Path) -> Dict[str, str]:
+    """
+    Parse a .env file into a dict of key -> value (quotes stripped).
+    Raises FileNotFoundError if file doesn't exist.
+    """
+    env_path = Path(env_file)
+    if not env_path.exists():
+        raise FileNotFoundError(f"Environment file not found: {env_file}")
+
+    env: Dict[str, str] = {}
+    with open(env_path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "=" not in line:
+                continue
+            env_key, env_value = line.split("=", 1)
+            env_key = env_key.strip()
+            env_value = env_value.strip()
+            if env_value and env_value[0] in ['"', "'"] and env_value[-1] in ['"', "'"]:
+                env_value = env_value[1:-1]
+            env[env_key] = env_value
+    return env

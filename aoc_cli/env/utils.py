@@ -89,6 +89,8 @@ def marshall_env(env_dict, env_config):
                 value = env_config.get(key)
             else:
                 key, value = var
+            # Avoid writing literal "None"; default to empty string when missing
+            value = "" if (value is None or (isinstance(value, str) and value.strip().lower() == "none")) else value
             lines.append(f'{key}="{value}"')
 
         sections.append("\n".join(lines))
