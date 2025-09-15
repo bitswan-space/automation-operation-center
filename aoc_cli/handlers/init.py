@@ -32,25 +32,18 @@ class InitCommand:
             ["bitswan", "workspace", "list"], capture_output=True, text=True
         )
 
-        # Only run init if 'aoc' is not found in the output
-        if "aoc" not in result.stdout:
-            subprocess.run(
+        subprocess.run(
                 [
                     "bitswan",
-                    "workspace",
+                    "ingress",
                     "init",
-                    "--domain",
-                    "app.bitswan.ai",
-                    "aoc",
                 ],
-            )
+        )
         self.create_aoc_directory()
         self.copy_config_files()
         self.replace_docker_compose_services_versions()
 
-        # Skip secrets setup if continuing from config
-        if not self.continue_from_config:
-            self.setup_secrets()
+        self.setup_secrets()
 
         ingress = IngressService(self.config)
         await ingress.add_proxy(
@@ -111,59 +104,10 @@ class InitCommand:
         Admin password: {admin_password}"""
 
             if self.config.env == Environment.DEV:
-                # Generate local development environment file for Next.js
-                from aoc_cli.env.services import bootstrap_nextjs_local
-                from aoc_cli.env.variables import get_var_defaults
-                
-                # Get environment variables with localhost URLs for Next.js
-                local_vars = get_var_defaults(self.config)
-
-
-                # Pull values already written into service envs where relevant
-                try:
-                    # operations-centre.env contains AUTH_SECRET and EMQX_JWT_SECRET once bootstrap ran
-                    ops_env_path = get_env_path(self.config.aoc_dir, "Operations Centre")
-                    ops_env = get_env_map(ops_env_path)
-                    local_vars.update({
-                        "AUTH_SECRET": ops_env.get("AUTH_SECRET", local_vars.get("AUTH_SECRET")),
-                        "EMQX_AUTHENTICATION__1__SECRET": ops_env.get("EMQX_JWT_SECRET", local_vars.get("EMQX_AUTHENTICATION__1__SECRET")),
-                        "EMQX_JWT_SECRET": ops_env.get("EMQX_JWT_SECRET", local_vars.get("EMQX_JWT_SECRET")),
-                    })
-                except Exception:
-                    pass
-                try:
-                    # Influx token is generated during influx setup
-                    aoc_env_path = self.config.aoc_dir / "envs" / "aoc.env"
-                    aoc_env = get_env_map(aoc_env_path)
-                    if aoc_env.get("INFLUXDB_TOKEN"):
-                        local_vars["INFLUXDB_TOKEN"] = aoc_env["INFLUXDB_TOKEN"]
-                except Exception:
-                    pass
-                try:
-                    # Keycloak client secret is written into operations-centre and bitswan-backend envs
-                    keycloak_env_path = get_env_path(self.config.aoc_dir, "keycloak")
-                    # not needed here but keep placeholder for future
-                    be_env_path = get_env_path(self.config.aoc_dir, "Bitswan Backend")
-                    ops_env_path = get_env_path(self.config.aoc_dir, "Operations Centre")
-                    ops_env = get_env_map(ops_env_path)
-                    candidate = ops_env.get("KEYCLOAK_CLIENT_SECRET") or ops_env.get("KEYCLOAK_CLIENT_SECRET_KEY")
-                    if candidate:
-                        local_vars["KEYCLOAK_CLIENT_SECRET"] = candidate
-                except Exception:
-                    pass
- 
-                # Create a temporary config for local development
-                local_config = self.config
-                local_config.aoc_dir = self.config.aoc_dir / "local"
-                local_config.aoc_dir.mkdir(exist_ok=True)
- 
-                # Bootstrap the local Next.js environment
-                bootstrap_nextjs_local(local_config, local_vars)
- 
                 # Copy the generated local env file to nextjs directory
                 project_root = Path(__file__).parent.parent.parent
                 nextjs_env_path = project_root / "nextjs" / ".env.local"
-                local_env_path = local_config.aoc_dir / "envs" / "next.js-local-development.env"
+                local_env_path = self.config.aoc_dir / "envs" / "operations-centre.env"
                 
                 try:
                     shutil.copy2(local_env_path, nextjs_env_path)
@@ -331,7 +275,12 @@ class InitCommand:
         influxdb.setup()
 
     def generate_secrets(self, vars: Dict[str, str]) -> Dict[str, str]:
-        """Generate all required secrets"""
+        """Generate all required secrets, only filling in missing values.
+
+        For groups of related keys, if any key already has a value, use that
+        value for the rest of the group; otherwise generate a new secret for
+        the entire group. Existing values are never overwritten.
+        """
         secrets_map = (
             ("KC_DB_PASSWORD",),
             ("BITSWAN_BACKEND_POSTGRES_PASSWORD",),
@@ -341,16 +290,18 @@ class InitCommand:
             ("KC_BOOTSTRAP_ADMIN_PASSWORD", "KEYCLOAK_ADMIN_PASSWORD"),
             ("CCS_CONFIG_KEY",),
             ("EMQX_DASHBOARD__DEFAULT_PASSWORD",),
-            ("EMQX_USER",),
             ("DJANGO_SECRET_KEY",),
             ("AUTH_SECRET_KEY",),
             ("EMQX_AUTHENTICATION__1__SECRET",),
         )        
 
         for secret_tuple in secrets_map:
-            secret = generate_secret()
+            # Reuse existing value within the group if present
+            existing_value = next((vars.get(k) for k in secret_tuple if vars.get(k)), None)
+            value_to_use = existing_value or generate_secret()
             for key in secret_tuple:
-                vars[key] = secret
+                if not vars.get(key):
+                    vars[key] = value_to_use
         return vars
 
     def setup_secrets(self) -> None:
@@ -359,12 +310,33 @@ class InitCommand:
             self.config,
         )
 
+        # Always ensure all required secrets exist but do not overwrite existing ones
+        vars = self.generate_secrets(vars)
+
         secrets_file = self.config.aoc_dir / "secrets.json"
         if secrets_file.exists():
             with open(secrets_file, "r") as f:
                 secrets = json.load(f)
                 vars.update(secrets)
-        else:
-            vars = self.generate_secrets(vars)
+
+        # Persist only the secrets subset back to secrets.json
+        secrets_keys = {
+            "KC_DB_PASSWORD",
+            "BITSWAN_BACKEND_POSTGRES_PASSWORD",
+            "INFLUXDB_PASSWORD",
+            "DOCKER_INFLUXDB_INIT_PASSWORD",
+            "INFLUXDB_TOKEN",
+            "AUTH_SECRET",
+            "KC_BOOTSTRAP_ADMIN_PASSWORD",
+            "KEYCLOAK_ADMIN_PASSWORD",
+            "CCS_CONFIG_KEY",
+            "EMQX_DASHBOARD__DEFAULT_PASSWORD",
+            "DJANGO_SECRET_KEY",
+            "AUTH_SECRET_KEY",
+            "EMQX_AUTHENTICATION__1__SECRET",
+        }
+        secrets_to_save = {k: v for k, v in vars.items() if k in secrets_keys}
+        with open(secrets_file, "w") as f:
+            json.dump(secrets_to_save, f, indent=2)
 
         bootstrap_services(self.config, vars)

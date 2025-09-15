@@ -14,7 +14,7 @@ def bootstrap_services(init_config: InitConfig, env_config: Dict[str, str] | Non
     env_config = env_config or {}
 
     from . import (
-        aoc as aoc_service,
+        nextjs as nextjs_service,
         bitswan_backend as bitswan_backend_service,
         bitswan_backend_db as bitswan_backend_db_service,
         emqx as emqx_service,
@@ -24,7 +24,7 @@ def bootstrap_services(init_config: InitConfig, env_config: Dict[str, str] | Non
         profile_manager as profile_manager_service,
     )
 
-    aoc_service.bootstrap_operations_centre(init_config, env_config)
+    nextjs_service.bootstrap_operations_centre(init_config, env_config)
     influxdb_service.bootstrap(init_config, env_config)
     keycloak_service.bootstrap(init_config, env_config)
     keycloak_db_service.bootstrap(init_config, env_config)
@@ -33,18 +33,8 @@ def bootstrap_services(init_config: InitConfig, env_config: Dict[str, str] | Non
     emqx_service.bootstrap(init_config, env_config)
     profile_manager_service.bootstrap(init_config, env_config)
 
-
-def bootstrap_nextjs_local(init_config: InitConfig, env_config: Dict[str, str] | None = None) -> None:
-    """Bootstrap Next.js local development env vars (aggregated)."""
-    env_config = env_config or {}
-    from . import aoc as aoc_service
-
-    aoc_service.bootstrap_nextjs_local(init_config, env_config)
-
-
 __all__ = [
     "bootstrap_services",
-    "bootstrap_nextjs_local",
 ]
 
 

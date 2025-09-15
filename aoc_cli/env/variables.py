@@ -13,7 +13,7 @@ def get_var_defaults(
     """
     # Lazy imports to avoid circulars
     from aoc_cli.env.services import (
-        aoc as aoc_service,
+        nextjs as nextjs_service,
         bitswan_backend as bitswan_backend_service,
         bitswan_backend_db as bitswan_backend_db_service,
         emqx as emqx_service,
@@ -32,7 +32,7 @@ def get_var_defaults(
     defaults.update(bitswan_backend_service.default_env(config))
     defaults.update(bitswan_backend_db_service.default_env(config))
     defaults.update(emqx_service.default_env(config))
-    defaults.update(aoc_service.default_env(config))
+    defaults.update(nextjs_service.default_env(config))
     defaults.update(profile_manager_service.default_env(config))
 
     # Dev-local overrides tailored for running Next.js on host

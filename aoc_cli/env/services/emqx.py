@@ -7,8 +7,6 @@ from aoc_cli.env.utils import bootstrap_service
 def default_env(config: InitConfig) -> Dict[str, str]:
     mqtt_url = (
         f"wss://mqtt.{config.domain}/mqtt"
-        if config.env == Environment.PROD
-        else "ws://localhost:8083/mqtt"
     )
     return {
         "EMQX_MQTT_URL": mqtt_url,
