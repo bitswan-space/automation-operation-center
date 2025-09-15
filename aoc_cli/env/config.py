@@ -39,10 +39,13 @@ class InitConfig:
     domain: str = "bitswan.localhost"
     protocol: Protocol = Protocol.HTTP
     admin_email: str = "admin@bitswan.localhost"
-    admin_password: str = "admin"
+    admin_password: str = ""  # Will be generated securely
     org_name: str = "Example Org"
     aoc_be_image: str | None = None
     aoc_image: str | None = None
+    profile_manager_image: str | None = None
+    mkcerts: bool = False
+    certs_dir: str | None = None
 
     def get_url(self, subdomain: str) -> str:
         return f"{self.protocol.value}://{subdomain}.{self.domain}"
@@ -71,6 +74,8 @@ class InitConfig:
             "aoc_be_image": self.aoc_be_image,
             "aoc_image": self.aoc_image,
             "profile_manager_image": self.profile_manager_image,
+            "mkcerts": self.mkcerts,
+            "certs_dir": self.certs_dir,
         }
         
         with open(file_path, "w") as f:
@@ -105,4 +110,6 @@ class InitConfig:
             aoc_be_image=config_dict.get("aoc_be_image"),
             aoc_image=config_dict.get("aoc_image"),
             profile_manager_image=config_dict.get("profile_manager_image"),
+            mkcerts=config_dict.get("mkcerts", False),
+            certs_dir=config_dict.get("certs_dir"),
         )

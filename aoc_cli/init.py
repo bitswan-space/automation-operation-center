@@ -10,6 +10,7 @@ from aoc_cli.aoc_config import (
 )
 from aoc_cli.env.config import Environment, InitConfig, Protocol
 from aoc_cli.handlers.init import InitCommand
+from aoc_cli.utils.secrets import generate_secret
 
 
 @click.command()
@@ -50,6 +51,16 @@ from aoc_cli.handlers.init import InitCommand
     is_flag=True,
     help="Continue from existing config file without recreating environment files",
 )
+@click.option(
+    "--mkcerts",
+    is_flag=True,
+    help="Automatically generate local certificates using the mkcerts utility",
+)
+@click.option(
+    "--certs-dir",
+    type=click.Path(exists=True, file_okay=False, dir_okay=True),
+    help="The directory where the certificates are located",
+)
 @click.pass_context
 def init(
     ctx,
@@ -58,9 +69,11 @@ def init(
     overwrite,
     dev,
     continue_from_config,
+    mkcerts,
+    certs_dir,
     **kwargs,
 ):
-    asyncio.run(_init_async(ctx, output_dir, env_file, overwrite, dev, continue_from_config, **kwargs))
+    asyncio.run(_init_async(ctx, output_dir, env_file, overwrite, dev, continue_from_config, mkcerts, certs_dir, **kwargs))
 
 
 async def _init_async(
@@ -70,6 +83,8 @@ async def _init_async(
     overwrite,
     dev,
     continue_from_config,
+    mkcerts,
+    certs_dir,
     **kwargs,
 ):
     """Initialize the Automation Operations Center (AOC)."""
@@ -94,7 +109,7 @@ async def _init_async(
             "domain": "bitswan.localhost", 
             "protocol": "http",
             "admin_email": kwargs.get("admin_email") or "admin@example.com",
-            "admin_password": kwargs.get("admin_password") or "admin",
+            "admin_password": kwargs.get("admin_password") or generate_secret(),
             "org_name": kwargs.get("org_name") or "Example Org",
             "keycloak_smtp_username": "",
             "keycloak_smtp_password": "",
@@ -124,6 +139,8 @@ async def _init_async(
             keycloak_smtp_host=kwargs["keycloak_smtp_host"],
             keycloak_smtp_from=kwargs["keycloak_smtp_from"],
             keycloak_smtp_port=kwargs["keycloak_smtp_port"],
+            mkcerts=mkcerts,
+            certs_dir=certs_dir,
         )
         
         # Save config to YAML file
@@ -177,6 +194,8 @@ async def _init_async(
         keycloak_smtp_host=kwargs.get("keycloak_smtp_host"),
         keycloak_smtp_from=kwargs.get("keycloak_smtp_from"),
         keycloak_smtp_port=kwargs.get("keycloak_smtp_port"),
+        mkcerts=mkcerts,
+        certs_dir=certs_dir,
     )
 
     handler = InitCommand(init_config)

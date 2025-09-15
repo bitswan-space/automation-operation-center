@@ -12,8 +12,10 @@ import yaml
 
 from aoc_cli.env.config import Environment, InitConfig
 from aoc_cli.env.services import bootstrap_services
+from aoc_cli.env.utils import get_env_path
+from aoc_cli.utils.env import get_env_value
 from aoc_cli.env.variables import get_var_defaults
-from aoc_cli.services.caddy import CaddyService
+from aoc_cli.services.ingress import IngressService
 from aoc_cli.services.influxdb import InfluxDBService
 from aoc_cli.services.keycloak import KeycloakConfig, KeycloakService
 from aoc_cli.utils.secrets import generate_secret
@@ -50,42 +52,34 @@ class InitCommand:
         if not self.continue_from_config:
             self.setup_secrets()
 
-        caddy = CaddyService(self.config)
-        keycloak_confirm = click.confirm(
-            "\n\nDo you want to setup Keycloak?", default=True, abort=False
+        ingress = IngressService(self.config)
+        await ingress.add_proxy(
+            f"keycloak.{self.config.domain}",
+            "aoc-keycloak:8080",
         )
-        if keycloak_confirm:
-            await caddy.add_proxy(
-                f"keycloak.{self.config.domain}",
-                "aoc-keycloak:8080",
-            )
-            self.setup_keycloak()
+        self.setup_keycloak()
 
-        influxdb_confirm = click.confirm(
-            "\n\nDo you want to setup InfluxDB?", default=True, abort=False
-        )
-        if influxdb_confirm:
-            self.setup_influxdb()
+        self.setup_influxdb()
 
-        await caddy.add_proxy(
+        await ingress.add_proxy(
             f"aoc.{self.config.domain}",
             "aoc:3000",
         )
-        await caddy.add_proxy(
+        await ingress.add_proxy(
             f"api.{self.config.domain}",
             (
                 "aoc-bitswan-backend:5000"
             ),
         )
-        await caddy.add_proxy(
+        await ingress.add_proxy(
             f"mqtt.{self.config.domain}",
             "aoc-emqx:8083",
         )
-        await caddy.add_proxy(
+        await ingress.add_proxy(
             f"emqx.{self.config.domain}",
             "aoc-emqx:18083",
         )
-        caddy.restart()
+        ingress.restart()
 
         click.echo("AOC initialized successfully!")
 
@@ -98,20 +92,65 @@ class InitCommand:
             cwd=self.config.aoc_dir,
         )
 
-        access_message = f"""
-        Access the AOC at the url {self.config.protocol.value}://aoc.{self.config.domain}"""
+        # Build comprehensive access message with env vars and Keycloak info
+        try:
+            ops_env_path = get_env_path(self.config.aoc_dir, "Operations Centre")
+            keycloak_env_path = get_env_path(self.config.aoc_dir, "keycloak")
 
-        if self.config.env == Environment.DEV:
-            access_message = f"""
+            keycloak_admin_url = f"{self.config.protocol.value}://keycloak.{self.config.domain}"
+
+            # Read admin creds from generated env file
+            admin_username = get_env_value(keycloak_env_path, "KEYCLOAK_ADMIN") or "admin"
+            admin_password = get_env_value(keycloak_env_path, "KEYCLOAK_ADMIN_PASSWORD") or "<not found>"
+
+            # Build Keycloak admin info section
+            keycloak_info = f"""
+        Keycloak Admin Console:
+        URL: {keycloak_admin_url}
+        Admin user: {admin_username}
+        Admin password: {admin_password}"""
+
+            if self.config.env == Environment.DEV:
+                # Copy env file to nextjs directory for local development
+                # Find the project root by going up from the aoc_cli directory to the cleanup directory
+                project_root = Path(__file__).parent.parent.parent
+                nextjs_env_path = project_root / "nextjs" / ".env.local"
+                try:
+                    shutil.copy2(ops_env_path, nextjs_env_path)
+                    click.echo(f"✓ Copied environment variables to {nextjs_env_path}")
+                except Exception as copy_error:
+                    click.echo(f"⚠️  Could not copy env file: {copy_error}")
+                    click.echo(f"   Please manually copy {ops_env_path} to nextjs/.env.local")
+
+                access_message = f"""
+        Next.js Development Setup:
+        cd to the nextjs directory and run:
+        pnpm install
+        pnpm dev
+
+        Access the AOC at: http://localhost:3000{keycloak_info}
+        """
+            else:
+                access_message = f"""
+        Access the AOC at: {self.config.protocol.value}://aoc.{self.config.domain}{keycloak_info}
+        """
+
+            click.echo(access_message)
+        except Exception as e:
+            # Fallback to basic message if env file reading fails
+            if self.config.env == Environment.DEV:
+                access_message = f"""
         cd to the nextjs directory and run:
         pnpm dev
 
-        and
-
-        Access the AOC at the url http://localhost:3000
+        Access the AOC at: http://localhost:3000
         """
-
-        click.echo(access_message)
+            else:
+                access_message = f"""
+        Access the AOC at: {self.config.protocol.value}://aoc.{self.config.domain}
+        """
+            click.echo(access_message)
+            click.echo(f"Note: Unable to print Keycloak admin info: {e}")
 
     def create_aoc_directory(self) -> None:
         self.config.aoc_dir.mkdir(parents=True, exist_ok=True)
@@ -212,15 +251,19 @@ class InitCommand:
             service_name.upper().replace("-", "_") + "_VERSION"] = latest_version
 
     def setup_keycloak(self) -> None:
+        # Use localhost for development to avoid DNS resolution issues with .localhost domains
+        if self.config.env == Environment.DEV:
+            server_url = "http://localhost:8080"
+        else:
+            server_url = f"https://keycloak.{self.config.domain}"
+            
         keycloak_config = KeycloakConfig(
             admin_username=self.config.admin_email,
             admin_password=self.config.admin_password,
             aoc_dir=self.config.aoc_dir,
             org_name=self.config.org_name,
             env=self.config.env,
-            server_url=(
-                f"https://keycloak.{self.config.domain}"
-            ),
+            server_url=server_url,
             keycloak_smtp_username=self.config.keycloak_smtp_username,
             keycloak_smtp_password=self.config.keycloak_smtp_password,
             keycloak_smtp_host=self.config.keycloak_smtp_host,
@@ -243,10 +286,12 @@ class InitCommand:
             ("KC_DB_PASSWORD",),
             ("BITSWAN_BACKEND_POSTGRES_PASSWORD",),
             ("INFLUXDB_PASSWORD", "DOCKER_INFLUXDB_INIT_PASSWORD"),
+            ("INFLUXDB_TOKEN",),
             ("AUTH_SECRET",),
-            ("KC_BOOTSTRAP_ADMIN_PASSWORD",),
+            ("KC_BOOTSTRAP_ADMIN_PASSWORD", "KEYCLOAK_ADMIN_PASSWORD"),
             ("CCS_CONFIG_KEY",),
             ("EMQX_DASHBOARD__DEFAULT_PASSWORD",),
+            ("EMQX_USER",),
             ("DJANGO_SECRET_KEY",),
             ("AUTH_SECRET_KEY",),
             ("EMQX_AUTHENTICATION__1__SECRET",),

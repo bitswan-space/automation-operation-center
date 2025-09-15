@@ -82,7 +82,7 @@ class InfluxDBService:
                 "docker",
                 "compose",
                 "-f",
-                "docker-compose.yml"
+                "docker-compose.yml",
                 "up",
                 "-d",
                 "influxdb",
@@ -164,5 +164,3 @@ class InfluxDBService:
 
         with open(file_path, "a") as f:
             f.write(f"\nINFLUXDB_TOKEN={secret}\n")
-            self.init_config.dev_setup.value,
-            "aoc",

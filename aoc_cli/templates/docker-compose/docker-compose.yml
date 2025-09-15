@@ -50,6 +50,7 @@ services:
     networks:
       - bitswan_network
     ports:
+      - "8080:8080"
       - "9000:9000"
 
   keycloak-postgres:

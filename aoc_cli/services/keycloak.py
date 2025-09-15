@@ -33,6 +33,12 @@ class KeycloakConfig:
     keycloak_smtp_host: str | None = None
     keycloak_smtp_from: str | None = None
     keycloak_smtp_port: str | None = None
+    
+    def __post_init__(self):
+        # Use localhost for development to avoid DNS resolution issues with .localhost domains
+        if self.env == Environment.DEV:
+            self.management_url = "http://localhost:9000"
+            self.verify = False
 
 
 class KeycloakService:
@@ -182,6 +188,8 @@ class KeycloakService:
                 response = requests.get(f"{health_url}", verify=self.config.verify)
                 if response.status_code == 200:
                     click.echo("Keycloak is ready")
+                    # Add a small delay to ensure Keycloak is fully ready for admin operations
+                    time.sleep(5)
                     return
             except requests.RequestException:
                 if attempt < max_retries - 1:
@@ -196,6 +204,11 @@ class KeycloakService:
         )
         username = get_env_value(keycloak_env_path, "KEYCLOAK_ADMIN")
         password = get_env_value(keycloak_env_path, "KEYCLOAK_ADMIN_PASSWORD")
+
+        if not username or not password:
+            raise ValueError(f"Missing Keycloak admin credentials. Username: {username}, Password: {'*' * len(password) if password else 'None'}")
+
+        click.echo(f"Connecting to Keycloak at {self.config.server_url} with username: {username}")
 
         self.keycloak_admin = KeycloakAdmin(
             server_url=self.config.server_url,
@@ -364,13 +377,11 @@ class KeycloakService:
             "aoc": (
                 "KEYCLOAK_CLIENT_SECRET",
                 "aoc-frontend",
-                self.config.dev_setup.value,
                 aoc_env_file,
             ),
             "bitswan-backend": (
                 "KEYCLOAK_CLIENT_SECRET_KEY",
                 "bitswan-backend",
-                self.config.dev_setup.value,
                 bitswan_backend_env_file,
             ),
         }
@@ -381,13 +392,9 @@ class KeycloakService:
             for project_name, (
                 env_var_label,
                 client_name,
-                deployment_kind,
                 env_file,
             ) in env_updates.items():
-                file_path = get_env_path(
-                    self.config.aoc_dir,
-                    "keycloak",
-                )
+                file_path = self.config.aoc_dir / "envs" / env_file
                 click.echo(f"Updating {file_path}")
                 with open(file_path, "a") as f:
                     if client_name in secret:
