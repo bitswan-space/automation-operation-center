@@ -56,7 +56,7 @@ class KeycloakService:
         self.initialize_admin_user()
         self.update_realm_smtp_server()
 
-        self._update_envs_with_keycloak_secret(client_secrets)
+        self.update_envs_with_keycloak_secret(client_secrets)
         click.echo("✓ Keycloak setup complete")
 
     def configure_realm_settings(self) -> None:
@@ -364,7 +364,7 @@ class KeycloakService:
         self.keycloak_admin.group_user_add(user_id, admin_group_id)
         self.keycloak_admin.group_user_add(user_id, org_group_id)
 
-    def _update_envs_with_keycloak_secret(self, secret: dict) -> None:
+    def update_envs_with_keycloak_secret(self, secret: dict) -> None:
         aoc_env_file = (
             OPERATIONS_CENTRE_DOCKER_ENV_FILE
         )
@@ -373,34 +373,30 @@ class KeycloakService:
             BITSWAN_BACKEND_DOCKER_ENV_FILE
         )
 
-        env_updates = {
-            "aoc": (
+        env_updates = [
+            (
                 "KEYCLOAK_CLIENT_SECRET",
                 "aoc-frontend",
                 aoc_env_file,
             ),
-            "bitswan-backend": (
+            (
                 "KEYCLOAK_CLIENT_SECRET_KEY",
                 "bitswan-backend",
                 bitswan_backend_env_file,
             ),
-        }
+        ]
 
         click.echo(f"Updating {env_updates}")
 
-        try:
-            for project_name, (
-                env_var_label,
-                client_name,
-                env_file,
-            ) in env_updates.items():
-                file_path = self.config.aoc_dir / "envs" / env_file
-                click.echo(f"Updating {file_path}")
-                with open(file_path, "a") as f:
-                    if client_name in secret:
-                        f.write(f"\n{env_var_label}={secret.get(client_name)}\n")
-        except Exception as e:
-            click.echo(f"Error updating {env_file}: {e}")
+        for (
+            env_var_label,
+            client_name,
+            env_file,
+        ) in env_updates:
+            file_path = self.config.aoc_dir / "envs" / env_file
+            click.echo(f"Updating {file_path}")
+            with open(file_path, "a") as f:
+                f.write(f"\n{env_var_label}={secret.get(client_name)}\n")
 
     def create_client_scope(self, scope_name: str) -> None:
         client_scope = self.keycloak_admin.get_client_scope_by_name(scope_name)
