@@ -1,25 +1,20 @@
 import mqtt, { type MqttClient } from "mqtt";
 import { type QoS } from "mqtt-packet";
 import React from "react";
-import { decode } from "jsonwebtoken";
-
-interface JwtPayload {
-  client_attrs: {
-    mountpoint: string;
-  };
-}
 
 export function useMQTT<PayloadT>() {
   const clientRef = React.useRef<MqttClient | null>(null);
   const [isSubed, setIsSubed] = React.useState(false);
   const [payload, setPayload] = React.useState<{
+    automationServerId?: string;
+    workspaceId?: string;
     topic: string;
     message: PayloadT;
   } | null>(null);
   const [connectStatus, setConnectStatus] = React.useState("Connect");
 
   const mqttConnect = React.useCallback(
-    (host: string, mqttOption: mqtt.IClientOptions) => {
+    (host: string, mqttOption: mqtt.IClientOptions, automationServerId?: string, workspaceId?: string) => {
       setConnectStatus("Connecting");
       const newClient = mqtt.connect(host, mqttOption);
 
@@ -38,11 +33,9 @@ export function useMQTT<PayloadT>() {
       });
 
       newClient.on("message", (topic, message) => {
-        // When used mountpoin without wildcard, we need to parse the token to get the full topic path
-        if (topic.startsWith("/topology")) {
-          topic = (decode(mqttOption.password as string) as JwtPayload).client_attrs?.mountpoint + topic;
-        }
         const payload = {
+          automationServerId,
+          workspaceId,
           topic,
           message: JSON.parse(message.toString()) as PayloadT,
         };

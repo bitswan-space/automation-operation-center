@@ -398,6 +398,7 @@ class GetUserEmqxJwtsAPIView(KeycloakMixin, views.APIView):
                     )
                     
                     accessible_workspaces.append({
+                        'automation_server_id': workspace.automation_server_id,
                         'workspace_id': str(workspace.id),
                         'mountpoint': mountpoint
                     })
@@ -416,18 +417,29 @@ class GetUserEmqxJwtsAPIView(KeycloakMixin, views.APIView):
         try:
             org_id = self.get_org_id()
             
-            # If the user is an admin, return a JWT with mountpoint to all workspaces
+            # If the user is an admin, return a JWTs with mountpoint to all workspaces
             if self.is_admin(request):
-                admin_token = create_token(
-                    secret=settings.EMQX_JWT_SECRET,
-                    username="admin",
-                    mountpoint=f"/orgs/{org_id}/automation-servers/+/c/+",
-                )
+                # Get all workspaces for the organization
+                all_workspaces = Workspace.objects.filter(keycloak_org_id=org_id).select_related('automation_server')
+                
+                tokens = []
+                for workspace in all_workspaces:
+                    token = create_token(
+                        secret=settings.EMQX_JWT_SECRET,
+                        username=str(workspace.id),
+                        mountpoint=f"/orgs/{org_id}/automation-servers/{workspace.automation_server_id}/c/{str(workspace.id)}",
+                    )
+                    tokens.append({
+                        'automation_server_id': workspace.automation_server_id,
+                        'workspace_id': workspace.id,
+                        'token': token
+                    })
+                
                 
                 return Response(
                     {
                         'url': os.getenv("EMQX_EXTERNAL_URL"),
-                        "tokens": [admin_token]
+                        "tokens": tokens
                     },
                     status=status.HTTP_200_OK
                 )
@@ -454,7 +466,11 @@ class GetUserEmqxJwtsAPIView(KeycloakMixin, views.APIView):
                     mountpoint=workspace_info['mountpoint'],
                 )
                 
-                tokens.append(token)
+                tokens.append({
+                    'automation_server_id': workspace_info['automation_server_id'],
+                    'workspace_id': workspace_info['workspace_id'],
+                    'token': token
+                })
             
             return Response(
                 {

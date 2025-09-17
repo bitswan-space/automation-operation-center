@@ -3,6 +3,7 @@ import { TitleBar } from "@/components/layout/TitleBar";
 import { getAutomationServers } from "@/data/automation-server";
 import React from "react";
 import Link from "next/link";
+import { getMQTTTokens } from "@/data/mqtt";
 
 const AutomationDetailPage = async (props: {
   params: Promise<{ id: string; workspaceId: string; pipelineId: string[] }>;
@@ -10,6 +11,7 @@ const AutomationDetailPage = async (props: {
   const { id, workspaceId, pipelineId } = (await props.params);
 
   const automationServers = await getAutomationServers();
+  const token = (await getMQTTTokens()).find(token => token.automation_server_id === id && token.workspace_id === workspaceId);
 
   const automationServer = automationServers.results.find(
     (server) => server.automation_server_id === id,
@@ -76,6 +78,7 @@ const AutomationDetailPage = async (props: {
         automationServerId={id}
         workspaceId={workspaceId}
         ids={pipelineId}
+        token={token}
       />
     </div>
   );

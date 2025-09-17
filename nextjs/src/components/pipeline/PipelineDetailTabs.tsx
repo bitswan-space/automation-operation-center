@@ -14,6 +14,7 @@ import { usePipelineTopology } from "./hooks/usePipelineTopology";
 import { PipelineSummary } from "./PipelineSummary";
 
 import { useRouter, usePathname } from 'next/navigation';
+import { type TokenData } from "@/data/mqtt";
 
 export interface PipelineDetailTabsProps {
   pipeline?: PipelineWithStats;
@@ -21,18 +22,20 @@ export interface PipelineDetailTabsProps {
   automationServerId: string;
   workspaceId: string;
   vscode_link?: string | null;
+  token?: TokenData;
 }
 
 export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const { pipeline, pipelineParentIDs, automationServerId, workspaceId, vscode_link } = props;
+  const { pipeline, pipelineParentIDs, automationServerId, workspaceId, vscode_link, token } = props;
 
   const { pipelineTopology } = usePipelineTopology({
     automationServerId,
     workspaceId,
     componentIDs: pipelineParentIDs,
+    token,
   });
 
   const [selectedTab, setSelectedTab] = React.useState("summary");
@@ -83,6 +86,7 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
               workspaceId={workspaceId}
               initialNodes={transformTopologyToFlowNodes(
                 pipelineTopology ?? [],
+                token,
               )}
               initialEdges={transformTopologyToFlowEdges(
                 pipelineTopology ?? [],
