@@ -40,12 +40,29 @@ def get_var_defaults(
         backend_base = f"{config.protocol.value}://api.{config.domain}"
         defaults.update(
             {
+                # NextJS dev overrides
                 "NEXTAUTH_URL": "http://localhost:3000",
                 "AUTH_URL": "http://localhost:3000",
                 "KEYCLOAK_POST_LOGOUT_REDIRECT_URI": "http://localhost:3000",
                 # Point host Next.js to ingress domain instead of container port
                 "BITSWAN_BACKEND_API_URL": backend_base,
                 "NEXT_PUBLIC_BITSWAN_BACKEND_API_URL": backend_base,
+                
+                # Bitswan Backend dev overrides
+                "DJANGO_SETTINGS_MODULE": "config.settings.local",
+                "DJANGO_ALLOWED_HOSTS": f"api.{config.domain},aoc-bitswan-backend,http://localhost:3000",
+                "CORS_ALLOWED_ORIGINS": f"http://localhost:3000,{config.protocol.value}://aoc.{config.domain},{config.protocol.value}://aoc-nextjs:3000",
+                "EMQX_EXTERNAL_URL": "aoc-emqx:8084",
+                
+                # Keycloak dev overrides
+                "KC_HOSTNAME_URL": "http://localhost:8080",
+                "KC_HOSTNAME": "http://localhost:8080",
+                "KC_HOSTNAME_ADMIN_URL": "http://localhost:8080",
+                "KC_HOSTNAME_ADMIN": "http://localhost:8080",
+                "KEYCLOAK_FRONTEND_URL": "http://localhost:8080",
+                "KEYCLOAK_ADMIN_URL": "http://localhost:8080",
+                
+                # Service URLs for dev
                 "INFLUXDB_URL": "http://localhost:8086/",
                 "EMQX_MQTT_URL": "ws://localhost:8083/mqtt",
                 "KEYCLOAK_ISSUER": "http://localhost:8080/realms/master",

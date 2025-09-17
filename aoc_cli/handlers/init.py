@@ -300,12 +300,10 @@ class InitCommand:
 
     def setup_env_vars(self) -> None:
         """Setup command implementation"""
-        vars = get_var_defaults(
-            self.config,
-        )
+        secrets = {}
 
         # Always ensure all required secrets exist but do not overwrite existing ones
-        vars = self.generate_secrets(vars)
+        self.generate_secrets(secrets)
 
         secrets_file = self.config.aoc_dir / "secrets.json"
         if secrets_file.exists():
@@ -313,24 +311,13 @@ class InitCommand:
                 secrets = json.load(f)
                 vars.update(secrets)
 
-        # Persist only the secrets subset back to secrets.json
-        secrets_keys = {
-            "KC_DB_PASSWORD",
-            "BITSWAN_BACKEND_POSTGRES_PASSWORD",
-            "INFLUXDB_PASSWORD",
-            "DOCKER_INFLUXDB_INIT_PASSWORD",
-            "INFLUXDB_TOKEN",
-            "AUTH_SECRET",
-            "KC_BOOTSTRAP_ADMIN_PASSWORD",
-            "KEYCLOAK_ADMIN_PASSWORD",
-            "CCS_CONFIG_KEY",
-            "EMQX_DASHBOARD__DEFAULT_PASSWORD",
-            "DJANGO_SECRET_KEY",
-            "AUTH_SECRET_KEY",
-            "EMQX_AUTHENTICATION__1__SECRET",
-        }
-        secrets_to_save = {k: v for k, v in vars.items() if k in secrets_keys}
         with open(secrets_file, "w") as f:
-            json.dump(secrets_to_save, f, indent=2)
+            json.dump(vars, f, indent=2)
+
+        vars = get_var_defaults(
+            self.config,
+        )
+
+        
 
         write_env_files(self.config, vars)

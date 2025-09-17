@@ -5,8 +5,6 @@ from aoc_cli.env.utils import write_env_files_service
 
 
 def _public_base_url(config: InitConfig) -> str:
-    if config.env == Environment.DEV:
-        return "http://localhost:8080"
     return f"{config.protocol.value}://keycloak.{config.domain}"
 
 

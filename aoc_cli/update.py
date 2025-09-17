@@ -41,6 +41,8 @@ def update(from_url):
     )
     init_command = InitCommand(init_config)
 
+    
+    init_command.resolve_images()
     init_command.replace_docker_compose_services_versions()
 
     subprocess.run(

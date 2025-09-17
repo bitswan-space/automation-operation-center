@@ -5,28 +5,18 @@ from aoc_cli.env.utils import write_env_files_service
 
 
 def default_env(config: InitConfig) -> Dict[str, str]:
-    port = 5000 if config.env == Environment.PROD else 8000
-    emqx_external = (
-        "aoc-emqx:8084" if config.env == Environment.DEV else f"mqtt.{config.domain}:443"
-    )
     return {
-        "DJANGO_SETTINGS_MODULE": (
-            "config.settings.production"
-            if config.env == Environment.PROD
-            else "config.settings.local"
-        ),
+        "DJANGO_SETTINGS_MODULE": "config.settings.production",
         "DJANGO_ADMIN_URL": "admin/",
-        "DJANGO_ALLOWED_HOSTS": "api.{domain},aoc-bitswan-backend,http://localhost:3000".format(
+        "DJANGO_ALLOWED_HOSTS": "api.{domain},aoc-bitswan-backend".format(
             domain=config.domain
         ),
         "DJANGO_SECURE_SSL_REDIRECT": "False",
         "DJANGO_SERVER_EMAIL": "",
         "DJANGO_ACCOUNT_ALLOW_REGISTRATION": "True",
         "BITSWAN_BACKEND_KEYCLOAK_CLIENT_ID": "bitswan-backend",
-        "CORS_ALLOWED_ORIGINS": (
-            f"http://localhost:3000,{config.protocol.value}://aoc.{config.domain},{config.protocol.value}://aoc-nextjs:3000"
-        ),
-        "EMQX_EXTERNAL_URL": emqx_external,
+        "CORS_ALLOWED_ORIGINS": f"{config.protocol.value}://aoc.{config.domain},{config.protocol.value}://aoc-nextjs:3000",
+        "EMQX_EXTERNAL_URL": f"mqtt.{config.domain}:443",
         "EMQX_INTERNAL_URL": "aoc-emqx:1883",
         "WEB_CONCURRENCY": "4",
         "SENTRY_TRACES_SAMPLE_RATE": "1.0",
