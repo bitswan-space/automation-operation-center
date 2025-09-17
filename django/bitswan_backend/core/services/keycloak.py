@@ -188,6 +188,7 @@ class KeycloakService:
                 "id": group["id"],
                 "name": group["name"],
                 "tag_color": next(iter(group["attributes"].get("tag_color", [])), None),
+                "permissions": next(iter(group["attributes"].get("permissions", [])), []),
                 "description": next(
                     iter(group["attributes"].get("description", [])),
                     None,
@@ -246,6 +247,7 @@ class KeycloakService:
             "id": org_group["id"],
             "name": org_group["name"],
             "tag_color": next(iter(org_group["attributes"].get("tag_color", [])), None),
+            "permissions": next(iter(org_group["attributes"].get("permissions", [])), []),
             "description": next(
                 iter(org_group["attributes"].get("description", [])),
                 None,
@@ -262,6 +264,7 @@ class KeycloakService:
                 "id": group["id"],
                 "name": group["name"],
                 "tag_color": (group.get("tag_color", None)),
+                "permissions": (group.get("permissions", [])),
                 "description": (group.get("description", None)),
             }
 
@@ -385,6 +388,10 @@ class KeycloakService:
         return any(
             group["name"].lower() == "admin" for group in org_group_user_memberships
         )
+
+    def get_admin_org_group(self, org_id):
+        org_groups = self.get_org_groups(org_id=org_id)
+        return next((group for group in org_groups if group["name"].lower() == "admin"), None)
 
     def is_group_member(self, user_id, group_id):
         user_group_memberships = self.keycloak_admin.get_user_groups(
