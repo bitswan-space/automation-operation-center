@@ -5,6 +5,7 @@ import { useMQTT } from "./useMQTT";
 import { useQuery } from "@tanstack/react-query";
 import { getMQTTConfig } from "@/server/queries/mqtt";
 import { MQTT_CONFIG_QUERY_KEY } from "../constants";
+import { type TokenData } from "@/data/mqtt";
 
 type UseMQTTRequestResponseArgs<ResponseT> = {
   requestTopic: string;
@@ -12,7 +13,7 @@ type UseMQTTRequestResponseArgs<ResponseT> = {
   requestMessage?: string | object;
   infiniteSubscription?: boolean;
   onMessage?: (response: ResponseT) => void;
-  tokens: string[];
+  tokens: TokenData[];
 };
 
 export function useMQTTRequestResponse<ResponseT>({
@@ -36,9 +37,9 @@ export function useMQTTRequestResponse<ResponseT>({
   });
 
   React.useEffect(() => {
-    if (mqttConfig) {
-      tokens.forEach(token => {
-        console.log("token", token);
+    if (mqttConfig && tokens) {
+      tokens.forEach(tokenData => {
+        console.log("token", tokenData.token);
         mqttConnect(mqttConfig.url, {
           clientId:
             "bitswan-poc" + Math.random().toString(16).substring(2, 8),
@@ -46,8 +47,8 @@ export function useMQTTRequestResponse<ResponseT>({
           reconnectPeriod: 60,
           connectTimeout: 30 * 1000,
           username: "bitswan-frontend",
-          password: token ?? "",
-        });
+          password: tokenData.token,
+        }, tokenData.automation_server_id, tokenData.workspace_id);
 
         mqttPublish({
           topic: requestTopic,
@@ -77,10 +78,14 @@ export function useMQTTRequestResponse<ResponseT>({
   const isLoading = !payload;
   const response = payload?.message;
   const messageTopic = payload?.topic;
+  const automationServerId = payload?.automationServerId;
+  const workspaceId = payload?.workspaceId;
 
   return {
     response,
     isLoading,
     messageTopic,
+    automationServerId,
+    workspaceId,
   };
 }

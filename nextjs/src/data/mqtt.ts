@@ -8,8 +8,14 @@ type GetMQTTTokenResponse = {
   token: string;
 };
 
+export type TokenData = {
+  automation_server_id: string;
+  workspace_id: string;
+  token: string;
+};
+
 type GetMQTTTokensResponse = {
-  tokens: string[];
+  tokens: TokenData[];
 };
 
 export async function getMQTTToken(activeMQTTProfile: MQTTProfile | null) {

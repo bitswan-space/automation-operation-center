@@ -25,7 +25,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Handle, Position } from "@xyflow/react";
-import React, { memo } from "react";
+import React, { memo, useMemo } from "react";
 import { SiApachekafka, SiJavascript } from "react-icons/si";
 import { jsonTreeTheme, outputSampleJSON } from "@/utils/jsonTree";
 import { usePathname, useRouter } from "next/navigation";
@@ -38,6 +38,7 @@ import { handleError } from "@/utils/errors";
 import { joinIDsWithDelimiter } from "@/utils/pipelineUtils";
 import { useClipboard } from "use-clipboard-copy";
 import { useMQTTRequestResponse } from "@/shared/hooks/useMQTTRequestResponse";
+import { type TokenData } from "@/data/mqtt";
 
 type Section = "stats" | "properties" | "data";
 type PipelineNodeActionType =
@@ -121,6 +122,7 @@ export type NodeData = {
   properties: Record<string, unknown>;
   width?: number;
   height?: number;
+  token?: TokenData;
 };
 
 export function PipelineNode({ data }: { data: NodeData }) {
@@ -132,8 +134,13 @@ export function PipelineNode({ data }: { data: NodeData }) {
     capabilities,
     parentIDs,
     properties,
+    token,
   } = data;
 
+  const tokens = useMemo(() => {
+    return token ? [token] : [];
+  }, [token]);
+  
   const router = useRouter();
   const currentPath = usePathname();
 
@@ -172,12 +179,12 @@ export function PipelineNode({ data }: { data: NodeData }) {
     [],
   );
 
-  const pipelineEventsRequestTopic = `/automation-servers/${data.automationServerId}/c/${data.workspaceId}${joinIDsWithDelimiter(
+  const pipelineEventsRequestTopic = `${joinIDsWithDelimiter(
     parentIDs,
     "/",
   )}/c/${nodeID}/events/subscribe`;
 
-  const pipelineEventsResponseTopic = `/automation-servers/${data.automationServerId}/c/${data.workspaceId}${joinIDsWithDelimiter(
+  const pipelineEventsResponseTopic = `${joinIDsWithDelimiter(
     parentIDs,
     "/",
   )}/c/${nodeID}/events`;
@@ -196,6 +203,7 @@ export function PipelineNode({ data }: { data: NodeData }) {
     requestTopic: pipelineEventsRequestTopic,
     responseTopic: pipelineEventsResponseTopic,
     requestMessage: requestMessage,
+    tokens,
   });
 
   React.useEffect(() => {
