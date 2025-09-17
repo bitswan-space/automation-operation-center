@@ -9,6 +9,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Set
 
+import click
+
 
 @dataclass
 class HostEntry:
@@ -117,8 +119,20 @@ class HostsManager:
             raise
 
 
-def update_hosts_command(args) -> int:
-    """Update hosts file command implementation"""
+@click.command()
+@click.option(
+    "--hosts-file",
+    type=click.Path(),
+    default="/etc/hosts",
+    help="Path to hosts file (default: /etc/hosts)",
+)
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Show what would be done without making changes",
+)
+def update_hosts(hosts_file, dry_run):
+    """Update /etc/hosts file with required domains"""
     # Set up logging
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -126,12 +140,12 @@ def update_hosts_command(args) -> int:
     logger = logging.getLogger(__name__)
 
     # Check if running as root/sudo
-    if os.geteuid() != 0 and not args.dry_run:
+    if os.geteuid() != 0 and not dry_run:
         logger.error("This command must be run with sudo/root privileges")
         return 1
 
     try:
-        manager = HostsManager(hosts_file=args.hosts_file, dry_run=args.dry_run)
+        manager = HostsManager(hosts_file=Path(hosts_file), dry_run=dry_run)
 
         # Create backup
         manager.backup_hosts_file()
@@ -145,7 +159,7 @@ def update_hosts_command(args) -> int:
         # Flush DNS cache
         manager.flush_dns_cache()
 
-        if not args.dry_run:
+        if not dry_run:
             logger.info(
                 "Hosts file has been updated successfully. "
                 "A backup was created and DNS cache was flushed."
@@ -159,22 +173,3 @@ def update_hosts_command(args) -> int:
     except Exception as e:
         logger.error(f"Error updating hosts file: {e}")
         return 1
-
-
-def add_subparser(subparsers):
-    """Add the hosts command to the main parser"""
-    parser = subparsers.add_parser(
-        "update-hosts", help="Update /etc/hosts file with required domains"
-    )
-    parser.add_argument(
-        "--hosts-file",
-        type=Path,
-        default="/etc/hosts",
-        help="Path to hosts file (default: %(default)s)",
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Show what would be done without making changes",
-    )
-    parser.set_defaults(func=update_hosts_command)

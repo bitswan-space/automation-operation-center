@@ -1,8 +1,9 @@
 import click
 
-from aoc_cli.init import init
-from aoc_cli.uninstall import uninstall
-from aoc_cli.update import update
+from aoc_cli.commands.init import init
+from aoc_cli.commands.uninstall import uninstall
+from aoc_cli.commands.update import update
+from aoc_cli.commands.hosts import update_hosts
 
 
 @click.group()
@@ -15,3 +16,4 @@ def cli() -> None:
 cli.add_command(init)
 cli.add_command(uninstall)
 cli.add_command(update)
+cli.add_command(update_hosts)
