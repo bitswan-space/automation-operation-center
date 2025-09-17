@@ -6,7 +6,7 @@ from aoc_cli.env.utils import bootstrap_service
 # Re-exported bootstrap entrypoints to preserve existing imports
 
 
-def bootstrap_services(init_config: InitConfig, env_config: Dict[str, str] | None = None) -> None:
+def write_env_files(init_config: InitConfig, env_config: Dict[str, str] | None = None) -> None:
     """Bootstrap all service environment variables (aggregated).
 
     This preserves the public API previously imported as `aoc_cli.env.services.bootstrap_services`.
@@ -34,7 +34,7 @@ def bootstrap_services(init_config: InitConfig, env_config: Dict[str, str] | Non
     profile_manager_service.bootstrap(init_config, env_config)
 
 __all__ = [
-    "bootstrap_services",
+    "write_env_files",
 ]
 
 

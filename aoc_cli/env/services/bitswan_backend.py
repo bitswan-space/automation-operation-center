@@ -32,6 +32,11 @@ def default_env(config: InitConfig) -> Dict[str, str]:
         "SENTRY_TRACES_SAMPLE_RATE": "1.0",
         "USE_DOCKER": "yes",
         "DJANGO_READ_DOT_ENV_FILE": "False",
+        # Image version metadata (populated from resolved images)
+        "BITSWAN_BACKEND_IMAGE": config.aoc_be_image,
+        "AOC_IMAGE": config.aoc_image,
+        "PROFILE_MANAGER_IMAGE": config.profile_manager_image,
+        "KEYCLOAK_IMAGE": config.keycloak_image,
     }
 
 
@@ -73,6 +78,11 @@ def bootstrap(init_config: InitConfig, env_config: Dict[str, str] | None = None)
                 "EMQX_INTERNAL_URL",
                 ("EMQX_JWT_SECRET", env_config.get("EMQX_AUTHENTICATION__1__SECRET")),
                 ("DATABASE_URL", DATABASE_URL),
+                # Image version metadata (written alongside other config)
+                "BITSWAN_BACKEND_IMAGE",
+                "AOC_IMAGE",
+                "PROFILE_MANAGER_IMAGE",
+                "KEYCLOAK_IMAGE",
             ]
         },
     )

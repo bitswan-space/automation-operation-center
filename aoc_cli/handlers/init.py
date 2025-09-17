@@ -11,7 +11,7 @@ import requests
 import yaml
 
 from aoc_cli.env.config import Environment, InitConfig
-from aoc_cli.env.services import bootstrap_services
+from aoc_cli.env.services import write_env_files
 from aoc_cli.env.utils import get_env_path
 from aoc_cli.utils.env import get_env_value, get_env_map
 from aoc_cli.env.variables import get_var_defaults
@@ -41,6 +41,9 @@ class InitCommand:
         )
         self.create_aoc_directory()
         self.copy_config_files()
+        # 1) Resolve images (fill in config image fields if missing)
+        self.resolve_images()
+        # 2) Update docker-compose images only (env handled by env service)
         self.replace_docker_compose_services_versions()
 
         self.setup_secrets()
@@ -155,27 +158,54 @@ class InitCommand:
     def create_aoc_directory(self) -> None:
         self.config.aoc_dir.mkdir(parents=True, exist_ok=True)
 
-    def copy_config_files(self) -> None:
-        template_path = (
-            Path(__file__).parent.parent
-            / "templates"
-            / "docker-compose"
-            / "docker-compose.yml"
-        )
-        if not template_path.exists():
-            raise FileNotFoundError(f"Template not found: {template_path}")
 
-        dest_path = self.config.aoc_dir / "docker-compose.yml"
-        shutil.copy2(template_path, dest_path)
+    def resolve_images(self) -> None:
+        """Ensure config image fields are full image references with tags.
 
-        emqx_config_path = (
-            Path(__file__).parent.parent / "templates" / "emqx" / "emqx.conf"
-        )
-        if not emqx_config_path.exists():
-            raise FileNotFoundError(f"Emqx config not found: {emqx_config_path}")
+        If a field is unset, query Docker Hub and pick the latest tag matching
+        the expected pattern, then set the config field accordingly.
+        """
+        def latest_tag_from_docker_hub(url: str, pattern: str = r"\d{4}-\d+-git-[a-fA-F0-9]+$") -> str:
+            try:
+                resp = requests.get(url, timeout=15)
+                if resp.status_code == 200:
+                    results = resp.json().get("results", [])
+                    for version in results:
+                        name = version.get("name")
+                        if name and re.match(pattern, name):
+                            return name
+            except Exception:
+                pass
+            return "latest"
 
-        os.makedirs(self.config.aoc_dir / "emqx", exist_ok=True)
-        shutil.copy2(emqx_config_path, self.config.aoc_dir / "emqx" / "emqx.conf")
+        # bitswan-backend
+        if not self.config.aoc_be_image:
+            tag = latest_tag_from_docker_hub(
+                "https://hub.docker.com/v2/repositories/bitswan/bitswan-backend/tags/"
+            )
+            self.config.aoc_be_image = f"bitswan/bitswan-backend:{tag}"
+
+        # automation-operations-centre (AOC)
+        if not self.config.aoc_image:
+            tag = latest_tag_from_docker_hub(
+                "https://hub.docker.com/v2/repositories/bitswan/automation-operations-centre/tags/"
+            )
+            self.config.aoc_image = f"bitswan/automation-operations-centre:{tag}"
+
+        # profile-manager
+        if not self.config.profile_manager_image:
+            tag = latest_tag_from_docker_hub(
+                "https://hub.docker.com/v2/repositories/bitswan/profile-manager/tags/"
+            )
+            self.config.profile_manager_image = f"bitswan/profile-manager:{tag}"
+
+        # keycloak
+        if not self.config.keycloak_image:
+            tag = latest_tag_from_docker_hub(
+                "https://hub.docker.com/v2/repositories/bitswan/bitswan-keycloak/tags/"
+            )
+            self.config.keycloak_image = f"bitswan/bitswan-keycloak:{tag}"
+
 
     def replace_docker_compose_services_versions(self) -> None:
         click.echo("Finding latest versions for AOC services")
@@ -184,80 +214,17 @@ class InitCommand:
         with open(self.config.aoc_dir / "docker-compose.yml", "r") as f:
             docker_compose = yaml.safe_load(f)
 
-        # get latest version from Docker Hub
-        services: list[tuple[str, str]] = []
+        # Images are expected to be resolved already in self.config
+        service_to_image = {
+            "bitswan-backend": self.config.aoc_be_image,
+            "aoc": self.config.aoc_image,
+            "profile-manager": self.config.profile_manager_image,
+            "keycloak": self.config.keycloak_image,
+        }
 
-        docker_compose["services"]["bitswan-backend"]["environment"] = {}
-
-        # Add service only if image wasn't provided through config
-        if self.config.aoc_be_image:
-            docker_compose["services"]["bitswan-backend"][
-                "image"
-            ] = self.config.aoc_be_image
-            docker_compose["services"]["bitswan-backend"]["environment"][
-                "BITSWAN_BACKEND_VERSION"] = self.config.aoc_be_image.split(":")[-1]
-        else: 
-            services.append((
-                "bitswan-backend",
-                "https://hub.docker.com/v2/repositories/bitswan/bitswan-backend/tags/",
-            ))
-
-        if self.config.aoc_image:
-            docker_compose["services"]["aoc"]["image"] = self.config.aoc_image
-            docker_compose["services"]["bitswan-backend"]["environment"][
-                "AOC_VERSION"] = self.config.aoc_image.split(":")[-1]
-        else: 
-            services.append((
-                "aoc",
-                "https://hub.docker.com/v2/repositories/bitswan/automation-operations-centre/tags/",
-            ))
-
-        if self.config.profile_manager_image:
-            docker_compose["services"]["profile-manager"][
-                "image"
-            ] = self.config.profile_manager_image
-            docker_compose["services"]["bitswan-backend"]["environment"][
-                "PROFILE_MANAGER_VERSION"] = self.config.profile_manager_image.split(":")[-1]
-        else:
-            services.append((
-                "profile-manager",
-                "https://hub.docker.com/v2/repositories/bitswan/profile-manager/tags/",
-            ))
-
-        # Keycloak image resolution (supports endpoint override via config)
-        if self.config.keycloak_image:
-            docker_compose["services"]["keycloak"]["image"] = self.config.keycloak_image
-            docker_compose["services"]["bitswan-backend"]["environment"][
-                "KEYCLOAK_VERSION"] = self.config.keycloak_image.split(":")[-1]
-        else:
-            services.append((
-                "keycloak",
-                "https://hub.docker.com/v2/repositories/bitswan/bitswan-keycloak/tags/",
-            ))
-
-        # Replace the services versions
-        for service in services:
-            service_name, url = service
-            response = requests.get(url)
-            if response.status_code == 200:
-                results = response.json()["results"]
-                pattern = r"\d{4}-\d+-git-[a-fA-F0-9]+$"
-                latest_version = next(
-                    (
-                        version
-                        for version in results
-                        if re.match(pattern, version["name"])
-                    ),
-                    None,
-                )
-                if latest_version:
-                    click.echo(
-                        f"Found latest version for {service_name}: {latest_version['name']}"
-                    )
-                    self.change_version(docker_compose, service_name, latest_version['name'])
-                else:
-                    click.echo(f"No latest version found for {service_name}")
-                    self.change_version(docker_compose, service_name, "latest")
+        for service_name, image in service_to_image.items():
+            if image:
+                docker_compose["services"][service_name]["image"] = image
 
         # Write the updated docker-compose.yml file
         with open(self.config.aoc_dir / "docker-compose.yml", "w") as f:
@@ -269,9 +236,7 @@ class InitCommand:
         image[-1] = latest_version
         docker_compose["services"][service_name]["image"] = ":".join(image)
 
-        # Add version as env to bitswan-backend service
-        docker_compose["services"]["bitswan-backend"]["environment"][
-            service_name.upper().replace("-", "_") + "_VERSION"] = latest_version
+        # No longer set version envs in compose; handled by env services
 
     def setup_keycloak(self) -> None:
         # Use localhost for development to avoid DNS resolution issues with .localhost domains
@@ -368,4 +333,4 @@ class InitCommand:
         with open(secrets_file, "w") as f:
             json.dump(secrets_to_save, f, indent=2)
 
-        bootstrap_services(self.config, vars)
+        write_env_files(self.config, vars)
