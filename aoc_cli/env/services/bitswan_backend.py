@@ -1,7 +1,7 @@
 from typing import Dict
 
 from aoc_cli.env.config import Environment, InitConfig
-from aoc_cli.env.utils import bootstrap_service
+from aoc_cli.env.utils import write_env_files_service
 
 
 def default_env(config: InitConfig) -> Dict[str, str]:
@@ -40,7 +40,7 @@ def default_env(config: InitConfig) -> Dict[str, str]:
     }
 
 
-def bootstrap(init_config: InitConfig, env_config: Dict[str, str] | None = None) -> None:
+def write_env_files(init_config: InitConfig, env_config: Dict[str, str] | None = None) -> None:
     env_config = env_config or {}
 
     POSTGRES_USER = env_config.get("BITSWAN_BACKEND_POSTGRES_USER")
@@ -51,7 +51,7 @@ def bootstrap(init_config: InitConfig, env_config: Dict[str, str] | None = None)
 
     DATABASE_URL = f"postgres://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
-    bootstrap_service(
+    write_env_files_service(
         service_name="Bitswan Backend",
         init_config=init_config,
         env_config=env_config,

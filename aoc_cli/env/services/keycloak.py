@@ -1,7 +1,7 @@
 from typing import Dict
 
 from aoc_cli.env.config import Environment, InitConfig
-from aoc_cli.env.utils import bootstrap_service
+from aoc_cli.env.utils import write_env_files_service
 
 
 def _public_base_url(config: InitConfig) -> str:
@@ -43,9 +43,9 @@ def default_env(config: InitConfig) -> Dict[str, str]:
     }
 
 
-def bootstrap(init_config: InitConfig, env_config: Dict[str, str] | None = None) -> None:
+def write_env_files(init_config: InitConfig, env_config: Dict[str, str] | None = None) -> None:
     env_config = env_config or {}
-    bootstrap_service(
+    write_env_files_service(
         service_name="Keycloak",
         init_config=init_config,
         env_config=env_config,

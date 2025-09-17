@@ -46,7 +46,7 @@ class InitCommand:
         # 2) Update docker-compose images only (env handled by env service)
         self.replace_docker_compose_services_versions()
 
-        self.setup_secrets()
+        self.setup_env_vars()
 
         ingress = IngressService(self.config)
         await ingress.add_proxy(
@@ -298,7 +298,7 @@ class InitCommand:
                     vars[key] = value_to_use
         return vars
 
-    def setup_secrets(self) -> None:
+    def setup_env_vars(self) -> None:
         """Setup command implementation"""
         vars = get_var_defaults(
             self.config,

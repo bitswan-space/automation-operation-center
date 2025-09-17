@@ -9,7 +9,7 @@ from aoc_cli.env.config import InitConfig, Environment
 def get_env_path(aoc_dir, service_name):
     return aoc_dir / "envs" / f"{service_name.lower().replace(' ','-')}.env"
 
-def bootstrap_service(
+def write_env_files_service(
     service_name: str,
     init_config: InitConfig,
     env_vars: Dict[str, List[Union[str, Tuple[str, str]]]],
@@ -18,7 +18,7 @@ def bootstrap_service(
     verbose: bool = False,
 ) -> None:
     """
-    Generic function to bootstrap environment variables for any service.
+    Generic function to write environment files for any service.
 
     Args:
         service_name: Name of the service (for display purposes)
@@ -27,7 +27,7 @@ def bootstrap_service(
         custom_message: Optional custom message to display
     """
     click.echo("\n")
-    click.echo(custom_message or f"Bootstrapping {service_name} Environment Variables")
+    click.echo(custom_message or f"Writing {service_name} Environment Files")
 
     env_str = marshall_env(env_vars, env_config)
 
