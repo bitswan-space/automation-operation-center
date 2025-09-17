@@ -103,6 +103,12 @@ class InitCommand:
         Admin user: {admin_username}
         Admin password: {admin_password}"""
 
+            # Build AOC admin info section
+            aoc_admin_info = f"""
+        AOC Admin:
+        Admin user: {self.config.admin_email}
+        Admin password: {self.config.admin_password}"""
+
             if self.config.env == Environment.DEV:
                 # Copy the generated local env file to nextjs directory
                 project_root = Path(__file__).parent.parent.parent
@@ -122,11 +128,11 @@ class InitCommand:
         pnpm install
         pnpm dev
 
-        Access the AOC at: http://localhost:3000{keycloak_info}
+        Access the AOC at: http://localhost:3000{keycloak_info}{aoc_admin_info}
         """
             else:
                 access_message = f"""
-        Access the AOC at: {self.config.protocol.value}://aoc.{self.config.domain}{keycloak_info}
+        Access the AOC at: {self.config.protocol.value}://aoc.{self.config.domain}{keycloak_info}{aoc_admin_info}
         """
 
             click.echo(access_message)
