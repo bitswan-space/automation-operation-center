@@ -44,6 +44,7 @@ class InitConfig:
     aoc_be_image: str | None = None
     aoc_image: str | None = None
     profile_manager_image: str | None = None
+    keycloak_image: str | None = None
     mkcerts: bool = False
     certs_dir: str | None = None
 
@@ -74,6 +75,7 @@ class InitConfig:
             "aoc_be_image": self.aoc_be_image,
             "aoc_image": self.aoc_image,
             "profile_manager_image": self.profile_manager_image,
+            "keycloak_image": self.keycloak_image,
             "mkcerts": self.mkcerts,
             "certs_dir": self.certs_dir,
         }
@@ -110,6 +112,7 @@ class InitConfig:
             aoc_be_image=config_dict.get("aoc_be_image"),
             aoc_image=config_dict.get("aoc_image"),
             profile_manager_image=config_dict.get("profile_manager_image"),
+            keycloak_image=config_dict.get("keycloak_image"),
             mkcerts=config_dict.get("mkcerts", False),
             certs_dir=config_dict.get("certs_dir"),
         )

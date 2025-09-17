@@ -13,6 +13,8 @@ def update(from_url):
 
     aoc_image = None
     aoc_be_image = None
+    profile_manager_image = None
+    keycloak_image = None
 
     if from_url:
         response = requests.get(from_url)
@@ -23,11 +25,19 @@ def update(from_url):
                 aoc_image = f"bitswan/automation-operations-centre:{versions['aoc']}"
             if versions.get("bitswan-backend"):
                 aoc_be_image = f"bitswan/bitswan-backend:{versions['bitswan-backend']}"
+            if versions.get("profile-manager"):
+                profile_manager_image = (
+                    f"bitswan/profile-manager:{versions['profile-manager']}"
+                )
+            if versions.get("keycloak"):
+                keycloak_image = f"bitswan/bitswan-keycloak:{versions['keycloak']}"
 
     init_config = InitConfig(
         env=Environment.PROD,
         aoc_image=aoc_image,
         aoc_be_image=aoc_be_image,
+        profile_manager_image=profile_manager_image,
+        keycloak_image=keycloak_image,
     )
     init_command = InitCommand(init_config)
 

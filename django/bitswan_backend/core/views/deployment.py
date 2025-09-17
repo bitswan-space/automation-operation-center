@@ -11,4 +11,7 @@ def current_deployed_version(request):
     if os.getenv("BITSWAN_BACKEND_VERSION"):
         versions["bitswan-backend"] = os.getenv("BITSWAN_BACKEND_VERSION")
 
+    if os.getenv("KEYCLOAK_VERSION"):
+        versions["keycloak"] = os.getenv("KEYCLOAK_VERSION")
+
     return JsonResponse(versions)
