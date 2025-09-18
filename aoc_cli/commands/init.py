@@ -377,11 +377,17 @@ async def execute_init(config: InitConfig, continue_from_config: bool = False) -
     pnpm install
     pnpm dev
 
-    Access the AOC at: http://localhost:3000{keycloak_info}{aoc_admin_info}
+    Access the AOC at: http://localhost:3000
+    
+    {aoc_admin_info}
+
+    {keycloak_info}
     """
         else:
             access_message = f"""
-    Access the AOC at: {config.protocol.value}://aoc.{config.domain}{keycloak_info}{aoc_admin_info}
+    Access the AOC at: {config.protocol.value}://aoc.{config.domain}{aoc_admin_info}
+
+{keycloak_info}
     """
 
         click.echo(access_message)
