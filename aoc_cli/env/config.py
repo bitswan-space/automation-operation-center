@@ -39,7 +39,6 @@ class InitConfig:
     domain: str = "bitswan.localhost"
     protocol: Protocol = Protocol.HTTP
     admin_email: str = "admin@bitswan.localhost"
-    admin_password: str = ""  # Will be generated securely
     org_name: str = "Example Org"
     aoc_be_image: str | None = None
     aoc_image: str | None = None
@@ -65,7 +64,6 @@ class InitConfig:
             "protocol": self.protocol.value,
             "domain": self.domain,
             "admin_email": self.admin_email,
-            "admin_password": self.admin_password,
             "org_name": self.org_name,
             "keycloak_smtp_username": self.keycloak_smtp_username,
             "keycloak_smtp_password": self.keycloak_smtp_password,
@@ -102,7 +100,6 @@ class InitConfig:
             protocol=Protocol(config_dict["protocol"]),
             domain=config_dict["domain"],
             admin_email=config_dict["admin_email"],
-            admin_password=config_dict["admin_password"],
             org_name=config_dict["org_name"],
             keycloak_smtp_username=config_dict.get("keycloak_smtp_username"),
             keycloak_smtp_password=config_dict.get("keycloak_smtp_password"),

@@ -10,7 +10,6 @@ AOC_SETUP_ENVIRONMENT = "AOC_SETUP_ENVIRONMENT"
 AOC_DOMAIN = "AOC_DOMAIN"
 AOC_PROTOCOL = "AOC_PROTOCOL"
 AOC_ADMIN_EMAIL = "AOC_ADMIN_EMAIL"
-AOC_ADMIN_PASSWORD = "AOC_ADMIN_PASSWORD"
 AOC_ORG_NAME = "AOC_ORG_NAME"
 KEYCLOAK_SMTP_USERNAME = "KEYCLOAK_SMTP_USERNAME"
 KEYCLOAK_SMTP_PASSWORD = "KEYCLOAK_SMTP_PASSWORD"
@@ -38,7 +37,6 @@ def verify_mandatory_envars() -> Dict[str, AoCEnvar]:
         AOC_DOMAIN,
         AOC_PROTOCOL,
         AOC_ADMIN_EMAIL,
-        AOC_ADMIN_PASSWORD,
         AOC_ORG_NAME,
     ]:
         if not os.environ.get(envar):
@@ -68,7 +66,6 @@ def collect_configurations(
     domain: str,
     protocol: str,
     admin_email: str,
-    admin_password: str,
     org_name: str,
     keycloak_smtp_username: str,
     keycloak_smtp_password: str,
@@ -113,12 +110,6 @@ def collect_configurations(
             "prompt_text": "Admin email",
             "hide_input": False,
             "default": "admin@example.com",
-        },
-        "admin_password": {
-            "option": admin_password,
-            "env_var": AOC_ADMIN_PASSWORD,
-            "prompt_text": "Admin password",
-            "hide_input": True,  # Mask user input for passwords
         },
         "org_name": {
             "option": org_name,

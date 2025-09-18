@@ -92,7 +92,6 @@ def _find_django_directory() -> Path:
 @click.option("--domain", type=str, help="Domain")
 @click.option("--protocol", type=click.Choice(["http", "https"]), help="Protocol")
 @click.option("--admin-email", type=str, help="Admin email")
-@click.option("--admin-password", type=str, hide_input=True, help="Admin password")
 @click.option("--org-name", type=str, help="Organization name")
 @click.option("--aoc-be-image", type=str, help="AOC BE docker image")
 @click.option("--aoc-image", type=str, help="AOC FE docker image")
@@ -177,7 +176,6 @@ async def _init_async(
             "domain": "bitswan.localhost", 
             "protocol": "http",
             "admin_email": kwargs.get("admin_email") or "admin@example.com",
-            "admin_password": kwargs.get("admin_password") or generate_secret(),
             "org_name": kwargs.get("org_name") or "Example Org",
             "keycloak_smtp_username": "",
             "keycloak_smtp_password": "",
@@ -197,7 +195,6 @@ async def _init_async(
             protocol=Protocol(kwargs["protocol"]),
             domain=kwargs["domain"],
             admin_email=kwargs["admin_email"],
-            admin_password=kwargs["admin_password"],
             org_name=kwargs["org_name"],
             aoc_be_image=kwargs.get("aoc_be_image"),
             aoc_image=kwargs.get("aoc_image"),
@@ -230,7 +227,6 @@ async def _init_async(
         domain=kwargs["domain"],
         protocol=kwargs["protocol"],
         admin_email=kwargs["admin_email"],
-        admin_password=kwargs["admin_password"],
         org_name=kwargs["org_name"],
         keycloak_smtp_username=kwargs["keycloak_smtp_username"],
         keycloak_smtp_password=kwargs["keycloak_smtp_password"],
@@ -253,7 +249,6 @@ async def _init_async(
         protocol=Protocol(configs.get("protocol")),
         domain=configs.get("domain"),
         admin_email=configs.get("admin_email"),
-        admin_password=configs.get("admin_password"),
         org_name=configs.get("org_name"),
         aoc_be_image=kwargs.get("aoc_be_image"),
         aoc_image=kwargs.get("aoc_image"),
@@ -353,10 +348,11 @@ async def execute_init(config: InitConfig, continue_from_config: bool = False) -
     Admin password: {admin_password}"""
 
         # Build AOC admin info section
+        admin_password = get_admin_password_from_secrets(config)
         aoc_admin_info = f"""
     AOC Admin:
     Admin user: {config.admin_email}
-    Admin password: {config.admin_password}"""
+    Admin password: {admin_password}"""
 
         if config.env == Environment.DEV:
             # Copy the generated local env file to nextjs directory
@@ -519,7 +515,7 @@ def setup_keycloak(config: InitConfig) -> None:
         
     keycloak_config = KeycloakConfig(
         admin_username=config.admin_email,
-        admin_password=config.admin_password,
+        admin_password=get_admin_password_from_secrets(config),
         aoc_dir=config.aoc_dir,
         org_name=config.org_name,
         env=config.env,
@@ -542,6 +538,16 @@ def setup_influxdb(config: InitConfig) -> None:
     influxdb.setup()
 
 
+def get_admin_password_from_secrets(config: InitConfig) -> str:
+    """Get the admin password from the secrets file."""
+    secrets_file = config.aoc_dir / "secrets.json"
+    if secrets_file.exists():
+        with open(secrets_file, "r") as f:
+            secrets = json.load(f)
+        return secrets.get("ADMIN_PASSWORD", "")
+    return ""
+
+
 def generate_secrets(vars: Dict[str, str]) -> Dict[str, str]:
     """Generate all required secrets, only filling in missing values.
 
@@ -561,6 +567,7 @@ def generate_secrets(vars: Dict[str, str]) -> Dict[str, str]:
         ("DJANGO_SECRET_KEY",),
         ("AUTH_SECRET_KEY",),
         ("EMQX_AUTHENTICATION__1__SECRET",),
+        ("ADMIN_PASSWORD",),
     )        
 
     for secret_tuple in secrets_map:
