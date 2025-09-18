@@ -180,18 +180,6 @@ class InitCommand:
                 "https://hub.docker.com/v2/repositories/bitswan/automation-operations-centre/tags/",
             ))
 
-        if self.config.profile_manager_image:
-            docker_compose["services"]["profile-manager"][
-                "image"
-            ] = self.config.profile_manager_image
-            docker_compose["services"]["bitswan-backend"]["environment"][
-                "PROFILE_MANAGER_VERSION"] = self.config.profile_manager_image.split(":")[-1]
-        else:
-            services.append((
-                "profile-manager",
-                "https://hub.docker.com/v2/repositories/bitswan/profile-manager/tags/",
-            ))
-
         # Replace the services versions
         for service in services:
             service_name, url = service

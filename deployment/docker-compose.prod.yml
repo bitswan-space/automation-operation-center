@@ -89,12 +89,6 @@ services:
     ports:
       - "3000:3000"
 
-  profile-manager:
-    restart: always
-    networks:
-      - bitswan_network
-    image: bitswan/profile-manager:2024-11950867793-git-5ff440c
-
   bitswan-backend:
     image: bitswan/bitswan-backend:2025-13211829799-git-65ce7c8
     container_name: bitswan-backend

@@ -2,7 +2,7 @@ name: Trigger AOC Update
 
 on:
   workflow_run:
-    workflows: ["AOC UI Build and Push", "BitSwan Backend Build and Push", "Keycloak Build and Push", "BitSwan Profile Manager Build and Push"]
+    workflows: ["AOC UI Build and Push", "BitSwan Backend Build and Push", "Keycloak Build and Push"]
     types:
       - completed
     branches:

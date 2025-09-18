@@ -147,15 +147,6 @@ class KeycloakMixin:
         # FIXME: this will delete a user from any org
         self.keycloak.delete_user(user_id=user_id)
 
-    def get_org_group_mqtt_profiles(self):
-        """
-        Helper method to get the Keycloak group ID
-        """
-
-        org_id = self.get_org_id()
-
-        return self.keycloak.get_org_group_mqtt_profiles(self.request, org_id)
-
     def start_device_registration(self):
         """
         Helper method to start device registration

@@ -293,24 +293,6 @@ def bootstrap_emqx(init_config: InitConfig, env_config: dict[str, str] = None) -
     )
 
 
-def bootstrap_profile_manager(init_config: InitConfig, env_config: dict[str, str] = None) -> None:
-    """Bootstrap Profile Manager environment variables."""
-    env_config = env_config or {}
-
-    bootstrap_service(
-        service_name="Profile Manager",
-        environment=init_config.env,
-        env_vars={
-            "Profile Manager": {
-                "MQTT_BROKER_URL": "mqtt://aoc-emqx:1883",
-                "MQTT_BROKER_SECRET": env_config.get("EMQX_AUTHENTICATION__1__SECRET"),
-            }
-        },
-        env_file="profile-manager.env",
-        aoc_dir=init_config.aoc_dir,
-    )
-
-
 def bootstrap_services(
     init_config: InitConfig, env_config: dict[str, str] = None
 ) -> None:
@@ -325,4 +307,3 @@ def bootstrap_services(
     bootstrap_bitswan_backend(init_config, env_config)
     bootsrap_bitswan_backend_db(init_config, env_config)
     bootstrap_emqx(init_config, env_config)
-    bootstrap_profile_manager(init_config, env_config)

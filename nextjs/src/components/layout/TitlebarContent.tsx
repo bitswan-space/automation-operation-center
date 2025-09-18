@@ -1,9 +1,5 @@
 import { Card, CardContent } from "../ui/card";
 
-import { type MQTTProfileListResponse } from "@/data/mqtt-profiles";
-import MQTTProfileSelector from "../groups/MQTTProfileSelector";
-import { Skeleton } from "../ui/skeleton";
-import { Suspense } from "react";
 import clsx from "clsx";
 import { OrgSwitcher } from "../organizations/org-switcher";
 import { type Organisation, type OrgListResponse } from "@/data/organisations";
@@ -11,12 +7,11 @@ import { type Organisation, type OrgListResponse } from "@/data/organisations";
 export type TitleBarContentProps = {
   className?: string;
   title: React.ReactNode;
-  mqttProfiles?: MQTTProfileListResponse;
   orgs?: OrgListResponse;
   activeOrg?: Organisation;
 };
 export function TitleBarContent(props: TitleBarContentProps) {
-  const { className, title, mqttProfiles, orgs, activeOrg } = props;
+  const { className, title, orgs, activeOrg } = props;
   return (
     <div className={clsx("hidden md:block", className)}>
       <Card
@@ -32,12 +27,6 @@ export function TitleBarContent(props: TitleBarContentProps) {
 
           <div className="ml-auto flex items-center justify-end gap-4 pr-2">
             <OrgSwitcher orgs={orgs?.results ?? []} activeOrg={activeOrg} />
-            <div>/</div>
-            <div className="my-auto">
-              <Suspense fallback={<Skeleton className="h-10 w-60" />}>
-                <MQTTProfileSelector mqttProfiles={mqttProfiles} />
-              </Suspense>
-            </div>
           </div>
         </CardContent>
       </Card>

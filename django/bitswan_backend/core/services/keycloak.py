@@ -331,42 +331,6 @@ class KeycloakService:
         logger.info("Deleted user: %s", user_id)
         return user_id
 
-    def get_org_group_mqtt_profiles(self, request, org_id):
-        active_user_id = self.get_active_user(request)
-        org_groups = self.get_org_groups(org_id=org_id)
-
-        if self.is_admin(request):
-            return [
-                {
-                    "id": f"{org_id}_group_{group['id']}_admin",
-                    "name": group["name"],
-                    "is_admin": True,
-                    "group_id": group["id"],
-                }
-                for group in org_groups
-            ]
-
-        user_group_memberships = self.keycloak_admin.get_user_groups(
-            user_id=active_user_id,
-            brief_representation=False,
-        )
-
-        org_group_user_memberships = [
-            group
-            for group in user_group_memberships
-            if group["id"] in [group["id"] for group in org_groups]
-        ]
-
-        return [
-            {
-                "id": f"{org_id}_group_{group['id']}",
-                "name": group["name"],
-                "is_admin": False,
-                "group_id": group["id"],
-            }
-            for group in org_group_user_memberships
-        ]
-
     def is_admin(self, request):
         active_user_id = self.get_active_user(request)
 

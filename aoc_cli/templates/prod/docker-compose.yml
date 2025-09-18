@@ -73,17 +73,6 @@ services:
     networks:
       - bitswan_network
 
-  profile-manager:
-    restart: always
-    image: bitswan/profile-manager:<slug>
-    container_name: aoc-profile-manager
-    env_file: envs/profile-manager.env
-    depends_on:
-      - emqx
-      - bitswan-backend
-    networks:
-      - bitswan_network
-
   bitswan-backend:
     image: bitswan/bitswan-backend:<slug>
     container_name: aoc-bitswan-backend

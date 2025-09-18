@@ -50,7 +50,6 @@ class InitConfig:
     dev_setup: DevSetupKind = DevSetupKind.DOCKER
     aoc_be_image: str | None = None
     aoc_image: str | None = None
-    profile_manager_image: str | None = None
 
     def get_url(self, subdomain: str) -> str:
         return f"{self.protocol.value}://{subdomain}.{self.domain}"

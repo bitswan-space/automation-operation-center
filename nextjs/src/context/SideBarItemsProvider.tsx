@@ -5,14 +5,10 @@ import { type NodeModel } from "@minoru/react-dnd-treeview";
 import {
   deserializeNavItems,
   type RawNavItem,
-  useSerializedNavItemData,
   type NavItem,
 } from "@/components/layout/Sidebar/utils/NavItems";
-import useLocalStorageState from "ahooks/lib/useLocalStorageState";
 
-import { ACTIVE_MQTT_PROFILE_STORAGE_KEY } from "@/shared/constants";
 import { stringify } from "flatted";
-import { type MQTTProfile } from "@/data/mqtt-profiles";
 
 type SidebarItemsContext = {
   sidebarItems: NodeModel<NavItem>[];
@@ -23,19 +19,6 @@ type SidebarItemsContext = {
 export const SidebarItemsContext =
   React.createContext<SidebarItemsContext | null>(null);
 
-export function useSidebarItemsSource() {
-  const [activeMQTTProfile] = useLocalStorageState<MQTTProfile | undefined>(
-    ACTIVE_MQTT_PROFILE_STORAGE_KEY,
-    {
-      listenStorageChange: true,
-    },
-  );
-
-  console.log("activeMQTTProfile?.nav_items", activeMQTTProfile?.nav_items);
-
-  return useSerializedNavItemData(activeMQTTProfile?.nav_items ?? []);
-}
-
 export function useSidebarItems() {
   const context = React.useContext(SidebarItemsContext);
   if (!context) {
@@ -44,27 +27,25 @@ export function useSidebarItems() {
   return context;
 }
 
+// TODO: fix nav items
 export function SidebarItemsProvider({
   children,
 }: React.PropsWithChildren<unknown>) {
-  // Get the initial items
-  const sourceItems = useSidebarItemsSource();
-
   // Use one state instead of updating based on source changes
   const [sidebarItemsState, setSidebarItemsState] = React.useState<
     NodeModel<NavItem>[]
-  >(() => sourceItems);
+  >([]);
 
   // Only update state when source items actually change
   React.useEffect(() => {
     setSidebarItemsState((prevItems) => {
       // Optional: Add deep comparison if needed
-      if (stringify(prevItems) !== stringify(sourceItems)) {
-        return sourceItems;
+      if (stringify(prevItems) !== stringify([])) {
+        return [];
       }
       return prevItems;
     });
-  }, [sourceItems]);
+  }, []);
 
   const deserializedNavItems = React.useMemo(
     () => deserializeNavItems(sidebarItemsState),

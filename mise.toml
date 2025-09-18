@@ -11,6 +11,5 @@ emqx \
 keycloak \
 keycloak-postgres \
 mailpit \
-profile-manager \
 -d
 """
