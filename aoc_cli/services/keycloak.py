@@ -63,6 +63,7 @@ class KeycloakService:
         realm = self.keycloak_admin.get_realm(self.config.realm_name)
 
         realm["ssoSessionMaxLifespan"] = 2073600000
+        realm["loginTheme"] = "bitswan-keycloak-theme"
 
         self.keycloak_admin.update_realm(self.config.realm_name, realm)
         click.echo("✓ Realm settings configured")
