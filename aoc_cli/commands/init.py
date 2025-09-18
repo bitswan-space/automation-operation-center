@@ -305,7 +305,7 @@ async def execute_init(config: InitConfig, continue_from_config: bool = False) -
     await ingress.add_proxy(
         f"api.{config.domain}",
         (
-            "aoc-bitswan-backend:5000"
+            "aoc-bitswan-backend:8000"
         ),
     )
     await ingress.add_proxy(
@@ -495,7 +495,7 @@ def replace_docker_compose_services_versions(config: InitConfig) -> None:
                 docker_compose["services"]["bitswan-backend"]["volumes"].append(volume_mapping)
             
             # Ensure command is set to /start for dev mode
-            docker_compose["services"]["bitswan-backend"]["command"] = "/dev"
+            docker_compose["services"]["bitswan-backend"]["command"] = "/dev-command"
             
         except Exception as e:
             click.echo(f"Warning: Could not configure dev mode volumes: {e}")

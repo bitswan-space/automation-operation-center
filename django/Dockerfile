@@ -71,13 +71,13 @@ RUN pip install --no-cache-dir --no-index --find-links=/wheels/ /wheels/* \
 # Script files
 COPY --chown=django:django ./docker/entrypoint /entrypoint
 COPY --chown=django:django ./docker/start /start
-COPY --chown=django:django ./docker/dev /dev
+COPY --chown=django:django ./docker/dev /dev-command
 
 
 # copy application code to WORKDIR
 COPY --chown=django:django . ${APP_HOME}
 
-RUN chmod +x /entrypoint /start /dev
+RUN chmod +x /entrypoint /start /dev-command
 
 # make django owner of the WORKDIR directory as well.
 RUN chown django:django ${APP_HOME}
