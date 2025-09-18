@@ -86,8 +86,8 @@ def collect_configurations(
             "env_var": AOC_SETUP_ENVIRONMENT,
             "prompt_text": "Environment",
             "hide_input": False,
-            "default": "dev",
-            "type": click.Choice(["dev", "prod", "staging"]),
+            "default": "prod",
+            "type": click.Choice(["dev", "prod"]),
         },
         "domain": {
             "option": domain,
@@ -166,28 +166,6 @@ def collect_configurations(
     return configs, config_map
 
 
-def validate_configurations(configs: dict, config_map: dict):
-    """
-    Ensure all required configurations are present and non-empty.
-    """
-    missing_details = []
-
-    for key, value in configs.items():
-        if not value:
-            config_info = config_map[key]
-
-            missing_details.append(
-                f"`{config_info['env_var']}` (environment variable) or --{key.replace('_', '-')} (CLI option)"
-            )
-
-    if missing_details:
-        click.echo(
-            "Error: Missing required configurations:\n"
-            + "\n".join(f"  - {detail}" for detail in missing_details)
-        )
-        raise click.Abort()
-
-
 def get_config_value(
     option: str,
     env_var: str,
@@ -205,13 +183,14 @@ def get_config_value(
     """
     if option:
         return option
-    if env_var in os.environ:
+    elif env_var in os.environ:
         return os.environ[env_var]
-    if interactive:
+    elif interactive:
         return click.prompt(
             prompt_text, default=default, hide_input=hide_input, type=type
         )
-    return None  # Return None if not found and interactive mode is off
+    else:
+        return default
 
 
 def load_environment(env_file: str):
