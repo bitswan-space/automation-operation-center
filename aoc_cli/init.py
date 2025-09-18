@@ -34,7 +34,6 @@ from aoc_cli.handlers.init import InitCommand
 @click.option("--org-name", type=str, help="Organization name")
 @click.option("--aoc-be-image", type=str, help="AOC BE docker image")
 @click.option("--aoc-image", type=str, help="AOC FE docker image")
-@click.option("--profile-manager-image", type=str, help="Profile Manager docker image")
 @click.option("--keycloak-smtp-username", type=str, help="Keycloak SMTP username")
 @click.option("--keycloak-smtp-password", type=str, help="Keycloak SMTP password")
 @click.option("--keycloak-smtp-host", type=str, help="Keycloak SMTP host")
@@ -96,7 +95,6 @@ async def _init_async(
         org_name=configs.get("org_name"),
         aoc_be_image=kwargs.get("aoc_be_image"),
         aoc_image=kwargs.get("aoc_image"),
-        profile_manager_image=kwargs.get("profile_manager_image"),
         keycloak_smtp_username=kwargs.get("keycloak_smtp_username"),
         keycloak_smtp_password=kwargs.get("keycloak_smtp_password"),
         keycloak_smtp_host=kwargs.get("keycloak_smtp_host"),

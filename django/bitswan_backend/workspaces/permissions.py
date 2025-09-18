@@ -50,29 +50,6 @@ class CanReadWorkspacePipelineEMQXJWT(CanReadOrgEMQXJWT):
     """
 
 
-class CanReadProfileEMQXJWT(BasePermission):
-    """
-    Permission to allow a user to read a profile's EMQX JWT token.
-    """
-
-    keycloak = KeycloakService()
-
-    def has_permission(self, request, view):
-        active_user_id = self.keycloak.get_active_user(request)
-
-        is_group_member = self.keycloak.is_group_member(
-            user_id=active_user_id,
-            group_id=view.kwargs.get("profile_id"),
-        )
-
-        return (
-            is_group_member
-            and request.user.is_active
-            and request.user.is_authenticated
-            and request.method in SAFE_METHODS
-        )
-
-
 class CanReadAutomationServerEMQXJWT(BasePermission):
     """
     Permission to allow a user to read an automation server's EMQX JWT token.

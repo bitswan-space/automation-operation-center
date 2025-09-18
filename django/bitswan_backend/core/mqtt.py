@@ -78,27 +78,6 @@ class MQTTService:
         self.mqtt_client = MQTTClient()
         self.keycloak_service = KeycloakService()
 
-    def publish_org_profiles(self, organization_id):
-        try:
-            groups = self.keycloak_service.get_org_groups(organization_id)
-            profiles = []
-            for group in groups:
-                profiles.append(f"{organization_id}_group_{group['id']}")
-                profiles.append(f"{organization_id}_group_{group['id']}_admin")
-
-            topic = f"/orgs/{organization_id}/profiles"
-            self.mqtt_client.publish(topic, profiles, retain=True)
-        except Exception as e:
-            logger.error(f"Error publishing organization profiles: {e}")
-
-    def publish_orgs_profiles(self):
-        try:
-            orgs = self.keycloak_service.get_orgs()
-            for org in orgs:
-                self.publish_org_profiles(org['id'])
-        except Exception as e:
-            logger.error(f"Error publishing organizations profiles: {e}")
-
     def publish_automation_server_groups(self, automation_server):
         """
         Publish automation server groups to MQTT with persistent message

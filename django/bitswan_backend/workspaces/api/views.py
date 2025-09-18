@@ -19,7 +19,6 @@ from bitswan_backend.workspaces.api.serializers import AutomationServerSerialize
 from bitswan_backend.workspaces.api.serializers import CreateAutomationServerSerializer
 from bitswan_backend.workspaces.api.serializers import WorkspaceSerializer
 from bitswan_backend.workspaces.api.services import create_token
-from bitswan_backend.workspaces.permissions import CanReadProfileEMQXJWT
 from bitswan_backend.workspaces.permissions import CanReadWorkspaceEMQXJWT
 from bitswan_backend.workspaces.permissions import CanReadWorkspacePipelineEMQXJWT
 
@@ -486,52 +485,6 @@ class GetUserEmqxJwtsAPIView(KeycloakMixin, views.APIView):
                 {"error": "Failed to generate EMQX JWTs"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-
-class GetProfileEmqxJWTAPIView(KeycloakMixin, views.APIView):
-    authentication_classes = [KeycloakAuthentication]
-    permission_classes = [CanReadProfileEMQXJWT]
-
-    def get(self, request, profile_id):
-        org_id = self.get_org_id()
-        is_admin = self.is_admin(request)
-
-        profile_id = f"{org_id}_group_{profile_id}{'_admin' if is_admin else ''}"
-
-        mountpoint = f"/orgs/{org_id}/profiles/{profile_id}"
-        username = profile_id
-
-        token = create_token(
-            secret=settings.EMQX_JWT_SECRET,
-            username=username,
-            mountpoint=mountpoint,
-        )
-
-        return Response(
-            {
-                "url": os.getenv("EMQX_EXTERNAL_URL"),
-                "token": token,
-            },
-            status=status.HTTP_200_OK,
-        )
-
-
-class GetProfileManagerEmqxJWTAPIView(KeycloakMixin, views.APIView):
-    authentication_classes = [KeycloakAuthentication]
-
-    def get(self, request):
-        token = create_token(
-            secret=settings.EMQX_JWT_SECRET,
-            username="root",
-        )
-
-        return Response(
-            {
-                "url": os.getenv("EMQX_EXTERNAL_URL"),
-                "token": token,
-            },
-            status=status.HTTP_200_OK,
-        )
 
 
 class RegisterCLIAPIView(KeycloakMixin, views.APIView):

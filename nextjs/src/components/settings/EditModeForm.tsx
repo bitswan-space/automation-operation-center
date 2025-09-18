@@ -1,13 +1,10 @@
 "use client";
 
-import { ACTIVE_MQTT_PROFILE_STORAGE_KEY } from "@/shared/constants";
 import { Button } from "@/components/ui/button";
 import { Label } from "../ui/label";
-import { type MQTTProfile } from "@/data/mqtt-profiles";
 import React from "react";
 import { Switch } from "@/components/ui/switch";
 import { canMutateSidebarItems } from "@/lib/permissions";
-import useLocalStorageState from "ahooks/lib/useLocalStorageState";
 import { useSession } from "next-auth/react";
 import { useSidebar } from "../ui/sidebar";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
@@ -15,17 +12,12 @@ import { useAction } from "next-safe-action/hooks";
 import { toast } from "sonner";
 import { createOrUpdateOrgGroupAction } from "../groups/action";
 
+// TODO: fix nav items
+
 export function SwitchForm() {
   const { editMode, setEditMode } = useSidebar();
 
   const { deserializedNavItems } = useSidebarItems();
-
-  const [activeMQTTProfile] = useLocalStorageState<MQTTProfile | undefined>(
-    ACTIVE_MQTT_PROFILE_STORAGE_KEY,
-    {
-      listenStorageChange: true,
-    },
-  );
 
   const { data: session } = useSession();
 
@@ -78,12 +70,12 @@ export function SwitchForm() {
           <input
             name="id"
             type="hidden"
-            defaultValue={activeMQTTProfile?.group_id}
+            defaultValue={""}
           />
           <input
             name="name"
             type="hidden"
-            defaultValue={activeMQTTProfile?.name}
+            defaultValue={""}
           />
           <input
             name="nav_items"

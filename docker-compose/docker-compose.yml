@@ -73,14 +73,6 @@ services:
     ports:
       - "3000:3000"
 
-  profile-manager:
-    restart: always
-    image: bitswan/profile-manager:2024-11950867793-git-5ff440c
-    volumes:
-      - ./profile-manager/discovery_service.yaml:/conf/config.yaml:r
-      - ./profile-manager/navigation_menu.json:/conf/navigation_menu.json
-      - ./profile-manager/navigation_schema.json:/conf/navigation_schema.json:r
-
   bitswan-backend:
     image: bitswan/bitswan-backend:2024-12279082742-git-b86a560
     depends_on:

@@ -141,19 +141,6 @@ services:
     entrypoint: ["/healthcheck.sh"]
     network_mode: "host"
 
-  profile-manager:
-    networks:
-      - bitswan_network
-    restart: always
-    depends_on:
-      - emqx
-      - django
-    build:
-      context: ../profile-manager
-      dockerfile: ./Dockerfile
-    env_file:
-      - ./envs/profile-manager.env
-
   aoc-nextjs:
     build:
       context: ../nextjs
