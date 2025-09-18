@@ -27,6 +27,53 @@ from aoc_cli.services.keycloak import KeycloakConfig, KeycloakService
 from aoc_cli.utils.secrets import generate_secret
 
 
+def _is_in_automation_center_repo() -> bool:
+    """Check if we're currently in the automation center git repository."""
+    try:
+        # Get the git root directory
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        git_root = Path(result.stdout.strip())
+        
+        # Check if this is the automation center repo by looking for key files/directories
+        # Look for django directory and other characteristic files
+        django_dir = git_root / "django"
+        nextjs_dir = git_root / "nextjs"
+        aoc_cli_dir = git_root / "aoc_cli"
+        
+        return (django_dir.exists() and 
+                nextjs_dir.exists() and 
+                aoc_cli_dir.exists() and
+                (git_root / "README.md").exists())
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
+
+
+def _find_django_directory() -> Path:
+    """Find the django directory using absolute path from git repo root."""
+    try:
+        # Get the git root directory
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        git_root = Path(result.stdout.strip())
+        django_dir = git_root / "django"
+        
+        if not django_dir.exists():
+            raise FileNotFoundError("Django directory not found in git repository")
+            
+        return django_dir
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        raise RuntimeError(f"Could not find django directory: {e}")
+
+
 @click.command()
 @click.argument(
     "output_dir",
@@ -106,6 +153,12 @@ async def _init_async(
     """Initialize the Automation Operations Center (AOC)."""
     
     if dev:
+        # Check if we're in the automation center git repo
+        if not _is_in_automation_center_repo():
+            click.echo("Error: Dev mode can only be launched from within the automation center git repository.")
+            click.echo("Please navigate to the automation center repository and try again.")
+            return
+        
         click.echo("\n\nInitializing AoC Dev environment...")
         
         if continue_from_config:
@@ -420,6 +473,32 @@ def replace_docker_compose_services_versions(config: InitConfig) -> None:
         if image:
             docker_compose["services"][service_name]["image"] = image
 
+    # Add dev mode configuration for bitswan-backend service
+    if config.env == Environment.DEV:
+        try:
+            django_dir = _find_django_directory()
+            click.echo(f"Adding dev mode volume mapping: {django_dir}:/app:z")
+            
+            # Ensure the bitswan-backend service exists
+            if "bitswan-backend" not in docker_compose["services"]:
+                docker_compose["services"]["bitswan-backend"] = {}
+            
+            # Add volume mapping for dev mode
+            if "volumes" not in docker_compose["services"]["bitswan-backend"]:
+                docker_compose["services"]["bitswan-backend"]["volumes"] = []
+            
+            # Add the django directory volume mapping
+            volume_mapping = f"{django_dir}:/app:z"
+            if volume_mapping not in docker_compose["services"]["bitswan-backend"]["volumes"]:
+                docker_compose["services"]["bitswan-backend"]["volumes"].append(volume_mapping)
+            
+            # Ensure command is set to /start for dev mode
+            docker_compose["services"]["bitswan-backend"]["command"] = "/start"
+            
+        except Exception as e:
+            click.echo(f"Warning: Could not configure dev mode volumes: {e}")
+            click.echo("Continuing without dev mode volume mapping...")
+
     # Write the updated docker-compose.yml file
     with open(config.aoc_dir / "docker-compose.yml", "w") as f:
         yaml.dump(docker_compose, f)
@@ -506,6 +585,8 @@ def setup_env_vars(config: InitConfig) -> None:
     vars = get_var_defaults(
         config,
     )
+
+    vars.update(secrets)
 
     write_env_files(config, vars)
 

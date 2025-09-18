@@ -24,6 +24,7 @@ services:
       - bitswan_network
     environment:
       - DOCKER_INFLUXDB_INIT_MODE=setup
+    ports:
       - "8086:8086"
 
 

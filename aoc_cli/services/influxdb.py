@@ -94,7 +94,7 @@ class InfluxDBService:
 
     def wait_for_service(self, max_retries: int = 30, delay: int = 10) -> None:
         """Wait for InfluxDB to be ready"""
-        click.echo("Waiting for InfluxDB to be ready...")
+        click.echo(f"Waiting for InfluxDB to be ready by pinging {self.config.url}/health ...")
         for attempt in range(max_retries):
             try:
                 response = requests.get(f"{self.config.url}/health")
