@@ -479,7 +479,7 @@ def replace_docker_compose_services_versions(config: InitConfig) -> None:
     if config.env == Environment.DEV:
         try:
             django_dir = _find_django_directory()
-            click.echo(f"Adding dev mode volume mapping: {django_dir}:/app:z")
+            click.echo(f"Adding dev mode volume mapping: {django_dir}:/app:rwz")
             
             # Ensure the bitswan-backend service exists
             if "bitswan-backend" not in docker_compose["services"]:
@@ -490,12 +490,12 @@ def replace_docker_compose_services_versions(config: InitConfig) -> None:
                 docker_compose["services"]["bitswan-backend"]["volumes"] = []
             
             # Add the django directory volume mapping
-            volume_mapping = f"{django_dir}:/app:z"
+            volume_mapping = f"{django_dir}:/app:rwz"
             if volume_mapping not in docker_compose["services"]["bitswan-backend"]["volumes"]:
                 docker_compose["services"]["bitswan-backend"]["volumes"].append(volume_mapping)
             
             # Ensure command is set to /start for dev mode
-            docker_compose["services"]["bitswan-backend"]["command"] = "/start"
+            docker_compose["services"]["bitswan-backend"]["command"] = "/dev"
             
         except Exception as e:
             click.echo(f"Warning: Could not configure dev mode volumes: {e}")
