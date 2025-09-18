@@ -46,6 +46,7 @@ class InitConfig:
     keycloak_image: str | None = None
     mkcerts: bool = False
     certs_dir: str | None = None
+    from_url: str | None = None
 
     def get_url(self, subdomain: str) -> str:
         return f"{self.protocol.value}://{subdomain}.{self.domain}"
@@ -76,6 +77,7 @@ class InitConfig:
             "keycloak_image": self.keycloak_image,
             "mkcerts": self.mkcerts,
             "certs_dir": self.certs_dir,
+            "from_url": self.from_url,
         }
         
         with open(file_path, "w") as f:
@@ -112,4 +114,5 @@ class InitConfig:
             keycloak_image=config_dict.get("keycloak_image"),
             mkcerts=config_dict.get("mkcerts", False),
             certs_dir=config_dict.get("certs_dir"),
+            from_url=config_dict.get("from_url"),
         )

@@ -7,6 +7,7 @@ import requests
 import yaml
 
 from aoc_cli.env.config import Environment, InitConfig
+from aoc_cli.utils.images import resolve_images, replace_docker_compose_services_versions
 
 
 @click.command()
@@ -16,6 +17,24 @@ def update(from_url):
     aoc_be_image = None
     profile_manager_image = None
     keycloak_image = None
+    saved_env = Environment.PROD  # Default to PROD if no saved config
+
+    # Try to load from saved config to get environment and other settings
+    try:
+        saved_config = InitConfig.load_from_yaml()
+        saved_env = saved_config.env
+        from_url = from_url or saved_config.from_url  # Use provided from_url or saved one
+        if saved_config.from_url and not from_url:
+            click.echo(f"Using saved URL from config: {saved_config.from_url}")
+        elif from_url:
+            click.echo(f"Using provided URL: {from_url}")
+    except FileNotFoundError:
+        click.echo("No saved config found. Using default settings.")
+        if not from_url:
+            click.echo("No --from URL provided. Using Docker Hub for image resolution.")
+    except Exception as e:
+        click.echo(f"Warning: Could not load saved config: {e}")
+        click.echo("Using default settings.")
 
     if from_url:
         response = requests.get(from_url)
@@ -34,11 +53,12 @@ def update(from_url):
                 keycloak_image = f"bitswan/bitswan-keycloak:{versions['keycloak']}"
 
     init_config = InitConfig(
-        env=Environment.PROD,
+        env=saved_env,
         aoc_image=aoc_image,
         aoc_be_image=aoc_be_image,
         profile_manager_image=profile_manager_image,
         keycloak_image=keycloak_image,
+        from_url=from_url,
     )
 
     resolve_images(init_config)
@@ -49,75 +69,3 @@ def update(from_url):
         cwd=init_config.aoc_dir,
         check=True,
     )
-
-
-def resolve_images(config: InitConfig) -> None:
-    """Ensure config image fields are full image references with tags.
-
-    If a field is unset, query Docker Hub and pick the latest tag matching
-    the expected pattern, then set the config field accordingly.
-    """
-    def latest_tag_from_docker_hub(url: str, pattern: str = r"\d{4}-\d+-git-[a-fA-F0-9]+$") -> str:
-        try:
-            resp = requests.get(url, timeout=15)
-            if resp.status_code == 200:
-                results = resp.json().get("results", [])
-                for version in results:
-                    name = version.get("name")
-                    if name and re.match(pattern, name):
-                        return name
-        except Exception:
-            pass
-        return "latest"
-
-    # bitswan-backend
-    if not config.aoc_be_image:
-        tag = latest_tag_from_docker_hub(
-            "https://hub.docker.com/v2/repositories/bitswan/bitswan-backend/tags/"
-        )
-        config.aoc_be_image = f"bitswan/bitswan-backend:{tag}"
-
-    # automation-operations-centre (AOC)
-    if not config.aoc_image:
-        tag = latest_tag_from_docker_hub(
-            "https://hub.docker.com/v2/repositories/bitswan/automation-operations-centre/tags/"
-        )
-        config.aoc_image = f"bitswan/automation-operations-centre:{tag}"
-
-    # profile-manager
-    if not config.profile_manager_image:
-        tag = latest_tag_from_docker_hub(
-            "https://hub.docker.com/v2/repositories/bitswan/profile-manager/tags/"
-        )
-        config.profile_manager_image = f"bitswan/profile-manager:{tag}"
-
-    # keycloak
-    if not config.keycloak_image:
-        tag = latest_tag_from_docker_hub(
-            "https://hub.docker.com/v2/repositories/bitswan/bitswan-keycloak/tags/"
-        )
-        config.keycloak_image = f"bitswan/bitswan-keycloak:{tag}"
-
-
-def replace_docker_compose_services_versions(config: InitConfig) -> None:
-    click.echo("Finding latest versions for AOC services")
-
-    # Read the docker-compose.yml file using yaml
-    with open(config.aoc_dir / "docker-compose.yml", "r") as f:
-        docker_compose = yaml.safe_load(f)
-
-    # Images are expected to be resolved already in config
-    service_to_image = {
-        "bitswan-backend": config.aoc_be_image,
-        "aoc": config.aoc_image,
-        "profile-manager": config.profile_manager_image,
-        "keycloak": config.keycloak_image,
-    }
-
-    for service_name, image in service_to_image.items():
-        if image:
-            docker_compose["services"][service_name]["image"] = image
-
-    # Write the updated docker-compose.yml file
-    with open(config.aoc_dir / "docker-compose.yml", "w") as f:
-        yaml.dump(docker_compose, f)
