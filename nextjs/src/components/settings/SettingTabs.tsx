@@ -12,6 +12,7 @@ import { UserDetailTable } from "../users/UserDetailTable";
 import { type UserGroupsListResponse } from "@/data/groups";
 import { useQueryState } from "nuqs";
 import { type OrgUsersListResponse } from "@/data/users";
+import { env } from "@/env.mjs";
 
 type SettingTabsProps = {
   groupsList?: UserGroupsListResponse;
@@ -22,9 +23,12 @@ type SettingTab = "general" | "users" | "groups" | "gitops";
 
 export function SettingTabs(props: SettingTabsProps) {
   const { groupsList, usersList } = props;
+  
+  // Check if experimental features should be shown
+  const showExperimental = env.NEXT_PUBLIC_BITSWAN_EXPERIMENTAL?.toLowerCase() === 'true';
 
   const [activeTabParam, setActiveTabParam] = useQueryState("activeTab", {
-    defaultValue: "general",
+    defaultValue: showExperimental ? "general" : "users",
   });
 
   const [activeTab, setActiveTab] = useState<SettingTab>(
@@ -44,9 +48,11 @@ export function SettingTabs(props: SettingTabsProps) {
       onValueChange={(value) => handleTabChange(value as SettingTab)}
     >
       <TabsList>
-        <TabsTrigger value="general">
-          <Settings size={16} className="mr-2" /> General
-        </TabsTrigger>
+        {showExperimental && (
+          <TabsTrigger value="general">
+            <Settings size={16} className="mr-2" /> General
+          </TabsTrigger>
+        )}
         <TabsTrigger value="users">
           <Users size={16} className="mr-2" /> Users
         </TabsTrigger>
@@ -54,11 +60,13 @@ export function SettingTabs(props: SettingTabsProps) {
           <Ungroup size={16} className="mr-2" /> Groups
         </TabsTrigger>
       </TabsList>
-      <TabsContent value="general">
-        <div className="w-full">
-          <SwitchForm />
-        </div>
-      </TabsContent>
+      {showExperimental && (
+        <TabsContent value="general">
+          <div className="w-full">
+            <SwitchForm />
+          </div>
+        </TabsContent>
+      )}
       <TabsContent value="users">
         <div className="w-full">
           <UserDetailTable userGroups={groupsList} usersList={usersList} />

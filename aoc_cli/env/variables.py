@@ -47,6 +47,8 @@ def get_var_defaults(
                 # Point host Next.js to ingress domain instead of container port
                 "BITSWAN_BACKEND_API_URL": backend_base,
                 "NEXT_PUBLIC_BITSWAN_BACKEND_API_URL": backend_base,
+                # Enable experimental features in dev mode
+                "NEXT_PUBLIC_BITSWAN_EXPERIMENTAL": "true",
                 
                 # Bitswan Backend dev overrides
                 "DJANGO_SETTINGS_MODULE": "config.settings.local",

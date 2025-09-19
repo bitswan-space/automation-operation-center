@@ -21,6 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { OrgSwitcher } from "@/components/organizations/org-switcher";
 import { type Organisation } from "@/data/organisations";
+import { env } from "@/env.mjs";
 
 type AppSidebarProps = {
   session?: Session | null;
@@ -30,6 +31,9 @@ type AppSidebarProps = {
 
 export function AppSidebar(props: AppSidebarProps) {
   const { session, orgs, activeOrg } = props;
+  
+  // Check if experimental features should be shown
+  const showExperimental = env.NEXT_PUBLIC_BITSWAN_EXPERIMENTAL?.toLowerCase() === 'true';
 
   return (
     <Sidebar collapsible="icon">
@@ -64,22 +68,26 @@ export function AppSidebar(props: AppSidebarProps) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              <SidebarMenuItem key={"workspaces"}>
-                <SidebarMenuButton asChild>
-                  <Link href={"/dashboard/workspaces"}>
-                    <Table />
-                    <span>{"Workspaces"}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem key={"processes"}>
-                <SidebarMenuButton asChild>
-                  <Link href={"/dashboard/processes"}>
-                    <Network />
-                    <span>{"Processes"}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {showExperimental && (
+                <>
+                  <SidebarMenuItem key={"workspaces"}>
+                    <SidebarMenuButton asChild>
+                      <Link href={"/dashboard/workspaces"}>
+                        <Table />
+                        <span>{"Workspaces"}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem key={"processes"}>
+                    <SidebarMenuButton asChild>
+                      <Link href={"/dashboard/processes"}>
+                        <Network />
+                        <span>{"Processes"}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </>
+              )}
               <SidebarMenuItem key={"automations"}>
                 <SidebarMenuButton asChild>
                   <Link href={"/dashboard/automations"}>

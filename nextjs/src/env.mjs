@@ -53,6 +53,7 @@ export const env = createEnv({
     NEXT_PUBLIC_NODE_ENV: z.enum(["development", "test", "production"]),
     NEXT_PUBLIC_COMMIT_HASH: z.string().optional(),
     NEXT_PUBLIC_BUILD_NO: z.string().optional(),
+    NEXT_PUBLIC_BITSWAN_EXPERIMENTAL: z.string().optional(),
   },
 
   /**
@@ -86,6 +87,7 @@ export const env = createEnv({
     NEXT_PUBLIC_NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_COMMIT_HASH: process.env.NEXT_PUBLIC_COMMIT_HASH,
     NEXT_PUBLIC_BUILD_NO: process.env.NEXT_PUBLIC_BUILD_NO,
+    NEXT_PUBLIC_BITSWAN_EXPERIMENTAL: process.env.NEXT_PUBLIC_BITSWAN_EXPERIMENTAL,
 
     // AoC Backend
     BITSWAN_BACKEND_API_URL: process.env.BITSWAN_BACKEND_API_URL,

@@ -16,6 +16,7 @@ def default_env(config: InitConfig) -> Dict[str, str]:
         "BITSWAN_BACKEND_API_URL": "http://aoc-bitswan-backend:5000",
         "NEXT_PUBLIC_BITSWAN_BACKEND_API_URL": "http://aoc-bitswan-backend:5000",
         "SENTRY_DSN": "",
+        "NEXT_PUBLIC_BITSWAN_EXPERIMENTAL": "false",
     }
 
 
@@ -58,6 +59,9 @@ def write_env_files_operations_centre(
                 "SENTRY_IGNORE_API_RESOLUTION_ERROR",
                 "SENTRY_AUTH_TOKEN",
                 "SENTRY_DSN",
+            ],
+            "Experimental Features": [
+                "NEXT_PUBLIC_BITSWAN_EXPERIMENTAL",
             ],
         },
     )
