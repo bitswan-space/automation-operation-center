@@ -76,7 +76,6 @@ def is_in_automation_center_repo() -> bool:
 @click.option("--org-name", type=str, help="Organization name")
 @click.option("--aoc-be-image", type=str, help="AOC BE docker image")
 @click.option("--aoc-image", type=str, help="AOC FE docker image")
-@click.option("--profile-manager-image", type=str, help="Profile Manager docker image")
 @click.option("--keycloak-image", type=str, help="Keycloak docker image")
 @click.option("--keycloak-smtp-username", type=str, help="Keycloak SMTP username")
 @click.option("--keycloak-smtp-password", type=str, help="Keycloak SMTP password")
@@ -216,7 +215,6 @@ def create_init_config(configs: dict, output_dir: Path, mkcerts: bool, certs_dir
         org_name=configs.get("org_name"),
         aoc_be_image=kwargs.get("aoc_be_image"),
         aoc_image=kwargs.get("aoc_image"),
-        profile_manager_image=kwargs.get("profile_manager_image"),
         keycloak_image=kwargs.get("keycloak_image"),
         keycloak_smtp_username=configs.get("keycloak_smtp_username"),
         keycloak_smtp_password=configs.get("keycloak_smtp_password"),

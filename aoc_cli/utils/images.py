@@ -21,8 +21,6 @@ def resolve_images_from_url(config: InitConfig, from_url: str) -> None:
                 config.aoc_image = f"bitswan/automation-operations-centre:{versions['aoc']}"
             if versions.get("bitswan-backend") and not config.aoc_be_image:
                 config.aoc_be_image = f"bitswan/bitswan-backend:{versions['bitswan-backend']}"
-            if versions.get("profile-manager") and not config.profile_manager_image:
-                config.profile_manager_image = f"bitswan/profile-manager:{versions['profile-manager']}"
             if versions.get("keycloak") and not config.keycloak_image:
                 config.keycloak_image = f"bitswan/bitswan-keycloak:{versions['keycloak']}"
     except Exception as e:
@@ -69,13 +67,6 @@ def resolve_images(config: InitConfig) -> None:
         )
         config.aoc_image = f"bitswan/automation-operations-centre:{tag}"
 
-    # profile-manager
-    if not config.profile_manager_image:
-        tag = latest_tag_from_docker_hub(
-            "https://hub.docker.com/v2/repositories/bitswan/profile-manager/tags/"
-        )
-        config.profile_manager_image = f"bitswan/profile-manager:{tag}"
-
     # keycloak
     if not config.keycloak_image:
         tag = latest_tag_from_docker_hub(
@@ -120,7 +111,6 @@ def replace_docker_compose_services_versions(config: InitConfig) -> None:
     service_to_image = {
         "bitswan-backend": config.aoc_be_image,
         "aoc": config.aoc_image,
-        "profile-manager": config.profile_manager_image,
         "keycloak": config.keycloak_image,
     }
 

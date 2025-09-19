@@ -15,7 +15,6 @@ from aoc_cli.utils.images import resolve_images, replace_docker_compose_services
 def update(from_url):
     aoc_image = None
     aoc_be_image = None
-    profile_manager_image = None
     keycloak_image = None
     saved_env = Environment.PROD  # Default to PROD if no saved config
 
@@ -45,10 +44,6 @@ def update(from_url):
                 aoc_image = f"bitswan/automation-operations-centre:{versions['aoc']}"
             if versions.get("bitswan-backend"):
                 aoc_be_image = f"bitswan/bitswan-backend:{versions['bitswan-backend']}"
-            if versions.get("profile-manager"):
-                profile_manager_image = (
-                    f"bitswan/profile-manager:{versions['profile-manager']}"
-                )
             if versions.get("keycloak"):
                 keycloak_image = f"bitswan/bitswan-keycloak:{versions['keycloak']}"
 
@@ -56,7 +51,6 @@ def update(from_url):
         env=saved_env,
         aoc_image=aoc_image,
         aoc_be_image=aoc_be_image,
-        profile_manager_image=profile_manager_image,
         keycloak_image=keycloak_image,
         from_url=from_url,
     )
