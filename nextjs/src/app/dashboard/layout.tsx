@@ -41,7 +41,7 @@ export default async function DashboardLayout({
     <SidebarProvider>
       <SidebarItemsProvider>
         {/* Sidebar */}
-        <AppSidebar session={session} orgs={orgs.results} activeOrg={activeOrg} />
+        <AppSidebar session={session} orgs={orgs?.results ?? []} activeOrg={activeOrg} />
         <SidebarRail />
         <AutomationsProvider tokens={tokens}>
           <SidebarInset>
