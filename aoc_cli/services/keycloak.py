@@ -9,16 +9,12 @@ from keycloak import KeycloakAdmin, KeycloakPostError
 
 from aoc_cli.env.config import (
     BITSWAN_BACKEND_DOCKER_ENV_FILE,
-    BITSWAN_BACKEND_LOCAL_ENV_FILE,
     KEYCLOAK_ENV_FILE,
     OPERATIONS_CENTRE_DOCKER_ENV_FILE,
-    OPERATIONS_CENTRE_LOCAL_ENV_FILE,
-    DevSetupKind,
     Environment,
 )
 from aoc_cli.env.utils import get_env_path
 from aoc_cli.utils.env import get_env_value
-from aoc_cli.utils.tools import get_aoc_working_directory
 
 
 @dataclass
@@ -26,18 +22,23 @@ class KeycloakConfig:
     admin_username: str
     admin_password: str
     aoc_dir: Path
+    server_url: str
     realm_name: str = "master"
-    server_url: str = "http://localhost:8080"
     management_url: str = "http://localhost:9000"
     verify: bool = False
     org_name: str = "Example Org"
     env: Environment = Environment.DEV
-    dev_setup: DevSetupKind = DevSetupKind.DOCKER
     keycloak_smtp_username: str | None = None
     keycloak_smtp_password: str | None = None
     keycloak_smtp_host: str | None = None
     keycloak_smtp_from: str | None = None
     keycloak_smtp_port: str | None = None
+    
+    def __post_init__(self):
+        # Use localhost for development to avoid DNS resolution issues with .localhost domains
+        if self.env == Environment.DEV:
+            self.management_url = "http://localhost:9000"
+            self.verify = False
 
 
 class KeycloakService:
@@ -55,19 +56,19 @@ class KeycloakService:
         self.initialize_admin_user()
         self.update_realm_smtp_server()
 
-        self._update_envs_with_keycloak_secret(client_secrets)
+        self.update_envs_with_keycloak_secret(client_secrets)
         click.echo("✓ Keycloak setup complete")
 
     def configure_realm_settings(self) -> None:
         realm = self.keycloak_admin.get_realm(self.config.realm_name)
 
         realm["ssoSessionMaxLifespan"] = 2073600000
+        realm["loginTheme"] = "bitswan-keycloak-theme"
 
         self.keycloak_admin.update_realm(self.config.realm_name, realm)
         click.echo("✓ Realm settings configured")
 
     def start_services(self) -> None:
-        cwd = get_aoc_working_directory(self.config.env, self.config.aoc_dir)
         subprocess.run(
             [
                 "docker",
@@ -75,15 +76,13 @@ class KeycloakService:
                 "-f",
                 (
                     "docker-compose.yml"
-                    if self.config.env == Environment.PROD
-                    else f"docker-compose.{self.config.env.value}.yml"
                 ),
                 "up",
                 "-d",
                 "keycloak",
                 "keycloak-postgres",
             ],
-            cwd=cwd,
+            cwd=self.config.aoc_dir,
             check=True,
             shell=False,
             stdout=subprocess.DEVNULL,
@@ -190,6 +189,8 @@ class KeycloakService:
                 response = requests.get(f"{health_url}", verify=self.config.verify)
                 if response.status_code == 200:
                     click.echo("Keycloak is ready")
+                    # Add a small delay to ensure Keycloak is fully ready for admin operations
+                    time.sleep(5)
                     return
             except requests.RequestException:
                 if attempt < max_retries - 1:
@@ -199,10 +200,16 @@ class KeycloakService:
 
     def connect(self) -> None:
         keycloak_env_path = get_env_path(
-            self.config.env, KEYCLOAK_ENV_FILE, aoc_dir=self.config.aoc_dir
+            self.config.aoc_dir,
+            "keycloak",
         )
         username = get_env_value(keycloak_env_path, "KEYCLOAK_ADMIN")
         password = get_env_value(keycloak_env_path, "KEYCLOAK_ADMIN_PASSWORD")
+
+        if not username or not password:
+            raise ValueError(f"Missing Keycloak admin credentials. Username: {username}, Password: {'*' * len(password) if password else 'None'}")
+
+        click.echo(f"Connecting to Keycloak at {self.config.server_url} with username: {username}")
 
         self.keycloak_admin = KeycloakAdmin(
             server_url=self.config.server_url,
@@ -358,56 +365,39 @@ class KeycloakService:
         self.keycloak_admin.group_user_add(user_id, admin_group_id)
         self.keycloak_admin.group_user_add(user_id, org_group_id)
 
-    def _update_envs_with_keycloak_secret(self, secret: dict) -> None:
+    def update_envs_with_keycloak_secret(self, secret: dict) -> None:
         aoc_env_file = (
             OPERATIONS_CENTRE_DOCKER_ENV_FILE
-            if self.config.dev_setup == DevSetupKind.DOCKER
-            else OPERATIONS_CENTRE_LOCAL_ENV_FILE
         )
 
         bitswan_backend_env_file = (
             BITSWAN_BACKEND_DOCKER_ENV_FILE
-            if self.config.dev_setup == DevSetupKind.DOCKER
-            else BITSWAN_BACKEND_LOCAL_ENV_FILE
         )
 
-        env_updates = {
-            "aoc": (
+        env_updates = [
+            (
                 "KEYCLOAK_CLIENT_SECRET",
                 "aoc-frontend",
-                self.config.dev_setup.value,
                 aoc_env_file,
             ),
-            "bitswan-backend": (
+            (
                 "KEYCLOAK_CLIENT_SECRET_KEY",
                 "bitswan-backend",
-                self.config.dev_setup.value,
                 bitswan_backend_env_file,
             ),
-        }
+        ]
 
         click.echo(f"Updating {env_updates}")
 
-        try:
-            for project_name, (
-                env_var_label,
-                client_name,
-                deployment_kind,
-                env_file,
-            ) in env_updates.items():
-                file_path = get_env_path(
-                    self.config.env,
-                    env_file=env_file,
-                    dev_setup=deployment_kind,
-                    project_name=project_name,
-                    aoc_dir=self.config.aoc_dir,
-                )
-                click.echo(f"Updating {file_path}")
-                with open(file_path, "a") as f:
-                    if client_name in secret:
-                        f.write(f"\n{env_var_label}={secret.get(client_name)}\n")
-        except Exception as e:
-            click.echo(f"Error updating {env_file}: {e}")
+        for (
+            env_var_label,
+            client_name,
+            env_file,
+        ) in env_updates:
+            file_path = self.config.aoc_dir / "envs" / env_file
+            click.echo(f"Updating {file_path}")
+            with open(file_path, "a") as f:
+                f.write(f"\n{env_var_label}={secret.get(client_name)}\n")
 
     def create_client_scope(self, scope_name: str) -> None:
         client_scope = self.keycloak_admin.get_client_scope_by_name(scope_name)

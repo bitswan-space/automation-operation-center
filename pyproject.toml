@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.scripts]
-bitswan-on-prem-aoc = "aoc_cli.aoc:cli"
+bitswan-on-prem-aoc = "aoc_cli.commands.cli:cli"
 
 
 [tool.hatch.build.targets.wheel]

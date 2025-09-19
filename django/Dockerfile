@@ -44,8 +44,8 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR ${APP_HOME}
 
-RUN addgroup --system django \
-  && adduser --system --ingroup django django
+RUN addgroup --system --gid 1000 django \
+  && adduser --system --uid 1000 --ingroup django django
 
 # Install required system dependencies
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -71,12 +71,13 @@ RUN pip install --no-cache-dir --no-index --find-links=/wheels/ /wheels/* \
 # Script files
 COPY --chown=django:django ./docker/entrypoint /entrypoint
 COPY --chown=django:django ./docker/start /start
+COPY --chown=django:django ./docker/dev /dev-command
 
 
 # copy application code to WORKDIR
 COPY --chown=django:django . ${APP_HOME}
 
-RUN chmod +x /entrypoint /start
+RUN chmod +x /entrypoint /start /dev-command
 
 # make django owner of the WORKDIR directory as well.
 RUN chown django:django ${APP_HOME}

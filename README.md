@@ -94,3 +94,34 @@ pnpm dev
 ```
 
 Open the AOC in your browser at `http://localhost:3000`.
+
+## Environment Variables
+
+### NEXT_PUBLIC_BITSWAN_EXPERIMENTAL
+
+Controls the visibility of experimental features in the frontend interface.
+
+- **Type**: String (optional)
+- **Values**: `"true"` (case-insensitive) to enable, any other value or unset to disable
+- **Default**: Disabled (experimental features hidden)
+
+When set to `"true"`, the following experimental features will be visible:
+- Workspaces link (in main sidebar)
+- Processes link (in main sidebar)
+- General tab (in Settings page)
+
+**Example usage:**
+```bash
+# Enable experimental features
+NEXT_PUBLIC_BITSWAN_EXPERIMENTAL=true
+
+# Disable experimental features (default)
+NEXT_PUBLIC_BITSWAN_EXPERIMENTAL=false
+# or simply omit the variable
+```
+
+**Note**: This is a client-side environment variable (prefixed with `NEXT_PUBLIC_`) and will be visible in the browser. Use it only for features that are safe to expose publicly.
+
+**Automatic Setup**: The AOC CLI automatically sets this variable based on the deployment environment:
+- **Development mode** (`--dev` flag): Set to `"true"` to enable experimental features
+- **Production mode**: Set to `"false"` to disable experimental features

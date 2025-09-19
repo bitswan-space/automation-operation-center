@@ -16,9 +16,16 @@ export const getActiveOrgFromCookies = async () => {
   const orgs = (await fetchOrgs()).results;
 
   const cookieStore = await cookies();
-  const activeOrgId =
-    cookieStore.get(ACTIVE_ORG_COOKIE_NAME)?.value ?? orgs[0]?.id;
-  return orgs.find((org) => org.id === activeOrgId);
+  const cookieValue = cookieStore.get(ACTIVE_ORG_COOKIE_NAME)?.value;
+  let activeOrg = undefined;
+
+  if (cookieValue && orgs.some((org) => org.id === cookieValue)) {
+    activeOrg = orgs.find((org) => org.id === cookieValue);
+  } else {
+    activeOrg = orgs[0] ?? undefined;
+  }
+
+  return activeOrg;
 };
 
 export const fetchOrgs = async () => {

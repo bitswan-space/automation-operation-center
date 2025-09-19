@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "../ui/card";
-import { Search, Server, Settings, RotateCcw, Loader2 } from "lucide-react";
+import { Search, Server, Settings, RotateCcw, Loader2, Plus } from "lucide-react";
 
 import { type AutomationServer } from "@/data/automation-server";
 import { Badge } from "../ui/badge";
@@ -10,6 +10,8 @@ import { Input } from "../ui/input";
 import Link from "next/link";
 import React from "react";
 import { useAutomations } from "@/context/AutomationsProvider";
+import { ConnectAutomationServerModal } from "./ConnectAutomationServerModal";
+import { env } from "@/env.mjs";
 type AutomationServerListSectionProps = {
   servers: AutomationServer[];
 };
@@ -39,9 +41,17 @@ export function AutomationServerListSection(
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <RotateCcw size={20} /> Refresh
-        </Button>
+        <div className="flex gap-2">
+          <ConnectAutomationServerModal apiUrl={env.NEXT_PUBLIC_BITSWAN_BACKEND_API_URL}>
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              <Plus size={20} className="mr-2" />
+              Connect Automation Server
+            </Button>
+          </ConnectAutomationServerModal>
+          <Button className="bg-blue-600 hover:bg-blue-700">
+            <RotateCcw size={20} /> Refresh
+          </Button>
+        </div>
       </div>
 
       {filteredServers.length === 0 ? (

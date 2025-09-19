@@ -7,10 +7,11 @@ in pkgs.mkShell {
         python310Packages.pip
         python310Packages.virtualenv
         python310Packages.wheel
+        pnpm
     ];
 
   shellHook = ''
-    source venv/bin/activate
+    source .venv/bin/activate
   '';
 
 }

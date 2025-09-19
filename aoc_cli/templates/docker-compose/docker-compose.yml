@@ -1,0 +1,100 @@
+volumes:
+  influx_data:
+  influx_config:
+  postgres-keycloak-data:
+  emqx_data:
+  bitswan_backend_production_postgres_data: {}
+  bitswan_backend_production_postgres_data_backups: {}
+
+networks:
+  bitswan_network:
+    external: true
+
+services:
+  influxdb:
+    image: influxdb:2.0
+    restart: always
+    container_name: aoc-influxdb
+    volumes:
+      - influx_data:/var/lib/influxdb2
+      - influx_config:/etc/influxdb2
+    env_file:
+      - envs/influxdb.env
+    networks:
+      - bitswan_network
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+    ports:
+      - "8086:8086"
+
+
+  emqx:
+    image: emqx:latest
+    container_name: aoc-emqx
+    restart: always
+    env_file:
+      - envs/emqx.env
+    volumes:
+      - emqx_data:/opt/emqx/data
+      - ./emqx/emqx.conf:/opt/emqx/etc/emqx.conf
+    networks:
+      - bitswan_network
+
+  keycloak:
+    image: bitswan/bitswan-keycloak:2025-16048144305-git-cbd0bbc
+    restart: always
+    container_name: aoc-keycloak
+    env_file:
+      - envs/keycloak.env
+    command: start
+    networks:
+      - bitswan_network
+    ports:
+      - "8080:8080"
+      - "9000:9000"
+
+  keycloak-postgres:
+    image: postgres:12-bullseye
+    container_name: aoc-keycloak-postgres
+    restart: always
+    volumes:
+      - postgres-keycloak-data:/var/lib/postgresql/data
+    env_file: envs/keycloak-postgres.env
+    networks:
+      - bitswan_network
+
+  aoc:
+    restart: always
+    container_name: aoc
+    image: bitswan/automation-operations-centre:<slug>
+    env_file: envs/operations-centre.env
+    depends_on:
+      - influxdb
+      - keycloak
+    networks:
+      - bitswan_network
+
+  bitswan-backend:
+    image: bitswan/bitswan-backend:<slug>
+    container_name: aoc-bitswan-backend
+    depends_on:
+      - bitswan-backend-postgres
+    restart: always
+    env_file:
+      - envs/bitswan-backend.env
+      - envs/bitswan-backend-postgres.env
+    command: /start
+    networks:
+      - bitswan_network
+
+  bitswan-backend-postgres:
+    image: postgres:15-bullseye
+    restart: always
+    container_name: aoc-bitswan-backend-postgres
+    volumes:
+      - bitswan_backend_production_postgres_data:/var/lib/postgresql/data
+      - bitswan_backend_production_postgres_data_backups:/backups
+    env_file:
+      - envs/bitswan-backend-postgres.env
+    networks:
+      - bitswan_network

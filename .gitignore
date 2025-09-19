@@ -1,5 +1,7 @@
 .env
 /sandbox
 /.vscode
-
 venv/
+deployment/
+venv/
+.venv/
