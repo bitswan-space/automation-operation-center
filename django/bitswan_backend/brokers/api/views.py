@@ -4,7 +4,6 @@ from keycloak import KeycloakDeleteError
 from keycloak import KeycloakGetError
 from keycloak import KeycloakPostError
 from keycloak import KeycloakPutError
-from bitswan_backend.core.mqtt import MQTTService
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -12,7 +11,6 @@ from rest_framework.response import Response
 
 from bitswan_backend.brokers.api.serializers import CreateOrgSerializer
 from bitswan_backend.brokers.api.serializers import CreateUserGroupSerializer
-from bitswan_backend.brokers.api.serializers import MqttProfileSerializer
 from bitswan_backend.brokers.api.serializers import OrgSerializer
 from bitswan_backend.brokers.api.serializers import OrgUserSerializeer
 from bitswan_backend.brokers.api.serializers import UpdateUserGroupSerializer
@@ -20,12 +18,13 @@ from bitswan_backend.brokers.api.serializers import UserGroupSerializer
 from bitswan_backend.brokers.api.service import GroupNavigationService
 from bitswan_backend.core.pagination import DefaultPagination
 from bitswan_backend.core.viewmixins import KeycloakMixin
+from bitswan_backend.core.models.workspaces import WorkspaceGroupMembership
+from bitswan_backend.core.models.automation_server import AutomationServerGroupMembership
 
 
 class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
     pagination_class = DefaultPagination
     group_nav_service = GroupNavigationService()
-    mqtt_service = MQTTService()
 
     def list(self, request):
         try:
@@ -51,8 +50,6 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
 
         if serializer.is_valid():
             group = serializer.save()
-            org_id = self.get_org_id()
-            self.mqtt_service.publish_org_profiles(org_id)
             return Response(group, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -60,8 +57,10 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
     def destroy(self, request, pk=None):
         try:
             self.delete_org_group(group_id=pk)
-            org_id = self.get_org_id()
-            self.mqtt_service.publish_org_profiles(org_id)
+            
+            WorkspaceGroupMembership.objects.filter(keycloak_group_id=pk).delete()
+            AutomationServerGroupMembership.objects.filter(keycloak_group_id=pk).delete()
+            
             return Response(status=status.HTTP_204_NO_CONTENT)
         except KeycloakDeleteError as e:
             return Response(
@@ -124,31 +123,6 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(detail=False, methods=["get"])
-    def mqtt_profiles(self, request):
-        try:
-            mqtt_profiles = self.get_org_group_mqtt_profiles()
-
-            for profile in mqtt_profiles:
-                profile["nav_items"] = self.group_nav_service.get_or_create_navigation(
-                    group_id=profile["group_id"],
-                ).nav_items
-
-            paginator = self.pagination_class()
-            paginated_mqtt_profiles = paginator.paginate_queryset(
-                mqtt_profiles,
-                request,
-            )
-            serializer = MqttProfileSerializer(paginated_mqtt_profiles, many=True)
-
-            return paginator.get_paginated_response(serializer.data)
-        except KeycloakGetError as e:
-            e.add_note("Error while getting mqtt profiles.")
-            return Response(
-                {"error": json.loads(e.error_message).get("errorMessage")},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
 
 class OrgUsersViewSet(KeycloakMixin, viewsets.ViewSet):
     pagination_class = DefaultPagination
@@ -197,7 +171,6 @@ class OrgUsersViewSet(KeycloakMixin, viewsets.ViewSet):
 
 class OrgViewSet(KeycloakMixin, viewsets.ViewSet):
     pagination_class = DefaultPagination
-    mqtt_service = MQTTService()
 
     def list(self, request):
         try:
@@ -222,7 +195,6 @@ class OrgViewSet(KeycloakMixin, viewsets.ViewSet):
 
         if serializer.is_valid():
             group = serializer.save()
-            self.mqtt_service.publish_org_profiles(group.get("id"))
             return Response(group, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

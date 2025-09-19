@@ -1,9 +1,11 @@
 import { type Edge, type Node } from "@xyflow/react";
 import { type PipelineNode } from "@/types";
 import { type NodeData } from "@/components/pipeline/topology/PipelineNode";
+import { type TokenData } from "@/data/mqtt";
 
 export const transformTopologyToFlowNodes = (
   topology: PipelineNode[],
+  token?: TokenData,
   parentIDs: string[] = [],
   automationServerId = "",
   workspaceId = "",
@@ -30,6 +32,7 @@ export const transformTopologyToFlowNodes = (
         parentIDs,
         automationServerId,
         workspaceId,
+        token,
       } as NodeData,
     } as Node;
   });

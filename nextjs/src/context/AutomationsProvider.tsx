@@ -13,6 +13,7 @@ import { useMQTTRequestResponse } from "@/shared/hooks/useMQTTRequestResponse";
 import { usePipelineStats } from "@/components/pipeline/hooks/usePipelineStats";
 import { type AutomationServer } from "@/data/automation-server";
 import { getAutomationServersAction } from "@/data/automation-servers";
+import { type TokenData } from "@/data/mqtt";
 
 type WorkspaceGroup = {
   workspaceId: string;
@@ -34,7 +35,7 @@ type AutomationsGroups = {
 
 const AutomationsContext = createContext<AutomationsGroups | null>(null);
 
-export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
+export const AutomationsProvider = ({ children, tokens }: { children: ReactNode, tokens: TokenData[] }) => {
   const pipelineStats = usePipelineStats();
 
   // Keep track of all workspaces and their pipelines
@@ -48,10 +49,11 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
   );
   const [isLoading, setIsLoading] = useState(true);
 
-  const { response: workspaceTopology, messageTopic } =
+  const { response: workspaceTopology, automationServerId, workspaceId } =
     useMQTTRequestResponse<WorkspaceTopologyResponse>({
-      requestTopic: `/automation-servers/+/c/+/topology/subscribe`,
-      responseTopic: `/automation-servers/+/c/+/topology`,
+      requestTopic: `/topology/subscribe`,
+      responseTopic: `/topology`,
+      tokens: tokens,
     });
 
   // Fetch automation servers data
@@ -106,25 +108,13 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Extract server and workspace IDs from the MQTT topic
-  const topicInfo = useMemo(() => {
-    if (!messageTopic) return null;
-    const parts = messageTopic.split("/");
-    return {
-      automationServerId: parts[2], // Index 2 contains server ID
-      workspaceId: parts[4], // Index 4 contains workspace ID
-    };
-  }, [messageTopic]);
-
   // Update workspaces when we receive new topology
   useEffect(() => {
     if (
       workspaceTopology &&
-      topicInfo?.workspaceId &&
-      topicInfo?.automationServerId
+      workspaceId &&
+      automationServerId
     ) {
-      const { workspaceId, automationServerId } = topicInfo;
-
       // Get the automation server name
       const automationServer = automationServers[automationServerId];
       const automationServerName = automationServer?.name ?? automationServerId;
@@ -156,7 +146,7 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
         },
       }));
     }
-  }, [workspaceTopology, topicInfo, pipelineStats, automationServers]);
+  }, [workspaceTopology, workspaceId, automationServerId, pipelineStats, automationServers]);
 
   // Derive automation servers and all lists from workspaces
   const automations = useMemo(() => {

@@ -1,5 +1,11 @@
-from .automation_server import AutomationServer
+from .automation_server import AutomationServer, AutomationServerGroupMembership
 from .organization import GroupNavigation
-from .workspaces import Workspace
+from .workspaces import Workspace, WorkspaceGroupMembership
 
-__all__ = ["AutomationServer", "GroupNavigation", "Workspace"]
+__all__ = [
+    "AutomationServer",
+    "GroupNavigation",
+    "Workspace",
+    "WorkspaceGroupMembership",
+    "AutomationServerGroupMembership",
+]

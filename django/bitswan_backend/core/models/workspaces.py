@@ -1,6 +1,8 @@
 import uuid
 
 from django.db import models
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 
 
 class Workspace(models.Model):
@@ -21,3 +23,86 @@ class Workspace(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class WorkspaceGroupMembership(models.Model):
+    id = models.AutoField(primary_key=True)
+    workspace = models.ForeignKey(
+        "Workspace",
+        on_delete=models.CASCADE,
+        related_name="group_memberships",
+        null=False,
+        blank=False,
+    )
+    keycloak_group_id = models.CharField(max_length=255)
+
+
+# Signal handlers for MQTT publishing
+@receiver([post_save, post_delete], sender=WorkspaceGroupMembership)
+def publish_workspace_groups_on_change(sender, instance, **kwargs):
+    """
+    Automatically publish workspace groups to MQTT when memberships change
+    """
+    try:
+        from bitswan_backend.core.mqtt import MQTTService
+
+        MQTTService().publish_workspace_groups(instance.workspace)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Failed to publish workspace groups to MQTT: {e}")
+
+@receiver([post_save], sender=Workspace)
+def create_workspace_groups(sender, instance, created, **kwargs):
+    """
+    Create workspace groups for the workspace
+    """
+    if not created:
+        return
+    
+    try:
+        from bitswan_backend.core.services.keycloak import KeycloakService
+        
+        keycloak_service = KeycloakService()
+        workspace_name = instance.name
+        
+        # Create read group
+        read_group_id = keycloak_service.create_group(
+            org_id=instance.keycloak_org_id,
+            name=f"{workspace_name}-viewonly",
+            attributes={
+                "tag_color": ["#4CAF50"],  # Green color for read
+                "description": [f"Read access to workspace {workspace_name}"],
+            }
+        )
+        
+        # Create admin group
+        admin_group_id = keycloak_service.create_group(
+            org_id=instance.keycloak_org_id,
+            name=f"{workspace_name}-editor",
+            attributes={
+                "tag_color": ["#F44336"],  # Red color for admin
+                "description": [f"Admin access to workspace {workspace_name}"],
+                "permissions": ["workspace-editor"],
+            }
+        )
+        
+        # Store group memberships in the database
+        WorkspaceGroupMembership.objects.create(
+            workspace=instance,
+            keycloak_group_id=read_group_id
+        )
+        
+        WorkspaceGroupMembership.objects.create(
+            workspace=instance,
+            keycloak_group_id=admin_group_id
+        )
+        
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Created workspace groups for {workspace_name}: viewonly={read_group_id}, editor={admin_group_id}")
+        
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Failed to create workspace groups for {instance.name}: {e}")

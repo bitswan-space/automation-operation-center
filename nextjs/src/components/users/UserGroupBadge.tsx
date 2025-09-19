@@ -10,25 +10,33 @@ import { canMutateUsers } from "@/lib/permissions";
 import { useSession } from "next-auth/react";
 import { useAction } from "next-safe-action/hooks";
 import { toast } from "sonner";
-import { removeUserFromGroupAction } from "../groups/action";
+import {
+  type RemoveUserFromGroupActionType,
+  type RemoveWorkspaceFromGroupActionType,
+  type RemoveAutomationServerFromGroupActionType,
+} from "../groups/action";
 
 type UserGroupBadgeProps = {
   group: UserGroup;
-  userId: string;
+  id: string;
+  action:
+    | RemoveUserFromGroupActionType
+    | RemoveWorkspaceFromGroupActionType
+    | RemoveAutomationServerFromGroupActionType;
 };
 
 export function UserGroupBadge(props: UserGroupBadgeProps) {
-  const { group, userId } = props;
+  const { group, id, action } = props;
 
   const { data: session } = useSession();
 
-  const { execute, isPending } = useAction(removeUserFromGroupAction, {
+  const { execute, isPending } = useAction(action, {
     onSuccess: () => {
-      toast.success("User removed from group");
+      toast.success("Successfully removed from group");
     },
     onError: ({ error }) => {
       toast.error(
-        error.serverError?.message ?? "Error removing user from group",
+        error.serverError?.message ?? "Error removing from group",
       );
     },
   });
@@ -50,8 +58,8 @@ export function UserGroupBadge(props: UserGroupBadgeProps) {
         <form action={execute}>
           <input
             type="hidden"
-            name="userId"
-            defaultValue={userId}
+            name="id"
+            defaultValue={id}
             className="hidden"
           />
           <input

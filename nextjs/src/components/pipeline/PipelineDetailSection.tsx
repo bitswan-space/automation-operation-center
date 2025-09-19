@@ -3,18 +3,18 @@
 import { PipelineDetailTabs } from "./PipelineDetailTabs";
 import React from "react";
 import { useAutomations } from "@/context/AutomationsProvider";
+import { type TokenData } from "@/data/mqtt";
 
 type PipelineDetailSectionProps = {
   editor_url?: string | null;
   automationServerId: string;
   workspaceId: string;
   ids: string[];
+  token?: TokenData;
 };
 export const PipelineDetailSection = (props: PipelineDetailSectionProps) => {
-  const { automationServerId, workspaceId, ids, editor_url } = props;
+  const { automationServerId, workspaceId, ids, editor_url, token } = props;
   const { automationServers } = useAutomations();
-
-  console.log("ids", ids);
 
   const automationServer = automationServers[automationServerId];
   const workspace = automationServer?.workspaces[workspaceId];
@@ -31,6 +31,7 @@ export const PipelineDetailSection = (props: PipelineDetailSectionProps) => {
         pipeline={automation}
         pipelineParentIDs={ids ?? []}
         vscode_link={vscode_link}
+        token={token}
       />
     </div>
   );

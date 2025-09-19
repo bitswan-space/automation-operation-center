@@ -188,6 +188,7 @@ class KeycloakService:
                 "id": group["id"],
                 "name": group["name"],
                 "tag_color": next(iter(group["attributes"].get("tag_color", [])), None),
+                "permissions": group["attributes"].get("permissions", []),
                 "description": next(
                     iter(group["attributes"].get("description", [])),
                     None,
@@ -246,6 +247,7 @@ class KeycloakService:
             "id": org_group["id"],
             "name": org_group["name"],
             "tag_color": next(iter(org_group["attributes"].get("tag_color", [])), None),
+            "permissions": org_group["attributes"].get("permissions", []),
             "description": next(
                 iter(org_group["attributes"].get("description", [])),
                 None,
@@ -262,6 +264,7 @@ class KeycloakService:
                 "id": group["id"],
                 "name": group["name"],
                 "tag_color": (group.get("tag_color", None)),
+                "permissions": (group.get("permissions", [])),
                 "description": (group.get("description", None)),
             }
 
@@ -328,42 +331,6 @@ class KeycloakService:
         logger.info("Deleted user: %s", user_id)
         return user_id
 
-    def get_org_group_mqtt_profiles(self, request, org_id):
-        active_user_id = self.get_active_user(request)
-        org_groups = self.get_org_groups(org_id=org_id)
-
-        if self.is_admin(request):
-            return [
-                {
-                    "id": f"{org_id}_group_{group['id']}_admin",
-                    "name": group["name"],
-                    "is_admin": True,
-                    "group_id": group["id"],
-                }
-                for group in org_groups
-            ]
-
-        user_group_memberships = self.keycloak_admin.get_user_groups(
-            user_id=active_user_id,
-            brief_representation=False,
-        )
-
-        org_group_user_memberships = [
-            group
-            for group in user_group_memberships
-            if group["id"] in [group["id"] for group in org_groups]
-        ]
-
-        return [
-            {
-                "id": f"{org_id}_group_{group['id']}",
-                "name": group["name"],
-                "is_admin": False,
-                "group_id": group["id"],
-            }
-            for group in org_group_user_memberships
-        ]
-
     def is_admin(self, request):
         active_user_id = self.get_active_user(request)
 
@@ -385,6 +352,10 @@ class KeycloakService:
         return any(
             group["name"].lower() == "admin" for group in org_group_user_memberships
         )
+
+    def get_admin_org_group(self, org_id):
+        org_groups = self.get_org_groups(org_id=org_id)
+        return next((group for group in org_groups if group["name"].lower() == "admin"), None)
 
     def is_group_member(self, user_id, group_id):
         user_group_memberships = self.keycloak_admin.get_user_groups(

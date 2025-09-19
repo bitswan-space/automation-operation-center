@@ -1,19 +1,24 @@
 "use server";
 
 import { authenticatedBitswanBackendInstance } from "@/server/bitswan-backend";
-import { type MQTTProfile } from "./mqtt-profiles";
 import { getActiveOrgFromCookies } from "./organisations";
 
-type GetMQTTTokenResponse = {
+export type TokenData = {
+  automation_server_id: string;
+  workspace_id: string;
   token: string;
 };
 
-export async function getMQTTToken(activeMQTTProfile: MQTTProfile | null) {
+type GetMQTTTokensResponse = {
+  tokens: TokenData[];
+};
+
+export async function getMQTTTokens() {
   const bitswanBEInstance = await authenticatedBitswanBackendInstance();
   const activeOrg = await getActiveOrgFromCookies();
 
-  const res = await bitswanBEInstance.get<GetMQTTTokenResponse>(
-    `/profiles/${activeMQTTProfile?.group_id}/emqx/jwt`,
+  const res = await bitswanBEInstance.get<GetMQTTTokensResponse>(
+    "/user/emqx/jwts",
     {
       headers: {
         "X-Org-Id": activeOrg?.id ?? "",
@@ -22,5 +27,5 @@ export async function getMQTTToken(activeMQTTProfile: MQTTProfile | null) {
     },
   );
 
-  return res.data?.token ?? null;
+  return res.data?.tokens ?? [];
 }

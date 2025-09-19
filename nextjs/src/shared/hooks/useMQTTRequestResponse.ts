@@ -4,19 +4,16 @@ import React from "react";
 import { useMQTT } from "./useMQTT";
 import { useQuery } from "@tanstack/react-query";
 import { getMQTTConfig } from "@/server/queries/mqtt";
-import {
-  ACTIVE_MQTT_PROFILE_STORAGE_KEY,
-  MQTT_CONFIG_QUERY_KEY,
-} from "../constants";
-import useLocalStorageState from "ahooks/lib/useLocalStorageState";
-import { type MQTTProfile } from "@/data/mqtt-profiles";
-import { getMQTTToken } from "@/data/mqtt";
+import { MQTT_CONFIG_QUERY_KEY } from "../constants";
+import { type TokenData } from "@/data/mqtt";
+
 type UseMQTTRequestResponseArgs<ResponseT> = {
   requestTopic: string;
   responseTopic: string;
   requestMessage?: string | object;
   infiniteSubscription?: boolean;
   onMessage?: (response: ResponseT) => void;
+  tokens: TokenData[];
 };
 
 export function useMQTTRequestResponse<ResponseT>({
@@ -24,6 +21,7 @@ export function useMQTTRequestResponse<ResponseT>({
   responseTopic,
   requestMessage,
   // infiniteSubscription = false,
+  tokens,
 }: UseMQTTRequestResponseArgs<ResponseT>) {
   const { mqttConnect, mqttSub, payload, mqttPublish } = useMQTT<
     ResponseT & { remaining_subscription_count?: number }
@@ -38,46 +36,35 @@ export function useMQTTRequestResponse<ResponseT>({
     queryFn: getMQTTConfig,
   });
 
-  const [activeMQTTProfile] = useLocalStorageState<MQTTProfile | undefined>(
-    ACTIVE_MQTT_PROFILE_STORAGE_KEY,
-    {
-      listenStorageChange: true,
-    },
-  );
-
   React.useEffect(() => {
-    if (activeMQTTProfile && mqttConfig) {
-      getMQTTToken(activeMQTTProfile)
-        .then((token) => {
-          console.log("token", token);
-          mqttConnect(mqttConfig.url, {
-            clientId:
-              "bitswan-poc" + Math.random().toString(16).substring(2, 8),
-            clean: true,
-            reconnectPeriod: 60,
-            connectTimeout: 30 * 1000,
-            username: activeMQTTProfile?.id ?? "",
-            password: token ?? "",
-          });
+    if (mqttConfig && tokens) {
+      tokens.forEach(tokenData => {
+        console.log("token", tokenData.token);
+        mqttConnect(mqttConfig.url, {
+          clientId:
+            "bitswan-poc" + Math.random().toString(16).substring(2, 8),
+          clean: true,
+          reconnectPeriod: 60,
+          connectTimeout: 30 * 1000,
+          username: "bitswan-frontend",
+          password: tokenData.token,
+        }, tokenData.automation_server_id, tokenData.workspace_id);
 
-          mqttPublish({
-            topic: requestTopic,
-            payload:
-              JSON.stringify(requestMessage) ?? JSON.stringify(defaultRequest),
-            qos: 0,
-          });
-
-          mqttSub({
-            topic: responseTopic,
-            qos: 0,
-          });
-        })
-        .catch((error) => {
-          console.error(error);
+        mqttPublish({
+          topic: requestTopic,
+          payload:
+            JSON.stringify(requestMessage) ?? JSON.stringify(defaultRequest),
+          qos: 0,
         });
+
+        mqttSub({
+          topic: responseTopic,
+          qos: 0,
+        });
+      });
     }
   }, [
-    activeMQTTProfile,
+    tokens,
     defaultRequest,
     mqttConfig,
     mqttConnect,
@@ -91,10 +78,14 @@ export function useMQTTRequestResponse<ResponseT>({
   const isLoading = !payload;
   const response = payload?.message;
   const messageTopic = payload?.topic;
+  const automationServerId = payload?.automationServerId;
+  const workspaceId = payload?.workspaceId;
 
   return {
     response,
     isLoading,
     messageTopic,
+    automationServerId,
+    workspaceId,
   };
 }

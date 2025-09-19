@@ -10,7 +10,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from bitswan_backend.brokers.api.service import GroupNavigationService
-from bitswan_backend.core.mqtt import MQTTService
 from bitswan_backend.core.pagination import DefaultPagination
 from bitswan_backend.core.serializers.organization import CreateOrgSerializer
 from bitswan_backend.core.serializers.organization import CreateUserGroupSerializer
@@ -24,7 +23,6 @@ from bitswan_backend.core.viewmixins import KeycloakMixin
 class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
     pagination_class = DefaultPagination
     group_nav_service = GroupNavigationService()
-    mqtt_service = MQTTService()
 
     def list(self, request):
         try:
@@ -50,8 +48,6 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
 
         if serializer.is_valid():
             group = serializer.save()
-            org_id = self.get_org_id()
-            self.mqtt_service.publish_org_profiles(org_id)
             return Response(group, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -59,8 +55,6 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
     def destroy(self, request, pk=None):
         try:
             self.delete_org_group(group_id=pk)
-            org_id = self.get_org_id()
-            self.mqtt_service.publish_org_profiles(org_id)
             return Response(status=status.HTTP_204_NO_CONTENT)
         except KeycloakDeleteError as e:
             return Response(
@@ -171,7 +165,6 @@ class OrgUsersViewSet(KeycloakMixin, viewsets.ViewSet):
 
 class OrgViewSet(KeycloakMixin, viewsets.ViewSet):
     pagination_class = DefaultPagination
-    mqtt_service = MQTTService()
 
     def list(self, request):
         try:
@@ -196,7 +189,6 @@ class OrgViewSet(KeycloakMixin, viewsets.ViewSet):
 
         if serializer.is_valid():
             group = serializer.save()
-            self.mqtt_service.publish_org_profiles(group.get("id"))
             return Response(group, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

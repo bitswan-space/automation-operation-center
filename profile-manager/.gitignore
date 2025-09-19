@@ -1,6 +1,0 @@
-.env
-*.json
-!navigation_menu_schema_template.json
-!navigation_menu_example.json
-!config.yaml
-*.yaml

@@ -15,6 +15,7 @@ import { auth } from "@/server/auth";
 import { env } from "@/env.mjs";
 import { redirect } from "next/navigation";
 import { fetchOrgs, getActiveOrgFromCookies } from "@/data/organisations";
+import { getMQTTTokens } from "@/data/mqtt";
 
 export default async function DashboardLayout({
   children,
@@ -33,13 +34,16 @@ export default async function DashboardLayout({
   const orgs = await fetchOrgs();
   const activeOrg = await getActiveOrgFromCookies();
 
+  const tokens = await getMQTTTokens();
+  console.log("tokens", tokens);
+
   return (
     <SidebarProvider>
       <SidebarItemsProvider>
         {/* Sidebar */}
         <AppSidebar session={session} orgs={orgs.results} activeOrg={activeOrg} />
         <SidebarRail />
-        <AutomationsProvider>
+        <AutomationsProvider tokens={tokens}>
           <SidebarInset>
             <header>
               <div className="border-border flex h-12 shrink-0 items-center gap-2 border-b px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 md:h-16">
