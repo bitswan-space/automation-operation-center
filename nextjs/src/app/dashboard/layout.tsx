@@ -14,6 +14,7 @@ import { Toaster } from "sonner";
 import { auth } from "@/server/auth";
 import { env } from "@/env.mjs";
 import { redirect } from "next/navigation";
+import { fetchOrgs, getActiveOrgFromCookies } from "@/data/organisations";
 import { getMQTTTokens } from "@/data/mqtt";
 
 export default async function DashboardLayout({
@@ -30,6 +31,9 @@ export default async function DashboardLayout({
     redirect("/auth/signout");
   }
 
+  const orgs = await fetchOrgs();
+  const activeOrg = await getActiveOrgFromCookies();
+
   const tokens = await getMQTTTokens();
   console.log("tokens", tokens);
 
@@ -37,13 +41,17 @@ export default async function DashboardLayout({
     <SidebarProvider>
       <SidebarItemsProvider>
         {/* Sidebar */}
-        <AppSidebar session={session} />
+        <AppSidebar session={session} orgs={orgs?.results ?? []} activeOrg={activeOrg} />
         <SidebarRail />
         <AutomationsProvider tokens={tokens}>
-          <SidebarInset className="bg-neutral-200/50">
-            <div className="flex-1 p-4 py-0">
+          <SidebarInset>
+            <header>
+              <div className="border-border flex h-12 shrink-0 items-center gap-2 border-b px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 md:h-16">
+                <SidebarTrigger className="-ml-1" />
+              </div>
+            </header>
+            <div className="flex-1 py-0">
               <div className="flex items-center justify-between pb-1">
-                <SidebarTrigger className="mx-2 mt-1" />
                 {env.AOC_BUILD_NO && (
                   <div className="pr-4 text-xs font-medium">
                     Build · {env.AOC_BUILD_NO}

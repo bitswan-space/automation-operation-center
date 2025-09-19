@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { ChevronsUpDown, GalleryVerticalEnd, Loader2 } from "lucide-react";
+import { GalleryVerticalEnd, Loader2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,12 +12,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { Button } from "../ui/button";
 import { CreateOrgDialog } from "./create-org-dialog";
 import { useAction } from "next-safe-action/hooks";
 import { switchOrgAction } from "./actions";
 import { toast } from "sonner";
 import { type Organisation } from "@/data/organisations";
+import { SidebarMenuButton } from "../ui/sidebar";
+import { CaretSortIcon } from "@radix-ui/react-icons";
 
 type OrgSwitcherProps = {
   orgs: Organisation[];
@@ -52,19 +53,22 @@ export function OrgSwitcher({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="min-w-[200px] bg-neutral-100">
-          <div className="flex aspect-square size-6 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+        <SidebarMenuButton 
+          size="lg"
+          className="mt-[10px] data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+        >
+          <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
             {isPending ? (
-              <Loader2 className="size-3 animate-spin" />
+              <Loader2 className="size-4 animate-spin" />
             ) : (
-              <GalleryVerticalEnd className="size-3" />
+              <GalleryVerticalEnd className="size-4" />
             )}
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-medium">{activeOrg.name}</span>
+            <span className="truncate font-semibold">{activeOrg.name}</span>
           </div>
-          <ChevronsUpDown className="ml-auto" />
-        </Button>
+          <CaretSortIcon className="ml-auto" />
+        </SidebarMenuButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
@@ -83,8 +87,8 @@ export function OrgSwitcher({
               onClick={() => handleSwitchOrg(org.id)}
               className="gap-2 p-2"
             >
-              <div className="flex size-6 items-center justify-center rounded-md border">
-                <GalleryVerticalEnd className="size-3.5 shrink-0" />
+              <div className="flex size-6 items-center justify-center rounded-sm border">
+                <GalleryVerticalEnd className="size-4 shrink-0" />
               </div>
               {org.name}
             </DropdownMenuItem>

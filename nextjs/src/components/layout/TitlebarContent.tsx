@@ -1,37 +1,25 @@
 import { Card, CardContent } from "../ui/card";
 
 import clsx from "clsx";
-import { OrgSwitcher } from "../organizations/org-switcher";
-import { type Organisation, type OrgListResponse } from "@/data/organisations";
 
 export type TitleBarContentProps = {
   className?: string;
   title: React.ReactNode;
-  orgs?: OrgListResponse;
-  activeOrg?: Organisation;
 };
+
 export function TitleBarContent(props: TitleBarContentProps) {
-  const { className, title, orgs, activeOrg } = props;
+  const { className, title } = props;
   return (
     <div className={clsx("hidden md:block", className)}>
-      <Card
-        className={clsx(
-          "h-full w-full rounded-lg border border-slate-300 shadow-none",
-          "dark:border-neutral-200 dark:bg-neutral-800",
-        )}
-      >
-        <CardContent className="flex justify-between px-5 py-4 align-middle">
-          <h1 className="text-3xl font-bold text-neutral-700 dark:text-neutral-200 md:text-2xl">
-            {title}
-          </h1>
-
-          <div className="ml-auto flex items-center justify-end gap-4 pr-2">
-            <OrgSwitcher orgs={orgs?.results ?? []} activeOrg={activeOrg} />
+      <div className="border-border flex flex-col border-b px-4 py-4 md:py-6">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
+              {title}
+            </h1>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
-
-

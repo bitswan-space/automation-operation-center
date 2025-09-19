@@ -12,17 +12,17 @@ export function SidebarMenuLogo() {
       {open && (
         <SidebarMenuButton
           size="lg"
-          className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          className="data-[state=open]:bg-sidebar-accent my-5 data-[state=open]:text-sidebar-accent-foreground"
         >
-          <div className="flex items-center justify-center rounded-lg data-[state=open]:block">
+          <div className="flex items-center justify-center rounded-lg data-[state=open]:block w-full">
             <Link
               href={"/dashboard"}
               className={"flex justify-center text-center"}
             >
               <Image
-                src={"/bitswan-logo.svg"}
+                src={"/bitswan-logo-dark.svg"}
                 alt="bitswan logo"
-                className="mr-auto transform duration-100 ease-in-out"
+                className="mx-auto transform duration-100 ease-in-out"
                 width={150}
                 height={100}
               />
@@ -35,15 +35,15 @@ export function SidebarMenuLogo() {
           size="lg"
           className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
         >
-          <div className="mx-auto flex items-center justify-center rounded-lg">
+          <div className="mx-auto flex items-center justify-center rounded-lg w-full">
             <Link
               href={"/dashboard"}
               className={"mx-auto flex justify-center text-center"}
             >
               <Image
-                src={"/bitswan-logo-sm.svg"}
+                src={"/bitswan-logo-sm-dark.svg"}
                 alt="bitswan logo"
-                className="mr-auto transform duration-100 ease-in-out"
+                className="mx-auto transform duration-100 ease-in-out"
                 width={25}
                 height={25}
               />

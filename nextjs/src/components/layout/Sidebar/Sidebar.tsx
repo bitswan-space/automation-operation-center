@@ -5,47 +5,54 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 
-import { Server, Zap } from "lucide-react";
+import { Cog, Server, LayoutDashboard, Table, Network } from "lucide-react";
 import NavTreeView from "./NavTreeView";
 import { type Session } from "next-auth";
 import { SidebarFooterMenu } from "./SidebarFooterMenu";
 import { SidebarMenuLogo } from "./SidebarMenuLogo";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
+import { OrgSwitcher } from "@/components/organizations/org-switcher";
+import { type Organisation } from "@/data/organisations";
 
 type AppSidebarProps = {
   session?: Session | null;
+  orgs: Organisation[];
+  activeOrg?: Organisation;
 };
 
 export function AppSidebar(props: AppSidebarProps) {
-  const { session } = props;
+  const { session, orgs, activeOrg } = props;
 
   return (
-    <Sidebar className="dark" collapsible="icon">
+    <Sidebar collapsible="icon">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuLogo />
           </SidebarMenuItem>
+          <SidebarSeparator />
+          <SidebarMenuItem key={"orgs"}>
+            <OrgSwitcher orgs={orgs} activeOrg={activeOrg} />
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent className="text-neutral-200">
+      <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem key={"automations"}>
+              <SidebarMenuItem key={"dashboard"}>
                 <SidebarMenuButton asChild>
-                  <Link href={"/dashboard/automations"}>
-                    <Zap />
-                    <span>{"Automations"}</span>
+                  <Link href={"/dashboard"}>
+                    <LayoutDashboard />
+                    <span>{"Dashboard"}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -53,15 +60,39 @@ export function AppSidebar(props: AppSidebarProps) {
                 <SidebarMenuButton asChild>
                   <Link href={"/dashboard/automation-servers"}>
                     <Server />
-                    <span>{"Automation Servers"}</span>
+                    <span>{"Servers"}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem key={"workspaces"}>
+                <SidebarMenuButton asChild>
+                  <Link href={"/dashboard/workspaces"}>
+                    <Table />
+                    <span>{"Workspaces"}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem key={"processes"}>
+                <SidebarMenuButton asChild>
+                  <Link href={"/dashboard/processes"}>
+                    <Network />
+                    <span>{"Processes"}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem key={"automations"}>
+                <SidebarMenuButton asChild>
+                  <Link href={"/dashboard/automations"}>
+                    <Cog />
+                    <span>{"Automations"}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        <SidebarSeparator />
         <SidebarGroup>
-          <SidebarGroupLabel>Platform</SidebarGroupLabel>
           <SidebarGroupContent>
             <Suspense
               fallback={
@@ -75,7 +106,7 @@ export function AppSidebar(props: AppSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="text-neutral-200">
+      <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarFooterMenu
