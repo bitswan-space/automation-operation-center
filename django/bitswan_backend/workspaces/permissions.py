@@ -80,3 +80,4 @@ class CanReadAutomationServerEMQXJWT(BasePermission):
             and request.user.is_authenticated
             and request.method in SAFE_METHODS
         )
+

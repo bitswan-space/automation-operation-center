@@ -8,6 +8,15 @@ export const authenticatedBitswanBackendInstance = async (
   const session = await auth();
   const apiToken = session?.access_token;
 
+  // Debug logging
+  console.log("Session exists:", !!session);
+  console.log("Access token exists:", !!apiToken);
+  console.log("API URL:", BITSWAN_BACKEND_API_URL);
+  
+  if (!apiToken) {
+    console.error("No access token available for API calls");
+  }
+
   return axios.create({
     baseURL: BITSWAN_BACKEND_API_URL,
     headers: {

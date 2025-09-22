@@ -29,17 +29,37 @@ export const getActiveOrgFromCookies = async () => {
 };
 
 export const fetchOrgs = async () => {
-  const bitswanBEInstance = await authenticatedBitswanBackendInstance();
-
   try {
+    const bitswanBEInstance = await authenticatedBitswanBackendInstance();
+
     const res =
       await bitswanBEInstance.get<ApiListResponse<Organisation>>("/orgs");
     return { ...res.data, status: "success" as const };
   } catch (error) {
     console.error("Error fetching orgs", error);
+    
+    // Provide more detailed error information
+    let errorMessage = "Error fetching orgs";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
+    // Check if it's an axios error for more details
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as any;
+      if (axiosError.response) {
+        console.error("API Error Response:", axiosError.response.data);
+        console.error("API Error Status:", axiosError.response.status);
+        errorMessage = `API Error (${axiosError.response.status}): ${axiosError.response.data?.error || axiosError.response.data?.message || errorMessage}`;
+      } else if (axiosError.request) {
+        console.error("Network Error:", axiosError.request);
+        errorMessage = "Network error - unable to reach the API";
+      }
+    }
+    
     return {
       status: "error" as const,
-      message: "Error fetching orgs",
+      message: errorMessage,
       results: [],
       next: null,
       previous: null,
