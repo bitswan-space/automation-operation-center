@@ -42,7 +42,7 @@ export function AutomationServerListSection(
           />
         </div>
         <div className="flex gap-2">
-          <ConnectAutomationServerModal apiUrl={env.NEXT_PUBLIC_BITSWAN_BACKEND_API_URL}>
+          <ConnectAutomationServerModal apiUrl={env.NEXT_PUBLIC_BITSWAN_BACKEND_API_URL ?? ""}>
             <Button className="bg-blue-600 hover:bg-blue-700">
               <Plus size={20} className="mr-2" />
               Connect Automation Server
