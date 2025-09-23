@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowUpRight, Loader2, Server, Users, Zap } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Loader2, Server, Users, Zap, Trash2 } from "lucide-react";
 import { VscVscode } from "react-icons/vsc";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
@@ -30,6 +30,9 @@ import {
   removeWorkspaceFromGroupAction,
   removeAutomationServerFromGroupAction,
 } from "../groups/action";
+import { DeleteAutomationServerModal } from "./DeleteAutomationServerModal";
+import { isUserAdmin } from "@/lib/permissions";
+import { useSession } from "next-auth/react";
 import React from "react";
 
 type AutomationServerDetailSectionProps = {
@@ -44,6 +47,7 @@ export function AutomationServerDetailSection(
 
   const router = useRouter();
   const { automationServers, isLoading } = useAutomations();
+  const { data: session } = useSession();
 
   if (!server) {
     router.push("/dashboard/automation-servers");
@@ -144,6 +148,21 @@ export function AutomationServerDetailSection(
                 <Badge className="border-gray-200 bg-gray-100 text-gray-600 hover:bg-gray-100">
                   Disconnected
                 </Badge>
+              )}
+              {isUserAdmin(session) && (
+                <DeleteAutomationServerModal
+                  serverName={server?.name ?? ""}
+                  serverId={server?.automation_server_id ?? ""}
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Delete
+                  </Button>
+                </DeleteAutomationServerModal>
               )}
             </div>
           </div>
