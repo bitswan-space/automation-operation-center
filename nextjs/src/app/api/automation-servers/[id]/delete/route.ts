@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/server/auth";
 
 export async function POST(
@@ -34,11 +34,11 @@ export async function POST(
       body: JSON.stringify({}),
     });
 
-    const data = await response.json();
+    const data = await response.json() as { error?: string };
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: data.error || "Failed to delete automation server" },
+        { error: data.error ?? "Failed to delete automation server" },
         { status: response.status }
       );
     }

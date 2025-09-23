@@ -4,6 +4,7 @@ import { ACTIVE_ORG_COOKIE_NAME } from "@/shared/constants";
 import { authenticatedBitswanBackendInstance } from "@/server/bitswan-backend";
 import { cookies } from "next/headers";
 import { type ApiListResponse, type ApiResponse } from "./shared";
+import { type AxiosError } from "axios";
 
 export type Organisation = {
   id: string;
@@ -46,11 +47,11 @@ export const fetchOrgs = async () => {
     
     // Check if it's an axios error for more details
     if (error && typeof error === 'object' && 'response' in error) {
-      const axiosError = error as any;
+      const axiosError = error as AxiosError<{ error?: string; message?: string }>;
       if (axiosError.response) {
         console.error("API Error Response:", axiosError.response.data);
         console.error("API Error Status:", axiosError.response.status);
-        errorMessage = `API Error (${axiosError.response.status}): ${axiosError.response.data?.error || axiosError.response.data?.message || errorMessage}`;
+        errorMessage = `API Error (${axiosError.response.status}): ${axiosError.response.data?.error ?? axiosError.response.data?.message ?? errorMessage}`;
       } else if (axiosError.request) {
         console.error("Network Error:", axiosError.request);
         errorMessage = "Network error - unable to reach the API";

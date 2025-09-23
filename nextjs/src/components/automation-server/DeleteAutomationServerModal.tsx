@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,11 +52,11 @@ export function DeleteAutomationServerModal({
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json() as { error?: string };
         if (response.status === 403) {
           throw new Error("You don't have permission to delete this automation server. Only admin users can delete automation servers.");
         }
-        throw new Error(errorData.error || "Failed to delete automation server");
+        throw new Error(errorData.error ?? "Failed to delete automation server");
       }
 
       // Close modal and redirect
@@ -92,13 +91,13 @@ export function DeleteAutomationServerModal({
           </AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete the automation server{" "}
-            <strong>"{serverName}"</strong> and all its associated data.
+            <strong>&quot;{serverName}&quot;</strong> and all its associated data.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="confirmation-name" className="text-sm font-medium">
-              To confirm deletion, type the server name: <strong>"{serverName}"</strong>
+              To confirm deletion, type the server name: <strong>&quot;{serverName}&quot;</strong>
             </label>
             <Input
               id="confirmation-name"
