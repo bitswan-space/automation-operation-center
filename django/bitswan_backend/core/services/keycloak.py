@@ -306,25 +306,45 @@ class KeycloakService:
             group_id=org_group_id,
         )
 
+    def find_user_by_email(self, email):
+        """
+        Find a user by email address.
+        Returns the user ID if found, None otherwise.
+        """
+        try:
+            users = self.keycloak_admin.get_users(query={"email": email})
+            if users:
+                return users[0]["id"]
+            return None
+        except Exception as e:
+            logger.exception("Failed to find user by email: %s", email)
+            return None
+
     def invite_user_to_org(self, email, org_id):
-        user_id = self.keycloak_admin.create_user(
-            payload={
-                "username": email,
-                "email": email,
-                "enabled": True,
-            },
-        )
+        # Try to find if user already exists
+        user_id = self.find_user_by_email(email)
+        
+        if user_id:
+            self.keycloak_admin.group_user_add(user_id=user_id, group_id=org_id)
+        else:
+            user_id = self.keycloak_admin.create_user(
+                payload={
+                    "username": email,
+                    "email": email,
+                    "enabled": True,
+                },
+            )
 
-        self.keycloak_admin.group_user_add(user_id=user_id, group_id=org_id)
+            self.keycloak_admin.group_user_add(user_id=user_id, group_id=org_id)
 
-        self.keycloak_admin.send_update_account(
-            user_id=user_id,
-            payload=[
-                "UPDATE_PASSWORD",
-                "VERIFY_EMAIL",
-            ],
-            lifespan=172800,
-        )
+            self.keycloak_admin.send_update_account(
+                user_id=user_id,
+                payload=[
+                    "UPDATE_PASSWORD",
+                    "VERIFY_EMAIL",
+                ],
+                lifespan=172800,
+            )
 
     def delete_user(self, user_id):
         self.keycloak_admin.delete_user(user_id=user_id)
