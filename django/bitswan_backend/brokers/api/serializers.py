@@ -98,6 +98,7 @@ class CreateUserGroupSerializer(serializers.Serializer):
                     "tag_color": [validated_data.get("tag_color")],
                     "description": [validated_data.get("description")],
                 },
+                org_id=view.org_id,
             )
 
             logger.info("Created new UserGroup instance: %s", keycloak_group_id)

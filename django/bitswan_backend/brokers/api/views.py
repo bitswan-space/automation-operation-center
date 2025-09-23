@@ -42,6 +42,7 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
             )
 
     def create(self, request):
+        self.org_id = self.get_org_id()
 
         serializer = CreateUserGroupSerializer(
             data=request.data,
