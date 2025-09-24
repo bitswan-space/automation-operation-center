@@ -27,6 +27,57 @@ from aoc_cli.utils.secrets import generate_secret
 from aoc_cli.utils.images import resolve_images, replace_docker_compose_services_versions
 
 
+def check_command_exists(command: str) -> bool:
+    """Check if a command exists in the system PATH."""
+    return shutil.which(command) is not None
+
+
+def check_dependencies() -> None:
+    """Check for required dependencies and provide installation instructions if missing."""
+    missing_deps = []
+    
+    # Check for bitswan CLI
+    if not check_command_exists("bitswan"):
+        missing_deps.append(("bitswan", get_bitswan_installation_instructions()))
+    
+    # Check for Docker
+    if not check_command_exists("docker"):
+        missing_deps.append(("docker", get_docker_installation_instructions()))
+
+    if missing_deps:
+        click.echo("❌ Missing required dependencies:")
+        click.echo()
+        
+        for dep_name, instructions in missing_deps:
+            click.echo(f"Missing: {dep_name}")
+            click.echo(instructions)
+            click.echo()
+        
+        click.echo("Please install the missing dependencies and try again.")
+        raise click.Abort()
+
+
+def get_bitswan_installation_instructions() -> str:
+    """Get installation instructions for bitswan CLI."""
+    return """Install bitswan CLI from: https://github.com/bitswan-space/bitswan-automation-server
+"""
+
+
+def get_docker_installation_instructions() -> str:
+    """Get installation instructions for Docker."""
+    return """Install Docker from: https://docs.docker.com/get-docker/
+
+For Linux:
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+For macOS:
+Download Docker Desktop from: https://www.docker.com/products/docker-desktop/
+
+For Windows:
+Download Docker Desktop from: https://www.docker.com/products/docker-desktop/"""
+
+
 def is_in_automation_center_repo() -> bool:
     """Check if we're currently in the automation center git repository."""
     try:
@@ -125,6 +176,9 @@ async def init_async(
     **kwargs,
 ):
     """Initialize the Automation Operations Center (AOC)."""
+    
+    # Check for required dependencies first
+    check_dependencies()
     
     # Handle continue from config for both dev and non-dev modes
     if continue_from_config:
@@ -230,17 +284,36 @@ def create_init_config(configs: dict, output_dir: Path, mkcerts: bool, certs_dir
 async def execute_init(config: InitConfig) -> None:
     """Execute the initialization process."""
     # Check if 'aoc' workspace already exists
-    result = subprocess.run(
-        ["bitswan", "workspace", "list"], capture_output=True, text=True
-    )
+    try:
+        result = subprocess.run(
+            ["bitswan", "workspace", "list"], capture_output=True, text=True, check=True
+        )
+    except subprocess.CalledProcessError as e:
+        click.echo(f"❌ Error running bitswan workspace list: {e}")
+        click.echo("Make sure bitswan CLI is properly installed and accessible.")
+        raise click.Abort()
+    except FileNotFoundError:
+        click.echo("❌ bitswan command not found. Please install bitswan CLI first.")
+        click.echo("Run the init command again after installing bitswan CLI.")
+        raise click.Abort()
 
-    subprocess.run(
+    try:
+        subprocess.run(
             [
                 "bitswan",
                 "ingress",
                 "init",
             ],
-    )
+            check=True
+        )
+    except subprocess.CalledProcessError as e:
+        click.echo(f"❌ Error initializing bitswan ingress: {e}")
+        click.echo("Make sure bitswan CLI is properly installed and accessible.")
+        raise click.Abort()
+    except FileNotFoundError:
+        click.echo("❌ bitswan command not found. Please install bitswan CLI first.")
+        click.echo("Run the init command again after installing bitswan CLI.")
+        raise click.Abort()
     create_aoc_directory(config)
     copy_config_files(config)
     # 1) Resolve images (fill in config image fields if missing)
@@ -284,11 +357,20 @@ async def execute_init(config: InitConfig) -> None:
     
     click.echo("Starting AOC")
     # Run 'docker compose up -d'
-    subprocess.run(
-        ['docker', 'compose', 'up', '-d'],
-        check=True,
-        cwd=config.aoc_dir,
-    )
+    try:
+        subprocess.run(
+            ['docker', 'compose', 'up', '-d'],
+            check=True,
+            cwd=config.aoc_dir,
+        )
+    except subprocess.CalledProcessError as e:
+        click.echo(f"❌ Error starting Docker containers: {e}")
+        click.echo("Make sure Docker and Docker Compose are properly installed and running.")
+        raise click.Abort()
+    except FileNotFoundError:
+        click.echo("❌ docker command not found. Please install Docker first.")
+        click.echo("Run the init command again after installing Docker.")
+        raise click.Abort()
 
     # Build comprehensive access message with env vars and Keycloak info
     try:
