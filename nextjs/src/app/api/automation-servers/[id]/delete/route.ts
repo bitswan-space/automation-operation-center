@@ -17,7 +17,7 @@ export async function POST(
 
     const { id } = await params;
 
-    const apiUrl = process.env.NEXT_PUBLIC_BITSWAN_BACKEND_API_URL;
+    const apiUrl = process.env.BITSWAN_BACKEND_API_URL;
     if (!apiUrl) {
       return NextResponse.json(
         { error: "API URL not configured" },

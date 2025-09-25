@@ -46,7 +46,6 @@ def get_var_defaults(
                 "KEYCLOAK_POST_LOGOUT_REDIRECT_URI": "http://localhost:3000",
                 # Point host Next.js to ingress domain instead of container port
                 "BITSWAN_BACKEND_API_URL": backend_base,
-                "NEXT_PUBLIC_BITSWAN_BACKEND_API_URL": backend_base,
                 # Enable experimental features in dev mode
                 "NEXT_PUBLIC_BITSWAN_EXPERIMENTAL": "true",
                 

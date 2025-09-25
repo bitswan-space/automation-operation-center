@@ -14,7 +14,6 @@ def default_env(config: InitConfig) -> Dict[str, str]:
         "AUTH_URL": _public_base_url(config),
         "KEYCLOAK_POST_LOGOUT_REDIRECT_URI": _public_base_url(config),
         "BITSWAN_BACKEND_API_URL": "http://aoc-bitswan-backend:5000",
-        "NEXT_PUBLIC_BITSWAN_BACKEND_API_URL": "http://aoc-bitswan-backend:5000",
         "SENTRY_DSN": "",
         "NEXT_PUBLIC_BITSWAN_EXPERIMENTAL": "false",
     }
@@ -41,7 +40,6 @@ def write_env_files_operations_centre(
                 "INFLUXDB_TOKEN",
             ],
             "Bitswan Backend": [
-                "NEXT_PUBLIC_BITSWAN_BACKEND_API_URL",
                 "BITSWAN_BACKEND_API_URL",
             ],
             "EMQX": [
