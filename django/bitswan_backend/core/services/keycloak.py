@@ -216,6 +216,20 @@ class KeycloakService:
         )
         logger.info("Created group: %s", res)
 
+        # If skip_exists=True and group already exists, res will be None
+        # In that case, we need to find the existing group and return its ID
+        if res is None:
+            # Get all groups under the org to find the existing group
+            org_groups = self.keycloak_admin.get_group(group_id=org_id)["subGroups"]
+            for group in org_groups:
+                if group["name"] == name:
+                    logger.info("Found existing group: %s", group["id"])
+                    return group["id"]
+            
+            # If we still can't find it, log an error
+            logger.error("Group %s not found after creation attempt", name)
+            return None
+
         return res
 
     def create_org(self, name, attributes):
