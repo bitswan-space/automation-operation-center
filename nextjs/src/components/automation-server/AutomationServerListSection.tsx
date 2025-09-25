@@ -11,7 +11,7 @@ import Link from "next/link";
 import React from "react";
 import { useAutomations } from "@/context/AutomationsProvider";
 import { ConnectAutomationServerModal } from "./ConnectAutomationServerModal";
-import { env } from "@/env.mjs";
+import { useConfig } from "@/hooks/useConfig";
 type AutomationServerListSectionProps = {
   servers: AutomationServer[];
 };
@@ -21,6 +21,7 @@ export function AutomationServerListSection(
 ) {
   const { servers } = props;
   const { automationServers: automationServersGroup, isLoading } = useAutomations();
+  const { data: config } = useConfig();
 
   const [searchQuery, setSearchQuery] = React.useState("");
 
@@ -42,7 +43,7 @@ export function AutomationServerListSection(
           />
         </div>
         <div className="flex gap-2">
-          <ConnectAutomationServerModal apiUrl={env.NEXT_PUBLIC_BITSWAN_BACKEND_API_URL ?? ""}>
+          <ConnectAutomationServerModal apiUrl={config?.bitswanBackendApiUrl ?? ""}>
             <Button className="bg-blue-600 hover:bg-blue-700">
               <Plus size={20} className="mr-2" />
               Connect Automation Server
