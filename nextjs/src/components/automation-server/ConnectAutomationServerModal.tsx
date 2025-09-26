@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Copy, CheckCheck, Server, Loader2, CheckCircle } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { useClipboard } from "use-clipboard-copy";
+import { useSession } from "next-auth/react";
 
 interface ConnectAutomationServerModalProps {
   children: React.ReactNode;
@@ -25,6 +26,7 @@ export function ConnectAutomationServerModal({
   apiUrl,
   onServerCreated,
 }: ConnectAutomationServerModalProps) {
+  const { data: session } = useSession();
   const [serverName, setServerName] = useState("");
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
@@ -48,7 +50,7 @@ export function ConnectAutomationServerModal({
 
   // Check OTP status every 3 seconds
   const checkOTPStatus = async () => {
-    if (!automationServerId || otpRedeemed) return;
+    if (!automationServerId || otpRedeemed || !session?.access_token) return;
 
     try {
       const response = await fetch(
@@ -56,7 +58,7 @@ export function ConnectAutomationServerModal({
         {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+            "Authorization": `Bearer ${session.access_token}`,
           },
         }
       );
@@ -113,6 +115,11 @@ export function ConnectAutomationServerModal({
       return;
     }
 
+    if (!session?.access_token) {
+      setError("No access token available. Please sign in again.");
+      return;
+    }
+
     setIsCreating(true);
     setError(null);
 
@@ -121,7 +128,7 @@ export function ConnectAutomationServerModal({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+          "Authorization": `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           name: serverName.trim(),
@@ -144,7 +151,7 @@ export function ConnectAutomationServerModal({
   };
 
   const command = otp && automationServerId 
-    ? `bitswan register --name "${serverName || "my-automation-server"}" --aoc-api "${apiUrl}" --otp "${otp}"`
+    ? `bitswan register --name "${serverName || "my-automation-server"}" --aoc-api "${apiUrl}" --otp "${otp}" --server-id "${automationServerId}"`
     : `bitswan register --name "${serverName || "my-automation-server"}" --aoc-api "${apiUrl}"`;
 
   const handleCopy = () => {

@@ -22,7 +22,7 @@ The Bitswan platform provides two distinct API interfaces:
 ### CLI Registration
 
 ```bash
-bitswan register --aoc-api "https://api.example.com" --otp "ABC123DEF456GHI789JKL012MNO"
+bitswan register --name "my-server" --aoc-api "https://api.example.com" --otp "ABC123DEF456GHI789JKL012MNO" --server-id "123e4567-e89b-12d3-a456-426614174000"
 ```
 
 This command:
