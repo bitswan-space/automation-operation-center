@@ -22,7 +22,7 @@ The Bitswan platform provides two distinct API interfaces:
 ### CLI Registration
 
 ```bash
-bitswan register --aoc-api "https://api.example.com" --otp "ABC12345"
+bitswan register --aoc-api "https://api.example.com" --otp "ABC123DEF456GHI789JKL012MNO"
 ```
 
 This command:
@@ -54,7 +54,7 @@ This command:
 **Request Body:**
 ```json
 {
-  "otp": "ABC12345",
+  "otp": "ABC123DEF456GHI789JKL012MNO",
   "automation_server_id": "123e4567-e89b-12d3-a456-426614174000"
 }
 ```
@@ -408,7 +408,7 @@ password: "<mqtt_jwt_token>"
 ```bash
 # 1. User gets OTP from web interface
 # 2. Run registration command
-bitswan register --aoc-api "https://api.bitswan.io" --otp "ABC12345"
+bitswan register --aoc-api "https://api.bitswan.io" --otp "ABC123DEF456GHI789JKL012MNO"
 
 # 3. CLI stores token and displays success
 # 4. Subsequent CLI commands use stored token automatically
@@ -424,7 +424,7 @@ import requests
 response = requests.post(
     "https://api.bitswan.io/api/automation_server/exchange-otp/",
     json={
-        "otp": "ABC12345",
+        "otp": "ABC123DEF456GHI789JKL012MNO",
         "automation_server_id": "123e4567-e89b-12d3-a456-426614174000"
     }
 )

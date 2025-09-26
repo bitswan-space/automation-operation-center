@@ -26,7 +26,7 @@ L = logging.getLogger("core.views.automation_server.authentication")
     
     **CLI Usage:**
     ```bash
-    bitswan register --name "my-server" --aoc-api "https://api.example.com" --otp "ABC12345"
+    bitswan register --name "my-server" --aoc-api "https://api.example.com" --otp "ABC123DEF456GHI789JKL012MNO"
     ```
     
     **Token Permissions:**
@@ -47,7 +47,7 @@ L = logging.getLogger("core.views.automation_server.authentication")
                 "otp": {
                     "type": "string",
                     "description": "One-time password received from the web interface",
-                    "example": "ABC12345"
+                    "example": "ABC123DEF456GHI789JKL012MNO"
                 },
                 "automation_server_id": {
                     "type": "string",

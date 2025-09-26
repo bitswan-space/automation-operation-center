@@ -17,7 +17,7 @@ class AutomationServer(models.Model):
     keycloak_org_id = models.CharField(max_length=255, null=False, blank=False)
     
     # New OTP and token fields
-    otp = models.CharField(max_length=8, null=True, blank=True, unique=True)
+    otp = models.CharField(max_length=32, null=True, blank=True, unique=True)
     otp_expires_at = models.DateTimeField(null=True, blank=True)
     access_token = models.TextField(null=True, blank=True)
     token_expires_at = models.DateTimeField(null=True, blank=True)
@@ -29,12 +29,14 @@ class AutomationServer(models.Model):
         return self.name
     
     def generate_otp(self):
-        """Generate a new OTP for this automation server"""
+        """Generate a new cryptographically secure OTP for this automation server"""
         from django.utils import timezone
         from datetime import timedelta
         
-        # Generate 8-character alphanumeric OTP
-        self.otp = secrets.token_urlsafe(6).upper()[:8]
+        # Generate a 24-character cryptographically secure OTP
+        # Using token_urlsafe(18) gives us 24 characters (18 * 4/3 = 24)
+        # This provides 144 bits of entropy, which is cryptographically secure
+        self.otp = secrets.token_urlsafe(18)
         # OTP expires in 10 minutes
         self.otp_expires_at = timezone.now() + timedelta(minutes=10)
         self.save()
@@ -47,7 +49,8 @@ class AutomationServer(models.Model):
         if not self.otp or not otp:
             return False
         
-        if self.otp != otp.upper():
+        # Compare OTPs using constant-time comparison to prevent timing attacks
+        if not secrets.compare_digest(self.otp, otp):
             return False
             
         if self.otp_expires_at and timezone.now() > self.otp_expires_at:
