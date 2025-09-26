@@ -88,12 +88,12 @@ cat <<EOF > /etc/nixos/configuration.nix
 {{config,modulesPath, pkgs, lib, ... }}:
 
 let
-  bitswan-gitops-cli = pkgs.stdenv.mkDerivation {{
-    name = "bitswan-gitops-cli";
+  bitswan = pkgs.stdenv.mkDerivation {{
+    name = "bitswan";
     version = "latest";
 
     src = pkgs.fetchurl {{
-      url = "https://github.com/bitswan-space/bitswan-workspaces/releases/download/0.2.12/bitswan-workspaces_0.2.12_linux_amd64.tar.gz";
+      url = "https://github.com/bitswan-space/bitswan-automation-server/releases/download/0.2.12/bitswan-workspaces_0.2.12_linux_amd64.tar.gz";
       # Add sha256 hash for reproducibility
       sha256 = "sha256-gCazeTgsUtC2nCHRfE85hQ6BF0Lu++lHG1Oo8hUG7hQ=";
     }};
@@ -102,8 +102,8 @@ let
 
     installPhase = ''
       mkdir -p \$out/bin
-      cp bitswan-gitops-cli \$out/bin/
-      chmod +x \$out/bin/bitswan-gitops-cli
+      cp bitswan \$out/bin/
+      chmod +x \$out/bin/bitswan
     '';
   }};
 in {{
@@ -114,7 +114,7 @@ in {{
 
   # Install packages system-wide
   environment.systemPackages = with pkgs; [
-    vim git htop wget curl docker mkcert bitswan-gitops-cli
+    vim git htop wget curl docker mkcert bitswan
   ];
 
   # Enable Docker service
