@@ -318,11 +318,11 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": """
 # Documentation of API endpoints of Bitswan Backend
 
-## CLI Integration Guide
+## Automation Server Integration Guide
 
 For connecting automation servers using the new OTP-based authentication system, see our comprehensive guide:
 
-**[📖 CLI Integration Documentation](/api/docs/cli-integration/)**
+**[📖 Automation Server Integration Documentation](/api/docs/automation-server-integration/)**
 
 This guide includes:
 - Complete API endpoint documentation

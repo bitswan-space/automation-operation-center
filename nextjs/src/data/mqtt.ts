@@ -18,7 +18,7 @@ export async function getMQTTTokens() {
   const activeOrg = await getActiveOrgFromCookies();
 
   const res = await bitswanBEInstance.get<GetMQTTTokensResponse>(
-    "/user/emqx/jwts",
+    "/frontend/user/emqx/jwts",
     {
       headers: {
         "X-Org-Id": activeOrg?.id ?? "",

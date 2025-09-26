@@ -26,9 +26,9 @@ class PublicSchemaView(SpectacularAPIView):
     permission_classes = []      # No permissions required
 
 
-class CLIDocumentationView(TemplateView):
+class AutomationServerDocumentationView(TemplateView):
     """
-    View to serve the CLI integration documentation as HTML.
+    View to serve the automation server integration documentation as HTML.
     """
     template_name = "cli_docs.html"
     authentication_classes = []
@@ -37,9 +37,9 @@ class CLIDocumentationView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Read the CLI integration documentation
+        # Read the automation server integration documentation
         # The file is now in the Django static directory
-        docs_path = os.path.join(settings.BASE_DIR, "bitswan_backend", "static", "CLI_INTEGRATION_DOCS.md")
+        docs_path = os.path.join(settings.BASE_DIR, "bitswan_backend", "static", "AUTOMATION_SERVER_INTEGRATION_DOCS.md")
         
         try:
             with open(docs_path, 'r', encoding='utf-8') as f:

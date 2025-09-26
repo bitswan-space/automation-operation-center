@@ -1,3 +1,6 @@
+"""
+Frontend API views for workspace management
+"""
 import logging
 import os
 
@@ -9,6 +12,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema
 
 from bitswan_backend.core.authentication import KeycloakAuthentication
 from bitswan_backend.core.models import AutomationServer
@@ -31,6 +35,7 @@ L = logging.getLogger("core.views.workspaces")
 
 # FIXME: Currently a Keycloak JWT token will be authorized even after it has expired.
 #        Consider reworking the oidc flow setup to prevent this.
+@extend_schema(tags=["Frontend API - Workspaces"])
 class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
     queryset = Workspace.objects.all()
     serializer_class = WorkspaceSerializer
@@ -214,202 +219,7 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-
-class AutomationServerViewSet(KeycloakMixin, viewsets.ModelViewSet):
-    queryset = AutomationServer.objects.all()
-    serializer_class = AutomationServerSerializer
-    pagination_class = DefaultPagination
-    authentication_classes = [KeycloakAuthentication]
-
-    def get_queryset(self):
-        org_id = self.get_org_id()
-        return AutomationServer.objects.filter(keycloak_org_id=org_id).order_by(
-            "-updated_at",
-        )
-
-    def create(self, request):
-        serializer = CreateAutomationServerSerializer(
-            data=request.data,
-            context={"view": self, "request": request},
-        )
-
-        if serializer.is_valid():
-            group = serializer.save()
-            return Response(group, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    @action(detail=False, methods=["get"], url_path="token")
-    def get_token(self, request):
-        # This endpoint is now deprecated in favor of the OTP-based system
-        # For backward compatibility, we'll return an error message
-        return Response(
-            {"error": "This endpoint is deprecated. Use the OTP-based registration flow instead."},
-            status=status.HTTP_410_GONE,
-        )
-
-    @action(
-        detail=True,
-        methods=["get"],
-        url_path="emqx/jwt",
-        permission_classes=[CanReadWorkspaceEMQXJWT],
-    )
-    def emqx_jwt(self, request, pk=None):
-        workspace = self.get_object()
-        org_id = workspace.keycloak_org_id
-
-        mountpoint = (
-            f"/orgs/{org_id}/"
-            f"automation-servers/{workspace.automation_server_id}/"
-            f"c/{str(workspace.id)}"
-        )
-        username = str(workspace.id)
-
-        token = create_mqtt_token(
-            secret=settings.EMQX_JWT_SECRET,
-            username=username,
-            mountpoint=mountpoint,
-        )
-
-        return Response(
-            {
-                "url": os.getenv("EMQX_EXTERNAL_URL"),
-                "token": token,
-            },
-            status=status.HTTP_200_OK,
-        )
-    
-    @action(detail=True, methods=["POST"], url_path="add_to_group")
-    def add_to_group(self, request, pk=None):
-        """
-        Add automation server to a group by creating a AutomationServerGroupMembership entry
-        """
-        try:
-            automation_server = get_object_or_404(AutomationServer, automation_server_id=pk)
-            group_id = request.data.get("group_id")
-            
-            if not group_id:
-                return Response(
-                    {"error": "group_id is required"}, 
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            # Check if membership already exists
-            existing_membership = AutomationServerGroupMembership.objects.filter(
-                automation_server=automation_server,
-                keycloak_group_id=group_id
-            ).first()
-            
-            if existing_membership:
-                return Response(
-                    {"error": "Automation server is already a member of this group"}, 
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            # Create new membership
-            AutomationServerGroupMembership.objects.create(
-                automation_server=automation_server,
-                keycloak_group_id=group_id
-            )
-            
-            return Response(status=status.HTTP_201_CREATED)
-        except Exception as e:
-            L.error(f"Error adding automation server to group: {str(e)}")
-            return Response(
-                {"error": "Failed to add automation server to group"}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-    @action(detail=True, methods=["POST"], url_path="remove_from_group")
-    def remove_from_group(self, request, pk=None):
-        """
-        Remove automation server from a group by deleting the AutomationServerGroupMembership entry
-        """
-        try:
-            automation_server = get_object_or_404(AutomationServer, automation_server_id=pk)
-            group_id = request.data.get("group_id")
-
-            if not group_id:
-                return Response(
-                    {"error": "group_id is required"}, 
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-
-            # Check if membership exists
-            membership = AutomationServerGroupMembership.objects.filter(
-                automation_server=automation_server,
-                keycloak_group_id=group_id
-            ).first()
-
-            if not membership:
-                return Response(
-                    {"error": "Automation server is not a member of this group"}, 
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            # Delete the membership
-            membership.delete()
-
-            return Response(status=status.HTTP_200_OK)
-        except Exception as e:
-            L.error(f"Error removing automation server from group: {str(e)}")
-            return Response(
-                {"error": "Failed to remove automation server from group"}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-    @action(detail=True, methods=["POST"], url_path="delete")
-    def delete_automation_server(self, request, pk=None):
-        """
-        Delete an automation server after confirming the server name.
-        Requires the server name to be provided in the request body for confirmation.
-        Only admin users in the automation server's organization can delete it.
-        """
-        try:
-            # Get the automation server
-            automation_server = get_object_or_404(AutomationServer, automation_server_id=pk)
-            
-            # Get the organization that the automation server belongs to
-            server_org_id = automation_server.keycloak_org_id
-            
-            # Get the admin group for that organization
-            admin_group = self.keycloak.get_admin_org_group(server_org_id)
-            if not admin_group:
-                L.error(f"Admin group not found for org {server_org_id}")
-                return Response(
-                    {"error": "Admin group not found for this organization"}, 
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                )
-            
-            # Get the current user ID
-            user_id = self.keycloak.get_active_user(request)
-            
-            # Check if the user is a member of the admin group
-            is_admin = self.keycloak.is_group_member(user_id, admin_group["id"])
-            
-            if not is_admin:
-                L.warning(f"User {user_id} is not admin in org {server_org_id} for automation server {pk}")
-                return Response(
-                    {"error": "You don't have permission to delete this automation server. Only admin users can delete automation servers."}, 
-                    status=status.HTTP_403_FORBIDDEN
-                )
-            
-            # Delete the automation server
-            automation_server.delete()
-            
-            return Response(
-                {"message": "Automation server deleted successfully"}, 
-                status=status.HTTP_200_OK
-            )
-        except Exception as e:
-            L.error(f"Error deleting automation server: {str(e)}")
-            return Response(
-                {"error": "Failed to delete automation server"}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-
+@extend_schema(tags=["Frontend API - MQTT"])
 class GetUserEmqxJwtsAPIView(KeycloakMixin, views.APIView):
     authentication_classes = [KeycloakAuthentication]
     permission_classes = [AllowAny]

@@ -34,7 +34,7 @@ export const fetchOrgs = async () => {
     const bitswanBEInstance = await authenticatedBitswanBackendInstance();
 
     const res =
-      await bitswanBEInstance.get<ApiListResponse<Organisation>>("/orgs");
+      await bitswanBEInstance.get<ApiListResponse<Organisation>>("/frontend/orgs");
     return { ...res.data, status: "success" as const };
   } catch (error) {
     console.error("Error fetching orgs", error);
@@ -74,7 +74,7 @@ export const createOrg = async (name: string) => {
 
   try {
     const res = await bitswanBEInstance.post<ApiResponse<Organisation>>(
-      "/orgs/",
+      "/frontend/orgs/",
       {
         name,
       },
