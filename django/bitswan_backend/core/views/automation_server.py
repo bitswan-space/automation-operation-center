@@ -18,7 +18,7 @@ from bitswan_backend.core.serializers.automation_server import (
 )
 from bitswan_backend.core.utils.mqtt import create_mqtt_token
 from bitswan_backend.core.viewmixins import KeycloakMixin
-from bitswan_backend.core.models import AutomationServer
+from bitswan_backend.core.models import AutomationServer, AutomationServerGroupMembership
 
 L = logging.getLogger("core.views.automation_server")
 
@@ -31,9 +31,27 @@ class AutomationServerViewSet(KeycloakMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         org_id = self.get_org_id()
-        return AutomationServer.objects.filter(keycloak_org_id=org_id).order_by(
-            "-updated_at",
-        )
+        
+        # Check if user is admin in the org - admins can see all automation servers
+        if self.is_admin(self.request):
+            return AutomationServer.objects.filter(keycloak_org_id=org_id).order_by(
+                "-updated_at",
+            )
+        
+        # For non-admin users, filter by AutomationServerGroupMembership
+        user_id = self.get_active_user()
+        user_groups = self.keycloak.get_user_groups(user_id)
+        user_group_ids = [group['id'] for group in user_groups]
+        
+        # Get automation servers that the user has access to through group memberships
+        accessible_automation_server_ids = AutomationServerGroupMembership.objects.filter(
+            keycloak_group_id__in=user_group_ids
+        ).values_list('automation_server_id', flat=True)
+        
+        return AutomationServer.objects.filter(
+            keycloak_org_id=org_id,
+            id__in=accessible_automation_server_ids
+        ).order_by("-updated_at")
 
     def create(self, request):
         serializer = CreateAutomationServerSerializer(
