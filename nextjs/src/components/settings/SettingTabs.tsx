@@ -19,7 +19,7 @@ type SettingTabsProps = {
   usersList?: OrgUsersListResponse;
 };
 
-type SettingTab = "general" | "users" | "groups" | "gitops";
+type SettingTab = "users" | "groups";
 
 export function SettingTabs(props: SettingTabsProps) {
   const { groupsList, usersList } = props;

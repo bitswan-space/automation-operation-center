@@ -91,10 +91,7 @@ LOCAL_APPS = [
     "bitswan_backend",
     "bitswan_backend.users",
     "bitswan_backend.core",
-    "bitswan_backend.gitops",
     "bitswan_backend.brokers",
-    "bitswan_backend.deployments",
-    "bitswan_backend.dashboard_hub",
     "bitswan_backend.workspaces",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -331,17 +328,6 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "ALGORITHM": "HS512",
 }
-
-
-#  Gitops settings
-# ------------------------------------------------------------------------------
-GITOPS_IDE_HOST = os.environ.get("GITOPS_IDE_HOST", "ides.bitswan.space")
-
-RATHOLE_SERVER_HOST = os.environ.get("RATHOLE_SERVER_HOST")
-RATHOLE_CONFIG_PATH = os.environ.get("RATHOLE_CONFIG_PATH")
-
-TRAEFIK_SERVER_HOST = os.environ.get("TRAEFIK_SERVER_HOST")
-TRAEFIK_CONFIG_PATH = os.environ.get("TRAEFIK_CONFIG_PATH")
 
 
 KEYCLOAK_CLIENT_SECRET_KEY = os.environ.get("KEYCLOAK_CLIENT_SECRET_KEY")
