@@ -1,4 +1,4 @@
-from bitswan_backend.brokers.models import GroupNavigation
+from bitswan_backend.core.models import GroupNavigation
 
 
 class GroupNavigationService:

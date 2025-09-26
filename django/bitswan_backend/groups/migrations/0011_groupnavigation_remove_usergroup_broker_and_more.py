@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('brokers', '0010_usergroup_keycloak_org_id'),
+        ('groups', '0010_usergroup_keycloak_org_id'),
     ]
 
     operations = [
