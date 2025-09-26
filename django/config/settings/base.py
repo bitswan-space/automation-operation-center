@@ -78,6 +78,7 @@ THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "allauth.socialaccount.providers.openid_connect",
     "rest_framework",
     "rest_framework.authtoken",
     "djoser",
@@ -87,6 +88,7 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
+    "bitswan_backend",
     "bitswan_backend.users",
     "bitswan_backend.core",
     "bitswan_backend.gitops",
@@ -107,6 +109,7 @@ MIGRATION_MODULES = {"sites": "bitswan_backend.contrib.sites.migrations"}
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#authentication-backends
 AUTHENTICATION_BACKENDS = [
+    "bitswan_backend.core.authentication_backends.KeycloakAdminAuthenticationBackend",
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
@@ -266,6 +269,12 @@ LOGGING = {
         },
     },
     "root": {"level": "INFO", "handlers": ["console"]},
+    "loggers": {
+        "allauth": {"level": "DEBUG", "handlers": ["console"], "propagate": False},
+        "allauth.socialaccount": {"level": "DEBUG", "handlers": ["console"], "propagate": False},
+        "python_keycloak": {"level": "DEBUG", "handlers": ["console"], "propagate": False},
+        "django": {"level": "DEBUG", "handlers": ["console"], "propagate": False},
+    },
 }
 
 # django-allauth
@@ -289,6 +298,9 @@ ACCOUNT_FORMS = {"signup": "bitswan_backend.users.forms.UserSignupForm"}
 SOCIALACCOUNT_ADAPTER = "bitswan_backend.users.adapters.SocialAccountAdapter"
 # https://docs.allauth.org/en/latest/socialaccount/configuration.html
 SOCIALACCOUNT_FORMS = {"signup": "bitswan_backend.users.forms.UserSocialSignupForm"}
+
+# Keycloak OAuth Configuration
+# Note: Using custom Keycloak views instead of django-allauth
 
 # django-rest-framework
 # -------------------------------------------------------------------------------
@@ -336,6 +348,8 @@ KEYCLOAK_CLIENT_SECRET_KEY = os.environ.get("KEYCLOAK_CLIENT_SECRET_KEY")
 KEYCLOAK_CLIENT_ID = os.environ.get("KEYCLOAK_CLIENT_ID")
 KEYCLOAK_REALM_NAME = os.environ.get("KEYCLOAK_REALM_NAME")
 KEYCLOAK_SERVER_URL = os.environ.get("KEYCLOAK_SERVER_URL")
+KEYCLOAK_FRONTEND_URL = os.environ.get("KEYCLOAK_FRONTEND_URL")
+KEYCLOAK_GLOBAL_SUPERADMIN_GROUP_ID = os.environ.get("KEYCLOAK_GLOBAL_SUPERADMIN_GROUP_ID")
 
 AUTH_SECRET_KEY = os.environ.get("AUTH_SECRET_KEY")
 

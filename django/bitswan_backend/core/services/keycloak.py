@@ -431,3 +431,55 @@ class KeycloakService:
                 and "org" in group["attributes"]["type"]
             )
         ]
+
+    def is_global_superadmin(self, user_id):
+        """
+        Check if a user is in the GlobalSuperAdmin group.
+        
+        Args:
+            user_id: Keycloak user ID
+            
+        Returns:
+            bool: True if user is in GlobalSuperAdmin group, False otherwise
+        """
+        try:
+            # Get the GlobalSuperAdmin group ID from settings
+            global_superadmin_group_id = settings.KEYCLOAK_GLOBAL_SUPERADMIN_GROUP_ID
+            
+            if not global_superadmin_group_id:
+                logger.warning("KEYCLOAK_GLOBAL_SUPERADMIN_GROUP_ID not configured")
+                return False
+            
+            user_groups = self.get_user_groups(user_id)
+            
+            for group in user_groups:
+                if group.get('id') == global_superadmin_group_id:
+                    logger.info(f"User {user_id} is in GlobalSuperAdmin group")
+                    return True
+                    
+            logger.info(f"User {user_id} is not in GlobalSuperAdmin group")
+            return False
+            
+        except Exception as e:
+            logger.exception(f"Failed to check GlobalSuperAdmin membership for user {user_id}: {e}")
+            return False
+
+    def is_email_verified(self, user_id):
+        """
+        Check if a user's email is verified in Keycloak.
+        
+        Args:
+            user_id: Keycloak user ID
+            
+        Returns:
+            bool: True if email is verified, False otherwise
+        """
+        try:
+            user = self.keycloak_admin.get_user(user_id)
+            email_verified = user.get('emailVerified', False)
+            logger.info(f"User {user_id} email verified: {email_verified}")
+            return email_verified
+            
+        except Exception as e:
+            logger.exception(f"Failed to check email verification for user {user_id}: {e}")
+            return False
