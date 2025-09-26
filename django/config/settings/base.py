@@ -91,7 +91,6 @@ LOCAL_APPS = [
     "bitswan_backend",
     "bitswan_backend.users",
     "bitswan_backend.core",
-    "bitswan_backend.groups",
     "bitswan_backend.workspaces",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps

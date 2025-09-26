@@ -7,7 +7,7 @@ from rest_framework import exceptions
 from rest_framework import serializers
 from rest_framework import status
 
-from bitswan_backend.groups.api.service import GroupNavigationService
+from bitswan_backend.core.managers.organization import GroupNavigationService
 
 logger = logging.getLogger(__name__)
 
