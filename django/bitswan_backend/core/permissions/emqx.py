@@ -5,8 +5,8 @@ from rest_framework.permissions import SAFE_METHODS
 from rest_framework.permissions import BasePermission
 
 from bitswan_backend.core.services.keycloak import KeycloakService
-from bitswan_backend.workspaces.models import AutomationServer
-from bitswan_backend.workspaces.models import Workspace
+from bitswan_backend.core.models import AutomationServer
+from bitswan_backend.core.models import Workspace
 
 L = logging.getLogger("core.permissions.mqtt_profiles")
 

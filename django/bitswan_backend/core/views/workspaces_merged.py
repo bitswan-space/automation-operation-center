@@ -11,18 +11,23 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from bitswan_backend.core.authentication import KeycloakAuthentication
-from bitswan_backend.core.permissions.emqx import CanReadWorkspaceEMQXJWT
-from bitswan_backend.core.permissions.emqx import CanReadWorkspacePipelineEMQXJWT
-from bitswan_backend.core.serializers.workspaces import WorkspaceSerializer
-from bitswan_backend.core.utils.mqtt import create_mqtt_token
-from bitswan_backend.core.viewmixins import KeycloakMixin
+from bitswan_backend.core.models import AutomationServer
 from bitswan_backend.core.models import Workspace
+from bitswan_backend.core.viewmixins import KeycloakMixin
+from bitswan_backend.core.serializers.workspaces_new import AutomationServerSerializer
+from bitswan_backend.core.serializers.workspaces_new import CreateAutomationServerSerializer  
+from bitswan_backend.core.serializers.workspaces_new import WorkspaceSerializer
+from bitswan_backend.core.utils.mqtt import create_mqtt_token
+from bitswan_backend.core.permissions.workspaces import CanReadWorkspaceEMQXJWT
+from bitswan_backend.core.permissions.workspaces import CanReadWorkspacePipelineEMQXJWT
+from bitswan_backend.core.pagination import DefaultPagination
+from bitswan_backend.core.models.workspaces import WorkspaceGroupMembership
+from bitswan_backend.core.models.automation_server import AutomationServerGroupMembership
+
 
 L = logging.getLogger("core.views.workspaces")
 
 
-# FIXME: Currently a Keycloak JWT token will be authorized even after it has expired.
-#        Consider reworking the oidc flow setup to prevent this.
 class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
     queryset = Workspace.objects.all()
     serializer_class = WorkspaceSerializer
@@ -47,7 +52,7 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
         mountpoint = (
             f"/orgs/{org_id}/"
             f"automation-servers/{workspace.automation_server_id}/"
-            f"c/{workspace.id!s}"
+            f"c/{str(workspace.id)}"
         )
         username = str(workspace.id)
 
@@ -79,7 +84,68 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
         mountpoint = (
             f"/orgs/{org_id}/"
             f"automation-servers/{workspace.automation_server_id}/"
-            f"c/{workspace.id!s}/c/{deployment_id}"
+            f"c/{str(workspace.id)}/c/{deployment_id}"
+        )
+        username = str(workspace.id)
+
+        token = create_mqtt_token(
+            secret=settings.EMQX_JWT_SECRET,
+            username=username,
+            mountpoint=mountpoint,
+        )
+
+        return Response(
+            {
+                "url": os.getenv("EMQX_EXTERNAL_URL"),
+                "token": token,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AutomationServerViewSet(KeycloakMixin, viewsets.ModelViewSet):
+    queryset = AutomationServer.objects.all()
+    serializer_class = AutomationServerSerializer
+    pagination_class = DefaultPagination
+    authentication_classes = [KeycloakAuthentication]
+
+    def get_queryset(self):
+        org_id = self.get_org_id()
+        return AutomationServer.objects.filter(keycloak_org_id=org_id).order_by(
+            "-updated_at",
+        )
+
+    def create(self, request):
+        serializer = CreateAutomationServerSerializer(
+            data=request.data,
+            context={"view": self, "request": request},
+        )
+
+        if serializer.is_valid():
+            group = serializer.save()
+            return Response(group, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=["get"], url_path="token")
+    def get_token(self, request):
+        new_token = self.get_token_from_token(request)
+        return Response({"token": new_token["access_token"]})
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="emqx/jwt",
+        permission_classes=[CanReadWorkspaceEMQXJWT],
+    )
+    def emqx_jwt(self, request, pk=None):
+        workspace = self.get_object()
+        org_id = workspace.keycloak_org_id
+
+        mountpoint = (
+            f"/orgs/{org_id}/"
+            f"automation-servers/{workspace.automation_server_id}/"
+            f"c/{str(workspace.id)}"
         )
         username = str(workspace.id)
 

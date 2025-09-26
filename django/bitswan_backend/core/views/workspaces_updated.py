@@ -1,7 +1,6 @@
 import logging
 import os
 
-from core.pagination import DefaultPagination
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -15,18 +14,19 @@ from bitswan_backend.core.authentication import KeycloakAuthentication
 from bitswan_backend.core.models import AutomationServer
 from bitswan_backend.core.models import Workspace
 from bitswan_backend.core.viewmixins import KeycloakMixin
-from bitswan_backend.workspaces.api.serializers import AutomationServerSerializer
-from bitswan_backend.workspaces.api.serializers import CreateAutomationServerSerializer
-from bitswan_backend.workspaces.api.serializers import WorkspaceSerializer
-from bitswan_backend.workspaces.api.services import create_token
-from bitswan_backend.workspaces.permissions import CanReadWorkspaceEMQXJWT
-from bitswan_backend.workspaces.permissions import CanReadWorkspacePipelineEMQXJWT
+from bitswan_backend.core.serializers.workspaces_new import AutomationServerSerializer
+from bitswan_backend.core.serializers.workspaces_new import CreateAutomationServerSerializer
+from bitswan_backend.core.serializers.workspaces_new import WorkspaceSerializer
+from bitswan_backend.core.utils.mqtt import create_mqtt_token
+from bitswan_backend.core.permissions.workspaces import CanReadWorkspaceEMQXJWT
+from bitswan_backend.core.permissions.workspaces import CanReadWorkspacePipelineEMQXJWT
+from bitswan_backend.core.pagination import DefaultPagination
 
 from bitswan_backend.core.models.workspaces import WorkspaceGroupMembership
 from bitswan_backend.core.models.automation_server import AutomationServerGroupMembership
 
 
-L = logging.getLogger("workspaces.api.views")
+L = logging.getLogger("core.views.workspaces")
 
 
 # FIXME: Currently a Keycloak JWT token will be authorized even after it has expired.
@@ -59,7 +59,7 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
         )
         username = str(workspace.id)
 
-        token = create_token(
+        token = create_mqtt_token(
             secret=settings.EMQX_JWT_SECRET,
             username=username,
             mountpoint=mountpoint,
@@ -91,7 +91,7 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
         )
         username = str(workspace.id)
 
-        token = create_token(
+        token = create_mqtt_token(
             secret=settings.EMQX_JWT_SECRET,
             username=username,
             mountpoint=mountpoint,
@@ -243,7 +243,7 @@ class AutomationServerViewSet(KeycloakMixin, viewsets.ModelViewSet):
         )
         username = str(workspace.id)
 
-        token = create_token(
+        token = create_mqtt_token(
             secret=settings.EMQX_JWT_SECRET,
             username=username,
             mountpoint=mountpoint,
@@ -473,7 +473,7 @@ class GetUserEmqxJwtsAPIView(KeycloakMixin, views.APIView):
                 
                 tokens = []
                 for workspace in all_workspaces:
-                    token = create_token(
+                    token = create_mqtt_token(
                         secret=settings.EMQX_JWT_SECRET,
                         username=str(workspace.id),
                         mountpoint=f"/orgs/{org_id}/automation-servers/{workspace.automation_server_id}/c/{str(workspace.id)}",
@@ -509,7 +509,7 @@ class GetUserEmqxJwtsAPIView(KeycloakMixin, views.APIView):
             tokens = []
             for workspace_info in accessible_workspaces:
                 # Create JWT token for this workspace
-                token = create_token(
+                token = create_mqtt_token(
                     secret=settings.EMQX_JWT_SECRET,
                     username=workspace_info['workspace_id'],
                     mountpoint=workspace_info['mountpoint'],

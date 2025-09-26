@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from bitswan_backend.core.serializers.workspaces import WorkspaceSerializer
 from bitswan_backend.core.services.keycloak import KeycloakService
-from bitswan_backend.workspaces.models import AutomationServer
+from bitswan_backend.core.models import AutomationServer
 
 
 class AutomationServerSerializer(serializers.ModelSerializer):

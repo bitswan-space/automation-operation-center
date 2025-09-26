@@ -18,7 +18,7 @@ from bitswan_backend.core.serializers.automation_server import (
 )
 from bitswan_backend.core.utils.mqtt import create_mqtt_token
 from bitswan_backend.core.viewmixins import KeycloakMixin
-from bitswan_backend.workspaces.models import AutomationServer
+from bitswan_backend.core.models import AutomationServer
 
 L = logging.getLogger("core.views.automation_server")
 

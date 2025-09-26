@@ -9,3 +9,4 @@ urlpatterns = [
         name="register_cli",
     ),
 ]
+

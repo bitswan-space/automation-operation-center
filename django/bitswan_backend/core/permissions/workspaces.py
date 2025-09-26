@@ -8,7 +8,7 @@ from bitswan_backend.core.models import AutomationServer
 from bitswan_backend.core.models import Workspace
 from bitswan_backend.core.services.keycloak import KeycloakService
 
-L = logging.getLogger("workspaces.permissions")
+L = logging.getLogger("core.permissions.workspaces")
 
 
 class CanReadOrgEMQXJWT(BasePermission):
