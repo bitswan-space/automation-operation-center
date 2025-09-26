@@ -38,7 +38,25 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         org_id = self.get_org_id()
-        return Workspace.objects.filter(keycloak_org_id=org_id).order_by("-updated_at")
+        
+        # Check if user is admin in the org - admins can see all workspaces
+        if self.is_admin(self.request):
+            return Workspace.objects.filter(keycloak_org_id=org_id).order_by("-updated_at")
+        
+        # For non-admin users, filter by WorkspaceGroupMembership
+        user_id = self.get_active_user()
+        user_groups = self.keycloak.get_user_groups(user_id)
+        user_group_ids = [group['id'] for group in user_groups]
+        
+        # Get workspaces that the user has access to through group memberships
+        accessible_workspace_ids = WorkspaceGroupMembership.objects.filter(
+            keycloak_group_id__in=user_group_ids
+        ).values_list('workspace_id', flat=True)
+        
+        return Workspace.objects.filter(
+            keycloak_org_id=org_id,
+            id__in=accessible_workspace_ids
+        ).order_by("-updated_at")
 
     @action(
         detail=True,
