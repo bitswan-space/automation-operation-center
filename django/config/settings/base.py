@@ -317,7 +317,9 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "Bitswan Backend API",
     "DESCRIPTION": "Documentation of API endpoints of Bitswan Backend",
     "VERSION": "1.0.0",
-    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SCHEMA_PATH_PREFIX": "/api/",
 }
 # Your stuff...
 # ------------------------------------------------------------------------------
