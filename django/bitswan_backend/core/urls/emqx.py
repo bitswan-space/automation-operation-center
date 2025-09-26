@@ -1,6 +1,6 @@
 from django.urls import path
 
-from bitswan_backend.core.views.workspaces_merged import RegisterCLIAPIView
+from bitswan_backend.core.views.workspaces import RegisterCLIAPIView
 
 urlpatterns = [
     path(
