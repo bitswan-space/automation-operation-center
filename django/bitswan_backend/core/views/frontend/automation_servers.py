@@ -307,7 +307,7 @@ class AutomationServerViewSet(KeycloakMixin, viewsets.ModelViewSet):
                 "application/json": {
                     "example": {
                         "automation_server_id": "123e4567-e89b-12d3-a456-426614174000",
-                        "otp": "ABC12345",
+                        "otp": "ABC123DEF456GHI789JKL012MNO",
                         "message": "Automation server created successfully. Use the OTP with the CLI command."
                     }
                 }
@@ -441,7 +441,7 @@ class CreateAutomationServerWithOTPAPIView(KeycloakMixin, APIView):
                             "summary": "OTP not yet redeemed",
                             "value": {
                                 "redeemed": False,
-                                "otp": "ABC12345",
+                                "otp": "ABC123DEF456GHI789JKL012MNO",
                                 "expires_at": "2025-09-26T17:44:42.123456Z"
                             }
                         },
