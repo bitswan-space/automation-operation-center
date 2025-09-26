@@ -9,7 +9,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from bitswan_backend.brokers.api.service import GroupNavigationService
+from bitswan_backend.groups.api.service import GroupNavigationService
 from bitswan_backend.core.pagination import DefaultPagination
 from bitswan_backend.core.serializers.organization import CreateOrgSerializer
 from bitswan_backend.core.serializers.organization import CreateUserGroupSerializer

@@ -2,9 +2,9 @@ from django.conf import settings
 from rest_framework.routers import DefaultRouter
 from rest_framework.routers import SimpleRouter
 
-from bitswan_backend.brokers.api.views import OrgUsersViewSet
-from bitswan_backend.brokers.api.views import OrgViewSet
-from bitswan_backend.brokers.api.views import UserGroupViewSet
+from bitswan_backend.groups.api.views import OrgUsersViewSet
+from bitswan_backend.groups.api.views import OrgViewSet
+from bitswan_backend.groups.api.views import UserGroupViewSet
 from bitswan_backend.users.api.views import UserViewSet
 from bitswan_backend.workspaces.api.views import AutomationServerViewSet
 from bitswan_backend.workspaces.api.views import WorkspaceViewSet

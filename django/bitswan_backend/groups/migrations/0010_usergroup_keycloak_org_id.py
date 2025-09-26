@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('brokers', '0009_usergroup'),
+        ('groups', '0009_usergroup'),
     ]
 
     operations = [

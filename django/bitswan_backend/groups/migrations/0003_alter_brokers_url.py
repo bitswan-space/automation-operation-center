@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("brokers", "0002_brokers_name"),
+        ("groups", "0002_brokers_name"),
     ]
 
     operations = [

@@ -9,13 +9,13 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from bitswan_backend.brokers.api.serializers import CreateOrgSerializer
-from bitswan_backend.brokers.api.serializers import CreateUserGroupSerializer
-from bitswan_backend.brokers.api.serializers import OrgSerializer
-from bitswan_backend.brokers.api.serializers import OrgUserSerializeer
-from bitswan_backend.brokers.api.serializers import UpdateUserGroupSerializer
-from bitswan_backend.brokers.api.serializers import UserGroupSerializer
-from bitswan_backend.brokers.api.service import GroupNavigationService
+from bitswan_backend.groups.api.serializers import CreateOrgSerializer
+from bitswan_backend.groups.api.serializers import CreateUserGroupSerializer
+from bitswan_backend.groups.api.serializers import OrgSerializer
+from bitswan_backend.groups.api.serializers import OrgUserSerializeer
+from bitswan_backend.groups.api.serializers import UpdateUserGroupSerializer
+from bitswan_backend.groups.api.serializers import UserGroupSerializer
+from bitswan_backend.groups.api.service import GroupNavigationService
 from bitswan_backend.core.pagination import DefaultPagination
 from bitswan_backend.core.viewmixins import KeycloakMixin
 from bitswan_backend.core.models.workspaces import WorkspaceGroupMembership
