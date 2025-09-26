@@ -147,40 +147,12 @@ class KeycloakMixin:
         # FIXME: this will delete a user from any org
         self.keycloak.delete_user(user_id=user_id)
 
-    def start_device_registration(self):
-        """
-        Helper method to start device registration
-        """
-
-        return self.keycloak.start_device_registration()
-
     def get_user_org_id(self, token):
         """
         Helper method to get the user org ID
         """
 
         return self.keycloak.get_user_org_id(token)
-
-    def poll_device_registration(self, device_code):
-        """
-        Helper method to poll device registration
-        """
-
-        return self.keycloak.poll_device_registration(device_code)
-
-    def confirm_device_registration(self, device_code):
-        """
-        Helper method to confirm device registration
-        """
-
-        return self.keycloak.confirm_device_registration(device_code)
-
-    def get_token_from_token(self, request):
-        """
-        Helper method to get a token from a token
-        """
-
-        return self.keycloak.get_token_from_token(request)
 
     def is_admin(self, request):
         """

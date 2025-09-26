@@ -241,8 +241,12 @@ class AutomationServerViewSet(KeycloakMixin, viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="token")
     def get_token(self, request):
-        new_token = self.get_token_from_token(request)
-        return Response({"token": new_token["access_token"]})
+        # This endpoint is now deprecated in favor of the OTP-based system
+        # For backward compatibility, we'll return an error message
+        return Response(
+            {"error": "This endpoint is deprecated. Use the OTP-based registration flow instead."},
+            status=status.HTTP_410_GONE,
+        )
 
     @action(
         detail=True,
@@ -554,30 +558,3 @@ class GetUserEmqxJwtsAPIView(KeycloakMixin, views.APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-
-class RegisterCLIAPIView(KeycloakMixin, views.APIView):
-    authentication_classes = []
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        device_registration = self.start_device_registration()
-        return Response(device_registration, status=status.HTTP_200_OK)
-
-    def get(self, request):
-        device_code = request.query_params.get("device_code")
-        if not device_code:
-            return Response(
-                {"error": "Device code is required."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        device_registration = self.poll_device_registration(device_code)
-        if "error" in device_registration:
-            return Response(
-                device_registration,
-                status=device_registration.get("status_code"),
-            )
-
-        return Response(
-            device_registration,
-            status=device_registration.get("status_code"),
-        )

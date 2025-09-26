@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.14'",
@@ -130,6 +130,7 @@ dependencies = [
     { name = "factory-boy" },
     { name = "gunicorn" },
     { name = "ipdb" },
+    { name = "markdown" },
     { name = "mypy" },
     { name = "paho-mqtt" },
     { name = "pillow" },
@@ -177,6 +178,7 @@ requires-dist = [
     { name = "factory-boy", specifier = "==3.3.0" },
     { name = "gunicorn", specifier = "==21.2.0" },
     { name = "ipdb", specifier = "==0.13.13" },
+    { name = "markdown", specifier = "==3.5.1" },
     { name = "mypy", specifier = "==1.7.1" },
     { name = "paho-mqtt", specifier = "==1.6.1" },
     { name = "pillow", specifier = "==10.2.0" },
@@ -1077,6 +1079,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/e1/db/870e5d5fb311b0bcf049630b5ba3abca2d339fd5e13ba175b4c13b456d08/jwcrypto-1.5.6.tar.gz", hash = "sha256:771a87762a0c081ae6166958a954f80848820b2ab066937dc8b8379d65b1b039", size = 87168, upload-time = "2024-03-06T19:58:31.831Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/cd/58/4a1880ea64032185e9ae9f63940c9327c6952d5584ea544a8f66972f2fda/jwcrypto-1.5.6-py3-none-any.whl", hash = "sha256:150d2b0ebbdb8f40b77f543fb44ffd2baeff48788be71f67f03566692fd55789", size = 92520, upload-time = "2024-03-06T19:58:29.765Z" },
+]
+
+[[package]]
+name = "markdown"
+version = "3.5.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/35/14/1ec9742e151f3b06a723a20d9af7201a389ebd3aae8b7d93b521819489dc/Markdown-3.5.1.tar.gz", hash = "sha256:b65d7beb248dc22f2e8a31fb706d93798093c308dc1aba295aedeb9d41a813bd", size = 348575, upload-time = "2023-10-31T19:59:23.678Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/70/58/2c5a654173937d9f540a4971c569b44dcd55e5424a484d954cdaeebcf79c/Markdown-3.5.1-py3-none-any.whl", hash = "sha256:5874b47d4ee3f0b14d764324d2c94c03ea66bee56f2d929da9f2508d65e722dc", size = 102151, upload-time = "2023-10-31T19:59:21.762Z" },
 ]
 
 [[package]]
