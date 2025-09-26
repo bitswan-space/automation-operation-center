@@ -170,6 +170,7 @@ export const authConfig = {
           `${issuerUrl}/protocol/openid-connect/logout`,
         );
         logOutUrl.searchParams.set("id_token_hint", token?.id_token);
+        logOutUrl.searchParams.set("post_logout_redirect_uri", env.KEYCLOAK_POST_LOGOUT_REDIRECT_URI);
         await fetch(logOutUrl);
       }
     },
