@@ -6,8 +6,8 @@ from bitswan_backend.core.views.groups import OrgUsersViewSet
 from bitswan_backend.core.views.groups import OrgViewSet
 from bitswan_backend.core.views.groups import UserGroupViewSet
 from bitswan_backend.users.api.views import UserViewSet
-from bitswan_backend.core.views.workspaces_merged import AutomationServerViewSet
-from bitswan_backend.core.views.workspaces_merged import WorkspaceViewSet
+from bitswan_backend.core.views.workspaces import AutomationServerViewSet
+from bitswan_backend.core.views.workspaces import WorkspaceViewSet
 from bitswan_backend.core.urls.workspaces import urlpatterns as workspaces_urlpatterns
 
 router = DefaultRouter() if settings.DEBUG else SimpleRouter()
