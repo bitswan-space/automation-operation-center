@@ -21,7 +21,7 @@ export const fetchOrgGroups = async () => {
 
   try {
     const res = await bitswanBEInstance.get<ApiListResponse<UserGroup>>(
-      "/user-groups",
+      "/frontend/user-groups",
       {
         headers: {
           "X-Org-Id": activeOrg?.id ?? "",
@@ -49,7 +49,7 @@ export const deleteOrgGroup = async (id: string) => {
 
   try {
     const res = await bitswanBEInstance.delete<ApiResponse>(
-      `/user-groups/${id}`,
+      `/frontend/user-groups/${id}`,
       {
         headers: {
           "X-Org-Id": activeOrg?.id ?? "",
@@ -74,7 +74,7 @@ export const addUserToGroup = async (userId: string, groupId: string) => {
 
   try {
     const res = await bitswanBEInstance.post<ApiResponse>(
-      `/user-groups/${groupId}/add_member/`,
+      `/frontend/user-groups/${groupId}/add_member/`,
       {
         user_id: userId,
       },
@@ -102,7 +102,7 @@ export const removeUserFromGroup = async (userId: string, groupId: string) => {
 
   try {
     const res = await bitswanBEInstance.post<ApiResponse>(
-      `/user-groups/${groupId}/remove_member/`,
+      `/frontend/user-groups/${groupId}/remove_member/`,
       {
         user_id: userId,
       },
@@ -130,7 +130,7 @@ export const addWorkspaceToGroup = async (workspaceId: string, groupId: string) 
 
   try {
     const res = await bitswanBEInstance.post<ApiResponse>(
-      `/workspaces/${workspaceId}/add_to_group/`,
+      `/frontend/workspaces/${workspaceId}/add_to_group/`,
       {
         group_id: groupId,
       },
@@ -158,7 +158,7 @@ export const removeWorkspaceFromGroup = async (workspaceId: string, groupId: str
 
   try {
     const res = await bitswanBEInstance.post<ApiResponse>(
-      `/workspaces/${workspaceId}/remove_from_group/`,
+      `/frontend/workspaces/${workspaceId}/remove_from_group/`,
       {
         group_id: groupId,
       },
@@ -187,7 +187,7 @@ export const addAutomationServerToGroup = async (automationServerId: string, gro
 
   try {
     const res = await bitswanBEInstance.post<ApiResponse>(
-      `/automation-servers/${automationServerId}/add_to_group/`,
+      `/frontend/automation-servers/${automationServerId}/add_to_group/`,
       {
         group_id: groupId,
       },
@@ -215,7 +215,7 @@ export const removeAutomationServerFromGroup = async (automationServerId: string
 
   try {
     const res = await bitswanBEInstance.post<ApiResponse>(
-      `/automation-servers/${automationServerId}/remove_from_group/`,
+      `/frontend/automation-servers/${automationServerId}/remove_from_group/`,
       {
         group_id: groupId,
       },
@@ -248,7 +248,7 @@ export const createOrgGroup = async (userGroup: {
 
   try {
     const res = await bitswanBEInstance.post<ApiResponse>(
-      "/user-groups/",
+      "/frontend/user-groups/",
       userGroup,
       {
         headers: {
@@ -280,7 +280,7 @@ export const updateOrgGroup = async (userGroup: {
 
   try {
     const res = await bitswanBEInstance.put<ApiResponse>(
-      `/user-groups/${userGroup.id}/`,
+      `/frontend/user-groups/${userGroup.id}/`,
       userGroup,
       {
         headers: {

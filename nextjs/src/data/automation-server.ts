@@ -47,7 +47,7 @@ export async function getAutomationServers() {
 
   const activeOrg = await getActiveOrgFromCookies();
 
-  const res = await bitswanBEInstance.get("/automation-servers", {
+  const res = await bitswanBEInstance.get("/frontend/automation-servers", {
     headers: {
       "X-Org-Id": activeOrg?.id ?? "",
       "X-Org-Name": activeOrg?.name ?? "",

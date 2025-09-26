@@ -25,7 +25,7 @@ export async function POST(
       );
     }
 
-    const response = await fetch(`${apiUrl}/api/automation-servers/${id}/delete/`, {
+    const response = await fetch(`${apiUrl}/api/frontend/automation-servers/${id}/delete/`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${session.access_token}`,

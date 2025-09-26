@@ -1,3 +1,6 @@
+"""
+Frontend API views for group and user management
+"""
 import json
 
 from keycloak import KeycloakDeleteError

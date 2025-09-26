@@ -52,7 +52,7 @@ export function ConnectAutomationServerModal({
 
     try {
       const response = await fetch(
-        `${apiUrl}/api/automation-servers/check-otp-status/?automation_server_id=${automationServerId}`,
+        `${apiUrl}/api/frontend/automation-servers/check-otp-status/?automation_server_id=${automationServerId}`,
         {
           method: "GET",
           headers: {
@@ -117,7 +117,7 @@ export function ConnectAutomationServerModal({
     setError(null);
 
     try {
-      const response = await fetch(`${apiUrl}/api/automation-servers/create-with-otp/`, {
+      const response = await fetch(`${apiUrl}/api/frontend/automation-servers/create-with-otp/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

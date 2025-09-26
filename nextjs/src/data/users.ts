@@ -23,7 +23,7 @@ export const fetchOrgUsers = async (page: number | undefined = 1) => {
 
   try {
     const res = await bitswanBEInstance.get<ApiListResponse<OrgUser>>(
-      `/org-users?page=${page}`,
+      `/frontend/org-users?page=${page}`,
       {
         headers: {
           "X-Org-Id": activeOrg?.id ?? "",
@@ -50,7 +50,7 @@ export const inviteUser = async (email: string) => {
   const activeOrg = await getActiveOrgFromCookies();
   try {
     const res = await bitswanBEInstance.post<ApiResponse>(
-      "/org-users/invite/",
+      "/frontend/org-users/invite/",
       {
         email: email,
       },
@@ -80,7 +80,7 @@ export const deleteUser = async (id: string) => {
   const activeOrg = await getActiveOrgFromCookies();
   try {
     const res = await bitswanBEInstance.delete<ApiResponse>(
-      `/org-users/${id}/`,
+      `/frontend/org-users/${id}/`,
       {
         headers: {
           "X-Org-Id": activeOrg?.id ?? "",
