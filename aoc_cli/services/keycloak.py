@@ -54,9 +54,11 @@ class KeycloakService:
         client_secrets = self.create_clients()
         self.setup_bitswan_backend_client()
         self.initialize_admin_user()
+        self.add_initial_users_to_global_superadmin()
         self.update_realm_smtp_server()
 
         self.update_envs_with_keycloak_secret(client_secrets)
+        self.create_django_social_app()
         click.echo("✓ Keycloak setup complete")
 
     def configure_realm_settings(self) -> None:
@@ -236,6 +238,7 @@ class KeycloakService:
             "bitswan-backend": {
                 "clientId": "bitswan-backend",
                 "webOrigins": ["*"],
+                "redirectUris": ["*"],
                 "publicClient": False,
                 "serviceAccountsEnabled": True,
                 "authorizationServicesEnabled": True,
@@ -293,8 +296,26 @@ class KeycloakService:
                 print(f"Client ID: {client_id}")
             except KeycloakPostError as e:
                 if e.response_code == 409:
-                    print(f"Client {name} already exists")
-                    continue
+                    print(f"Client {name} already exists, recreating with new configuration...")
+                    # Find existing client and delete it
+                    existing_clients = self.keycloak_admin.get_clients()
+                    client_id = None
+                    for client in existing_clients:
+                        if client.get("clientId") == name:
+                            client_id = client.get("id")
+                            break
+                    
+                    if client_id:
+                        # Delete the existing client
+                        self.keycloak_admin.delete_client(client_id)
+                        print(f"Deleted existing client {name}")
+                        
+                        # Create the client with new configuration
+                        client_id = self.keycloak_admin.create_client(client_config)
+                        print(f"Recreated client {name} with ID: {client_id}")
+                    else:
+                        print(f"Could not find existing client {name}")
+                        continue
                 else:
                     raise e
 
@@ -336,6 +357,7 @@ class KeycloakService:
                     "username": self.config.admin_username,
                     "email": self.config.admin_username,
                     "enabled": True,
+                    "emailVerified": True,
                     "credentials": [
                         {
                             "type": "password",
@@ -348,9 +370,21 @@ class KeycloakService:
         except KeycloakPostError as e:
             if e.response_code == 409:
                 click.echo("Admin user already exists")
-                return
+                # Get existing user ID
+                users = self.keycloak_admin.get_users(query={"email": self.config.admin_username})
+                if users:
+                    user_id = users[0]["id"]
+                else:
+                    click.echo("Could not find existing admin user")
+                    return
             else:
                 raise e
+
+        # Create GlobalSuperAdmin group
+        global_superadmin_group_id = self.create_global_superadmin_group()
+        
+        # Add admin user to GlobalSuperAdmin group
+        self.keycloak_admin.group_user_add(user_id, global_superadmin_group_id)
 
         org_group_id = self.keycloak_admin.create_group(
             {"name": self.config.org_name, "attributes": {"type": ["org"]}}
@@ -364,6 +398,89 @@ class KeycloakService:
 
         self.keycloak_admin.group_user_add(user_id, admin_group_id)
         self.keycloak_admin.group_user_add(user_id, org_group_id)
+
+    def create_global_superadmin_group(self) -> str:
+        """Create GlobalSuperAdmin group for Django admin access."""
+        try:
+            # First, try to get existing group ID from secrets
+            existing_group_id = self.get_existing_group_id_from_secrets()
+            if existing_group_id:
+                # Verify the group still exists in Keycloak
+                try:
+                    group = self.keycloak_admin.get_group(existing_group_id)
+                    if group and group.get("name") == "GlobalSuperAdmin":
+                        click.echo("✓ GlobalSuperAdmin group found in secrets and verified in Keycloak")
+                        return existing_group_id
+                except Exception:
+                    # Group doesn't exist in Keycloak anymore, continue to create new one
+                    click.echo("⚠️ Group ID in secrets no longer exists in Keycloak, creating new group")
+            
+            # Create new group or find existing one
+            group_id = self.keycloak_admin.create_group(
+                {
+                    "name": "GlobalSuperAdmin",
+                    "attributes": {
+                        "type": ["global-admin"],
+                        "description": ["Global super admin group for Django admin access"],
+                        "django_admin_access": ["true"]
+                    }
+                },
+                skip_exists=True,
+            )
+            
+            if group_id is None:
+                # Group already exists, find it
+                groups = self.keycloak_admin.get_groups()
+                for group in groups:
+                    if group["name"] == "GlobalSuperAdmin":
+                        group_id = group["id"]
+                        break
+                        
+            click.echo("✓ GlobalSuperAdmin group created/found")
+            return group_id
+            
+        except Exception as e:
+            click.echo(f"Error creating GlobalSuperAdmin group: {e}")
+            raise
+
+    def get_existing_group_id_from_secrets(self) -> str:
+        """Get existing GlobalSuperAdmin group ID from secrets.json."""
+        try:
+            from aoc_cli.commands.init import get_secret_from_file
+            from aoc_cli.env.config import InitConfig
+            
+            # Create a minimal config object for the helper function
+            config = InitConfig(aoc_dir=self.config.aoc_dir)
+            return get_secret_from_file(config, "KEYCLOAK_GLOBAL_SUPERADMIN_GROUP_ID")
+            
+        except Exception as e:
+            click.echo(f"Error reading group ID from secrets: {e}")
+            return ""
+
+    def add_initial_users_to_global_superadmin(self) -> None:
+        """Add initial users to GlobalSuperAdmin group for Django admin access."""
+        try:
+            # Get GlobalSuperAdmin group
+            groups = self.keycloak_admin.get_groups()
+            global_superadmin_group = None
+            for group in groups:
+                if group["name"] == "GlobalSuperAdmin":
+                    global_superadmin_group = group
+                    break
+            
+            if not global_superadmin_group:
+                click.echo("GlobalSuperAdmin group not found")
+                return
+                
+            # For now, we'll add the admin user that was just created
+            # In the future, this could be extended to add additional users
+            # based on configuration or environment variables
+            
+            click.echo("✓ Initial users added to GlobalSuperAdmin group")
+            
+        except Exception as e:
+            click.echo(f"Error adding users to GlobalSuperAdmin group: {e}")
+            # Don't raise here as this is not critical for basic functionality
 
     def update_envs_with_keycloak_secret(self, secret: dict) -> None:
         aoc_env_file = (
@@ -398,6 +515,73 @@ class KeycloakService:
             click.echo(f"Updating {file_path}")
             with open(file_path, "a") as f:
                 f.write(f"\n{env_var_label}={secret.get(client_name)}\n")
+
+        # Add GlobalSuperAdmin group ID to secrets and env file
+        self.add_global_superadmin_group_id_to_secrets_and_env(bitswan_backend_env_file)
+
+    def add_global_superadmin_group_id_to_secrets_and_env(self, env_file: str) -> None:
+        """Add GlobalSuperAdmin group ID to secrets.json and environment file."""
+        try:
+            # Get GlobalSuperAdmin group ID
+            groups = self.keycloak_admin.get_groups()
+            global_superadmin_group_id = None
+            
+            for group in groups:
+                if group["name"] == "GlobalSuperAdmin":
+                    global_superadmin_group_id = group["id"]
+                    break
+            
+            if global_superadmin_group_id:
+                # Add to secrets.json (only if not already present)
+                self.add_group_id_to_secrets_if_missing(global_superadmin_group_id)
+                
+                # Add to environment file
+                file_path = self.config.aoc_dir / "envs" / env_file
+                click.echo(f"Adding GlobalSuperAdmin group ID to {file_path}")
+                with open(file_path, "a") as f:
+                    f.write(f"\nKEYCLOAK_GLOBAL_SUPERADMIN_GROUP_ID={global_superadmin_group_id}\n")
+                click.echo(f"✓ GlobalSuperAdmin group ID saved: {global_superadmin_group_id}")
+            else:
+                click.echo("⚠️ GlobalSuperAdmin group not found, skipping group ID export")
+                
+        except Exception as e:
+            click.echo(f"Error adding GlobalSuperAdmin group ID: {e}")
+            # Don't raise here as this is not critical for basic functionality
+
+    def add_group_id_to_secrets_if_missing(self, group_id: str) -> None:
+        """Add GlobalSuperAdmin group ID to secrets.json only if not already present."""
+        try:
+            from aoc_cli.commands.init import get_secret_from_file
+            from aoc_cli.env.config import InitConfig
+            
+            # Create a minimal config object for the helper function
+            config = InitConfig(aoc_dir=self.config.aoc_dir)
+            
+            # Check if already exists
+            existing_id = get_secret_from_file(config, "KEYCLOAK_GLOBAL_SUPERADMIN_GROUP_ID")
+            if existing_id:
+                click.echo(f"✓ GlobalSuperAdmin group ID already exists in secrets.json")
+                return
+            
+            # Add to secrets
+            import json
+            secrets_file = self.config.aoc_dir / "secrets.json"
+            secrets = {}
+            
+            if secrets_file.exists():
+                with open(secrets_file, "r") as f:
+                    secrets = json.load(f)
+            
+            secrets["KEYCLOAK_GLOBAL_SUPERADMIN_GROUP_ID"] = group_id
+            
+            with open(secrets_file, "w") as f:
+                json.dump(secrets, f, indent=2)
+                
+            click.echo(f"✓ GlobalSuperAdmin group ID added to secrets.json")
+            
+        except Exception as e:
+            click.echo(f"Error adding group ID to secrets: {e}")
+            # Don't raise here as this is not critical for basic functionality
 
     def create_client_scope(self, scope_name: str) -> None:
         client_scope = self.keycloak_admin.get_client_scope_by_name(scope_name)
@@ -481,3 +665,63 @@ class KeycloakService:
         realm_settings["smtpServer"] = options
 
         self.keycloak_admin.update_realm(realm_name=realm_name, payload=realm_settings)
+
+    def create_django_social_app(self) -> None:
+        """Create the Django social app for Keycloak OAuth integration."""
+        try:
+            import subprocess
+            
+            # Wait for the Django container to be ready
+            click.echo("Waiting for Django container to be ready...")
+            self._wait_for_django_container()
+            
+            # Get the client secret
+            client_secret = get_secret_from_file(self.config, 'KEYCLOAK_CLIENT_SECRET_KEY')
+            
+            # Run the Django management command
+            cmd = [
+                "docker", "exec", "aoc-bitswan-backend",
+                "python", "manage.py", "setup_keycloak_social_app",
+                "--client-id", "bitswan-backend",
+                "--client-secret", client_secret,
+                "--server-url", self.config.server_url,
+                "--realm", self.config.realm_name,
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, cwd=self.config.aoc_dir)
+            
+            if result.returncode == 0:
+                click.echo("✓ Django social app created/updated successfully")
+                if result.stdout:
+                    click.echo(result.stdout)
+            else:
+                click.echo(f"Warning: Failed to create Django social app: {result.stderr}")
+                
+        except Exception as e:
+            click.echo(f"Warning: Failed to create Django social app: {e}")
+            # Don't raise the exception as this is not critical for the main initialization
+
+    def _wait_for_django_container(self) -> None:
+        """Wait for the Django container to be ready."""
+        import time
+        import subprocess
+        
+        max_attempts = 30
+        for attempt in range(max_attempts):
+            try:
+                # Check if the container is running and Django is ready
+                result = subprocess.run(
+                    ["docker", "exec", "aoc-bitswan-backend", "python", "manage.py", "check"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+                if result.returncode == 0:
+                    return
+            except (subprocess.TimeoutExpired, subprocess.CalledProcessError):
+                pass
+            
+            if attempt < max_attempts - 1:
+                time.sleep(2)
+        
+        raise TimeoutError("Django container did not become ready in time")

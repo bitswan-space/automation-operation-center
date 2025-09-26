@@ -391,7 +391,7 @@ async def execute_init(config: InitConfig) -> None:
     Admin password: {admin_password}"""
 
         # Build AOC admin info section
-        admin_password = get_admin_password_from_secrets(config)
+        admin_password = get_secret_from_file(config, "ADMIN_PASSWORD")
         aoc_admin_info = f"""
     AOC Admin:
     Admin user: {config.admin_email}
@@ -460,7 +460,7 @@ def setup_keycloak(config: InitConfig) -> None:
         
     keycloak_config = KeycloakConfig(
         admin_username=config.admin_email,
-        admin_password=get_admin_password_from_secrets(config),
+        admin_password=get_secret_from_file(config, "ADMIN_PASSWORD"),
         aoc_dir=config.aoc_dir,
         org_name=config.org_name,
         env=config.env,
@@ -483,14 +483,16 @@ def setup_influxdb(config: InitConfig) -> None:
     influxdb.setup()
 
 
-def get_admin_password_from_secrets(config: InitConfig) -> str:
-    """Get the admin password from the secrets file."""
+def get_secret_from_file(config: InitConfig, key: str) -> str:
+    """Get a secret value from the secrets file."""
     secrets_file = config.aoc_dir / "secrets.json"
     if secrets_file.exists():
         with open(secrets_file, "r") as f:
             secrets = json.load(f)
-        return secrets.get("ADMIN_PASSWORD", "")
+        return secrets.get(key, "")
     return ""
+
+
 
 
 def generate_secrets(vars: Dict[str, str]) -> Dict[str, str]:

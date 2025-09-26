@@ -1,5 +1,5 @@
 #!/bin/bash
-python /app/manage.py collectstatic --noinput
-python /app/manage.py migrate
+uv run python /app/manage.py collectstatic --noinput
+uv run python /app/manage.py migrate
 
-exec /usr/local/bin/gunicorn config.asgi --bind 0.0.0.0:8000 --chdir=/app -k uvicorn.workers.UvicornWorker
+exec uv run gunicorn config.asgi --bind 0.0.0.0:8000 --chdir=/app -k uvicorn.workers.UvicornWorker
