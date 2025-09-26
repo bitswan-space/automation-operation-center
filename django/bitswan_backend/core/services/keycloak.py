@@ -80,8 +80,15 @@ class KeycloakService:
             )
 
     def validate_token(self, token):
+        # Get the public key from Keycloak
+        public_key = self.keycloak.public_key()
+        
+        # Format the public key for use with decode_token
+        formatted_public_key = f"-----BEGIN PUBLIC KEY-----\n{public_key}\n-----END PUBLIC KEY-----"
+        
         result = self.keycloak.decode_token(
             token,
+            key=formatted_public_key,
         )
 
         logger.info("Result: %s", result)
