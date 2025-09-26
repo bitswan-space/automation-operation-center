@@ -39,8 +39,8 @@ class AutomationServerViewSet(KeycloakMixin, viewsets.ModelViewSet):
         """
         Check if the user is an admin in the same organization as the automation server
         """
-        # Get the user's organization
-        user_org_id = self.get_org_id()
+        # Get the user's organization from JWT token
+        user_org_id = self.get_active_user_org_id()
         
         # Check if the automation server belongs to the same organization
         if automation_server.keycloak_org_id != user_org_id:
@@ -50,7 +50,7 @@ class AutomationServerViewSet(KeycloakMixin, viewsets.ModelViewSet):
         return self.is_admin(request)
 
     def get_queryset(self):
-        org_id = self.get_org_id()
+        org_id = self.get_active_user_org_id()
         
         # Check if user is admin in the org - admins can see all automation servers
         if self.is_admin(self.request):
@@ -345,8 +345,8 @@ class CreateAutomationServerWithOTPAPIView(KeycloakMixin, APIView):
         """
         Check if the user is an admin in the same organization as the automation server
         """
-        # Get the user's organization
-        user_org_id = self.get_org_id()
+        # Get the user's organization from JWT token
+        user_org_id = self.get_active_user_org_id()
         
         # Check if the automation server belongs to the same organization
         if automation_server.keycloak_org_id != user_org_id:
@@ -370,8 +370,8 @@ class CreateAutomationServerWithOTPAPIView(KeycloakMixin, APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Get the user's organization
-        org_id = self.get_org_id()
+        # Get the user's organization from JWT token
+        org_id = self.get_active_user_org_id()
         
         # Check if automation server with this name already exists in the org
         existing_server = AutomationServer.objects.filter(
@@ -489,8 +489,8 @@ class CheckOTPStatusAPIView(KeycloakMixin, APIView):
         """
         Check if the user is an admin in the same organization as the automation server
         """
-        # Get the user's organization
-        user_org_id = self.get_org_id()
+        # Get the user's organization from JWT token
+        user_org_id = self.get_active_user_org_id()
         
         # Check if the automation server belongs to the same organization
         if automation_server.keycloak_org_id != user_org_id:

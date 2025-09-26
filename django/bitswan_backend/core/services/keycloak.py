@@ -46,8 +46,17 @@ class KeycloakService:
         self.keycloak_admin = KeycloakAdmin(connection=self.keycloak_connection)
 
     def get_claims(self, request):
-        token = request.headers.get("authorization", "").split("Bearer ")[-1]
-
+        auth_header = request.headers.get("authorization", "")
+        if not auth_header.startswith("Bearer "):
+            logger.error("Invalid authorization header format: %s", auth_header)
+            return None
+            
+        token = auth_header.split("Bearer ")[-1]
+        if not token:
+            logger.error("No token found in authorization header")
+            return None
+            
+        logger.info("Extracted token: %s", token[:50] + "..." if len(token) > 50 else token)
         return self.validate_token(token)
 
     def decrypt_token(self, encrypted_token, iv, tag):
@@ -80,20 +89,27 @@ class KeycloakService:
             )
 
     def validate_token(self, token):
-        # Get the public key from Keycloak
-        public_key = self.keycloak.public_key()
-        
-        # Format the public key for use with decode_token
-        formatted_public_key = f"-----BEGIN PUBLIC KEY-----\n{public_key}\n-----END PUBLIC KEY-----"
-        
-        result = self.keycloak.decode_token(
-            token,
-            key=formatted_public_key,
-        )
+        try:
+            # Get the public key from Keycloak
+            public_key = self.keycloak.public_key()
+            
+            # Format the public key for use with decode_token
+            formatted_public_key = f"-----BEGIN PUBLIC KEY-----\n{public_key}\n-----END PUBLIC KEY-----"
+            
+            logger.info("Token length: %d", len(token))
+            logger.info("Token starts with: %s", token[:20] if len(token) > 20 else token)
+            
+            result = self.keycloak.decode_token(
+                token,
+                key=formatted_public_key,
+            )
 
-        logger.info("Result: %s", result)
-
-        return result
+            logger.info("Token validation successful")
+            return result
+        except Exception as e:
+            logger.error("Token validation failed: %s", str(e))
+            logger.error("Token content: %s", token)
+            return None
 
     def get_keycloak_org_groups(self, keycloak_groups):
         return [
