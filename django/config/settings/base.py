@@ -315,7 +315,24 @@ CORS_URLS_REGEX = r"^/api/.*$"
 # See more configuration options at https://drf-spectacular.readthedocs.io/en/latest/settings.html#settings
 SPECTACULAR_SETTINGS = {
     "TITLE": "Bitswan Backend API",
-    "DESCRIPTION": "Documentation of API endpoints of Bitswan Backend",
+    "DESCRIPTION": """
+# Documentation of API endpoints of Bitswan Backend
+
+## CLI Integration Guide
+
+For connecting automation servers using the new OTP-based authentication system, see our comprehensive guide:
+
+**[📖 CLI Integration Documentation](/api/docs/cli-integration/)**
+
+This guide includes:
+- Complete API endpoint documentation
+- CLI usage examples and workflows
+- Security considerations and best practices
+- Troubleshooting and error handling
+- Migration notes and implementation details
+
+---
+    """,
     "VERSION": "1.0.0",
     "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
     "COMPONENT_SPLIT_REQUEST": True,

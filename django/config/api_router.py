@@ -9,6 +9,7 @@ from bitswan_backend.users.api.views import UserViewSet
 from bitswan_backend.core.views.workspaces import AutomationServerViewSet
 from bitswan_backend.core.views.workspaces import WorkspaceViewSet
 from bitswan_backend.core.urls.workspaces import urlpatterns as workspaces_urlpatterns
+from bitswan_backend.core.urls.automation_server import urlpatterns as automation_server_urlpatterns
 
 router = DefaultRouter() if settings.DEBUG else SimpleRouter()
 
@@ -26,4 +27,4 @@ router.register(
 
 
 app_name = "api"
-urlpatterns = router.urls + workspaces_urlpatterns
+urlpatterns = router.urls + workspaces_urlpatterns + automation_server_urlpatterns

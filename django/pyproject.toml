@@ -57,6 +57,7 @@ dependencies = [
     "debugpy==1.8.1",
     "setuptools==74.1.2",
     "paho-mqtt==1.6.1",
+    "markdown==3.5.1",
     
     # ASGI server
     "uvicorn[standard]==0.27.1",

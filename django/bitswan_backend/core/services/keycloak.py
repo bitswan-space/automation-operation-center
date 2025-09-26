@@ -406,21 +406,6 @@ class KeycloakService:
 
         return group_id in [group["id"] for group in user_group_memberships]
 
-    def start_device_registration(self):
-        return self.keycloak.device()
-
-    def poll_device_registration(self, device_code):
-        try:
-            return self.keycloak.token(
-                grant_type="urn:ietf:params:oauth:grant-type:device_code",
-                device_code=device_code,
-            )
-        except KeycloakPostError as e:
-            # Return the error response body if available
-            body = json.loads(e.response_body)
-            body["status_code"] = e.response_code
-            return body
-
     def get_token_from_token(self, request):
         # TODO: change scope if needed
         token = request.headers.get("Authorization", "").split("Bearer ")[-1]
