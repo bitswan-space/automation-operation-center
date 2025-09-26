@@ -4,7 +4,7 @@ import json
 import logging
 
 from bitswan_backend.core.services.keycloak import KeycloakService
-from bitswan_backend.workspaces.api.services import create_token
+from bitswan_backend.core.utils.mqtt import create_mqtt_token as create_token
 
 logger = logging.getLogger(__name__)
 

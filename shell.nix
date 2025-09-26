@@ -2,11 +2,11 @@ let pkgs = import <nixpkgs> {};
 
 in pkgs.mkShell {
     buildInputs = with pkgs; [
-        python310
-        python310Packages.setuptools
-        python310Packages.pip
-        python310Packages.virtualenv
-        python310Packages.wheel
+        python313
+        python313Packages.setuptools
+        python313Packages.pip
+        python313Packages.virtualenv
+        python313Packages.wheel
         pnpm
     ];
 
