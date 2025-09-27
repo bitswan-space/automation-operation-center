@@ -1,9 +1,8 @@
 import { type PipelineStat } from "@/types";
 import React from "react";
-// import { env } from "@/env.mjs";
 import { handleError } from "@/utils/errors";
 
-const API_BASE_URL = "/api/frontend";
+const API_BASE_URL = "/api";
 
 export const usePipelineStats = () => {
   const [data, setData] = React.useState<PipelineStat[]>([]);

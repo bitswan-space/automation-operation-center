@@ -6,6 +6,7 @@ import { ReactFlowProvider } from '@xyflow/react';
 import { Toaster } from '@/components/ui/sonner';
 
 import { AuthProvider } from '@/context/AuthContext';
+import { MQTTTokensProvider } from '@/context/MQTTTokensProvider';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import LoginPage from '@/pages/LoginPage';
 import AuthCallbackPage from '@/pages/AuthCallbackPage';
@@ -30,7 +31,8 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ReactFlowProvider>
         <AuthProvider>
-          <Router>
+          <MQTTTokensProvider>
+            <Router>
             <Routes>
               {/* Public routes */}
               <Route path="/login" element={<LoginPage />} />
@@ -70,10 +72,11 @@ function App() {
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
-          </Router>
-          
-          <Toaster />
-          <ReactQueryDevtools initialIsOpen={false} />
+            </Router>
+            
+            <Toaster />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </MQTTTokensProvider>
         </AuthProvider>
       </ReactFlowProvider>
     </QueryClientProvider>

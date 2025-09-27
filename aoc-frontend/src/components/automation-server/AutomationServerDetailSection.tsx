@@ -49,16 +49,6 @@ export function AutomationServerDetailSection(
   const { automationServers, isLoading } = useAutomations();
   const { user } = useAuth();
 
-  if (!server) {
-    navigate("/automation-servers");
-    return null;
-  } else {
-    server.is_connected = true;
-  }
-
-  const automationServerPipelines =
-    automationServers[server?.automation_server_id ?? ""];
-
   const workspaces = React.useMemo(
     () =>
       server?.workspaces?.map((workspace) => ({
@@ -93,6 +83,16 @@ export function AutomationServerDetailSection(
     },
     [server, groupsList],
   );
+
+  if (!server) {
+    navigate("/automation-servers");
+    return null;
+  } else {
+    server.is_connected = true;
+  }
+
+  const automationServerPipelines =
+    automationServers[server?.automation_server_id ?? ""];
 
   return (
     <div className="container mx-auto flex-1 px-0 py-4">
@@ -239,7 +239,7 @@ export function AutomationServerDetailSection(
                           {workspace.editor_url && (
                             <a href={workspace.editor_url} target="_blank" rel="noopener noreferrer">
                               <Button variant="outline" size="icon">
-                                <VscVscode size={20} />
+                                {VscVscode({ size: 20 })}
                               </Button>
                             </a>
                           )}
