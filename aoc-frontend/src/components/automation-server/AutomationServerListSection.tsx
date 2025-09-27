@@ -22,7 +22,33 @@ export function AutomationServerListSection(
   const { servers } = props;
   const { automationServers: automationServersGroup, isLoading } = useAutomations();
 
+  // Construct API URL for CLI commands (base backend URL without /api/frontend)
+  const currentHost = window.location.hostname;
+  const protocol = window.location.protocol;
+  const backendHost = currentHost.replace(/^aoc\./, 'api.');
+  const apiUrl = `${protocol}//${backendHost}/`;
+
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [highlightedServerId, setHighlightedServerId] = React.useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+
+  // Handle server creation callback
+  const handleServerCreated = (serverId: string) => {
+    setHighlightedServerId(serverId);
+    // Remove highlighting after 5 seconds
+    setTimeout(() => {
+      setHighlightedServerId(null);
+    }, 5000);
+    
+    // Refresh the page to show the new server
+    window.location.reload();
+  };
+
+  // Handle refresh
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    window.location.reload();
+  };
 
   const filteredServers = servers.filter((server) =>
     server.name.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -42,14 +68,26 @@ export function AutomationServerListSection(
           />
         </div>
         <div className="flex gap-2">
-          <ConnectAutomationServerModal apiUrl={process.env.REACT_APP_BITSWAN_BACKEND_API_URL ?? ""}>
+          <ConnectAutomationServerModal 
+            apiUrl={apiUrl}
+            onServerCreated={handleServerCreated}
+          >
             <Button className="bg-blue-600 hover:bg-blue-700">
               <Plus size={20} className="mr-2" />
               Connect Automation Server
             </Button>
           </ConnectAutomationServerModal>
-          <Button className="bg-blue-600 hover:bg-blue-700">
-            <RotateCcw size={20} /> Refresh
+          <Button 
+            className="bg-blue-600 hover:bg-blue-700"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+          >
+            {isRefreshing ? (
+              <Loader2 size={20} className="animate-spin" />
+            ) : (
+              <RotateCcw size={20} />
+            )}
+            Refresh
           </Button>
         </div>
       </div>
@@ -60,12 +98,18 @@ export function AutomationServerListSection(
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredServers.map((server) => (
-            <Link
-              key={server.id}
-              to={`/dashboard/automation-servers/${server.automation_server_id}`}
-            >
-              <Card className="overflow-hidden rounded-md border-gray-200 shadow-sm transition-shadow hover:shadow">
+          {filteredServers.map((server) => {
+            const isHighlighted = highlightedServerId === server.automation_server_id;
+            return (
+              <Link
+                key={server.id}
+                to={`/dashboard/automation-servers/${server.automation_server_id}`}
+              >
+                <Card className={`overflow-hidden rounded-md border-gray-200 shadow-sm transition-all duration-500 hover:shadow ${
+                  isHighlighted 
+                    ? 'ring-2 ring-green-500 ring-opacity-50 bg-green-50 border-green-200' 
+                    : ''
+                }`}>
                 <CardContent className="p-0">
                   <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-3">
                     <div className="flex items-center">
@@ -133,7 +177,8 @@ export function AutomationServerListSection(
                 </CardContent>
               </Card>
             </Link>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
