@@ -12,7 +12,7 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 
-import { Cog, Server, LayoutDashboard, Table, Network } from "lucide-react";
+import { Cog, Server, LayoutDashboard, Table, Network, Settings } from "lucide-react";
 import NavTreeView from "./NavTreeView";
 import { SidebarFooterMenu } from "./SidebarFooterMenu";
 import { SidebarMenuLogo } from "./SidebarMenuLogo";
@@ -91,6 +91,14 @@ export function AppSidebar(props: AppSidebarProps) {
                   <Link to={"/automations"}>
                     <Cog />
                     <span>{"Automations"}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem key={"settings"}>
+                <SidebarMenuButton asChild>
+                  <Link to={"/settings"}>
+                    <Settings />
+                    <span>{"Settings"}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

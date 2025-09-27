@@ -120,11 +120,13 @@ type UserDetailTableProps = {
 export function UserDetailTable(props: UserDetailTableProps) {
   const { usersList: orgUsers, userGroups } = props;
   const navigate = useNavigate();
-  const searchParams = useSearchParams();
-  const page = searchParams?.get("page") ?? "1";
+  const [searchParams] = useSearchParams();
+  const page = searchParams.get("page") ?? "1";
 
   const { user: session } = useAuth();
   const hasPerms = canMutateUsers(session);
+
+  console.log('UserDetailTable received data:', { orgUsers, userGroups });
 
   const orgUsersData = React.useMemo(
     () =>
@@ -137,6 +139,8 @@ export function UserDetailTable(props: UserDetailTableProps) {
       })) ?? [],
     [orgUsers, userGroups],
   );
+
+  console.log('Processed users data:', orgUsersData);
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(

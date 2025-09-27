@@ -1,45 +1,50 @@
-"use client";
-
 import { Settings, Ungroup, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-import { GroupDetailTable } from "../groups/GroupDetailTable";
+import { GroupDetailTable } from "@/components/groups/GroupDetailTable";
 
 import React from "react";
 import { SwitchForm } from "./EditModeForm";
 import { UserDetailTable } from "../users/UserDetailTable";
 import { type UserGroupsListResponse } from "@/data/groups";
-import { useQueryState } from "nuqs";
 import { type OrgUsersListResponse } from "@/data/users";
-// import { env } from "@/env.mjs";
 
 type SettingTabsProps = {
   groupsList?: UserGroupsListResponse;
   usersList?: OrgUsersListResponse;
 };
 
-type SettingTab = "users" | "groups";
+type SettingTab = "users" | "groups" | "general";
 
 export function SettingTabs(props: SettingTabsProps) {
   const { groupsList, usersList } = props;
   
   // Check if experimental features should be shown
-  const showExperimental = false; // env.NEXT_PUBLIC_BITSWAN_EXPERIMENTAL?.toLowerCase() === 'true';
-
-  const [activeTabParam, setActiveTabParam] = useQueryState("activeTab", {
-    defaultValue: showExperimental ? "general" : "users",
-  });
+  const showExperimental = process.env.REACT_APP_BITSWAN_EXPERIMENTAL?.toLowerCase() === 'true';
 
   const [activeTab, setActiveTab] = useState<SettingTab>(
-    activeTabParam as SettingTab,
+    showExperimental ? "general" : "users",
   );
+
+  // Update URL when tab changes
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('activeTab', activeTab);
+    window.history.replaceState({}, '', url.toString());
+  }, [activeTab]);
+
+  // Read initial tab from URL
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const tabFromUrl = url.searchParams.get('activeTab') as SettingTab;
+    if (tabFromUrl && (tabFromUrl === 'users' || tabFromUrl === 'groups' || tabFromUrl === 'general')) {
+      setActiveTab(tabFromUrl);
+    }
+  }, []);
 
   const handleTabChange = (tab: SettingTab) => {
     setActiveTab(tab);
-    setActiveTabParam(tab).catch((error) => {
-      console.error(error);
-    });
   };
 
   return (
