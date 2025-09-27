@@ -239,7 +239,7 @@ export function AutomationServerDetailSection(
                           {workspace.editor_url && (
                             <a href={workspace.editor_url} target="_blank" rel="noopener noreferrer">
                               <Button variant="outline" size="icon">
-                                {VscVscode({ size: 20 })}
+                                <VscVscode size={20} />
                               </Button>
                             </a>
                           )}
