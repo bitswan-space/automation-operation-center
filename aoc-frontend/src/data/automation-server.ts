@@ -56,3 +56,18 @@ export async function getAutomationServers() {
 
   return res.data as AutomationServerListResponse;
 }
+
+export async function deleteAutomationServer(serverId: string) {
+  const bitswanBEInstance = await authenticatedBitswanBackendInstance();
+
+  const activeOrg = await getActiveOrgFromCookies();
+
+  const res = await bitswanBEInstance.post(`/automation-servers/${serverId}/delete/`, {}, {
+    headers: {
+      "X-Org-Id": activeOrg?.id ?? "",
+      "X-Org-Name": activeOrg?.name ?? "",
+    },
+  });
+
+  return res.data;
+}

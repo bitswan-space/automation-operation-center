@@ -103,7 +103,7 @@ export function AutomationServerListSection(
             return (
               <Link
                 key={server.id}
-                to={`/dashboard/automation-servers/${server.automation_server_id}`}
+                to={`/automation-servers/${server.automation_server_id}`}
               >
                 <Card className={`overflow-hidden rounded-md border-gray-200 shadow-sm transition-all duration-500 hover:shadow ${
                   isHighlighted 

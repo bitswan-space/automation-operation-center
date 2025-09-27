@@ -60,7 +60,7 @@ export function AppSidebar(props: AppSidebarProps) {
               </SidebarMenuItem>
               <SidebarMenuItem key={"automation-servers"}>
                 <SidebarMenuButton asChild>
-                  <Link to={"/dashboard/automation-servers"}>
+                  <Link to={"/automation-servers"}>
                     <Server />
                     <span>{"Servers"}</span>
                   </Link>
@@ -88,7 +88,7 @@ export function AppSidebar(props: AppSidebarProps) {
               )}
               <SidebarMenuItem key={"automations"}>
                 <SidebarMenuButton asChild>
-                  <Link to={"/dashboard/automations"}>
+                  <Link to={"/automations"}>
                     <Cog />
                     <span>{"Automations"}</span>
                   </Link>
