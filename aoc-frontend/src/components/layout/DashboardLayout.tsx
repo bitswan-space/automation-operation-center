@@ -12,29 +12,27 @@ import { AutomationsProvider } from "@/context/AutomationsProvider";
 import { SidebarItemsProvider } from "@/context/SideBarItemsProvider";
 import { Toaster } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import { useMQTTTokens } from "@/context/MQTTTokensProvider";
 import { fetchOrgs, getActiveOrgFromCookies } from "@/data/organisations";
-import { getMQTTTokens } from "@/data/mqtt";
 import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 
 export default function DashboardLayout() {
   const { user } = useAuth();
+  const { tokens } = useMQTTTokens();
   const [orgs, setOrgs] = useState<any[]>([]);
   const [activeOrg, setActiveOrg] = useState<any>();
-  const [tokens, setTokens] = useState<any[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [orgsData, activeOrgData, tokensData] = await Promise.all([
+        const [orgsData, activeOrgData] = await Promise.all([
           fetchOrgs(),
           getActiveOrgFromCookies(),
-          getMQTTTokens(),
         ]);
         
         setOrgs(orgsData?.results ?? []);
         setActiveOrg(activeOrgData);
-        setTokens(tokensData);
       } catch (error) {
         console.error("Error loading dashboard data:", error);
       }

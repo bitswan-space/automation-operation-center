@@ -1,19 +1,10 @@
-"use client";
-
-import { type PipelineWithStats, type WorkspaceTopologyResponse } from "@/types";
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
-import { useMQTTRequestResponse } from "@/shared/hooks/useMQTTRequestResponse";
-import { usePipelineStats } from "@/components/pipeline/hooks/usePipelineStats";
-import { type AutomationServer } from "@/data/automation-server";
-import { getAutomationServersAction } from "@/data/automation-servers";
-import { type TokenData } from "@/data/mqtt";
+import React, { createContext, useContext, useRef, useState, useEffect, ReactNode } from 'react';
+import { useMQTTRequestResponse } from '@/shared/hooks/useMQTTRequestResponse';
+import { usePipelineStats } from '@/components/pipeline/hooks/usePipelineStats';
+import { type AutomationServer } from '@/data/automation-server';
+import { getAutomationServersAction } from '@/data/automation-servers';
+import { type TokenData } from '@/data/mqtt';
+import { type PipelineWithStats, type WorkspaceTopologyResponse } from '@/types';
 
 type WorkspaceGroup = {
   workspaceId: string;
@@ -24,7 +15,7 @@ type WorkspaceGroup = {
 type AutomationServerGroup = {
   serverId: string;
   workspaces: Record<string, WorkspaceGroup>;
-  pipelines: PipelineWithStats[]; // All pipelines in this server across workspaces
+  pipelines: PipelineWithStats[];
 };
 
 type AutomationsGroups = {
@@ -33,125 +24,136 @@ type AutomationsGroups = {
   isLoading: boolean;
 };
 
-const AutomationsContext = createContext<AutomationsGroups | null>(null);
+// Global state that persists across component unmounts
+let globalAutomationsState: AutomationsGroups = {
+  all: [],
+  automationServers: {},
+  isLoading: true,
+};
 
-export const AutomationsProvider = ({ children, tokens }: { children: ReactNode, tokens: TokenData[] }) => {
-  const pipelineStats = usePipelineStats();
+let globalWorkspaces: Record<string, WorkspaceGroup> = {};
+let globalAutomationServers: Record<string, AutomationServer> = {};
+let globalAutomationServersAreFetched = false;
+let globalPipelineStats: any[] = [];
 
-  // Keep track of all workspaces and their pipelines
-  const [automationServers, setAutomationServers] = useState<
-    Record<string, AutomationServer>
-  >({});
-  const [automationServersAreFetched, setAutomationServersAreFetched] =
-    useState(false);
-  const [workspaces, setWorkspaces] = useState<Record<string, WorkspaceGroup>>(
-    {},
-  );
-  const [isLoading, setIsLoading] = useState(true);
+// Global MQTT connection manager
+class GlobalMQTTManager {
+  private connections: Map<string, any> = new Map();
+  private subscriptions: Map<string, any> = new Map();
+  private isConnected = false;
 
-  const { response: workspaceTopology, automationServerId, workspaceId } =
-    useMQTTRequestResponse<WorkspaceTopologyResponse>({
-      requestTopic: `/topology/subscribe`,
-      responseTopic: `/topology`,
-      tokens: tokens,
-    });
-
-  // Fetch automation servers data
-  useEffect(() => {
-    const fetchAutomationServers = async () => {
-      try {
-        const servers = await getAutomationServersAction();
-        const serversMap = servers.reduce(
-          (acc, server) => {
-            acc[server.automation_server_id] = server;
-            return acc;
-          },
-          {} as Record<string, AutomationServer>,
-        );
-        setAutomationServers(serversMap);
-        setAutomationServersAreFetched(true);
-      } catch (error) {
-        setAutomationServersAreFetched(true);
-        console.error("Failed to fetch automation servers:", error);
+  connect(tokens: TokenData[]) {
+    if (this.isConnected) return;
+    
+    console.log('GlobalMQTTManager: Connecting with tokens:', tokens);
+    
+    tokens.forEach(tokenData => {
+      if (!tokenData.token || !tokenData.automation_server_id || !tokenData.workspace_id) {
+        console.warn("Invalid token data, skipping MQTT connection:", tokenData);
+        return;
       }
+
+      const connectionKey = `${tokenData.automation_server_id}-${tokenData.workspace_id}`;
+      
+      if (this.connections.has(connectionKey)) {
+        console.log('GlobalMQTTManager: Connection already exists for:', connectionKey);
+        return;
+      }
+
+      console.log("GlobalMQTTManager: Connecting to MQTT with token for server:", tokenData.automation_server_id);
+      
+      // Use dynamic host based on current location
+      const currentHost = window.location.hostname;
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      
+      // Replace subdomain with 'mqtt' for MQTT broker connection
+      const mqttHostname = currentHost.replace(/^[^.]+\./, 'mqtt.');
+      const mqttHost = `${protocol}//${mqttHostname}/mqtt`;
+
+      // Import mqtt dynamically to avoid SSR issues
+      import('mqtt').then((mqtt) => {
+        const client = mqtt.default.connect(mqttHost, {
+          clientId: "bitswan-poc" + Math.random().toString(16).substring(2, 8),
+          clean: true,
+          reconnectPeriod: 60,
+          connectTimeout: 30 * 1000,
+          username: "bitswan-frontend",
+          password: tokenData.token,
+        });
+
+        client.on("connect", () => {
+          console.log("GlobalMQTTManager: Connection successful for", connectionKey);
+          this.isConnected = true;
+          
+          // Subscribe to topology
+          const requestTopic = `/topology/subscribe`;
+          const responseTopic = `/topology`;
+          
+          client.publish(requestTopic, JSON.stringify({ count: 1 }), { qos: 0 });
+          client.subscribe(responseTopic, { qos: 0 });
+          
+          this.connections.set(connectionKey, client);
+          this.subscriptions.set(connectionKey, { requestTopic, responseTopic });
+        });
+
+        client.on("error", (err) => {
+          console.error("GlobalMQTTManager: Connection error:", err);
+        });
+
+        client.on("message", (topic, message) => {
+          if (topic === `/topology`) {
+            try {
+              const data = JSON.parse(message.toString()) as WorkspaceTopologyResponse;
+              this.handleTopologyMessage(data, tokenData.automation_server_id, tokenData.workspace_id);
+            } catch (error) {
+              console.error("GlobalMQTTManager: Failed to parse topology message:", error);
+            }
+          }
+        });
+      });
+    });
+  }
+
+  private handleTopologyMessage(
+    workspaceTopology: WorkspaceTopologyResponse,
+    automationServerId: string,
+    workspaceId: string
+  ) {
+    console.log('GlobalMQTTManager: Received topology message for', automationServerId, workspaceId);
+    
+    // Get the automation server name
+    const automationServer = globalAutomationServers[automationServerId];
+    const automationServerName = automationServer?.name ?? automationServerId;
+
+    // Process pipelines for this workspace
+    const workspacePipelines = Object.entries(
+      workspaceTopology.topology ?? {},
+    ).map(([_, value]) => ({
+      _key: value.properties["container-id"],
+      ...value,
+      pipelineStat:
+        globalPipelineStats?.filter((stat) =>
+          value.properties["deployment-id"].startsWith(stat.deployment_id),
+        ) || [],
+      automationServerId,
+      automationServerName,
+      workspaceId,
+    }));
+
+    // Update global workspaces state
+    globalWorkspaces[workspaceId] = {
+      workspaceId,
+      automationServerId,
+      pipelines: workspacePipelines,
     };
 
-    void fetchAutomationServers();
-  }, []);
+    // Update global automations state
+    this.updateGlobalAutomationsState();
+  }
 
-  useEffect(() => {
-    if (!automationServersAreFetched) return;
-
-    // Calculate expected workspaces from automation servers
-    const expectedWorkspaces = Object.values(automationServers).reduce(
-      (total, server) => {
-        return total + (server.workspaces?.length ?? 0);
-      },
-      0,
-    );
-
-    // Count all loaded workspaces
-    const loadedWorkspaces = Object.keys(workspaces).length;
-
-    // Set isLoading to false when all expected workspaces are loaded
-    if (loadedWorkspaces >= expectedWorkspaces) {
-      setIsLoading(false);
-    }
-  }, [workspaces, automationServers, automationServersAreFetched]);
-
-  // Timer to automatically unset isLoading after 10 seconds
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 10000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Update workspaces when we receive new topology
-  useEffect(() => {
-    if (
-      workspaceTopology &&
-      workspaceId &&
-      automationServerId
-    ) {
-      // Get the automation server name
-      const automationServer = automationServers[automationServerId];
-      const automationServerName = automationServer?.name ?? automationServerId;
-
-      // Process pipelines for this workspace
-      // This creates a new array of pipelines that represents the current state of the workspace
-      const workspacePipelines = Object.entries(
-        workspaceTopology.topology ?? {},
-      ).map(([_, value]) => ({
-        _key: value.properties["container-id"],
-        ...value,
-        pipelineStat:
-          pipelineStats?.filter((stat) =>
-            value.properties["deployment-id"].startsWith(stat.deployment_id),
-          ) || [],
-        automationServerId,
-        automationServerName,
-        workspaceId,
-      }));
-
-      // Update workspaces state by replacing the entire workspace entry
-      // This ensures we only keep the current state of the workspace's pipelines
-      setWorkspaces((prev) => ({
-        ...prev,
-        [workspaceId]: {
-          workspaceId,
-          automationServerId,
-          pipelines: workspacePipelines, // Replace entire pipeline list with current state
-        },
-      }));
-    }
-  }, [workspaceTopology, workspaceId, automationServerId, pipelineStats, automationServers]);
-
-  // Derive automation servers and all lists from workspaces
-  const automations = useMemo(() => {
+  private updateGlobalAutomationsState() {
     // First, group workspaces by server to build the server structure
-    const serverGroups = Object.values(workspaces).reduce(
+    const serverGroups = Object.values(globalWorkspaces).reduce(
       (acc, workspace) => {
         const { automationServerId } = workspace;
 
@@ -182,12 +184,102 @@ export const AutomationsProvider = ({ children, tokens }: { children: ReactNode,
       allPipelines.push(...server.pipelines);
     });
 
-    return {
+    globalAutomationsState = {
       all: allPipelines,
       automationServers: serverGroups,
-      isLoading,
+      isLoading: false,
     };
-  }, [workspaces, isLoading]);
+
+    // Notify all listeners
+    this.notifyListeners();
+  }
+
+  private listeners: Set<() => void> = new Set();
+
+  addListener(callback: () => void) {
+    this.listeners.add(callback);
+  }
+
+  removeListener(callback: () => void) {
+    this.listeners.delete(callback);
+  }
+
+  private notifyListeners() {
+    this.listeners.forEach(callback => callback());
+  }
+
+  disconnect() {
+    this.connections.forEach((client) => {
+      client.end();
+    });
+    this.connections.clear();
+    this.subscriptions.clear();
+    this.isConnected = false;
+  }
+}
+
+const globalMQTTManager = new GlobalMQTTManager();
+
+const AutomationsContext = createContext<AutomationsGroups | null>(null);
+
+export const AutomationsProvider = ({ children, tokens }: { children: ReactNode, tokens: TokenData[] }) => {
+  const [automations, setAutomations] = useState<AutomationsGroups>(globalAutomationsState);
+  const pipelineStats = usePipelineStats();
+
+  // Update global pipeline stats
+  useEffect(() => {
+    globalPipelineStats = pipelineStats;
+  }, [pipelineStats]);
+
+  // Fetch automation servers data (only once)
+  useEffect(() => {
+    if (globalAutomationServersAreFetched) return;
+
+    const fetchAutomationServers = async () => {
+      try {
+        const servers = await getAutomationServersAction();
+        const serversMap = servers.reduce(
+          (acc, server) => {
+            acc[server.automation_server_id] = server;
+            return acc;
+          },
+          {} as Record<string, AutomationServer>,
+        );
+        globalAutomationServers = serversMap;
+        globalAutomationServersAreFetched = true;
+        console.log('GlobalMQTTManager: Automation servers fetched:', serversMap);
+      } catch (error) {
+        globalAutomationServersAreFetched = true;
+        console.error("Failed to fetch automation servers:", error);
+      }
+    };
+
+    void fetchAutomationServers();
+  }, []);
+
+  // Connect to MQTT when tokens are available
+  useEffect(() => {
+    if (tokens && tokens.length > 0) {
+      console.log('AutomationsProvider: Connecting to MQTT with tokens:', tokens);
+      globalMQTTManager.connect(tokens);
+    }
+  }, [tokens]);
+
+  // Listen for global state changes
+  useEffect(() => {
+    const handleStateChange = () => {
+      setAutomations({ ...globalAutomationsState });
+    };
+
+    globalMQTTManager.addListener(handleStateChange);
+    
+    // Set initial state
+    handleStateChange();
+
+    return () => {
+      globalMQTTManager.removeListener(handleStateChange);
+    };
+  }, []);
 
   return (
     <AutomationsContext.Provider value={automations}>

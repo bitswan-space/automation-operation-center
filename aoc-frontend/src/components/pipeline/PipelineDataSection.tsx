@@ -1,11 +1,30 @@
-import React from "react";
+"use client";
 
-// Placeholder component for PipelineDataSection
-export const PipelineDataSection: React.FC = () => {
+import { useAutomations } from "@/context/AutomationsProvider";
+import { Card, CardContent } from "../ui/card";
+
+import { PipelineDataCardList } from "./PipelineDataCardList";
+import { PipelineDataTable } from "./PipelineDataTable";
+
+export function PipelineDataSection() {
+  const { all: pipelines, isLoading } = useAutomations();
+
+  console.log("pipelines", pipelines);
+
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-semibold mb-4">Pipeline Data</h2>
-      <p>Pipeline data will be displayed here.</p>
-    </div>
+    <>
+      <PipelineDataCardList pipelines={pipelines} />
+      <div className="hidden py-4 lg:block">
+        <Card
+          className={
+            "h-full w-full rounded-md border border-slate-300 shadow-sm"
+          }
+        >
+          <CardContent className="p-3">
+             <PipelineDataTable pipelines={pipelines ?? []} isLoading={isLoading} />
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
-};
+}
