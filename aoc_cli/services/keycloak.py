@@ -132,9 +132,23 @@ class KeycloakService:
             "clients": [bitswan_backend_client_id],
         }
 
-        policy = self.keycloak_admin.create_client_authz_client_policy(
-            policy, master_realm_client_id
-        )
+        try:
+            policy = self.keycloak_admin.create_client_authz_client_policy(
+                policy, master_realm_client_id
+            )
+        except KeycloakPostError as e:
+            if e.response_code == 409:
+                click.echo("Policy 'default-token-exchange-policy' already exists, skipping creation")
+                # Find existing policy
+                policies = self.keycloak_admin.get_client_authz_policies(master_realm_client_id)
+                policy = next(
+                    (p for p in policies if p["name"] == "default-token-exchange-policy"),
+                    None
+                )
+                if not policy:
+                    raise ValueError("Could not find existing policy 'default-token-exchange-policy'")
+            else:
+                raise e
 
         scopes = self.keycloak_admin.get_client_authz_scopes(master_realm_client_id)
         token_exchange_scope = next(
@@ -155,9 +169,15 @@ class KeycloakService:
             "scopes": [token_exchange_scope["id"]],
         }
 
-        self.keycloak_admin.create_client_authz_scope_permission(
-            permission, bitswan_backend_client_id
-        )
+        try:
+            self.keycloak_admin.create_client_authz_scope_permission(
+                permission, bitswan_backend_client_id
+            )
+        except KeycloakPostError as e:
+            if e.response_code == 409:
+                click.echo("Permission 'bitswan-backend-token-exchange' already exists, skipping creation")
+            else:
+                raise e
 
         offline_scope = self.keycloak_admin.get_client_scope_by_name("offline_access")
         if offline_scope:
@@ -386,15 +406,49 @@ class KeycloakService:
         # Add admin user to GlobalSuperAdmin group
         self.keycloak_admin.group_user_add(user_id, global_superadmin_group_id)
 
-        org_group_id = self.keycloak_admin.create_group(
-            {"name": self.config.org_name, "attributes": {"type": ["org"]}}
-        )
+        try:
+            org_group_id = self.keycloak_admin.create_group(
+                {"name": self.config.org_name, "attributes": {"type": ["org"]}}
+            )
+        except KeycloakPostError as e:
+            if e.response_code == 409:
+                click.echo(f"Organization group '{self.config.org_name}' already exists, finding existing group")
+                # Find existing group
+                groups = self.keycloak_admin.get_groups()
+                org_group = next(
+                    (g for g in groups if g["name"] == self.config.org_name),
+                    None
+                )
+                if not org_group:
+                    raise ValueError(f"Could not find existing organization group '{self.config.org_name}'")
+                org_group_id = org_group["id"]
+            else:
+                raise e
 
         admin_group_id = self.keycloak_admin.create_group(
             {"name": "admin", "attributes": {"tags": ["view-users"]}},
             parent=org_group_id,
             skip_exists=True,
         )
+
+        # If skip_exists=True and group already exists, admin_group_id will be None
+        # In that case, we need to find the existing group and get its ID
+        if admin_group_id is None:
+            click.echo("Admin group already exists, finding existing group")
+            # Get all groups under the org to find the existing admin group
+            try:
+                org_group = self.keycloak_admin.get_group(org_group_id)
+                sub_groups = org_group.get("subGroups", [])
+                admin_group = next(
+                    (g for g in sub_groups if g["name"] == "admin"),
+                    None
+                )
+                if not admin_group:
+                    raise ValueError("Could not find existing admin group")
+                admin_group_id = admin_group["id"]
+            except Exception as e:
+                click.echo(f"Error finding existing admin group: {e}")
+                raise
 
         self.keycloak_admin.group_user_add(user_id, admin_group_id)
         self.keycloak_admin.group_user_add(user_id, org_group_id)
@@ -447,10 +501,10 @@ class KeycloakService:
         """Get existing GlobalSuperAdmin group ID from secrets.json."""
         try:
             from aoc_cli.commands.init import get_secret_from_file
-            from aoc_cli.env.config import InitConfig
+            from aoc_cli.env.config import InitConfig, Environment
             
             # Create a minimal config object for the helper function
-            config = InitConfig(aoc_dir=self.config.aoc_dir)
+            config = InitConfig(env=self.config.env, aoc_dir=self.config.aoc_dir)
             return get_secret_from_file(config, "KEYCLOAK_GLOBAL_SUPERADMIN_GROUP_ID")
             
         except Exception as e:
@@ -552,10 +606,10 @@ class KeycloakService:
         """Add GlobalSuperAdmin group ID to secrets.json only if not already present."""
         try:
             from aoc_cli.commands.init import get_secret_from_file
-            from aoc_cli.env.config import InitConfig
+            from aoc_cli.env.config import InitConfig, Environment
             
             # Create a minimal config object for the helper function
-            config = InitConfig(aoc_dir=self.config.aoc_dir)
+            config = InitConfig(env=self.config.env, aoc_dir=self.config.aoc_dir)
             
             # Check if already exists
             existing_id = get_secret_from_file(config, "KEYCLOAK_GLOBAL_SUPERADMIN_GROUP_ID")
