@@ -23,6 +23,3 @@ export const authenticatedBitswanBackendInstance = async (
     },
   });
 };
-
-// Create a default apiClient instance
-export const apiClient = authenticatedBitswanBackendInstance();

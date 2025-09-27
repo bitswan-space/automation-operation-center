@@ -17,6 +17,7 @@ import AutomationServerDetailPage from '@/pages/AutomationServerDetailPage';
 import WorkspaceDetailPage from '@/pages/WorkspaceDetailPage';
 import AutomationDetailPage from '@/pages/AutomationDetailPage';
 import AutomationsPage from '@/pages/AutomationsPage';
+import SettingsPage from '@/pages/SettingsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -68,6 +69,15 @@ function App() {
                 </ProtectedRoute>
               }>
                 <Route index element={<AutomationsPage />} />
+              </Route>
+              
+              {/* Settings route */}
+              <Route path="/settings" element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<SettingsPage />} />
               </Route>
               
               {/* Default redirect */}

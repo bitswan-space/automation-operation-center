@@ -59,26 +59,16 @@ export function SwitchForm() {
         </div>
       </div>
       <div className="text-end">
-        <form action={execute}>
-          <input
-            name="id"
-            type="hidden"
-            defaultValue={""}
-          />
-          <input
-            name="name"
-            type="hidden"
-            defaultValue={""}
-          />
-          <input
-            name="nav_items"
-            type="hidden"
-            defaultValue={JSON.stringify(deserializedNavItems)}
-          />
-          <Button type="submit" disabled={!editMode || isPending || !hasPerms}>
-            {isPending ? "Saving..." : "Save"}
-          </Button>
-        </form>
+        <Button 
+          onClick={() => execute({
+            id: "",
+            name: "",
+            nav_items: deserializedNavItems
+          })}
+          disabled={!editMode || isPending || !hasPerms}
+        >
+          {isPending ? "Saving..." : "Save"}
+        </Button>
       </div>
     </div>
   );

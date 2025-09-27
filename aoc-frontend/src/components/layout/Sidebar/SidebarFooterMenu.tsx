@@ -1,18 +1,16 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChevronsUpDown, LogOut, Settings } from "lucide-react";
+import { ChevronsUpDown, LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { Link } from "react-router-dom";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { handleLogout } from "@/lib/auth";
 import { toast } from "sonner";
@@ -73,15 +71,6 @@ export const SidebarFooterMenu = (props: SidebarFooterMenuProps) => {
             </div>
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup className="text-sm">
-          <Link to={"/dashboard/settings"}>
-            <DropdownMenuItem className="text-sm">
-              <Settings size={16} className="mr-2" />
-              Settings
-            </DropdownMenuItem>
-          </Link>
-        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOut size={16} className="mr-2" />
