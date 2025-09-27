@@ -5,10 +5,13 @@ import { type NodeModel } from "@minoru/react-dnd-treeview";
 import {
   deserializeNavItems,
   type RawNavItem,
+  useSerializedNavItemData,
   type NavItem,
 } from "@/components/layout/Sidebar/utils/NavItems";
+import useLocalStorageState from "ahooks/lib/useLocalStorageState";
 
-import { stringify } from "flatted";
+import { ACTIVE_PROFILE_STORAGE_KEY } from "@/shared/constants";
+import { type Profile } from "@/data/profiles";
 
 type SidebarItemsContext = {
   sidebarItems: NodeModel<NavItem>[];
@@ -19,6 +22,19 @@ type SidebarItemsContext = {
 export const SidebarItemsContext =
   React.createContext<SidebarItemsContext | null>(null);
 
+export function useSidebarItemsSource() {
+  const [activeProfile] = useLocalStorageState<Profile | undefined>(
+    ACTIVE_PROFILE_STORAGE_KEY,
+    {
+      listenStorageChange: true,
+    },
+  );
+
+  console.log("activeProfile?.nav_items", activeProfile?.nav_items);
+
+  return useSerializedNavItemData(activeProfile?.nav_items ?? []);
+}
+
 export function useSidebarItems() {
   const context = React.useContext(SidebarItemsContext);
   if (!context) {
@@ -27,25 +43,36 @@ export function useSidebarItems() {
   return context;
 }
 
-// TODO: fix nav items
 export function SidebarItemsProvider({
   children,
 }: React.PropsWithChildren<unknown>) {
+  // Get the initial items
+  const sourceItems = useSidebarItemsSource();
+
   // Use one state instead of updating based on source changes
   const [sidebarItemsState, setSidebarItemsState] = React.useState<
     NodeModel<NavItem>[]
-  >([]);
+  >(() => sourceItems);
 
-  // Only update state when source items actually change
   React.useEffect(() => {
     setSidebarItemsState((prevItems) => {
-      // Optional: Add deep comparison if needed
-      if (stringify(prevItems) !== stringify([])) {
-        return [];
+      // Simple length check first (cheap)
+      if (prevItems.length !== sourceItems.length) {
+        return sourceItems;
       }
-      return prevItems;
+      
+      // Check if the actual data changed (more expensive but safer)
+      const hasChanged = prevItems.some((item, index) => {
+        const sourceItem = sourceItems[index];
+        return !sourceItem || 
+               item.text !== sourceItem.text || 
+               item.data?.href !== sourceItem.data?.href ||
+               item.data?.type !== sourceItem.data?.type;
+      });
+      
+      return hasChanged ? sourceItems : prevItems;
     });
-  }, []);
+  }, [sourceItems]);
 
   const deserializedNavItems = React.useMemo(
     () => deserializeNavItems(sidebarItemsState),

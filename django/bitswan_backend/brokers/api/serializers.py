@@ -12,6 +12,12 @@ from bitswan_backend.brokers.api.service import GroupNavigationService
 logger = logging.getLogger(__name__)
 
 
+class ProfileSerializer(serializers.Serializer):
+    id = serializers.CharField(required=True)
+    name = serializers.CharField(required=True)
+    nav_items = serializers.JSONField(required=False)
+
+
 class OrgSerializer(serializers.Serializer):
     id = serializers.CharField(required=True)
     name = serializers.CharField(required=True)
@@ -74,6 +80,7 @@ class UserGroupSerializer(serializers.Serializer):
     tag_color = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
     active = serializers.BooleanField(required=False)
+    nav_items = serializers.JSONField(required=False, allow_null=True)
 
 
 class CreateUserGroupSerializer(serializers.Serializer):

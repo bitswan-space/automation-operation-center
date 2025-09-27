@@ -18,7 +18,6 @@ import {
 import clsx from "clsx";
 import {
   SidebarMenuButton,
-  SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
@@ -158,8 +157,8 @@ export const SideNavTreeItem = (props: SideNavTreeItemProps) => {
 
   if (!node.droppable) {
     return (
-      <SidebarMenuItem
-        className={clsx(`justify-between`)}
+      <div
+        className={clsx(`group/menu-item relative justify-between flex`)}
         style={{
           marginInlineStart: getMarginLeft(),
         }}
@@ -196,13 +195,13 @@ export const SideNavTreeItem = (props: SideNavTreeItemProps) => {
             navItem={node}
           />
         )}
-      </SidebarMenuItem>
+      </div>
     );
   }
 
   return (
-    <SidebarMenuItem
-      className={clsx(`justify-between`)}
+    <div
+      className={clsx(`group/menu-item relative justify-between flex`)}
       style={{
         marginInlineStart: getMarginLeft(),
       }}
@@ -244,6 +243,6 @@ export const SideNavTreeItem = (props: SideNavTreeItemProps) => {
           navItem={node}
         />
       )}
-    </SidebarMenuItem>
+    </div>
   );
 };
