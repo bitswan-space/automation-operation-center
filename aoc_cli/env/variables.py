@@ -65,7 +65,7 @@ def get_var_defaults(
                 
                 # Service URLs for dev
                 "INFLUXDB_URL": "http://localhost:8086/",
-                "EMQX_MQTT_URL": "ws://localhost:8083/mqtt",
+                "EMQX_MQTT_URL": f"ws://mqtt.{config.domain}/mqtt",
                 "KEYCLOAK_ISSUER": "http://localhost:8080/realms/master",
                 "KEYCLOAK_REFRESH_URL": "http://localhost:8080/realms/master/protocol/openid-connect/token",
                 "KEYCLOAK_END_SESSION_URL": "http://localhost:8080/realms/master/protocol/openid-connect/logout",
