@@ -41,6 +41,10 @@ const WorkspaceDetailPage = () => {
     return <div>Loading...</div>;
   }
 
+  if (!workspace) {
+    return <div>Workspace not found</div>;
+  }
+
   return (
     <div className="w-full">
       <h1 className="text-2xl font-bold text-stone-700 md:hidden">
