@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import { type ReactNode } from "react";
 import { Separator } from "../ui/separator";
 import { Badge } from "../ui/badge";
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { Eye, FileCog } from "lucide-react";
 
 interface PipelineDataCardProps {
@@ -49,7 +49,7 @@ function PipelineDataCard(props: PipelineDataCardProps) {
       <Separator />
       <CardFooter className="px-4 pb-4 pt-4">
         <div className="flex w-full flex-col gap-2">
-          <Link href={`/automation-servers/${automationServerId}/workspaces/${workspaceId}/automations/${id}`} className="w-full">
+          <Link to={`/automation-servers/${automationServerId}/workspaces/${workspaceId}/automations/${id}`} className="w-full">
             <Button className="w-full" variant={"outline"}>
               <Eye size={22} className="mr-2" />
               View

@@ -13,7 +13,7 @@ import {
 import { usePipelineTopology } from "./hooks/usePipelineTopology";
 import { PipelineSummary } from "./PipelineSummary";
 
-import { useRouter, usePathname } from 'next/navigation';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { type TokenData } from "@/data/mqtt";
 
 export interface PipelineDetailTabsProps {
@@ -26,8 +26,8 @@ export interface PipelineDetailTabsProps {
 }
 
 export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
-  const router = useRouter();
-  const pathname = usePathname();
+  const navigate = useNavigate();
+  const pathname = useLocation().pathname;
 
   const { pipeline, pipelineParentIDs, automationServerId, workspaceId, vscode_link, token } = props;
 
@@ -42,7 +42,7 @@ export function PipelineDetailTabs(props: PipelineDetailTabsProps) {
 
   const handlePipelineTopologyClick = () => {
     if (pipelineTopology[0]?.capabilities?.includes("has-children")) {
-      router.push(`${pathname}/${pipelineTopology[0].id}`);
+      navigate(`${pathname}/${pipelineTopology[0].id}`);
     }
     else setSelectedTab("scheme");
   };

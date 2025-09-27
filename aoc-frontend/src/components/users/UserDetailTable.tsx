@@ -3,7 +3,7 @@
 import { UserGroupsBadgeList } from "./UserGroupsBadgeList";
 
 import * as React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   type ColumnDef,
@@ -119,7 +119,7 @@ type UserDetailTableProps = {
 
 export function UserDetailTable(props: UserDetailTableProps) {
   const { usersList: orgUsers, userGroups } = props;
-  const router = useRouter();
+  const navigate = useNavigate();
   const searchParams = useSearchParams();
   const page = searchParams?.get("page") ?? "1";
 
@@ -166,7 +166,7 @@ export function UserDetailTable(props: UserDetailTableProps) {
   });
 
   const handlePageChange = (page: number) => {
-    router.push(`/dashboard/settings?activeTab=users&page=${page}`);
+    navigate(`/settings?activeTab=users&page=${page}`);
   };
 
   return (

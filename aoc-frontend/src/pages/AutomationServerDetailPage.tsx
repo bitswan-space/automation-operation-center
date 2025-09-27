@@ -64,6 +64,6 @@ const AutomationServerDetailPage = () => {
       />
     </div>
   );
-};
+}
 
 export default AutomationServerDetailPage;

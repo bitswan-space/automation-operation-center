@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 
 interface DeleteAutomationServerModalProps {
   children: React.ReactNode;
@@ -32,7 +32,7 @@ export function DeleteAutomationServerModal({
   const [confirmationName, setConfirmationName] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [open, setOpen] = useState(false);
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const isNameValid = confirmationName === serverName;
 
@@ -61,7 +61,7 @@ export function DeleteAutomationServerModal({
 
       // Close modal and redirect
       setOpen(false);
-      router.push("/dashboard/automation-servers");
+      navigate("/automation-servers");
       onDelete?.();
     } catch (error) {
       console.error("Error deleting automation server:", error);
