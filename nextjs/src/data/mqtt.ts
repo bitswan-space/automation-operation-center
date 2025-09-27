@@ -2,6 +2,7 @@
 
 import { authenticatedBitswanBackendInstance } from "@/server/bitswan-backend";
 import { getActiveOrgFromCookies } from "./organisations";
+import { withTokenErrorHandling } from "@/lib/token-error-handler";
 
 export type TokenData = {
   automation_server_id: string;
@@ -14,18 +15,20 @@ type GetMQTTTokensResponse = {
 };
 
 export async function getMQTTTokens() {
-  const bitswanBEInstance = await authenticatedBitswanBackendInstance();
-  const activeOrg = await getActiveOrgFromCookies();
+  return withTokenErrorHandling(async () => {
+    const bitswanBEInstance = await authenticatedBitswanBackendInstance();
+    const activeOrg = await getActiveOrgFromCookies();
 
-  const res = await bitswanBEInstance.get<GetMQTTTokensResponse>(
-    "/frontend/user/emqx/jwts",
-    {
-      headers: {
-        "X-Org-Id": activeOrg?.id ?? "",
-        "X-Org-Name": activeOrg?.name ?? "",
+    const res = await bitswanBEInstance.get<GetMQTTTokensResponse>(
+      "/frontend/user/emqx/jwts",
+      {
+        headers: {
+          "X-Org-Id": activeOrg?.id ?? "",
+          "X-Org-Name": activeOrg?.name ?? "",
+        },
       },
-    },
-  );
+    );
 
-  return res.data?.tokens ?? [];
+    return res.data?.tokens ?? [];
+  });
 }

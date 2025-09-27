@@ -14,6 +14,7 @@ import { Copy, CheckCheck, Server, Loader2, CheckCircle } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { useClipboard } from "use-clipboard-copy";
 import { useSession } from "next-auth/react";
+import { useTokenErrorHandler } from "@/hooks/useTokenErrorHandler";
 
 interface ConnectAutomationServerModalProps {
   children: React.ReactNode;
@@ -27,6 +28,7 @@ export function ConnectAutomationServerModal({
   onServerCreated,
 }: ConnectAutomationServerModalProps) {
   const { data: session } = useSession();
+  const { withTokenErrorHandling } = useTokenErrorHandler();
   const [serverName, setServerName] = useState("");
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
@@ -52,42 +54,44 @@ export function ConnectAutomationServerModal({
   const checkOTPStatus = async () => {
     if (!automationServerId || otpRedeemed || !session?.access_token) return;
 
-    try {
-      const response = await fetch(
-        `${apiUrl}/api/frontend/automation-servers/check-otp-status/?automation_server_id=${automationServerId}`,
-        {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${session.access_token}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.redeemed) {
-          setOtpRedeemed(true);
-          setIsCheckingStatus(false);
-          
-          // Clear the interval
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
+    await withTokenErrorHandling(async () => {
+      try {
+        const response = await fetch(
+          `${apiUrl}/api/frontend/automation-servers/check-otp-status/?automation_server_id=${automationServerId}`,
+          {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${session.access_token}`,
+            },
           }
+        );
 
-          // Close modal after a short delay to show success state
-          setTimeout(() => {
-            setOpen(false);
-            // Call the callback to refresh the automation servers list
-            if (onServerCreated && automationServerId) {
-              onServerCreated(automationServerId);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.redeemed) {
+            setOtpRedeemed(true);
+            setIsCheckingStatus(false);
+            
+            // Clear the interval
+            if (intervalRef.current) {
+              clearInterval(intervalRef.current);
+              intervalRef.current = null;
             }
-          }, 2000);
+
+            // Close modal after a short delay to show success state
+            setTimeout(() => {
+              setOpen(false);
+              // Call the callback to refresh the automation servers list
+              if (onServerCreated && automationServerId) {
+                onServerCreated(automationServerId);
+              }
+            }, 2000);
+          }
         }
+      } catch (err) {
+        console.error("Failed to check OTP status:", err);
       }
-    } catch (err) {
-      console.error("Failed to check OTP status:", err);
-    }
+    });
   };
 
   // Start checking OTP status when OTP is generated
@@ -123,31 +127,33 @@ export function ConnectAutomationServerModal({
     setIsCreating(true);
     setError(null);
 
-    try {
-      const response = await fetch(`${apiUrl}/api/frontend/automation-servers/create-with-otp/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          name: serverName.trim(),
-        }),
-      });
+    await withTokenErrorHandling(async () => {
+      try {
+        const response = await fetch(`${apiUrl}/api/frontend/automation-servers/create-with-otp/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            name: serverName.trim(),
+          }),
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create automation server");
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to create automation server");
+        }
+
+        const data = await response.json();
+        setOtp(data.otp);
+        setAutomationServerId(data.automation_server_id);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to create automation server");
+      } finally {
+        setIsCreating(false);
       }
-
-      const data = await response.json();
-      setOtp(data.otp);
-      setAutomationServerId(data.automation_server_id);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create automation server");
-    } finally {
-      setIsCreating(false);
-    }
+    });
   };
 
   const command = otp && automationServerId 
