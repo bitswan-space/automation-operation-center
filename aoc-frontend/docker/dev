@@ -1,0 +1,11 @@
+#!/bin/sh
+
+echo "🔧 Starting development server with live reload..."
+echo "📦 Installing dependencies if needed..."
+
+# Install dependencies if package.json has changed
+npm install
+
+echo "🔄 Starting React development server..."
+# Start React development server
+exec npm start

@@ -5,3 +5,4 @@ venv/
 deployment/
 venv/
 .venv/
+old-nextjs/

@@ -10,7 +10,7 @@ from rest_framework import status
 from rest_framework import views
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
 
@@ -40,6 +40,7 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
     queryset = Workspace.objects.all()
     serializer_class = WorkspaceSerializer
     authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         org_id = self.get_org_id()

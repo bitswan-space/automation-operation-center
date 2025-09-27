@@ -7,6 +7,7 @@ import uuid
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema, OpenApiParameter
@@ -34,6 +35,7 @@ class AutomationServerViewSet(KeycloakMixin, viewsets.ModelViewSet):
     serializer_class = AutomationServerSerializer
     pagination_class = DefaultPagination
     authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def _is_admin_for_automation_server(self, request, automation_server):
         """
@@ -340,6 +342,7 @@ class CreateAutomationServerWithOTPAPIView(KeycloakMixin, APIView):
     Create an automation server and generate an OTP for CLI registration
     """
     authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def _is_admin_for_automation_server(self, request, automation_server):
         """
@@ -484,6 +487,7 @@ class CheckOTPStatusAPIView(KeycloakMixin, APIView):
     Only admin users can check OTP status.
     """
     authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def _is_admin_for_automation_server(self, request, automation_server):
         """

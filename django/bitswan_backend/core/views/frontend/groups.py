@@ -10,8 +10,10 @@ from keycloak import KeycloakPutError
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from bitswan_backend.core.authentication import KeycloakAuthentication
 from bitswan_backend.core.serializers.groups import CreateOrgSerializer
 from bitswan_backend.core.serializers.groups import CreateUserGroupSerializer
 from bitswan_backend.core.serializers.groups import OrgSerializer
@@ -28,6 +30,8 @@ from bitswan_backend.core.models.automation_server import AutomationServerGroupM
 class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
     pagination_class = DefaultPagination
     group_nav_service = GroupNavigationService()
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def list(self, request):
         try:
@@ -130,6 +134,8 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
 
 class OrgUsersViewSet(KeycloakMixin, viewsets.ViewSet):
     pagination_class = DefaultPagination
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def list(self, request):
         try:
@@ -175,6 +181,8 @@ class OrgUsersViewSet(KeycloakMixin, viewsets.ViewSet):
 
 class OrgViewSet(KeycloakMixin, viewsets.ViewSet):
     pagination_class = DefaultPagination
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def list(self, request):
         try:
