@@ -6,7 +6,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import include, path
 from django.views import defaults as default_views
 from django.views.generic import RedirectView
-from bitswan_backend.core.views.swagger import PublicSwaggerView, PublicSchemaView, AutomationServerDocumentationView
+from bitswan_backend.core.views.swagger import PublicSwaggerView, PublicSchemaView, AutomationServerDocumentationView, AOCArchitectureDocumentationView
 from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
@@ -43,6 +43,11 @@ urlpatterns += [
         "api/docs/automation-server-integration/",
         AutomationServerDocumentationView.as_view(),
         name="automation-server-docs",
+    ),
+    path(
+        "api/docs/architecture/",
+        AOCArchitectureDocumentationView.as_view(),
+        name="aoc-architecture-docs",
     ),
 ]
 

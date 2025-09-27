@@ -304,12 +304,14 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "bitswan_backend.core.authentication.KeycloakAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
 CORS_URLS_REGEX = r"^/api/.*$"
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = False  # We're using CORS_ALLOWED_ORIGINS instead
 
 # By Default swagger ui is available only to admin user(s). You can change permission classes to change that
 # See more configuration options at https://drf-spectacular.readthedocs.io/en/latest/settings.html#settings
@@ -318,9 +320,22 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": """
 # Documentation of API endpoints of Bitswan Backend
 
+## Platform Architecture
+
+For a comprehensive understanding of the AOC platform architecture, including React frontend, Django backend, and deployment patterns:
+
+**[🏗️ AOC Architecture Guide](/api/docs/architecture/)**
+
+This guide covers:
+- React SPA frontend with zero secrets and auto-discovery
+- Django REST backend with comprehensive authentication
+- Docker deployment strategies and development workflows
+- Security patterns and performance optimization
+- Service integration and monitoring approaches
+
 ## Automation Server Integration Guide
 
-For connecting automation servers using the new OTP-based authentication system, see our comprehensive guide:
+For connecting automation servers using the OTP-based authentication system:
 
 **[📖 Automation Server Integration Documentation](/api/docs/automation-server-integration/)**
 
@@ -354,6 +369,9 @@ KEYCLOAK_SERVER_URL = os.environ.get("KEYCLOAK_SERVER_URL")
 KEYCLOAK_FRONTEND_URL = os.environ.get("KEYCLOAK_FRONTEND_URL")
 KEYCLOAK_GLOBAL_SUPERADMIN_GROUP_ID = os.environ.get("KEYCLOAK_GLOBAL_SUPERADMIN_GROUP_ID")
 
+# Frontend application URL for OAuth redirects
+FRONTEND_URL = os.environ.get("FRONTEND_URL")
+
 AUTH_SECRET_KEY = os.environ.get("AUTH_SECRET_KEY")
 
 CORS_ALLOWED_ORIGINS = env.list(
@@ -363,6 +381,8 @@ CORS_ALLOWED_ORIGINS = env.list(
         "http://localhost:8000",
         "http://localhost:9090",
         "https://poc.bitswan.space",
+        "http://aoc.bitswan.localhost",
+        "http://api.bitswan.localhost",
     ],
 )
 

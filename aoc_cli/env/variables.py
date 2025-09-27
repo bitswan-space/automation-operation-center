@@ -13,7 +13,6 @@ def get_var_defaults(
     """
     # Lazy imports to avoid circulars
     from aoc_cli.env.services import (
-        nextjs as nextjs_service,
         bitswan_backend as bitswan_backend_service,
         bitswan_backend_db as bitswan_backend_db_service,
         emqx as emqx_service,
@@ -32,27 +31,16 @@ def get_var_defaults(
     defaults.update(bitswan_backend_service.default_env(config))
     defaults.update(bitswan_backend_db_service.default_env(config))
     defaults.update(emqx_service.default_env(config))
-    defaults.update(nextjs_service.default_env(config))
     defaults.update(profile_manager_service.default_env(config))
 
-    # Dev-local overrides tailored for running Next.js on host
+    # Dev overrides for backend services only
     if config.env == Environment.DEV:
-        backend_base = f"{config.protocol.value}://api.{config.domain}"
         defaults.update(
             {
-                # NextJS dev overrides
-                "NEXTAUTH_URL": "http://localhost:3000",
-                "AUTH_URL": "http://localhost:3000",
-                "KEYCLOAK_POST_LOGOUT_REDIRECT_URI": "http://localhost:3000",
-                # Point host Next.js to ingress domain instead of container port
-                "BITSWAN_BACKEND_API_URL": backend_base,
-                # Enable experimental features in dev mode
-                "NEXT_PUBLIC_BITSWAN_EXPERIMENTAL": "true",
-                
                 # Bitswan Backend dev overrides
                 "DJANGO_SETTINGS_MODULE": "config.settings.local",
-                "DJANGO_ALLOWED_HOSTS": f"api.{config.domain},aoc-bitswan-backend,http://localhost:3000",
-                "CORS_ALLOWED_ORIGINS": f"http://localhost:3000,{config.protocol.value}://aoc.{config.domain},{config.protocol.value}://aoc-nextjs:3000",
+                "DJANGO_ALLOWED_HOSTS": f"api.{config.domain},aoc-bitswan-backend,aoc-frontend,localhost",
+                "CORS_ALLOWED_ORIGINS": f"{config.protocol.value}://aoc.{config.domain},http://localhost:3000",
                 "EMQX_EXTERNAL_URL": "aoc-emqx:8084",
                 
                 # Keycloak dev overrides

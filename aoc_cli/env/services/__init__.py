@@ -10,11 +10,11 @@ def write_env_files(init_config: InitConfig, env_config: Dict[str, str] | None =
     """Write all service environment files (aggregated).
 
     This preserves the public API previously imported as `aoc_cli.env.services.bootstrap_services`.
+    React frontend does not need environment files as it determines backend URL automatically.
     """
     env_config = env_config or {}
 
     from . import (
-        nextjs as nextjs_service,
         bitswan_backend as bitswan_backend_service,
         bitswan_backend_db as bitswan_backend_db_service,
         emqx as emqx_service,
@@ -24,7 +24,7 @@ def write_env_files(init_config: InitConfig, env_config: Dict[str, str] | None =
         profile_manager as profile_manager_service,
     )
 
-    nextjs_service.write_env_files_operations_centre(init_config, env_config)
+    # Write environment files for backend services only
     influxdb_service.write_env_files(init_config, env_config)
     keycloak_service.write_env_files(init_config, env_config)
     keycloak_db_service.write_env_files(init_config, env_config)

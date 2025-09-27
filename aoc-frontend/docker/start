@@ -1,0 +1,7 @@
+#!/bin/sh
+
+echo "🚀 Starting production server..."
+echo "📦 Serving built React app with nginx"
+
+# Start nginx in foreground
+exec nginx -g "daemon off;"

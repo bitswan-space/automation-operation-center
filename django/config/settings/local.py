@@ -13,7 +13,7 @@ SECRET_KEY = env(
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = [
-    *["localhost", "0.0.0.0", "127.0.0.1"],
+    *["localhost", "0.0.0.0", "127.0.0.1", "api.bitswan.localhost", "aoc.bitswan.localhost"],
     *env.list("DJANGO_ALLOWED_HOSTS"),
 ]  # noqa: S104
 
@@ -60,3 +60,13 @@ if env("USE_DOCKER") == "yes":
 # ------------------------------------------------------------------------------
 # https://django-extensions.readthedocs.io/en/latest/installation_instructions.html#configuration
 INSTALLED_APPS += ["django_extensions"]
+
+# Keycloak Configuration for Development
+# ------------------------------------------------------------------------------
+# Set default values for development if not provided via environment variables
+if not KEYCLOAK_SERVER_URL:
+    KEYCLOAK_SERVER_URL = "http://localhost:8080"
+if not KEYCLOAK_REALM_NAME:
+    KEYCLOAK_REALM_NAME = "master"
+if not KEYCLOAK_CLIENT_ID:
+    KEYCLOAK_CLIENT_ID = "aoc-frontend"

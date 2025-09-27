@@ -9,13 +9,10 @@ def _public_base_url(config: InitConfig) -> str:
 
 
 def default_env(config: InitConfig) -> Dict[str, str]:
+    # React frontend determines backend URL automatically based on hostname
+    # No secrets or complex configuration needed
     return {
-        "NEXTAUTH_URL": _public_base_url(config),
-        "AUTH_URL": _public_base_url(config),
-        "KEYCLOAK_POST_LOGOUT_REDIRECT_URI": _public_base_url(config),
-        "BITSWAN_BACKEND_API_URL": "http://aoc-bitswan-backend:5000",
-        "SENTRY_DSN": "",
-        "NEXT_PUBLIC_BITSWAN_EXPERIMENTAL": "false",
+        "REACT_APP_ENABLE_DEV_TOOLS": "false",
     }
 
 
@@ -24,42 +21,12 @@ def write_env_files_operations_centre(
 ) -> None:
     env_config = env_config or {}
     write_env_files_service(
-        service_name="Operations Centre",
+        service_name="AOC Frontend",
         init_config=init_config,
         env_config=env_config,
         env_vars={
-            "NextAuth": [
-                "AUTH_URL",
-                "AUTH_SECRET",
-            ],
-            "InfluxDB": [
-                "INFLUXDB_URL",
-                "INFLUXDB_ORG",
-                "INFLUXDB_BUCKET",
-                "INFLUXDB_USERNAME",
-                "INFLUXDB_TOKEN",
-            ],
-            "Bitswan Backend": [
-                "BITSWAN_BACKEND_API_URL",
-            ],
-            "EMQX": [
-                ("EMQX_JWT_SECRET", env_config.get("EMQX_AUTHENTICATION__1__SECRET")),
-                "EMQX_MQTT_URL",
-            ],
-            "Keycloak": [
-                "KEYCLOAK_ISSUER",
-                "KEYCLOAK_CLIENT_ID",
-                "KEYCLOAK_REFRESH_URL",
-                "KEYCLOAK_END_SESSION_URL",
-                "KEYCLOAK_POST_LOGOUT_REDIRECT_URI",
-            ],
-            "Sentry": [
-                "SENTRY_IGNORE_API_RESOLUTION_ERROR",
-                "SENTRY_AUTH_TOKEN",
-                "SENTRY_DSN",
-            ],
-            "Experimental Features": [
-                "NEXT_PUBLIC_BITSWAN_EXPERIMENTAL",
+            "React Frontend Configuration": [
+                "REACT_APP_ENABLE_DEV_TOOLS",
             ],
         },
     )

@@ -63,16 +63,16 @@ services:
     networks:
       - bitswan_network
 
-  aoc:
+  aoc-frontend:
     restart: always
-    container_name: aoc
+    container_name: aoc-frontend
     image: bitswan/automation-operations-centre:<slug>
-    env_file: envs/operations-centre.env
     depends_on:
-      - influxdb
+      - bitswan-backend
       - keycloak
     networks:
       - bitswan_network
+    command: /start
 
   bitswan-backend:
     image: bitswan/bitswan-backend:<slug>

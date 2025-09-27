@@ -54,6 +54,35 @@ class AutomationServerDocumentationView(TemplateView):
             context['docs_content'] = f"<p>Error loading documentation: {str(e)}</p>"
         
         return context
+
+
+class AOCArchitectureDocumentationView(TemplateView):
+    """
+    View to serve the AOC architecture documentation as HTML.
+    """
+    template_name = "architecture_docs.html"
+    authentication_classes = []
+    permission_classes = []
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Read the AOC architecture documentation
+        docs_path = os.path.join(settings.BASE_DIR, "bitswan_backend", "static", "AOC_ARCHITECTURE_GUIDE.md")
+        
+        try:
+            with open(docs_path, 'r', encoding='utf-8') as f:
+                markdown_content = f.read()
+            
+            # Convert markdown to HTML using proper markdown library
+            html_content = self.markdown_to_html(markdown_content)
+            context['docs_content'] = html_content
+        except FileNotFoundError:
+            context['docs_content'] = f"<p>Documentation file not found at: {docs_path}</p>"
+        except Exception as e:
+            context['docs_content'] = f"<p>Error loading documentation: {str(e)}</p>"
+        
+        return context
     
     def markdown_to_html(self, markdown_text):
         """

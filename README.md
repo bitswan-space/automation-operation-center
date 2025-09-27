@@ -2,126 +2,101 @@
 
 The Automation Operations Center (AOC) is a comprehensive web-based platform designed for managing BitSwan pipelines and automations. It provides a centralized interface for monitoring, deploying, and managing data processing workflows and automation tasks.
 
+## Architecture
+
+**Frontend**: React SPA (`aoc-frontend/`) - Pure client-side application  
+**Backend**: Django REST API (`django/`) - All business logic, authentication, and secrets  
+**CLI**: AOC setup and management tool (`aoc_cli/`)  
+
 ## Features
 
-- Web-based dashboard for pipeline management
-- Real-time monitoring and metrics
-- Integrated authentication via Keycloak
+- Modern React frontend with responsive design
+- Django REST API backend with comprehensive authentication
+- Keycloak integration for SSO and user management
+- Real-time monitoring and metrics via MQTT
 - Pipeline deployment and version control
 - Automation task scheduling and monitoring
+- Development mode with live code refresh
 
 ## Prerequisites
 
 - Docker and Docker Compose
-- Python 3.10+
+- Python 3.11+
 - [Bitswan workspaces](https://github.com/bitswan-space/bitswan-workspaces)
 
 ## Quick Start
 
-1. Install the AOC CLI tool:
+### Production Setup
 
+1. Install the AOC CLI tool:
 ```bash
 pip install .
 ```
 
-2. Set up DNS
+2. Set up DNS for `*.yourdomain.com` to point to your server
 
-Set up DNS for `*.example.com` or whatever domain you want to use to point to your server.
-You can also use a subdomain like `*.bitswan.example.com`
-
-3. Run the setup command
-
+3. Initialize AOC:
 ```bash
-bitswan on-prem-aoc init \
-  --domain=example.com \
-  --org-name="Example Org" \
-  --admin-email=admin@platform.local \
-  --admin-password=randompassword
+aoc init \
+  --domain=yourdomain.com \
+  --protocol=https \
+  --org-name="Your Organization" \
+  --admin-email=admin@yourdomain.com
 ```
 
-## For local development
+4. Access the platform:
+- **Frontend**: https://aoc.yourdomain.com  
+- **API**: https://api.yourdomain.com
 
-1. Create a python env
+### Development Setup
 
-```bash
-python -m venv venv
-```
-
-```bash
-source venv/bin/activate
-```
-
-2. Install the AOC CLI tool:
-
+1. Install the AOC CLI tool:
 ```bash
 pip install -e .
 ```
 
-3. Run the setup command
-
+2. Initialize development environment:
 ```bash
-bitswan on-prem-aoc dev init
+aoc init --dev
 ```
 
-You can 'enter' everything if you want to use the default values.
+3. Access the platform:
+- **Frontend**: http://aoc.bitswan.localhost  
+- **API**: http://api.bitswan.localhost
+- **Keycloak**: http://keycloak.bitswan.localhost
 
-Follow terminal instructions of running a docker container.
+Both frontend and backend run in containers with live code refresh!
 
-4. Install next.js dependencies
+## Architecture Details
 
-install pnpm
+### Frontend (`aoc-frontend/`)
+- **Framework**: React 18 with TypeScript
+- **Routing**: React Router v6
+- **Styling**: Tailwind CSS + Radix UI components
+- **State**: React Query + Context API
+- **Build**: Standard React build process
+- **Deployment**: Nginx static serving + API proxy
 
-### For Linux
-```bash
-curl -fsSL https://get.pnpm.io/install.sh | sh -
-```
+### Backend (`django/`)
+- **Framework**: Django 4.2 with Django REST Framework
+- **Authentication**: Keycloak integration with JWT tokens
+- **Database**: PostgreSQL
+- **APIs**: Comprehensive REST API for all frontend needs
+- **Security**: All secrets and sensitive operations
 
-Restart your terminal if pnpm was just installed and get into the venv again.
+### CLI Tool (`aoc_cli/`)
+- **Language**: Python with Click
+- **Purpose**: Setup, configuration, and deployment management
+- **Features**: Docker orchestration, environment setup, service configuration
 
-Go to nextjs folder and install dependencies.
+## Service URLs
 
-```bash
-cd nextjs
-pnpm install
-```
+In both development and production, services follow a consistent pattern:
 
-5. Run the development server
+- **Frontend**: `aoc.<domain>`
+- **Backend API**: `api.<domain>` 
+- **Keycloak**: `keycloak.<domain>`
+- **MQTT**: `mqtt.<domain>`
+- **InfluxDB**: `influx.<domain>`
 
-Make sure you have 20.0.0 node.js installed. If you have nvm you can easily change it by running `nvm use 20.0.0`
-
-```bash
-pnpm dev
-```
-
-Open the AOC in your browser at `http://localhost:3000`.
-
-## Environment Variables
-
-### NEXT_PUBLIC_BITSWAN_EXPERIMENTAL
-
-Controls the visibility of experimental features in the frontend interface.
-
-- **Type**: String (optional)
-- **Values**: `"true"` (case-insensitive) to enable, any other value or unset to disable
-- **Default**: Disabled (experimental features hidden)
-
-When set to `"true"`, the following experimental features will be visible:
-- Workspaces link (in main sidebar)
-- Processes link (in main sidebar)
-- General tab (in Settings page)
-
-**Example usage:**
-```bash
-# Enable experimental features
-NEXT_PUBLIC_BITSWAN_EXPERIMENTAL=true
-
-# Disable experimental features (default)
-NEXT_PUBLIC_BITSWAN_EXPERIMENTAL=false
-# or simply omit the variable
-```
-
-**Note**: This is a client-side environment variable (prefixed with `NEXT_PUBLIC_`) and will be visible in the browser. Use it only for features that are safe to expose publicly.
-
-**Automatic Setup**: The AOC CLI automatically sets this variable based on the deployment environment:
-- **Development mode** (`--dev` flag): Set to `"true"` to enable experimental features
-- **Production mode**: Set to `"false"` to disable experimental features
+The React frontend automatically determines the backend URL based on the current hostname.

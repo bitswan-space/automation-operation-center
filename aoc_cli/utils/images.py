@@ -60,7 +60,7 @@ def resolve_images(config: InitConfig) -> None:
         )
         config.aoc_be_image = f"bitswan/bitswan-backend:{tag}"
 
-    # automation-operations-centre (AOC)
+    # automation-operations-centre (AOC) - now built from aoc-frontend
     if not config.aoc_image:
         tag = latest_tag_from_docker_hub(
             "https://hub.docker.com/v2/repositories/bitswan/automation-operations-centre/tags/"
@@ -99,6 +99,30 @@ def _find_django_directory() -> str:
         raise RuntimeError(f"Could not find django directory: {e}")
 
 
+def _find_aoc_frontend_directory() -> str:
+    """Find the aoc-frontend directory using absolute path from git repo root."""
+    import subprocess
+    from pathlib import Path
+    
+    try:
+        # Get the git root directory
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        git_root = Path(result.stdout.strip())
+        frontend_dir = git_root / "aoc-frontend"
+        
+        if not frontend_dir.exists():
+            raise FileNotFoundError("aoc-frontend directory not found in git repository")
+            
+        return str(frontend_dir)
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        raise RuntimeError(f"Could not find aoc-frontend directory: {e}")
+
+
 def replace_docker_compose_services_versions(config: InitConfig) -> None:
     """Update docker-compose.yml with resolved image versions and environment-specific configuration."""
     click.echo("Finding latest versions for AOC services")
@@ -110,7 +134,7 @@ def replace_docker_compose_services_versions(config: InitConfig) -> None:
     # Images are expected to be resolved already in config
     service_to_image = {
         "bitswan-backend": config.aoc_be_image,
-        "aoc": config.aoc_image,
+        "aoc-frontend": config.aoc_image,
         "keycloak": config.keycloak_image,
     }
 
@@ -118,11 +142,12 @@ def replace_docker_compose_services_versions(config: InitConfig) -> None:
         if image:
             docker_compose["services"][service_name]["image"] = image
 
-    # Add dev mode configuration for bitswan-backend service
+    # Add dev mode configuration for services
     if config.env.value == "dev":
         try:
+            # Configure Django backend dev mode
             django_dir = _find_django_directory()
-            click.echo(f"Adding dev mode volume mapping: {django_dir}:/app:rwz")
+            click.echo(f"Adding Django dev mode volume mapping: {django_dir}:/app:rwz")
             
             # Ensure the bitswan-backend service exists
             if "bitswan-backend" not in docker_compose["services"]:
@@ -138,7 +163,36 @@ def replace_docker_compose_services_versions(config: InitConfig) -> None:
                 docker_compose["services"]["bitswan-backend"]["volumes"].append(volume_mapping)
             
             # Ensure command is set to /dev-command for dev mode
-            docker_compose["services"]["bitswan-backend"]["command"] = "/dev-command"
+            docker_compose["services"]["bitswan-backend"]["command"] = ["/dev-command"]
+            
+            # Configure React frontend dev mode
+            frontend_dir = _find_aoc_frontend_directory()
+            click.echo(f"Adding React frontend dev mode volume mapping: {frontend_dir}:/app:rwz")
+            
+            # Ensure the aoc-frontend service exists
+            if "aoc-frontend" not in docker_compose["services"]:
+                docker_compose["services"]["aoc-frontend"] = {}
+            
+            # Use dev command for development mode
+            docker_compose["services"]["aoc-frontend"]["command"] = ["npm", "start"]
+            
+            # Add volume mappings for dev mode
+            if "volumes" not in docker_compose["services"]["aoc-frontend"]:
+                docker_compose["services"]["aoc-frontend"]["volumes"] = []
+            
+            # Add the frontend directory volume mapping
+            frontend_volume_mapping = f"{frontend_dir}:/app:rwz"
+            if frontend_volume_mapping not in docker_compose["services"]["aoc-frontend"]["volumes"]:
+                docker_compose["services"]["aoc-frontend"]["volumes"].append(frontend_volume_mapping)
+            
+            # Add environment variables for React dev server
+            if "environment" not in docker_compose["services"]["aoc-frontend"]:
+                docker_compose["services"]["aoc-frontend"]["environment"] = []
+            
+            docker_compose["services"]["aoc-frontend"]["environment"].extend([
+                "CHOKIDAR_USEPOLLING=true",
+                "WATCHPACK_POLLING=true"
+            ])
             
         except Exception as e:
             click.echo(f"Warning: Could not configure dev mode volumes: {e}")

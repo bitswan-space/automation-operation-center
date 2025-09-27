@@ -93,11 +93,11 @@ def is_in_automation_center_repo() -> bool:
         # Check if this is the automation center repo by looking for key files/directories
         # Look for django directory and other characteristic files
         django_dir = git_root / "django"
-        nextjs_dir = git_root / "nextjs"
+        aoc_frontend_dir = git_root / "aoc-frontend"
         aoc_cli_dir = git_root / "aoc_cli"
         
         return (django_dir.exists() and 
-                nextjs_dir.exists() and 
+                aoc_frontend_dir.exists() and 
                 aoc_cli_dir.exists() and
                 (git_root / "README.md").exists())
     except (subprocess.CalledProcessError, FileNotFoundError):
@@ -332,9 +332,11 @@ async def execute_init(config: InitConfig) -> None:
 
     setup_influxdb(config)
 
+    # Configure frontend proxy - always use port 3000 for dev, port 80 for prod
+    frontend_port = "3000" if config.env == Environment.DEV else "80"
     await ingress.add_proxy(
         f"aoc.{config.domain}",
-        "aoc:3000",
+        f"aoc-frontend:{frontend_port}",
     )
     await ingress.add_proxy(
         f"api.{config.domain}",
@@ -397,52 +399,32 @@ async def execute_init(config: InitConfig) -> None:
     Admin user: {config.admin_email}
     Admin password: {admin_password}"""
 
+        access_message = f"""
+    Setup Complete:
+    - React frontend: {config.protocol.value}://aoc.{config.domain}
+    - Django backend API: {config.protocol.value}://api.{config.domain}
+    """
+        
         if config.env == Environment.DEV:
-            # Copy the generated local env file to nextjs directory
-            project_root = Path(__file__).parent.parent.parent
-            nextjs_env_path = project_root / "nextjs" / ".env.local"
-            local_env_path = config.aoc_dir / "envs" / "operations-centre.env"
-            
-            try:
-                shutil.copy2(local_env_path, nextjs_env_path)
-                click.echo(f"✓ Created local development environment file at {nextjs_env_path}")
-            except Exception as copy_error:
-                click.echo(f"⚠️  Could not create local env file: {copy_error}")
-                click.echo(f"   Please manually copy {ops_env_path} to nextjs/.env.local and update URLs to localhost")
-
-            access_message = f"""
-    Next.js Development Setup:
-    cd to the nextjs directory and run:
-    pnpm install
-    pnpm dev
-
-    Access the AOC at: http://localhost:3000
-    
+            access_message += "    - Services are running in containers with source code mounted for live refresh\n"
+        
+        access_message += f"""
     {aoc_admin_info}
 
     {keycloak_info}
-    """
-        else:
-            access_message = f"""
-    Access the AOC at: {config.protocol.value}://aoc.{config.domain}{aoc_admin_info}
-
-{keycloak_info}
     """
 
         click.echo(access_message)
     except Exception as e:
         # Fallback to basic message if env file reading fails
+        access_message = f"""
+    Setup Complete:
+    - React frontend: {config.protocol.value}://aoc.{config.domain}
+    - Django backend API: {config.protocol.value}://api.{config.domain}
+    """
+        
         if config.env == Environment.DEV:
-            access_message = f"""
-    cd to the nextjs directory and run:
-    pnpm dev
-
-    Access the AOC at: http://localhost:3000
-    """
-        else:
-            access_message = f"""
-    Access the AOC at: {config.protocol.value}://aoc.{config.domain}
-    """
+            access_message += "    - Services are running in containers with source code mounted for live refresh\n"
         click.echo(access_message)
         click.echo(f"Note: Unable to print Keycloak admin info: {e}")
 
