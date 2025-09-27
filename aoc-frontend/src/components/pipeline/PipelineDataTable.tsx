@@ -43,7 +43,7 @@ import { Badge } from "../ui/badge";
 import { type PipelineStat, type PipelineWithStats } from "@/types";
 
 import { Area, AreaChart, XAxis } from "recharts";
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 const columnHelper = createColumnHelper<PipelineWithStats>();
@@ -75,7 +75,7 @@ export const columns = [
 
       return (
         <Link
-          href={`/dashboard/automation-servers/${row.original.automationServerId}/workspaces/${row.original.workspaceId}/automations/${row.original.properties["deployment-id"]}`}
+          to={`/automation-servers/${row.original.automationServerId}/workspaces/${row.original.workspaceId}/automations/${row.original.properties["deployment-id"]}`}
           className="text-xs text-blue-700 underline"
         >
           {properties.name}
@@ -88,12 +88,13 @@ export const columns = [
     cell: ({row}) => {
       return (
         row.original.properties["automation-url"] &&
-        <Link
+        <a
           href={row.original.properties["automation-url"]}
-          target="_blak"
+          target="_blank"
+          rel="noopener noreferrer"
         >
           <ExternalLink size={18} />
-        </Link>
+        </a>
       )
     }
   }),
@@ -217,7 +218,7 @@ export const columns = [
     cell: ({ row }) => {
       return (
         <Link
-          href={`/automations/launch-automation-editor/${row.original._key}`}
+          to={`/automations/launch-automation-editor/${row.original._key}`}
           title="Launch automation editor"
           className="hidden"
         >

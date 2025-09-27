@@ -30,7 +30,7 @@ import { Handle, Position } from "@xyflow/react";
 import React, { memo, useMemo } from "react";
 import { SiApachekafka, SiJavascript } from "react-icons/si";
 import { jsonTreeTheme, outputSampleJSON } from "@/utils/jsonTree";
-import { usePathname, useRouter } from "next/navigation";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { JSONTree } from "react-json-tree";
@@ -143,8 +143,8 @@ export function PipelineNode({ data }: { data: NodeData }) {
     return token ? [token] : [];
   }, [token]);
   
-  const router = useRouter();
-  const currentPath = usePathname();
+  const navigate = useNavigate();
+  const currentPath = useLocation().pathname;
 
   const initialState: PipelineNodeState = {
     expandedSections: [],
@@ -248,7 +248,7 @@ export function PipelineNode({ data }: { data: NodeData }) {
                   onClick={() => {
                     if (settingNextLevel) return;
 
-                    router.push(`${currentPath}/${nodeID}`);
+                    navigate(`${currentPath}/${nodeID}`);
 
                     setSettingNextLevel(true);
                   }}

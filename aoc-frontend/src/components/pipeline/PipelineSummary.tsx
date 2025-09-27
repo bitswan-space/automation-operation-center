@@ -16,14 +16,13 @@ import React from "react";
 import { Skeleton } from "../ui/skeleton";
 import { Textarea } from "../ui/textarea";
 import { convertTopologyToMermaidGraph } from "@/utils/mermaid";
-import dynamic from "next/dynamic";
+import { lazy } from "react";
 import { formatPipelineName } from "@/utils/pipelineUtils";
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { Code } from "lucide-react";
 
-const MermaidTopologyOverview = dynamic(
+const MermaidTopologyOverview = lazy(
   () => import("./overview/TopologyOverview"),
-  { ssr: false },
 );
 
 interface PipelineSummaryProps {
@@ -73,27 +72,28 @@ export function PipelineSummary(props: PipelineSummaryProps) {
               </button>
             </div>
             {vscode_link && (
-              <Link href={vscode_link} target="_blank">
+              <a href={vscode_link} target="_blank" rel="noopener noreferrer">
                 <Button className="bg-blue-600 hover:bg-blue-700">
                   <div className="flex items-center gap-2">
                     <Code size={20} /> Open in editor
                   </div>
                 </Button>
-              </Link>
+              </a>
             )}
           </CardTitle>
           <CardDescription>
             {pipeline?.properties["automation-url"] &&
               <div className="pb-5 pt-2">
-                <Link
+                <a
                   href={pipeline.properties["automation-url"]}
-                  target="_blak"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <span className="inline-flex gap-2 hover:underline">
                     <ExternalLink size={18} />
                     <span>Open automation web form</span>
                   </span>
-                </Link>
+                </a>
               </div>
             }
 

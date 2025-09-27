@@ -11,7 +11,7 @@ import {
 
 import PanelItemsSection from "./PanelItemsSection";
 import React from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
 
 type PanelContentSectionProps = {
@@ -21,7 +21,7 @@ type PanelContentSectionProps = {
 export function PanelContentSection(props: PanelContentSectionProps) {
   const { item_ids } = props;
   const { deserializedNavItems } = useSidebarItems();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const items = React.useMemo(() => {
     if (item_ids.length > 0) {
@@ -58,9 +58,9 @@ export function PanelContentSection(props: PanelContentSectionProps) {
 
   React.useEffect(() => {
     if (breadcrumbs.length === 1) {
-      router.push("/dashboard");
+      navigate("/dashboard");
     }
-  }, [breadcrumbs, router]);
+  }, [breadcrumbs, navigate]);
 
   console.log("items", items);
 
