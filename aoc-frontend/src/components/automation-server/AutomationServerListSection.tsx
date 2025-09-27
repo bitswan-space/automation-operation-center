@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "../ui/card";
-import { Search, Server, Settings, RotateCcw, Loader2, Plus } from "lucide-react";
+import { Search, Server, RotateCcw, Loader2, Plus } from "lucide-react";
 
 import { type AutomationServer } from "@/data/automation-server";
 import { Badge } from "../ui/badge";
@@ -164,15 +164,6 @@ export function AutomationServerListSection(
                     <span className="text-xs text-gray-500">
                       Created {server.created_at}
                     </span>
-                    <div className="flex gap-1">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-                      >
-                        <Settings className="h-4 w-4" />
-                      </Button>
-                    </div>
                   </div>
                 </CardContent>
               </Card>
