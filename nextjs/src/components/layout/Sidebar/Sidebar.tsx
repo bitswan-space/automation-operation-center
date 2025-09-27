@@ -22,15 +22,18 @@ import Link from "next/link";
 import { OrgSwitcher } from "@/components/organizations/org-switcher";
 import { type Organisation } from "@/data/organisations";
 import { env } from "@/env.mjs";
+import ProfileSelector from "@/components/groups/ProfileSelector";
+import { type Profile } from "@/data/profiles";
 
 type AppSidebarProps = {
   session?: Session | null;
   orgs: Organisation[];
   activeOrg?: Organisation;
+  profiles?: Profile[];
 };
 
 export function AppSidebar(props: AppSidebarProps) {
-  const { session, orgs, activeOrg } = props;
+  const { session, orgs, activeOrg, profiles } = props;
   
   // Check if experimental features should be shown
   const showExperimental = env.NEXT_PUBLIC_BITSWAN_EXPERIMENTAL?.toLowerCase() === 'true';
@@ -45,6 +48,9 @@ export function AppSidebar(props: AppSidebarProps) {
           <SidebarSeparator />
           <SidebarMenuItem key={"orgs"}>
             <OrgSwitcher orgs={orgs} activeOrg={activeOrg} />
+          </SidebarMenuItem>
+          <SidebarMenuItem key={"profiles"}>
+            <ProfileSelector profiles={profiles} />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>

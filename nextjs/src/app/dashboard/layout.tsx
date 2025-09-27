@@ -16,6 +16,7 @@ import { env } from "@/env.mjs";
 import { redirect } from "next/navigation";
 import { fetchOrgs, getActiveOrgFromCookies } from "@/data/organisations";
 import { getMQTTTokens } from "@/data/mqtt";
+import { fetchProfiles } from "@/data/profiles";
 
 export default async function DashboardLayout({
   children,
@@ -31,17 +32,20 @@ export default async function DashboardLayout({
     redirect("/auth/signout");
   }
 
+  const profiles = await fetchProfiles();
+
+  console.log("profiles", profiles.results);
   const orgs = await fetchOrgs();
   const activeOrg = await getActiveOrgFromCookies();
 
   const tokens = await getMQTTTokens();
-  console.log("tokens", tokens);
+  // console.log("tokens", tokens);
 
   return (
     <SidebarProvider>
       <SidebarItemsProvider>
         {/* Sidebar */}
-        <AppSidebar session={session} orgs={orgs?.results ?? []} activeOrg={activeOrg} />
+        <AppSidebar session={session} orgs={orgs?.results ?? []} activeOrg={activeOrg} profiles={profiles?.results ?? []} />
         <SidebarRail />
         <AutomationsProvider tokens={tokens}>
           <SidebarInset>
