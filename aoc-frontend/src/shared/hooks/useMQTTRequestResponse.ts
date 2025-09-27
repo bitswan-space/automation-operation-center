@@ -55,8 +55,10 @@ export function useMQTTRequestResponse<ResponseT>({
         const currentHost = window.location.hostname;
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         
+        // Replace subdomain with 'mqtt' for MQTT broker connection
+        const mqttHostname = currentHost.replace(/^[^.]+\./, 'mqtt.');
         let mqttHost: string;
-        mqttHost = `${protocol}//${currentHost}/mqtt`;
+        mqttHost = `${protocol}//${mqttHostname}/mqtt`;
 
         mqttConnect(mqttHost, {
           clientId:
