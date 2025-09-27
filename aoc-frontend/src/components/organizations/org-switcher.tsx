@@ -83,7 +83,7 @@ export function OrgSwitcher({
           return (
             <DropdownMenuItem
               key={org.id}
-              disabled={isPending}
+              {...(isPending ? { disabled: true } : {})}
               onClick={() => handleSwitchOrg(org.id)}
               className="gap-2 p-2"
             >
