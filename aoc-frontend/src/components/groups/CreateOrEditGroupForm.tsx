@@ -46,8 +46,20 @@ export function CreateOrEditGroupForm(props: CreateGroupFormProps) {
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      id: formData.get("id") as string,
+      name: formData.get("name") as string,
+      description: formData.get("description") as string,
+      tag_color: formData.get("tag_color") as string,
+    };
+    await execute(data);
+  };
+
   return (
-    <form action={execute}>
+    <form onSubmit={handleSubmit}>
       <input type="text" name="id" hidden defaultValue={group?.id ?? ""} />
       <div className="grid gap-4 py-4">
         <div>
@@ -57,7 +69,7 @@ export function CreateOrEditGroupForm(props: CreateGroupFormProps) {
             required
             minLength={2}
             name="name"
-            defaultValue={group?.name ?? (result.data as any)?.data?.name ?? ""}
+            defaultValue={group?.name ?? ""}
             className=""
           />
         </div>
@@ -67,10 +79,8 @@ export function CreateOrEditGroupForm(props: CreateGroupFormProps) {
           <Textarea
             placeholder="Group description"
             name="description"
-            defaultValue={
-              group?.description ?? (result.data as any)?.data?.description ?? ""
-            }
-              className=""
+            defaultValue={group?.description ?? ""}
+            className=""
           />
         </div>
 

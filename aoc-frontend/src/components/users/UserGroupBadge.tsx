@@ -43,6 +43,16 @@ export function UserGroupBadge(props: UserGroupBadgeProps) {
 
   const hasPerms = canMutateUsers(session);
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      id: formData.get("id") as string,
+      groupId: formData.get("groupId") as string,
+    };
+    await execute(data);
+  };
+
   return (
     <Badge
       variant={"outline"}
@@ -55,7 +65,7 @@ export function UserGroupBadge(props: UserGroupBadgeProps) {
     >
       <span>{group.name}</span>
       {hasPerms && (
-        <form action={execute}>
+        <form onSubmit={handleSubmit}>
           <input
             type="hidden"
             name="id"
