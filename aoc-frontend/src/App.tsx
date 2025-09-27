@@ -15,6 +15,7 @@ import DashboardPage from '@/pages/DashboardPage';
 import AutomationServersPage from '@/pages/AutomationServersPage';
 import AutomationServerDetailPage from '@/pages/AutomationServerDetailPage';
 import WorkspaceDetailPage from '@/pages/WorkspaceDetailPage';
+import AutomationDetailPage from '@/pages/AutomationDetailPage';
 import AutomationsPage from '@/pages/AutomationsPage';
 
 const queryClient = new QueryClient({
@@ -57,6 +58,7 @@ function App() {
                 <Route index element={<AutomationServersPage />} />
                 <Route path=":id" element={<AutomationServerDetailPage />} />
                 <Route path=":id/workspaces/:workspaceId" element={<WorkspaceDetailPage />} />
+                <Route path=":id/workspaces/:workspaceId/automations/:pipelineId" element={<AutomationDetailPage />} />
               </Route>
               
               {/* Automations route */}
