@@ -10,7 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui-full/dropdown-menu";
 
 import { CreateOrgDialog } from "./create-org-dialog";
 import { useAction } from "@/hooks/useAction";
