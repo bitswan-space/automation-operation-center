@@ -34,8 +34,17 @@ export default async function DashboardLayout({
   const orgs = await fetchOrgs();
   const activeOrg = await getActiveOrgFromCookies();
 
-  const tokens = await getMQTTTokens();
-  console.log("tokens", tokens);
+  // MQTT tokens will automatically handle token expiration and redirect
+  // If there's an error, it will be caught by the error handler
+  let tokens: any[] = [];
+  try {
+    tokens = await getMQTTTokens();
+    console.log("tokens", tokens);
+  } catch (error) {
+    // Error is already handled by withTokenErrorHandling
+    // This catch is just to prevent the layout from crashing
+    console.error("Failed to fetch MQTT tokens:", error);
+  }
 
   return (
     <SidebarProvider>
