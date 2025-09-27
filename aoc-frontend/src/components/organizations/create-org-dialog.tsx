@@ -26,12 +26,22 @@ export function CreateOrgDialog() {
       toast.error(serverError?.message ?? "Error creating organization");
     },
   });
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get("name") as string,
+    };
+    await execute(data);
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
         <DropdownMenuItem
           className="gap-2 p-2"
-          onSelect={(e) => e.preventDefault()}
+          onClick={() => {}}
         >
           <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
             <Plus className="size-4" />
@@ -42,7 +52,7 @@ export function CreateOrgDialog() {
         </DropdownMenuItem>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
-        <form action={execute} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <DialogHeader>
             <DialogTitle>Create Organization</DialogTitle>
           </DialogHeader>

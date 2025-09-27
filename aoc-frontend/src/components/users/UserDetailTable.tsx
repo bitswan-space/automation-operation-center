@@ -278,6 +278,15 @@ function UserActions(props: UserActionProps) {
 
   const hasPerms = canMutateUsers(session) && activeUserId !== id;
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      id: formData.get("id") as string,
+    };
+    await execute(data);
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -290,7 +299,7 @@ function UserActions(props: UserActionProps) {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
-        <form action={execute} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <DialogHeader>
             <DialogTitle>Delete user</DialogTitle>
             <DialogDescription>

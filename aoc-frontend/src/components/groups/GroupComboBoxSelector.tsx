@@ -113,11 +113,21 @@ const AddMemberButton = (props: AddMemberButtonProps) => {
     },
   });
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      id: formData.get("id") as string,
+      groupId: formData.get("groupId") as string,
+    };
+    await execute(data);
+  };
+
   return (
-    <form action={execute}>
+    <form onSubmit={handleSubmit}>
       <input type="hidden" name="id" defaultValue={id} />
       <input type="hidden" name="groupId" defaultValue={group.id} />
-      <Button className={className} variant={"ghost"}>
+      <Button className={className} variant={"ghost"} type="submit" disabled={isPending}>
         {isPending && (
           <Loader2 size={20} className="mr-2 h-4 w-4 animate-spin" />
         )}

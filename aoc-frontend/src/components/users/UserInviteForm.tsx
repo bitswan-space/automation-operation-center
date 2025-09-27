@@ -10,7 +10,7 @@ import { useAction } from "@/hooks/useAction";
 export function UserInviteForm({}) {
   const [inputValue, setInputValue] = React.useState("");
 
-  const { execute, isPending, result } = useAction(inviteUserAction, {
+  const { execute, isPending } = useAction(inviteUserAction, {
     onSuccess: () => {
       setInputValue("");
       toast.success("User invited");
@@ -20,8 +20,17 @@ export function UserInviteForm({}) {
     },
   });
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      email: formData.get("email") as string,
+    };
+    await execute(data);
+  };
+
   return (
-    <form action={execute}>
+    <form onSubmit={handleSubmit}>
       <div className="flex items-center gap-4 py-4">
         <Input
           placeholder="Team member email "

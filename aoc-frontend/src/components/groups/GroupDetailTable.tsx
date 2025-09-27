@@ -228,6 +228,15 @@ function GroupActions(props: GroupActionProps) {
     },
   });
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      id: formData.get("id") as string,
+    };
+    await execute(data);
+  };
+
   return (
     hasPerms && (
       <div className="flex justify-end gap-2 px-4 text-end">
@@ -240,8 +249,8 @@ function GroupActions(props: GroupActionProps) {
           group={group}
         />
         <Separator orientation="vertical" className="h-8 w-px" />
-        <form action={execute}>
-          <Button variant={"ghost"} disabled={isPending || !hasPerms}>
+        <form onSubmit={handleSubmit}>
+          <Button variant={"ghost"} disabled={isPending || !hasPerms} type="submit">
             <input type="hidden" name="id" defaultValue={id} />
             {isPending ? (
               <Loader2 size={20} className="animate-spin" />
