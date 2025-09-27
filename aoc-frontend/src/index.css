@@ -4,61 +4,128 @@
 
 @import url("@xyflow/react/dist/base.css");
 
+@layer components {
+  .scrollbar::-webkit-scrollbar {
+    width: 15px;
+    height: 15px;
+  }
+
+  .scrollbar::-webkit-scrollbar-track {
+    border-radius: 100vh;
+    background: #f7f4ed;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb {
+    background: #e0cbcb;
+    border-radius: 100vh;
+    border: 3px solid #f6f7ed;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #c0a0b9;
+  }
+}
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    /* Core palette (Light) */
+    --background: 255 255 255;             /* colors/background-light */ 
+    --foreground: 24 24 27;                /* colors/foreground-light */
+  
+    --card: 255 255 255;                   /* colors/card-light */
+    --card-foreground: 9 9 11;             /* colors/card-foreground-light */
+  
+    --popover: 255 255 255;                /* colors/popover-light */
+    --popover-foreground: 9 9 11;          /* colors/popover-foreground-light */
+  
+    --primary: 9 61 245;                   /* colors/primary-light */
+    --primary-foreground: 250 250 250;     /* colors/primary-foreground-light */
+  
+    --secondary: 245 245 246;              /* colors/secondary-light (zinc/100) */
+    --secondary-foreground: 9 61 245;      /* colors/secondary-foreground-light */
+  
+    --muted: 245 245 246;                  /* colors/muted-light (zinc/100) */
+    --muted-foreground: 113 113 122;       /* colors/muted-foreground-light (zinc/500) */
+  
+    --accent: 245 245 246;                 /* colors/accent-light (zinc/100) */
+    --accent-foreground: 24 24 27;         /* colors/accent-foreground-light (zinc/900) */
+  
+    --destructive: 220 38 38;              /* colors/destructive-light (red/600) */
+    --destructive-foreground: 254 242 242; /* colors/destructive-foreground-light (red/50) */
+  
+    --border: 228 228 231;                 /* colors/border-light (zinc/200) */
+    --input: 209 213 219;                  /* colors/input-light (gray/300) */
+    --ring: 59 130 246;                    /* colors/ring-light (blue/500) */
+  
+    /* Radius (Figma: sm=2, md=6, lg=8, xl=12, full=9999) */
+    --radius: 6px; /* default / md */
+    --radius-sm: 2px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+  
+    /* Optional: Sidebar palette (Light) */
+    --sidebar-background: 0 0% 98%;     /* colors/sidebar-background-light */
+    --sidebar-foreground: 240 5.3% 26.1%;          /* colors/sidebar-foreground-light */
+    --sidebar-primary: 240 5.9% 10%;           /* colors/sidebar-primary-light */
+    --sidebar-primary-foreground: 0 0% 98%; /* colors/sidebar-primary-foreground-light */
+    --sidebar-accent: 240 4.8% 95.9%;         /* colors/sidebar-accent-light (zinc/200) */
+    --sidebar-accent-foreground: 240 5.9% 10%; /* colors/sidebar-accent-foreground-light */
+    --sidebar-border: 220 13% 91%;         /* colors/sidebar-border-light */
+    --sidebar-ring: 217.2 91.2% 59.8%;           /* colors/sidebar-ring-light (zinc/400) */
+    
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
-
+  
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
+    /* Core palette (Dark) */
+    --background: 9 9 11;                  /* colors/background-dark (zinc/950) */
+    --foreground: 250 250 250;             /* colors/foreground-dark (zinc/50) */
+  
+    --card: 9 9 11;                        /* colors/card-dark */
+    --card-foreground: 250 250 250;        /* colors/card-foreground-dark */
+  
+    --popover: 9 9 11;                     /* colors/popover-dark */
+    --popover-foreground: 250 250 250;     /* colors/popover-foreground-dark */
+  
+    --primary: 250 250 250;                /* colors/primary-dark (zinc/50) */
+    --primary-foreground: 24 24 27;        /* colors/primary-foreground-dark (zinc/900) */
+  
+    --secondary: 39 39 42;                 /* colors/secondary-dark (zinc/800) */
+    --secondary-foreground: 250 250 250;   /* colors/secondary-foreground-dark (zinc/50) */
+  
+    --muted: 39 39 42;                     /* colors/muted-dark (zinc/800) */
+    --muted-foreground: 161 161 170;       /* colors/muted-foreground-dark (zinc/400) */
+  
+    --accent: 39 39 42;                    /* colors/accent-dark (zinc/800) */
+    --accent-foreground: 250 250 250;      /* colors/accent-foreground-dark (zinc/50) */
+  
+    --destructive: 127 29 29;              /* colors/destructive-dark (red/900) */
+    --destructive-foreground: 254 242 242; /* colors/destructive-foreground-dark (red/50) */
+  
+    --border: 39 39 42;                    /* colors/border-dark (zinc/800) */
+    --input: 39 39 42;                     /* colors/input-dark (zinc/800) */
+    --ring: 212 212 216;                   /* colors/ring-dark (zinc/300) */
+  
+    /* Optional: Sidebar palette (Dark) */
+    --sidebar-background: 240 5.9% 10%;        /* colors/sidebar-background-dark */
+    --sidebar-foreground: 240 4.8% 95.9%;     /* colors/sidebar-foreground-dark (zinc/100) */
+    --sidebar-primary: 224.3 76.3% 48%;             /* colors/sidebar-primary-dark */
+    --sidebar-primary-foreground: 0 0% 100%; /* colors/sidebar-primary-foreground-dark */
+    --sidebar-accent: 240 3.7% 15.9%;            /* colors/sidebar-accent-dark */
+    --sidebar-accent-foreground: 240 4.8% 95.9%; /* colors/sidebar-accent-foreground-dark */
+    --sidebar-border: 240 3.7% 15.9%;            /* colors/sidebar-border-dark */
+    --sidebar-ring: 217.2 91.2% 59.8%;           /* colors/sidebar-ring-dark */
+    
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-  }
+  }  
 }
 
 @layer base {
