@@ -20,7 +20,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "../../ui/sidebar";
+} from "@/components/ui/sidebar";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
 import { Link } from "react-router-dom";
 import {
@@ -28,7 +28,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "../../ui/tooltip";
+} from "@/components/ui/tooltip";
 
 export default function NavTreeView() {
   const { sidebarItems, setSidebarItems } = useSidebarItems();

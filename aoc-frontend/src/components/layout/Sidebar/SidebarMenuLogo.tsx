@@ -2,6 +2,7 @@
 
 import { SidebarMenuButton, useSidebar } from "@/components/ui/sidebar";
 import { Link } from "react-router-dom";
+import { Image } from "@/components/ui/image";
 
 export function SidebarMenuLogo() {
   const { open } = useSidebar();
@@ -17,7 +18,7 @@ export function SidebarMenuLogo() {
               to={"/dashboard"}
               className={"flex justify-center text-center"}
             >
-              <img
+              <Image
                 src={"/bitswan-logo-dark.svg"}
                 alt="bitswan logo"
                 className="mx-auto transform duration-100 ease-in-out"
@@ -38,7 +39,7 @@ export function SidebarMenuLogo() {
               to={"/dashboard"}
               className={"mx-auto flex justify-center text-center"}
             >
-              <img
+              <Image
                 src={"/bitswan-logo-sm-dark.svg"}
                 alt="bitswan logo"
                 className="mx-auto transform duration-100 ease-in-out"
