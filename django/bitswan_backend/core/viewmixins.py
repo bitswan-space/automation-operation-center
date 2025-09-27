@@ -188,13 +188,24 @@ class KeycloakMixin:
             raise PermissionDenied(msg)
 
         user_info = self.keycloak.get_claims(self.request)
+        user_id = user_info.get("sub")
+        
+        if not user_id:
+            raise PermissionDenied("User ID not found in token")
 
-        user_org_memberships = user_info.get("group_membership")
+        # Get user groups from Keycloak API instead of relying on token claims
+        try:
+            user_groups = self.keycloak.get_user_groups(user_id)
+            user_group_paths = [group.get("path", "") for group in user_groups]
+        except Exception as e:
+            logger.error("Failed to get user groups: %s", str(e))
+            raise PermissionDenied("Failed to retrieve user group memberships")
 
-        for group in user_org_memberships:
-            if group == f"/{org_name}":
-                org = self.keycloak.get_org_by_id(org_id)
-                if org.get("name") == org_name:
-                    return org.get("id")
+        # Check if user is a member of the specified org
+        expected_org_path = f"/{org_name}"
+        if expected_org_path in user_group_paths:
+            org = self.keycloak.get_org_by_id(org_id)
+            if org and org.get("name") == org_name:
+                return org.get("id")
 
         raise PermissionDenied("User is not a member of the org")
