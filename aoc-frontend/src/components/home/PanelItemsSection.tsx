@@ -39,14 +39,14 @@ export default function PanelItemsSection(props: PanelItemsSectionProps) {
             key={"automations_card"}
             icon={<Zap size={32} className="text-neutral-900" />}
             title={"Automations"}
-            url={"/dashboard/automations"}
+            url={"/automations"}
           />
 
           <PanelItemCard
             key={"automation_servers_card"}
             icon={<Server size={32} className="text-neutral-900" />}
             title={"Automation Servers"}
-            url={"/dashboard/automation-servers"}
+            url={"/automation-servers"}
           />
         </>
       )}

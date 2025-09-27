@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { deleteAutomationServer } from "@/data/automation-server";
 
 interface DeleteAutomationServerModalProps {
   children: React.ReactNode;
@@ -41,32 +42,26 @@ export function DeleteAutomationServerModal({
 
     setIsDeleting(true);
     try {
-      const response = await fetch(`/api/frontend/automation-servers/${serverId}/delete/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: confirmationName,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json() as { error?: string };
-        if (response.status === 403) {
-          throw new Error("You don't have permission to delete this automation server. Only admin users can delete automation servers.");
-        }
-        throw new Error(errorData.error ?? "Failed to delete automation server");
-      }
+      await deleteAutomationServer(serverId);
 
       // Close modal and redirect
       setOpen(false);
       navigate("/automation-servers");
       onDelete?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting automation server:", error);
-      // You might want to show a toast notification here
-      alert(error instanceof Error ? error.message : "Failed to delete automation server");
+      
+      let errorMessage = "Failed to delete automation server";
+      
+      if (error?.response?.status === 403) {
+        errorMessage = "You don't have permission to delete this automation server. Only admin users can delete automation servers.";
+      } else if (error?.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      alert(errorMessage);
     } finally {
       setIsDeleting(false);
     }

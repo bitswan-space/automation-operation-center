@@ -43,11 +43,27 @@ function App() {
                 </ProtectedRoute>
               }>
                 <Route index element={<DashboardPage />} />
-                <Route path="automation-servers" element={<AutomationServersPage />} />
-                <Route path="automation-servers/:id" element={<AutomationServerDetailPage />} />
-                <Route path="automation-servers/:id/workspaces/:workspaceId" element={<WorkspaceDetailPage />} />
-                <Route path="automations" element={<AutomationsPage />} />
                 <Route path="*" element={<DashboardPage />} />
+              </Route>
+              
+              {/* Automation server routes */}
+              <Route path="/automation-servers" element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<AutomationServersPage />} />
+                <Route path=":id" element={<AutomationServerDetailPage />} />
+                <Route path=":id/workspaces/:workspaceId" element={<WorkspaceDetailPage />} />
+              </Route>
+              
+              {/* Automations route */}
+              <Route path="/automations" element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<AutomationsPage />} />
               </Route>
               
               {/* Default redirect */}
