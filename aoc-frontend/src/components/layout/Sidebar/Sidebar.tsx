@@ -25,10 +25,11 @@ type AppSidebarProps = {
   session?: any;
   orgs: Organisation[];
   activeOrg?: Organisation;
+  isAdmin?: boolean;
 };
 
 export function AppSidebar(props: AppSidebarProps) {
-  const { session, orgs, activeOrg } = props;
+  const { session, orgs, activeOrg, isAdmin } = props;
   
   // Check if experimental features should be shown
   const showExperimental = process.env.REACT_APP_BITSWAN_EXPERIMENTAL?.toLowerCase() === 'true';
@@ -58,14 +59,16 @@ export function AppSidebar(props: AppSidebarProps) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              <SidebarMenuItem key={"automation-servers"}>
-                <SidebarMenuButton asChild>
-                  <Link to={"/automation-servers"}>
-                    <Server />
-                    <span>{"Servers"}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {isAdmin && (
+                <SidebarMenuItem key={"automation-servers"}>
+                  <SidebarMenuButton asChild>
+                    <Link to={"/automation-servers"}>
+                      <Server />
+                      <span>{"Servers"}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
               {showExperimental && (
                 <>
                   <SidebarMenuItem key={"workspaces"}>
@@ -94,14 +97,16 @@ export function AppSidebar(props: AppSidebarProps) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              <SidebarMenuItem key={"settings"}>
-                <SidebarMenuButton asChild>
-                  <Link to={"/settings"}>
-                    <Settings />
-                    <span>{"Settings"}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {isAdmin && (
+                <SidebarMenuItem key={"settings"}>
+                  <SidebarMenuButton asChild>
+                    <Link to={"/settings"}>
+                      <Settings />
+                      <span>{"Settings"}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
