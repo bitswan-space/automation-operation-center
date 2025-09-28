@@ -117,7 +117,14 @@ export function GroupDetailTable(props: GroupDetailTableProps) {
   return (
     <div className="w-full">
       <div className="flex items-center justify-between gap-4 py-4">
-        <Input placeholder="Search groups..." className="max-w-xs" />
+        <Input 
+          placeholder="Search groups..." 
+          className="max-w-xs"
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          onChange={(event) => {
+            table.getColumn("name")?.setFilterValue(event.target.value);
+          }}
+        />
 
         {hasPerms && (
           <CreateGroupFormSheet
