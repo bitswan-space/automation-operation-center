@@ -41,7 +41,7 @@ import { deleteOrgGroupAction } from "./action";
 
 const columnHelper = createColumnHelper<UserGroup>();
 
-export const columns: ColumnDef<UserGroup>[] = [
+const createColumns = (onGroupCreated?: () => void): ColumnDef<UserGroup>[] => [
   {
     accessorKey: "name",
     header: () => <div className="p-2 px-6 font-bold">Name</div>,
@@ -63,7 +63,7 @@ export const columns: ColumnDef<UserGroup>[] = [
     id: "actions",
     cell: ({ row }) => {
       const id = row.original.id;
-      return <GroupActions id={id} group={row.original} />;
+      return <GroupActions id={id} group={row.original} onGroupCreated={onGroupCreated} />;
     },
     enableSorting: false,
     enableHiding: false,
@@ -72,10 +72,11 @@ export const columns: ColumnDef<UserGroup>[] = [
 
 type GroupDetailTableProps = {
   userGroups?: UserGroupsListResponse;
+  onGroupCreated?: () => void;
 };
 
 export function GroupDetailTable(props: GroupDetailTableProps) {
-  const { userGroups } = props;
+  const { userGroups, onGroupCreated } = props;
 
   const { user: session } = useAuth();
 
@@ -96,7 +97,7 @@ export function GroupDetailTable(props: GroupDetailTableProps) {
 
   const table = useReactTable({
     data: userGroupsData,
-    columns,
+    columns: createColumns(onGroupCreated),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -128,6 +129,7 @@ export function GroupDetailTable(props: GroupDetailTableProps) {
                 Create Group
               </Button>
             }
+            onGroupCreated={onGroupCreated}
           />
         )}
       </div>
@@ -211,10 +213,11 @@ export function GroupDetailTable(props: GroupDetailTableProps) {
 type GroupActionProps = {
   id: string;
   group: UserGroup;
+  onGroupCreated?: () => void;
 };
 
 function GroupActions(props: GroupActionProps) {
-  const { id, group } = props;
+  const { id, group, onGroupCreated } = props;
 
   const { user: session } = useAuth();
   const hasPerms = canMutateGroups(session);
@@ -247,6 +250,7 @@ function GroupActions(props: GroupActionProps) {
             </Button>
           }
           group={group}
+          onGroupCreated={onGroupCreated}
         />
         <Separator orientation="vertical" className="h-8 w-px" />
         <form onSubmit={handleSubmit}>

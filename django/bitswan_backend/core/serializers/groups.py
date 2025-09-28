@@ -77,14 +77,12 @@ class UserGroupSerializer(serializers.Serializer):
 
 
 class CreateUserGroupSerializer(serializers.Serializer):
-    id = serializers.UUIDField(required=False)
     name = serializers.CharField(required=True)
     tag_color = serializers.CharField(required=False)
     description = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
-        fields = ["id", "name", "tag_color", "description"]
-        read_only_fields = ["id"]
+        fields = ["name", "tag_color", "description"]
 
     def create(self, validated_data):
         logger.info("Creating new UserGroup instance.")
