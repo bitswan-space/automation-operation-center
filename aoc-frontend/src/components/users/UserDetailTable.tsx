@@ -60,7 +60,8 @@ import {
 type OrgUserFull = OrgUser & { nonMemberGroups: UserGroup[] };
 
 const columnHelper = createColumnHelper<OrgUserFull>();
-export const columns: ColumnDef<OrgUserFull>[] = [
+
+const createColumns = (onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void): ColumnDef<OrgUserFull>[] => [
   {
     accessorKey: "email",
     header: () => <div className="p-2 px-6 text-left font-semibold">Email</div>,
@@ -99,6 +100,7 @@ export const columns: ColumnDef<OrgUserFull>[] = [
           nonMemberGroups={nonMemberGroups}
           addAction={addUserToGroupAction}
           removeAction={removeUserFromGroupAction}
+          onUserGroupUpdate={onUserGroupUpdate}
         />
       );
     },
@@ -115,10 +117,11 @@ export const columns: ColumnDef<OrgUserFull>[] = [
 type UserDetailTableProps = {
   usersList?: OrgUsersListResponse;
   userGroups?: UserGroupsListResponse;
+  onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void; // Optimistic update callback
 };
 
 export function UserDetailTable(props: UserDetailTableProps) {
-  const { usersList: orgUsers, userGroups } = props;
+  const { usersList: orgUsers, userGroups, onUserGroupUpdate } = props;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const page = searchParams.get("page") ?? "1";
@@ -152,7 +155,7 @@ export function UserDetailTable(props: UserDetailTableProps) {
 
   const table = useReactTable({
     data: orgUsersData,
-    columns,
+    columns: createColumns(onUserGroupUpdate),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -218,7 +221,7 @@ export function UserDetailTable(props: UserDetailTableProps) {
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={columns.length}
+                    colSpan={createColumns(onUserGroupUpdate).length}
                     className="h-24 text-center"
                   >
                     No results.

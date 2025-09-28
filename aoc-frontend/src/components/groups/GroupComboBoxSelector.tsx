@@ -37,10 +37,11 @@ type GroupComboBoxSelectorProps = {
     | AddUserToGroupActionType
     | AddWorkspaceToGroupActionType
     | AddAutomationServerToGroupActionType;
+  onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void;
 };
 
 export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
-  const { groups, id, action } = props;
+  const { groups, id, action, onUserGroupUpdate } = props;
 
   const { user: session } = useAuth();
   const hasPerms = canMutateUsers(session);
@@ -78,6 +79,7 @@ export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
                     onSuccess={() => setOpen(false)}
                     className="h-full w-full cursor-pointer justify-start text-left"
                     action={action}
+                    onUserGroupUpdate={onUserGroupUpdate}
                   />
                 </CommandItem>
               ))}
@@ -98,15 +100,19 @@ type AddMemberButtonProps = {
     | AddUserToGroupActionType
     | AddWorkspaceToGroupActionType
     | AddAutomationServerToGroupActionType;
+  onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void;
 };
 
 const AddMemberButton = (props: AddMemberButtonProps) => {
-  const { group, id, className, onSuccess, action } = props;
+  const { group, id, className, onSuccess, action, onUserGroupUpdate } = props;
 
   const { execute, isPending } = useAction(action, {
     onSuccess: () => {
       onSuccess?.();
       toast.success("User added to group");
+      if (onUserGroupUpdate) {
+        onUserGroupUpdate(id, group.id, 'add');
+      }
     },
     onError: ({ error }) => {
       toast.error((error as any)?.serverError?.message ?? "Error adding user to group");

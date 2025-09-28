@@ -12,26 +12,56 @@ const SettingsPage: React.FC = () => {
   const [usersList, setUsersList] = useState<OrgUsersListResponse | undefined>();
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        console.log('Loading settings data...');
-        const [groups, users] = await Promise.all([
-          fetchOrgGroups(),
-          fetchOrgUsers(1)
-        ]);
-        console.log('Groups loaded:', groups);
-        console.log('Users loaded:', users);
-        setGroupsList(groups);
-        setUsersList(users);
-      } catch (error) {
-        console.error('Error loading settings data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const updateUserGroups = (userId: string, groupId: string, action: 'add' | 'remove') => {
+    setUsersList(prevUsers => {
+      if (!prevUsers) return prevUsers;
+      
+      return {
+        ...prevUsers,
+        results: prevUsers.results.map(user => {
+          if (user.id === userId) {
+            if (action === 'add') {
+              // Find the group to add
+              const groupToAdd = groupsList?.results.find(g => g.id === groupId);
+              if (groupToAdd && !user.groups.find(g => g.id === groupId)) {
+                return {
+                  ...user,
+                  groups: [...user.groups, groupToAdd]
+                };
+              }
+            } else if (action === 'remove') {
+              return {
+                ...user,
+                groups: user.groups.filter(g => g.id !== groupId)
+              };
+            }
+          }
+          return user;
+        })
+      };
+    });
+  };
 
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      console.log('Loading settings data...');
+      const [groups, users] = await Promise.all([
+        fetchOrgGroups(),
+        fetchOrgUsers(1)
+      ]);
+      console.log('Groups loaded:', groups);
+      console.log('Users loaded:', users);
+      setGroupsList(groups);
+      setUsersList(users);
+    } catch (error) {
+      console.error('Error loading settings data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadData();
   }, []);
 
@@ -65,7 +95,7 @@ const SettingsPage: React.FC = () => {
           }
         >
           <CardContent className="h-full p-3">
-            <SettingTabs groupsList={groupsList} usersList={usersList} />
+            <SettingTabs groupsList={groupsList} usersList={usersList} onUserGroupUpdate={updateUserGroups} />
           </CardContent>
         </Card>
       </div>

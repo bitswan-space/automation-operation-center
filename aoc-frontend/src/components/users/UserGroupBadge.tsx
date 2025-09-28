@@ -23,16 +23,20 @@ type UserGroupBadgeProps = {
     | RemoveUserFromGroupActionType
     | RemoveWorkspaceFromGroupActionType
     | RemoveAutomationServerFromGroupActionType;
+  onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void;
 };
 
 export function UserGroupBadge(props: UserGroupBadgeProps) {
-  const { group, id, action } = props;
+  const { group, id, action, onUserGroupUpdate } = props;
 
   const { user: session } = useAuth();
 
   const { execute, isPending } = useAction(action, {
     onSuccess: () => {
       toast.success("Successfully removed from group");
+      if (onUserGroupUpdate) {
+        onUserGroupUpdate(id, group.id, 'remove');
+      }
     },
     onError: ({ error }) => {
       toast.error(

@@ -27,10 +27,11 @@ export type UserGroupsBadgeListProps = {
     | RemoveUserFromGroupActionType
     | RemoveWorkspaceFromGroupActionType
     | RemoveAutomationServerFromGroupActionType;
+  onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void;
 };
 
 export function UserGroupsBadgeList(props: UserGroupsBadgeListProps) {
-  const { memberGroups, id, nonMemberGroups, addAction, removeAction } = props;
+  const { memberGroups, id, nonMemberGroups, addAction, removeAction, onUserGroupUpdate } = props;
   const { user: session } = useAuth();
 
   const hasPerms = canMutateUsers(session);
@@ -43,6 +44,7 @@ export function UserGroupsBadgeList(props: UserGroupsBadgeListProps) {
             key={group.id}
             id={id}
             action={removeAction}
+            onUserGroupUpdate={onUserGroupUpdate}
           />
         );
       })}
@@ -52,6 +54,7 @@ export function UserGroupsBadgeList(props: UserGroupsBadgeListProps) {
           groups={nonMemberGroups}
           id={id}
           action={addAction}
+          onUserGroupUpdate={onUserGroupUpdate}
         />
       )}
     </div>
