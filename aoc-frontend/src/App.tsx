@@ -6,6 +6,7 @@ import { ReactFlowProvider } from '@xyflow/react';
 import { Toaster } from '@/components/ui/sonner';
 
 import { AuthProvider } from '@/context/AuthContext';
+import { AdminProvider } from '@/context/AdminContext';
 import { MQTTTokensProvider } from '@/context/MQTTTokensProvider';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { AdminProtectedRoute } from '@/components/auth/AdminProtectedRoute';
@@ -34,7 +35,8 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ReactFlowProvider>
         <AuthProvider>
-          <MQTTTokensProvider>
+          <AdminProvider>
+            <MQTTTokensProvider>
             <Router>
             <Routes>
               {/* Public routes */}
@@ -89,7 +91,8 @@ function App() {
             
             <Toaster />
             <ReactQueryDevtools initialIsOpen={false} />
-          </MQTTTokensProvider>
+            </MQTTTokensProvider>
+          </AdminProvider>
         </AuthProvider>
       </ReactFlowProvider>
     </QueryClientProvider>
