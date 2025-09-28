@@ -15,12 +15,14 @@ type SettingTabsProps = {
   usersList?: OrgUsersListResponse;
   onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void;
   onGroupCreated?: () => void;
+  onUserInvited?: () => void;
+  onUserDeleted?: () => void;
 };
 
 type SettingTab = "users" | "groups" | "general";
 
 export function SettingTabs(props: SettingTabsProps) {
-  const { groupsList, usersList, onUserGroupUpdate, onGroupCreated } = props;
+  const { groupsList, usersList, onUserGroupUpdate, onGroupCreated, onUserInvited, onUserDeleted } = props;
   
   // Check if experimental features should be shown
   const showExperimental = process.env.REACT_APP_BITSWAN_EXPERIMENTAL?.toLowerCase() === 'true';
@@ -76,7 +78,13 @@ export function SettingTabs(props: SettingTabsProps) {
       <TabsContent value="users">
         <div className="w-full">
           {/* User management with optimistic updates */}
-          <UserDetailTable userGroups={groupsList} usersList={usersList} onUserGroupUpdate={onUserGroupUpdate} />
+          <UserDetailTable 
+            userGroups={groupsList} 
+            usersList={usersList} 
+            onUserGroupUpdate={onUserGroupUpdate}
+            onUserInvited={onUserInvited}
+            onUserDeleted={onUserDeleted}
+          />
         </div>
       </TabsContent>
       <TabsContent value="groups">

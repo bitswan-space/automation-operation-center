@@ -16,6 +16,14 @@ const SettingsPage: React.FC = () => {
     loadData();
   };
 
+  const handleUserInvited = () => {
+    loadData();
+  };
+
+  const handleUserDeleted = () => {
+    loadData();
+  };
+
   const updateUserGroups = (userId: string, groupId: string, action: 'add' | 'remove') => {
     setUsersList(prevUsers => {
       if (!prevUsers) return prevUsers;
@@ -99,7 +107,14 @@ const SettingsPage: React.FC = () => {
           }
         >
           <CardContent className="h-full p-3">
-            <SettingTabs groupsList={groupsList} usersList={usersList} onUserGroupUpdate={updateUserGroups} onGroupCreated={handleGroupCreated} />
+            <SettingTabs 
+              groupsList={groupsList} 
+              usersList={usersList} 
+              onUserGroupUpdate={updateUserGroups} 
+              onGroupCreated={handleGroupCreated}
+              onUserInvited={handleUserInvited}
+              onUserDeleted={handleUserDeleted}
+            />
           </CardContent>
         </Card>
       </div>
