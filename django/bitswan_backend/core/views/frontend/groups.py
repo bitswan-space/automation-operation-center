@@ -16,6 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from bitswan_backend.core.authentication import KeycloakAuthentication
+from bitswan_backend.core.viewmixins import KeycloakMixin
 from bitswan_backend.core.serializers.groups import CreateOrgSerializer
 from bitswan_backend.core.serializers.groups import CreateUserGroupSerializer
 from bitswan_backend.core.serializers.groups import OrgSerializer

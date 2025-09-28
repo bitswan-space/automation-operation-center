@@ -15,6 +15,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useClipboard } from "use-clipboard-copy";
 import { useAuth } from "@/context/AuthContext";
 import { authenticatedBitswanBackendInstance } from "@/lib/api-client";
+import { getActiveOrgFromCookies } from "@/data/organisations";
 
 interface ConnectAutomationServerModalProps {
   children: React.ReactNode;
@@ -54,9 +55,16 @@ export function ConnectAutomationServerModal({
     if (!automationServerId || otpRedeemed) return;
 
     try {
+      const activeOrg = await getActiveOrgFromCookies();
       const apiClient = await authenticatedBitswanBackendInstance();
       const response = await apiClient.get(
-        `/automation-servers/check-otp-status/?automation_server_id=${automationServerId}`
+        `/automation-servers/check-otp-status/?automation_server_id=${automationServerId}`,
+        {
+          headers: {
+            "X-Org-Id": activeOrg?.id ?? "",
+            "X-Org-Name": activeOrg?.name ?? "",
+          },
+        }
       );
 
       if (response.data.redeemed) {

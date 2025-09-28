@@ -269,6 +269,7 @@ LOGGING = {
         "allauth.socialaccount": {"level": "DEBUG", "handlers": ["console"], "propagate": False},
         "python_keycloak": {"level": "DEBUG", "handlers": ["console"], "propagate": False},
         "django": {"level": "DEBUG", "handlers": ["console"], "propagate": False},
+        "django.utils.autoreload": {"level": "INFO", "handlers": ["console"], "propagate": False},
     },
 }
 
