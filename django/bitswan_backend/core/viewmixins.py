@@ -137,7 +137,7 @@ class KeycloakMixin:
 
         org_id = self.get_org_id()
 
-        self.keycloak.invite_user_to_org(email=email, org_id=org_id)
+        return self.keycloak.invite_user_to_org(email=email, org_id=org_id)
 
     def delete_user(self, user_id):
         """

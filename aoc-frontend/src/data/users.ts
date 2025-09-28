@@ -43,7 +43,7 @@ export const inviteUser = async (email: string): Promise<ApiResponse<null>> => {
   try {
     const bitswanBEInstance = await authenticatedBitswanBackendInstance();
     const response = await bitswanBEInstance.post<ApiResponse<null>>(
-      "/org-users/invite",
+      "/org-users/invite/",
       { email },
       {
         headers: {

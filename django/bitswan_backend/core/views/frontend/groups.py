@@ -2,6 +2,7 @@
 Frontend API views for group and user management
 """
 import json
+import logging
 
 from keycloak import KeycloakDeleteError
 from keycloak import KeycloakGetError
@@ -10,6 +11,7 @@ from keycloak import KeycloakPutError
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -25,6 +27,8 @@ from bitswan_backend.core.pagination import DefaultPagination
 from bitswan_backend.core.viewmixins import KeycloakMixin
 from bitswan_backend.core.models.workspaces import WorkspaceGroupMembership
 from bitswan_backend.core.models.automation_server import AutomationServerGroupMembership
+
+logger = logging.getLogger(__name__)
 
 
 class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
@@ -169,12 +173,38 @@ class OrgUsersViewSet(KeycloakMixin, viewsets.ViewSet):
         try:
             email = request.data.get("email")
 
-            self.invite_user_to_org(email=email)
-            return Response(status=status.HTTP_201_CREATED)
+            invitation_result = self.invite_user_to_org(email=email)
+            
+            if invitation_result["success"]:
+                return Response(
+                    {
+                        "success": True,
+                        "email_sent": invitation_result["email_sent"],
+                        "temporary_password": invitation_result["temporary_password"],
+                        "message": "User invited successfully"
+                    },
+                    status=status.HTTP_201_CREATED
+                )
+            else:
+                return Response(
+                    {"error": "Failed to invite user"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
         except (KeycloakPostError, KeycloakPutError) as e:
             e.add_note("Error while inviting user to org.")
             return Response(
                 {"error": json.loads(e.error_message).get("errorMessage")},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        except PermissionDenied as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        except Exception as e:
+            logger.exception("Unexpected error while inviting user to org")
+            return Response(
+                {"error": "An unexpected error occurred while inviting the user"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
