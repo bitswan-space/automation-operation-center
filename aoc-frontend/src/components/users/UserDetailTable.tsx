@@ -61,7 +61,10 @@ type OrgUserFull = OrgUser & { nonMemberGroups: UserGroup[] };
 
 const columnHelper = createColumnHelper<OrgUserFull>();
 
-const createColumns = (onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void): ColumnDef<OrgUserFull>[] => [
+const createColumns = (
+  onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void,
+  onUserDeleted?: () => void
+): ColumnDef<OrgUserFull>[] => [
   {
     accessorKey: "email",
     header: () => <div className="p-2 px-6 text-left font-semibold">Email</div>,
@@ -109,7 +112,7 @@ const createColumns = (onUserGroupUpdate?: (userId: string, groupId: string, act
     id: "actions",
     cell: ({ row }) => {
       const id = row.original.id;
-      return <UserActions id={id} />;
+      return <UserActions id={id} onUserDeleted={onUserDeleted} />;
     },
   }),
 ];
@@ -118,10 +121,12 @@ type UserDetailTableProps = {
   usersList?: OrgUsersListResponse;
   userGroups?: UserGroupsListResponse;
   onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void; // Optimistic update callback
+  onUserInvited?: () => void; // Callback when user is invited
+  onUserDeleted?: () => void; // Callback when user is deleted
 };
 
 export function UserDetailTable(props: UserDetailTableProps) {
-  const { usersList: orgUsers, userGroups, onUserGroupUpdate } = props;
+  const { usersList: orgUsers, userGroups, onUserGroupUpdate, onUserInvited, onUserDeleted } = props;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const page = searchParams.get("page") ?? "1";
@@ -155,7 +160,7 @@ export function UserDetailTable(props: UserDetailTableProps) {
 
   const table = useReactTable({
     data: orgUsersData,
-    columns: createColumns(onUserGroupUpdate),
+    columns: createColumns(onUserGroupUpdate, onUserDeleted),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -178,7 +183,7 @@ export function UserDetailTable(props: UserDetailTableProps) {
 
   return (
     <div className="w-full">
-      {hasPerms && <UserInviteForm />}
+      {hasPerms && <UserInviteForm onUserInvited={onUserInvited} />}
 
       {orgUsersData && (
         <div className="rounded-md border">
@@ -221,7 +226,7 @@ export function UserDetailTable(props: UserDetailTableProps) {
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={createColumns(onUserGroupUpdate).length}
+                    colSpan={createColumns(onUserGroupUpdate, onUserDeleted).length}
                     className="h-24 text-center"
                   >
                     No results.
@@ -258,10 +263,11 @@ export function UserDetailTable(props: UserDetailTableProps) {
 
 type UserActionProps = {
   id: string;
+  onUserDeleted?: () => void;
 };
 
 function UserActions(props: UserActionProps) {
-  const { id } = props;
+  const { id, onUserDeleted } = props;
 
   const [open, setOpen] = React.useState(false);
 
@@ -269,6 +275,8 @@ function UserActions(props: UserActionProps) {
     onSuccess: () => {
       setOpen(false);
       toast.success("User deleted");
+      // Notify parent component to refresh user list
+      onUserDeleted?.();
     },
     onError: ({ error }) => {
       toast.error((error as any)?.serverError?.message ?? "Error deleting user");

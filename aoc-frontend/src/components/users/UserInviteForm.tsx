@@ -8,7 +8,11 @@ import { toast } from "sonner";
 import { useAction } from "@/hooks/useAction";
 import { EmailSetupDialog } from "../ui/email-setup-dialog";
 
-export function UserInviteForm({}) {
+type UserInviteFormProps = {
+  onUserInvited?: () => void;
+};
+
+export function UserInviteForm({ onUserInvited }: UserInviteFormProps) {
   const [inputValue, setInputValue] = React.useState("");
   const [showEmailDialog, setShowEmailDialog] = React.useState(false);
   const [dialogData, setDialogData] = React.useState<{
@@ -23,6 +27,8 @@ export function UserInviteForm({}) {
       // Check if email was sent successfully
       if (result.email_sent) {
         toast.success("User invited successfully");
+        // Only refresh the user list if email was sent successfully
+        onUserInvited?.();
       } else {
         // Show dialog with temporary password
         setDialogData({
@@ -30,6 +36,7 @@ export function UserInviteForm({}) {
           temporaryPassword: result.temporary_password || ""
         });
         setShowEmailDialog(true);
+        // Don't refresh the user list here since we're showing the dialog
       }
     },
     onError: ({ error }) => {
@@ -76,7 +83,13 @@ export function UserInviteForm({}) {
       {dialogData && (
         <EmailSetupDialog 
           open={showEmailDialog} 
-          onOpenChange={setShowEmailDialog}
+          onOpenChange={(open) => {
+            setShowEmailDialog(open);
+            if (!open) {
+              // Dialog was closed, refresh the user list
+              onUserInvited?.();
+            }
+          }}
           email={dialogData.email}
           temporaryPassword={dialogData.temporaryPassword}
         />
