@@ -8,6 +8,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/context/AuthContext';
 import { MQTTTokensProvider } from '@/context/MQTTTokensProvider';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { AdminProtectedRoute } from '@/components/auth/AdminProtectedRoute';
 import LoginPage from '@/pages/LoginPage';
 import AuthCallbackPage from '@/pages/AuthCallbackPage';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -52,9 +53,9 @@ function App() {
               
               {/* Automation server routes */}
               <Route path="/automation-servers" element={
-                <ProtectedRoute>
+                <AdminProtectedRoute>
                   <DashboardLayout />
-                </ProtectedRoute>
+                </AdminProtectedRoute>
               }>
                 <Route index element={<AutomationServersPage />} />
                 <Route path=":id" element={<AutomationServerDetailPage />} />
@@ -73,9 +74,9 @@ function App() {
               
               {/* Settings route */}
               <Route path="/settings" element={
-                <ProtectedRoute>
+                <AdminProtectedRoute>
                   <DashboardLayout />
-                </ProtectedRoute>
+                </AdminProtectedRoute>
               }>
                 <Route index element={<SettingsPage />} />
               </Route>

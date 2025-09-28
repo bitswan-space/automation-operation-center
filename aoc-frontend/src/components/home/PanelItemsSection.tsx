@@ -12,11 +12,12 @@ import { useSidebarItems } from "@/context/SideBarItemsProvider";
 type PanelItemsSectionProps = {
   showDefaultItems?: boolean;
   sidebarItems?: RawNavItem[];
+  isAdmin?: boolean;
 };
 
 export default function PanelItemsSection(props: PanelItemsSectionProps) {
   const { deserializedNavItems: sidebarItems } = useSidebarItems();
-  const { showDefaultItems = false } = props;
+  const { showDefaultItems = false, isAdmin = false } = props;
 
   const sidebarItemsToUse = props.sidebarItems ?? sidebarItems;
 
@@ -42,12 +43,14 @@ export default function PanelItemsSection(props: PanelItemsSectionProps) {
             url={"/automations"}
           />
 
-          <PanelItemCard
-            key={"automation_servers_card"}
-            icon={<Server size={32} className="text-neutral-900" />}
-            title={"Automation Servers"}
-            url={"/automation-servers"}
-          />
+          {isAdmin && (
+            <PanelItemCard
+              key={"automation_servers_card"}
+              icon={<Server size={32} className="text-neutral-900" />}
+              title={"Automation Servers"}
+              url={"/automation-servers"}
+            />
+          )}
         </>
       )}
       {sidebarItemsToUse?.map((item) => (

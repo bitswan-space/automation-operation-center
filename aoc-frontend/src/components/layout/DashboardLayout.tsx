@@ -16,10 +16,12 @@ import { useMQTTTokens } from "@/context/MQTTTokensProvider";
 import { fetchOrgs, getActiveOrgFromCookies } from "@/data/organisations";
 import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 
 export default function DashboardLayout() {
   const { user } = useAuth();
   const { tokens } = useMQTTTokens();
+  const { isAdmin } = useAdminStatus();
   const [orgs, setOrgs] = useState<any[]>([]);
   const [activeOrg, setActiveOrg] = useState<any>();
 
@@ -49,7 +51,7 @@ export default function DashboardLayout() {
     <SidebarProvider>
       <SidebarItemsProvider>
         {/* Sidebar */}
-        <AppSidebar session={{ user }} orgs={orgs} activeOrg={activeOrg} />
+        <AppSidebar session={{ user }} orgs={orgs} activeOrg={activeOrg} isAdmin={isAdmin} />
         <SidebarRail />
         <AutomationsProvider tokens={tokens}>
           <SidebarInset>

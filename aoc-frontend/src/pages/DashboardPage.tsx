@@ -1,8 +1,11 @@
 import PanelItemsSection from "@/components/home/PanelItemsSection";
 import React from "react";
 import { TitleBar } from "@/components/layout/TitleBar";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 
 export default function DashboardPage() {
+  const { isAdmin } = useAdminStatus();
+
   return (
     <div>
       <TitleBar title="Dashboard"/>
@@ -19,7 +22,7 @@ export default function DashboardPage() {
           </div>
         </div>
         <div className="mx-auto mt-6 flex flex-col gap-8">
-          <PanelItemsSection showDefaultItems />
+          <PanelItemsSection showDefaultItems isAdmin={isAdmin} />
         </div>
       </div>
     </div>
