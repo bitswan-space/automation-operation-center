@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { CreateOrgDialog } from "./create-org-dialog";
+import { CreateOrgDialog, CreateOrgDialogTrigger } from "./create-org-dialog";
 import { useAction } from "@/hooks/useAction";
 import { switchOrgAction } from "./actions";
 import { toast } from "sonner";
@@ -29,13 +29,19 @@ export function OrgSwitcher({
   orgs: orgs,
   activeOrg: activeOrg,
 }: OrgSwitcherProps) {
+  console.log("OrgSwitcher render - orgs:", orgs.length, "activeOrg:", activeOrg?.name);
+  
+  const [createOrgDialogOpen, setCreateOrgDialogOpen] = React.useState(false);
+  
   const { execute: switchOrg, isPending } = useAction(switchOrgAction, {
     onSuccess: () => {
+      console.log("OrgSwitcher - switchOrg onSuccess called");
       toast.success("Organization switched");
       // Force a full page refresh
       window.location.reload();
     },
     onError: ({ error }) => {
+      console.log("OrgSwitcher - switchOrg onError called:", error);
       toast.error(
         error?.serverError?.message ?? "Failed to switch organization",
       );
@@ -43,7 +49,13 @@ export function OrgSwitcher({
   });
 
   const handleSwitchOrg = async (orgId: string) => {
+    console.log("OrgSwitcher - handleSwitchOrg called with orgId:", orgId);
     switchOrg({ orgId });
+  };
+
+  const handleCreateOrgClick = () => {
+    console.log("OrgSwitcher - handleCreateOrgClick called, setting dialog open to true");
+    setCreateOrgDialogOpen(true);
   };
 
   if (!activeOrg) {
@@ -51,7 +63,8 @@ export function OrgSwitcher({
   }
 
   return (
-    <DropdownMenu>
+    <>
+      <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <SidebarMenuButton 
           size="lg"
@@ -96,8 +109,15 @@ export function OrgSwitcher({
         })}
         <DropdownMenuSeparator />
 
-        <CreateOrgDialog />
+        <CreateOrgDialogTrigger onTriggerClick={handleCreateOrgClick} />
       </DropdownMenuContent>
     </DropdownMenu>
+    
+      {/* Dialog rendered outside of dropdown menu */}
+      <CreateOrgDialog 
+        open={createOrgDialogOpen}
+        onOpenChange={setCreateOrgDialogOpen}
+      />
+    </>
   );
 }

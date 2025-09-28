@@ -75,12 +75,14 @@ export const createOrg = async (name: string) => {
   const bitswanBEInstance = await authenticatedBitswanBackendInstance();
 
   try {
-    const res = await bitswanBEInstance.post<ApiResponse<Organisation>>(
+    // The Django API returns the organization data directly, not wrapped in ApiResponse
+    const res = await bitswanBEInstance.post<Organisation>(
       "/orgs/",
       {
         name,
       },
     );
+    // Return the organization data with success status
     return { ...res.data, status: "success" as const };
   } catch (error) {
     console.error("Error creating org", error);
