@@ -11,8 +11,17 @@ export const isUserAdmin = (user: any): boolean => {
 export const isUserAdminInCurrentOrg = async (): Promise<boolean> => {
   try {
     const { authenticatedBitswanBackendInstance } = await import('@/lib/api-client');
+    const { getActiveOrgFromCookies } = await import('@/data/organisations');
+    
+    const activeOrg = await getActiveOrgFromCookies();
     const apiClient = await authenticatedBitswanBackendInstance();
-    const response = await apiClient.get('/users/me/admin-status/');
+    
+    const response = await apiClient.get('/users/me/admin-status/', {
+      headers: {
+        "X-Org-Id": activeOrg?.id ?? "",
+        "X-Org-Name": activeOrg?.name ?? "",
+      },
+    });
     return response.data.is_admin;
   } catch (error) {
     console.error('Failed to check admin status:', error);

@@ -145,21 +145,56 @@ class KeycloakService:
         return user_info["sub"]
 
     def get_active_user_org(self, request) -> dict[str, any] | None:
+        """
+        Get the active user's organization from the X-Org-Id header.
+        This is the correct approach as the frontend explicitly sets the active org.
+        """
         try:
-            user_info = self.get_claims(request)
-            user_id = user_info["sub"]
-
-            logger.info("Getting user groups for user: %s", user_id)
-            user_keycloak_groups = self.get_user_groups(user_id)
-
-            if not user_keycloak_groups:
-                logger.warning("No groups found for user: %s", user_id)
+            org_id = request.headers.get("X-Org-Id")
+            org_name = request.headers.get("X-Org-Name")
+            
+            if not org_id:
+                logger.warning("No X-Org-Id header found in request")
                 return None
-
-            return self.get_first_group_id_of_type_org(user_keycloak_groups)
-        except Exception:
-            logger.exception("Failed to get active user org:")
-            raise
+                
+            if not org_name:
+                logger.warning("No X-Org-Name header found in request")
+                return None
+            
+            # Validate that the user is actually a member of this org
+            user_info = self.get_claims(request)
+            user_id = user_info.get("sub")
+            
+            if not user_id:
+                logger.warning("User ID not found in token")
+                return None
+            
+            # Get user groups to verify membership
+            try:
+                user_groups = self.get_user_groups(user_id)
+                user_group_paths = [group.get("path", "") for group in user_groups]
+            except Exception as e:
+                logger.error("Failed to get user groups: %s", str(e))
+                return None
+            
+            # Check if user is a member of the specified org
+            expected_org_path = f"/{org_name}"
+            if expected_org_path not in user_group_paths:
+                logger.warning("User %s is not a member of org %s", user_id, org_name)
+                return None
+            
+            # Get the org details to return
+            org = self.get_org_by_id(org_id)
+            if not org or org.get("name") != org_name:
+                logger.warning("Org %s not found or name mismatch", org_id)
+                return None
+                
+            logger.info("Active user org: %s (%s)", org_name, org_id)
+            return org
+            
+        except Exception as e:
+            logger.exception("Failed to get active user org: %s", str(e))
+            return None
 
     def get_active_user_orgs(self, request):
         try:

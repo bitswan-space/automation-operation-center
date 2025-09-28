@@ -125,6 +125,11 @@ LOGGING = {
             "handlers": ["console"],
             "propagate": False,
         },
+        "django.utils.autoreload": {
+            "level": "INFO",
+            "handlers": ["console"],
+            "propagate": False,
+        },
     },
 }
 
