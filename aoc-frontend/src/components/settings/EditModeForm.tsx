@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "../ui/label";
 import React from "react";
 import { Switch } from "@/components/ui/switch";
-import { canMutateSidebarItems } from "@/lib/permissions";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { useAuth } from "@/context/AuthContext";
 import { useSidebar } from "../ui/sidebar";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
@@ -34,7 +34,7 @@ export function SwitchForm() {
     },
   );
 
-  const hasPerms = canMutateSidebarItems(session);
+  const { isAdmin: hasPerms } = useAdminStatus();
 
   return (
     <div className="flex flex-col gap-4">

@@ -6,7 +6,7 @@ import { Loader2, X } from "lucide-react";
 import { type UserGroup } from "@/data/groups";
 
 import { Badge } from "../ui/badge";
-import { canMutateUsers } from "@/lib/permissions";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { useAuth } from "@/context/AuthContext";
 import { useAction } from "@/hooks/useAction";
 import { toast } from "sonner";
@@ -45,7 +45,7 @@ export function UserGroupBadge(props: UserGroupBadgeProps) {
     },
   });
 
-  const hasPerms = canMutateUsers(session);
+  const hasPerms = useAdminStatus().isAdmin;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

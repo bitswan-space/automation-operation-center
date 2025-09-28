@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import React from "react";
 import { useAutomations } from "@/context/AutomationsProvider";
 import { ConnectAutomationServerModal } from "./ConnectAutomationServerModal";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 
 type AutomationServerListSectionProps = {
   servers: AutomationServer[];
@@ -21,6 +22,7 @@ export function AutomationServerListSection(
 ) {
   const { servers } = props;
   const { automationServers: automationServersGroup, isLoading } = useAutomations();
+  const { isAdmin } = useAdminStatus();
 
   // Construct API URL for CLI commands (base backend URL without /api/frontend)
   const currentHost = window.location.hostname;
@@ -68,15 +70,17 @@ export function AutomationServerListSection(
           />
         </div>
         <div className="flex gap-2">
-          <ConnectAutomationServerModal 
-            apiUrl={apiUrl}
-            onServerCreated={handleServerCreated}
-          >
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus size={20} className="mr-2" />
-              Connect Automation Server
-            </Button>
-          </ConnectAutomationServerModal>
+          {isAdmin && (
+            <ConnectAutomationServerModal 
+              apiUrl={apiUrl}
+              onServerCreated={handleServerCreated}
+            >
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                <Plus size={20} className="mr-2" />
+                Connect Automation Server
+              </Button>
+            </ConnectAutomationServerModal>
+          )}
           <Button 
             className="bg-blue-600 hover:bg-blue-700"
             onClick={handleRefresh}

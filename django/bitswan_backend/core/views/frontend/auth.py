@@ -391,6 +391,50 @@ class CurrentUserAPIView(APIView):
 
 @extend_schema(
     tags=["Frontend API - Authentication"],
+    summary="Check Current User Admin Status",
+    description="Check if the current user is an admin in the active organization",
+    responses={
+        200: {
+            "description": "Admin status retrieved successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "is_admin": True
+                    }
+                }
+            }
+        }
+    }
+)
+class CurrentUserAdminStatusAPIView(APIView):
+    """
+    Check if current user is admin in the active organization
+    """
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        """Check if user is admin in current organization"""
+        try:
+            keycloak_service = KeycloakService()
+            
+            # Check if user is admin in the current organization
+            is_admin = keycloak_service.is_admin(request)
+            
+            return Response({
+                "is_admin": is_admin
+            }, status=status.HTTP_200_OK)
+                
+        except Exception as e:
+            logger.error(f"Check admin status error: {e}")
+            return Response(
+                {"error": "Failed to check admin status"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+@extend_schema(
+    tags=["Frontend API - Authentication"],
     summary="Keycloak OAuth Callback",
     description="Handle OAuth callback from Keycloak and return access token",
     responses={

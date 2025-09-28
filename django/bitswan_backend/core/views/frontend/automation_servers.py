@@ -19,6 +19,7 @@ from bitswan_backend.core.serializers.automation_server import (
     AutomationServerSerializer,
     CreateAutomationServerSerializer,
 )
+from bitswan_backend.core.permissions import IsOrgAdmin
 from bitswan_backend.core.viewmixins import KeycloakMixin
 from bitswan_backend.core.pagination import DefaultPagination
 
@@ -35,7 +36,7 @@ class AutomationServerViewSet(KeycloakMixin, viewsets.ModelViewSet):
     serializer_class = AutomationServerSerializer
     pagination_class = DefaultPagination
     authentication_classes = [KeycloakAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOrgAdmin]
 
     def _is_admin_for_automation_server(self, request, automation_server):
         """
@@ -342,7 +343,7 @@ class CreateAutomationServerWithOTPAPIView(KeycloakMixin, APIView):
     Create an automation server and generate an OTP for CLI registration
     """
     authentication_classes = [KeycloakAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOrgAdmin]
 
     def _is_admin_for_automation_server(self, request, automation_server):
         """
@@ -487,7 +488,7 @@ class CheckOTPStatusAPIView(KeycloakMixin, APIView):
     Only admin users can check OTP status.
     """
     authentication_classes = [KeycloakAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOrgAdmin]
 
     def _is_admin_for_automation_server(self, request, automation_server):
         """

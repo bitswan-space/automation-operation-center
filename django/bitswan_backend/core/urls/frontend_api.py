@@ -25,6 +25,7 @@ from bitswan_backend.core.views.frontend.auth import (
     LoginAPIView,
     LogoutAPIView,
     CurrentUserAPIView,
+    CurrentUserAdminStatusAPIView,
     KeycloakOAuthInitAPIView,
     KeycloakCallbackAPIView,
     AuthStatusAPIView,
@@ -50,6 +51,7 @@ urlpatterns = [
     path('auth/keycloak-callback/', KeycloakCallbackAPIView.as_view(), name='keycloak_callback'),
     path('auth/status/', AuthStatusAPIView.as_view(), name='auth_status'),
     path('users/me/', CurrentUserAPIView.as_view(), name='current_user'),
+    path('users/me/admin-status/', CurrentUserAdminStatusAPIView.as_view(), name='current_user_admin_status'),
     
     # Automation server OTP management
     path('automation-servers/create-with-otp/', CreateAutomationServerWithOTPAPIView.as_view(), name='create_automation_server_with_otp'),
