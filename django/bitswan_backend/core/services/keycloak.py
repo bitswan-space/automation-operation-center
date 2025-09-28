@@ -1,11 +1,14 @@
 import json
 import logging
+import secrets
+import string
 
 from django.conf import settings
 from keycloak import KeycloakAdmin
 from keycloak import KeycloakOpenID
 from keycloak import KeycloakOpenIDConnection
 from keycloak import KeycloakPostError
+from keycloak.exceptions import KeycloakError
 
 from bitswan_backend.core.utils import encryption
 
@@ -357,31 +360,100 @@ class KeycloakService:
             logger.exception("Failed to find user by email: %s", email)
             return None
 
+    def generate_temporary_password(self, length=12):
+        """
+        Generate a secure temporary password.
+        """
+        # Use a mix of letters, digits, and symbols
+        characters = string.ascii_letters + string.digits + "!@#$%^&*"
+        password = ''.join(secrets.choice(characters) for _ in range(length))
+        return password
+
     def invite_user_to_org(self, email, org_id):
-        # Try to find if user already exists
-        user_id = self.find_user_by_email(email)
+        """
+        Invite a user to an organization.
+        Returns a dict with invitation status and temporary password if email failed.
+        """
+        result = {
+            "success": True,
+            "email_sent": False,
+            "temporary_password": None,
+            "user_id": None
+        }
         
-        if user_id:
-            self.keycloak_admin.group_user_add(user_id=user_id, group_id=org_id)
-        else:
-            user_id = self.keycloak_admin.create_user(
-                payload={
-                    "username": email,
-                    "email": email,
-                    "enabled": True,
-                },
-            )
+        try:
+            # Try to find if user already exists
+            user_id = self.find_user_by_email(email)
+            
+            if user_id:
+                self.keycloak_admin.group_user_add(user_id=user_id, group_id=org_id)
+                result["user_id"] = user_id
+                result["email_sent"] = True  # Existing user, assume they can log in
+            else:
+                # Create user without password first
+                user_id = self.keycloak_admin.create_user(
+                    payload={
+                        "username": email,
+                        "email": email,
+                        "enabled": True,
+                    },
+                )
 
-            self.keycloak_admin.group_user_add(user_id=user_id, group_id=org_id)
+                self.keycloak_admin.group_user_add(user_id=user_id, group_id=org_id)
+                result["user_id"] = user_id
 
-            self.keycloak_admin.send_update_account(
-                user_id=user_id,
-                payload=[
-                    "UPDATE_PASSWORD",
-                    "VERIFY_EMAIL",
-                ],
-                lifespan=172800,
-            )
+                # Try to send email with password reset
+                try:
+                    self.keycloak_admin.send_update_account(
+                        user_id=user_id,
+                        payload=[
+                            "UPDATE_PASSWORD",
+                            "VERIFY_EMAIL",
+                        ],
+                        lifespan=172800,
+                    )
+                    logger.info("Email sent successfully to user: %s", email)
+                    result["email_sent"] = True
+                except (KeycloakError, Exception) as e:
+                    logger.warning("Failed to send email to user %s: %s", email, str(e))
+                    # Email failed, generate temporary password and recreate user with password
+                    temp_password = self.generate_temporary_password()
+                    try:
+                        # Delete the user without password
+                        self.keycloak_admin.delete_user(user_id)
+                        
+                        # Recreate user with temporary password
+                        user_id = self.keycloak_admin.create_user(
+                            payload={
+                                "username": email,
+                                "email": email,
+                                "enabled": True,
+                                "credentials": [{
+                                    "type": "password",
+                                    "value": temp_password,
+                                    "temporary": True
+                                }]
+                            },
+                        )
+                        
+                        # Add user back to group
+                        self.keycloak_admin.group_user_add(user_id=user_id, group_id=org_id)
+                        result["user_id"] = user_id
+                        result["email_sent"] = False
+                        result["temporary_password"] = temp_password
+                        
+                    except Exception as recreate_error:
+                        logger.error("Failed to recreate user with password for %s: %s", email, str(recreate_error))
+                        result["email_sent"] = False
+                        result["temporary_password"] = None
+                        result["success"] = False
+        except Exception as e:
+            logger.exception("Unexpected error in invite_user_to_org for %s: %s", email, str(e))
+            result["success"] = False
+            result["email_sent"] = False
+            result["temporary_password"] = None
+
+        return result
 
     def delete_user(self, user_id):
         self.keycloak_admin.delete_user(user_id=user_id)
