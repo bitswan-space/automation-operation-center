@@ -44,7 +44,7 @@ import { type PipelineStat, type PipelineWithStats } from "@/types";
 
 import { Area, AreaChart, XAxis } from "recharts";
 import { Link } from "react-router-dom";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const columnHelper = createColumnHelper<PipelineWithStats>();
 
@@ -451,9 +451,16 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center text-slate-500"
+                  className="h-32 text-center"
                 >
-                  No results.
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <div className="text-gray-500 text-lg mb-2">
+                      There are no Automations from any workspaces to display
+                    </div>
+                    <div className="text-gray-400 text-sm">
+                      Connect to a workspace to see your automations here
+                    </div>
+                  </div>
                 </TableCell>
               </TableRow>
             )}

@@ -262,6 +262,15 @@ export const AutomationsProvider = ({ children, tokens }: { children: ReactNode,
     if (tokens && tokens.length > 0) {
       console.log('AutomationsProvider: Connecting to MQTT with tokens:', tokens);
       globalMQTTManager.connect(tokens);
+    } else if (tokens && tokens.length === 0) {
+      // No tokens available - set loading to false and clear any existing data
+      console.log('AutomationsProvider: No MQTT tokens available, setting loading to false');
+      globalAutomationsState = {
+        all: [],
+        automationServers: {},
+        isLoading: false,
+      };
+      setAutomations({ ...globalAutomationsState });
     }
   }, [tokens]);
 
