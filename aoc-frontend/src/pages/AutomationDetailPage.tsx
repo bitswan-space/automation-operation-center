@@ -1,9 +1,13 @@
-import { PipelineDetailSection } from "@/components/pipeline/PipelineDetailSection";
 import { TitleBar } from "@/components/layout/TitleBar";
 import { getAutomationServers } from "@/data/automation-server";
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getMQTTTokens } from "@/data/mqtt";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Globe, Code } from "lucide-react";
+import { useAutomations } from "@/context/AutomationsProvider";
 
 const AutomationDetailPage = () => {
   const { id, workspaceId, pipelineId } = useParams<{ 
@@ -12,6 +16,7 @@ const AutomationDetailPage = () => {
     pipelineId: string; 
   }>();
   
+  const { automationServers, isLoading: contextLoading } = useAutomations();
   const [automationServer, setAutomationServer] = useState<any>(null);
   const [workspace, setWorkspace] = useState<any>(null);
   const [token, setToken] = useState<any>(null);
@@ -67,27 +72,33 @@ const AutomationDetailPage = () => {
 
   const getBreadcrumbs = () => {
     return (
-      <React.Fragment>
-        <Link
-          to={`/automation-servers/${automationServer?.automation_server_id}`}
-          className="underline"
-        >
-          {automationServer?.name}
-        </Link>
-        <span className="text-lg">&#x25B8;</span>
-        <Link
-          to={`/automation-servers/${automationServer?.automation_server_id}/workspaces/${workspaceId}/`}
-          className="underline"
-        >
-          {workspace?.name}
-        </Link>
-        <span className="text-lg">&#x25B8;</span>
-        <span className="text-neutral-600">{pipelineId}</span>
-      </React.Fragment>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to={`/automation-servers/${automationServer?.automation_server_id}`}>
+                {automationServer?.name}
+              </Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to={`/automation-servers/${automationServer?.automation_server_id}/workspaces/${workspaceId}/`}>
+                {workspace?.name}
+              </Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{pipelineId}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
     );
   };
 
-  if (loading) {
+  if (loading || contextLoading) {
     return (
       <div className="w-full">
         <h1 className="text-2xl font-bold text-stone-700 md:hidden">
@@ -96,9 +107,6 @@ const AutomationDetailPage = () => {
         <TitleBar title={"Automation"} />
         <div className="p-4 text-center text-gray-500">
           Loading automation details...
-          <div className="mt-2 text-sm">
-            Params: {JSON.stringify({ id, workspaceId, pipelineId })}
-          </div>
         </div>
       </div>
     );
@@ -108,22 +116,88 @@ const AutomationDetailPage = () => {
     return <div>Automation not found</div>;
   }
 
+  // Get automation data for the cards - try both data sources
+  const contextAutomationServer = automationServers[id];
+  const contextWorkspace = contextAutomationServer?.workspaces[workspaceId];
+  const contextAutomation = contextWorkspace?.pipelines?.find((p: any) => p.properties["deployment-id"] === pipelineId);
+  
+  // Fallback to API data if context data is not available
+  const finalAutomationServer = contextAutomationServer || automationServer;
+  const finalWorkspace = contextWorkspace || workspace;
+  const finalAutomation = contextAutomation || finalWorkspace?.pipelines?.find((p: any) => p.properties["deployment-id"] === pipelineId);
+  
+  
+  // Generate editor URL - use the original workspace variable that has editor_url
+  const vscode_link = workspace?.editor_url && finalAutomation?.properties["relative-path"] &&
+    workspace.editor_url + "?folder=/home/coder/workspace" + 
+    `&payload=[["openFile","vscode-remote:///home/coder/workspace/${finalAutomation?.properties["relative-path"]}/main.ipynb"]]`;
+
   return (
     <div className="w-full">
       <h1 className="text-2xl font-bold text-stone-700 md:hidden">
         Automation
       </h1>
       <TitleBar title={"Automation"} />
-      <div className="space-x-4 py-2 text-sm font-semibold text-neutral-600">
+      <div className="py-4">
         {getBreadcrumbs()}
       </div>
-      <PipelineDetailSection
-        editor_url={workspace?.editor_url}
-        automationServerId={id!}
-        workspaceId={workspaceId!}
-        ids={[pipelineId!]}
-        token={token}
-      />
+      
+      
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Automation Web Interface Card */}
+        {finalAutomation?.properties["automation-url"] && (
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5 text-blue-600" />
+                Automation Web Interface
+              </CardTitle>
+              <CardDescription>
+                Open the automation web form to interact with your automation
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full">
+                <a
+                  href={finalAutomation.properties["automation-url"]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Globe className="mr-2 h-4 w-4" />
+                  Open Web Interface
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Open in Editor Card */}
+        {vscode_link && (
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Code className="h-5 w-5 text-green-600" />
+                Open in Editor
+              </CardTitle>
+              <CardDescription>
+                Open the automation code in your editor to view and modify the implementation
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full">
+                <a
+                  href={vscode_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Code className="mr-2 h-4 w-4" />
+                  Open in Editor
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 };
