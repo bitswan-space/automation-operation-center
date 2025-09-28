@@ -34,7 +34,7 @@ import { Badge } from "../ui/badge";
 import { Loader2, Trash2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
-import { canMutateUsers } from "@/lib/permissions";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { UserInviteForm } from "./UserInviteForm";
 
 import { type UserGroup, type UserGroupsListResponse } from "@/data/groups";
@@ -132,7 +132,7 @@ export function UserDetailTable(props: UserDetailTableProps) {
   const page = searchParams.get("page") ?? "1";
 
   const { user: session } = useAuth();
-  const hasPerms = canMutateUsers(session);
+  const { isAdmin: hasPerms } = useAdminStatus();
 
   console.log('UserDetailTable received data:', { orgUsers, userGroups });
 
@@ -284,10 +284,11 @@ function UserActions(props: UserActionProps) {
   });
 
   const { user: session } = useAuth();
+  const { isAdmin } = useAdminStatus();
 
   const activeUserId = session?.id;
 
-  const hasPerms = canMutateUsers(session) && activeUserId !== id;
+  const hasPerms = isAdmin && activeUserId !== id;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

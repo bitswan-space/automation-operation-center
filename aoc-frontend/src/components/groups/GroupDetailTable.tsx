@@ -32,7 +32,7 @@ import { CreateGroupFormSheet } from "./CreateGroupFormSheet";
 import { Separator } from "../ui/separator";
 
 import { useAuth } from "@/context/AuthContext";
-import { canMutateGroups } from "@/lib/permissions";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 
 import { type UserGroup, type UserGroupsListResponse } from "@/data/groups";
 import { toast } from "sonner";
@@ -79,8 +79,7 @@ export function GroupDetailTable(props: GroupDetailTableProps) {
   const { userGroups, onGroupCreated } = props;
 
   const { user: session } = useAuth();
-
-  const hasPerms = canMutateGroups(session);
+  const { isAdmin: hasPerms } = useAdminStatus();
 
   const userGroupsData = React.useMemo(
     () => userGroups?.results ?? [],
@@ -227,7 +226,7 @@ function GroupActions(props: GroupActionProps) {
   const { id, group, onGroupCreated } = props;
 
   const { user: session } = useAuth();
-  const hasPerms = canMutateGroups(session);
+  const { isAdmin: hasPerms } = useAdminStatus();
 
   const { execute, isPending } = useAction(deleteOrgGroupAction, {
     onSuccess: () => {

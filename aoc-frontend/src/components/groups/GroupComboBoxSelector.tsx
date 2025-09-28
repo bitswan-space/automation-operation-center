@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/popover";
 
 import { Badge } from "../ui/badge";
-import { canMutateUsers } from "@/lib/permissions";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "../ui/button";
 import { useAction } from "@/hooks/useAction";
@@ -44,7 +44,7 @@ export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
   const { groups, id, action, onUserGroupUpdate } = props;
 
   const { user: session } = useAuth();
-  const hasPerms = canMutateUsers(session);
+  const { isAdmin: hasPerms } = useAdminStatus();
 
   const [open, setOpen] = React.useState(false);
 

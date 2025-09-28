@@ -24,7 +24,7 @@ from bitswan_backend.core.serializers.groups import UpdateUserGroupSerializer
 from bitswan_backend.core.serializers.groups import UserGroupSerializer
 from bitswan_backend.core.managers.organization import GroupNavigationService
 from bitswan_backend.core.pagination import DefaultPagination
-from bitswan_backend.core.viewmixins import KeycloakMixin
+from bitswan_backend.core.permissions import IsOrgAdmin
 from bitswan_backend.core.models.workspaces import WorkspaceGroupMembership
 from bitswan_backend.core.models.automation_server import AutomationServerGroupMembership
 
@@ -35,7 +35,7 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
     pagination_class = DefaultPagination
     group_nav_service = GroupNavigationService()
     authentication_classes = [KeycloakAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOrgAdmin]
 
     def list(self, request):
         try:
@@ -139,7 +139,7 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
 class OrgUsersViewSet(KeycloakMixin, viewsets.ViewSet):
     pagination_class = DefaultPagination
     authentication_classes = [KeycloakAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOrgAdmin]
 
     def list(self, request):
         try:

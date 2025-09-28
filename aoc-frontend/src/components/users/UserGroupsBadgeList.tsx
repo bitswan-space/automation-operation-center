@@ -4,7 +4,7 @@ import { GroupComboBoxSelector } from "../groups/GroupComboBoxSelector";
 import React from "react";
 import { type UserGroup } from "@/data/groups";
 import { UserGroupBadge } from "./UserGroupBadge";
-import { canMutateUsers } from "@/lib/permissions";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { useAuth } from "@/context/AuthContext";
 import {
   type AddWorkspaceToGroupActionType,
@@ -34,7 +34,7 @@ export function UserGroupsBadgeList(props: UserGroupsBadgeListProps) {
   const { memberGroups, id, nonMemberGroups, addAction, removeAction, onUserGroupUpdate } = props;
   const { user: session } = useAuth();
 
-  const hasPerms = canMutateUsers(session);
+  const { isAdmin: hasPerms } = useAdminStatus();
   return (
     <div className="flex max-w-3xl flex-wrap gap-2">
       {memberGroups.map((group) => {

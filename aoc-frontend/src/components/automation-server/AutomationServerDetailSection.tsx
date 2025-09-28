@@ -31,8 +31,7 @@ import {
   removeAutomationServerFromGroupAction,
 } from "../groups/action";
 import { DeleteAutomationServerModal } from "./DeleteAutomationServerModal";
-import { isUserAdmin } from "@/lib/permissions";
-import { useAuth } from "@/context/AuthContext";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 import React from "react";
 
 type AutomationServerDetailSectionProps = {
@@ -47,7 +46,7 @@ export function AutomationServerDetailSection(
 
   const navigate = useNavigate();
   const { automationServers, isLoading } = useAutomations();
-  const { user } = useAuth();
+  const { isAdmin } = useAdminStatus();
 
   const workspaces = React.useMemo(
     () =>
@@ -150,7 +149,7 @@ export function AutomationServerDetailSection(
                   Disconnected
                 </Badge>
               )}
-              {isUserAdmin(user) && (
+              {isAdmin && (
                 <DeleteAutomationServerModal
                   serverName={server?.name ?? ""}
                   serverId={server?.automation_server_id ?? ""}
