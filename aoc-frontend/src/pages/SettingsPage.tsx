@@ -12,6 +12,10 @@ const SettingsPage: React.FC = () => {
   const [usersList, setUsersList] = useState<OrgUsersListResponse | undefined>();
   const [isLoading, setIsLoading] = useState(true);
 
+  const handleGroupCreated = () => {
+    loadData();
+  };
+
   const updateUserGroups = (userId: string, groupId: string, action: 'add' | 'remove') => {
     setUsersList(prevUsers => {
       if (!prevUsers) return prevUsers;
@@ -95,7 +99,7 @@ const SettingsPage: React.FC = () => {
           }
         >
           <CardContent className="h-full p-3">
-            <SettingTabs groupsList={groupsList} usersList={usersList} onUserGroupUpdate={updateUserGroups} />
+            <SettingTabs groupsList={groupsList} usersList={usersList} onUserGroupUpdate={updateUserGroups} onGroupCreated={handleGroupCreated} />
           </CardContent>
         </Card>
       </div>

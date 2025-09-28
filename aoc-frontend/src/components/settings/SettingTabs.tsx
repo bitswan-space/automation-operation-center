@@ -14,19 +14,28 @@ type SettingTabsProps = {
   groupsList?: UserGroupsListResponse;
   usersList?: OrgUsersListResponse;
   onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void;
+  onGroupCreated?: () => void;
 };
 
 type SettingTab = "users" | "groups" | "general";
 
 export function SettingTabs(props: SettingTabsProps) {
-  const { groupsList, usersList, onUserGroupUpdate } = props;
+  const { groupsList, usersList, onUserGroupUpdate, onGroupCreated } = props;
   
   // Check if experimental features should be shown
   const showExperimental = process.env.REACT_APP_BITSWAN_EXPERIMENTAL?.toLowerCase() === 'true';
 
-  const [activeTab, setActiveTab] = useState<SettingTab>(
-    showExperimental ? "general" : "users",
-  );
+  // Get initial tab from URL or use default
+  const getInitialTab = (): SettingTab => {
+    const url = new URL(window.location.href);
+    const tabFromUrl = url.searchParams.get('activeTab') as SettingTab;
+    if (tabFromUrl && (tabFromUrl === 'users' || tabFromUrl === 'groups' || tabFromUrl === 'general')) {
+      return tabFromUrl;
+    }
+    return showExperimental ? "general" : "users";
+  };
+
+  const [activeTab, setActiveTab] = useState<SettingTab>(getInitialTab);
 
   // Update URL when tab changes
   useEffect(() => {
@@ -34,15 +43,6 @@ export function SettingTabs(props: SettingTabsProps) {
     url.searchParams.set('activeTab', activeTab);
     window.history.replaceState({}, '', url.toString());
   }, [activeTab]);
-
-  // Read initial tab from URL
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    const tabFromUrl = url.searchParams.get('activeTab') as SettingTab;
-    if (tabFromUrl && (tabFromUrl === 'users' || tabFromUrl === 'groups' || tabFromUrl === 'general')) {
-      setActiveTab(tabFromUrl);
-    }
-  }, []);
 
   const handleTabChange = (tab: SettingTab) => {
     setActiveTab(tab);
@@ -81,7 +81,7 @@ export function SettingTabs(props: SettingTabsProps) {
       </TabsContent>
       <TabsContent value="groups">
         <div className="w-full">
-          <GroupDetailTable userGroups={groupsList} />
+          <GroupDetailTable userGroups={groupsList} onGroupCreated={onGroupCreated} />
         </div>
       </TabsContent>
     </Tabs>
