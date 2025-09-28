@@ -29,12 +29,7 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
     def list(self, request):
         try:
             groups = self.get_org_groups()
-            
-            for group in groups:
-                group["nav_items"] = self.group_nav_service.get_or_create_navigation(
-                    group_id=group["id"],
-                ).nav_items
-            
+
             paginator = self.pagination_class()
             paginated_groups = paginator.paginate_queryset(groups, request)
             serializer = UserGroupSerializer(paginated_groups, many=True)
@@ -76,7 +71,6 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
             )
 
     def update(self, request, pk=None):
-        print("Updating group", request.data)
         existing_group = self.get_org_group(pk)
 
         navigation = self.group_nav_service.get_or_create_navigation(group_id=pk)

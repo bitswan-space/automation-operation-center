@@ -2,7 +2,7 @@
 
 import { authenticatedBitswanBackendInstance } from "@/server/bitswan-backend";
 import { type ApiResponse, type ApiListResponse } from "./shared";
-import { type RawNavItem, type NavItem } from "@/components/layout/Sidebar/utils/NavItems";
+import { type NavItem } from "@/components/layout/Sidebar/utils/NavItems";
 import { getActiveOrgFromCookies } from "./organisations";
 
 export type UserGroup = {
@@ -11,7 +11,6 @@ export type UserGroup = {
   tag_color: string;
   description: string;
   active: boolean;
-  nav_items: RawNavItem[];
 };
 
 export type UserGroupsListResponse = ApiListResponse<UserGroup>;

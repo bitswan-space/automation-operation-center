@@ -1,13 +1,10 @@
 "use client";
 
-import { ACTIVE_PROFILE_STORAGE_KEY } from "@/shared/constants";
 import { Button } from "@/components/ui/button";
 import { Label } from "../ui/label";
-import { type Profile } from "@/data/profiles";
 import React from "react";
 import { Switch } from "@/components/ui/switch";
 import { canMutateSidebarItems } from "@/lib/permissions";
-import useLocalStorageState from "ahooks/lib/useLocalStorageState";
 import { useSession } from "next-auth/react";
 import { useSidebar } from "../ui/sidebar";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
@@ -18,14 +15,7 @@ import { createOrUpdateOrgGroupAction } from "../groups/action";
 export function SwitchForm() {
   const { editMode, setEditMode } = useSidebar();
 
-  const { deserializedNavItems } = useSidebarItems();
-
-  const [activeProfile] = useLocalStorageState<Profile | undefined>(
-    ACTIVE_PROFILE_STORAGE_KEY,
-    {
-      listenStorageChange: true,
-    },
-  );
+  const { deserializedNavItems, activeProfile } = useSidebarItems();
 
   const { data: session } = useSession();
 

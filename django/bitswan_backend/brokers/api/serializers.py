@@ -80,7 +80,6 @@ class UserGroupSerializer(serializers.Serializer):
     tag_color = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
     active = serializers.BooleanField(required=False)
-    nav_items = serializers.JSONField(required=False, allow_null=True)
 
 
 class CreateUserGroupSerializer(serializers.Serializer):

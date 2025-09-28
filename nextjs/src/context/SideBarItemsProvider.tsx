@@ -8,12 +8,12 @@ import {
   useSerializedNavItemData,
   type NavItem,
 } from "@/components/layout/Sidebar/utils/NavItems";
-import useLocalStorageState from "ahooks/lib/useLocalStorageState";
 
-import { ACTIVE_PROFILE_STORAGE_KEY } from "@/shared/constants";
 import { type Profile } from "@/data/profiles";
 
 type SidebarItemsContext = {
+  activeProfile: Profile | undefined;
+  setActiveProfile: (profile: Profile | undefined) => void;
   sidebarItems: NodeModel<NavItem>[];
   setSidebarItems: (items: NodeModel<NavItem>[]) => void;
   deserializedNavItems: RawNavItem[];
@@ -21,19 +21,6 @@ type SidebarItemsContext = {
 
 export const SidebarItemsContext =
   React.createContext<SidebarItemsContext | null>(null);
-
-export function useSidebarItemsSource() {
-  const [activeProfile] = useLocalStorageState<Profile | undefined>(
-    ACTIVE_PROFILE_STORAGE_KEY,
-    {
-      listenStorageChange: true,
-    },
-  );
-
-  console.log("activeProfile?.nav_items", activeProfile?.nav_items);
-
-  return useSerializedNavItemData(activeProfile?.nav_items ?? []);
-}
 
 export function useSidebarItems() {
   const context = React.useContext(SidebarItemsContext);
@@ -46,8 +33,10 @@ export function useSidebarItems() {
 export function SidebarItemsProvider({
   children,
 }: React.PropsWithChildren<unknown>) {
+  const [activeProfile, setActiveProfile] = React.useState<Profile | undefined>(undefined);
+  
   // Get the initial items
-  const sourceItems = useSidebarItemsSource();
+  const sourceItems = useSerializedNavItemData(activeProfile?.nav_items ?? []);
 
   // Use one state instead of updating based on source changes
   const [sidebarItemsState, setSidebarItemsState] = React.useState<
@@ -56,12 +45,12 @@ export function SidebarItemsProvider({
 
   React.useEffect(() => {
     setSidebarItemsState((prevItems) => {
-      // Simple length check first (cheap)
+      // Simple length check first
       if (prevItems.length !== sourceItems.length) {
         return sourceItems;
       }
       
-      // Check if the actual data changed (more expensive but safer)
+      // Check if the actual data changed
       const hasChanged = prevItems.some((item, index) => {
         const sourceItem = sourceItems[index];
         return !sourceItem || 
@@ -85,11 +74,13 @@ export function SidebarItemsProvider({
 
   const contextValue = React.useMemo(
     () => ({
+      activeProfile,
+      setActiveProfile,
       sidebarItems: sidebarItemsState,
       setSidebarItems,
       deserializedNavItems,
     }),
-    [sidebarItemsState, setSidebarItems, deserializedNavItems],
+    [sidebarItemsState, setSidebarItems, deserializedNavItems, activeProfile, setActiveProfile],
   );
 
   return (

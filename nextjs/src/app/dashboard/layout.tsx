@@ -33,13 +33,9 @@ export default async function DashboardLayout({
   }
 
   const profiles = await fetchProfiles();
-
-  console.log("profiles", profiles.results);
   const orgs = await fetchOrgs();
   const activeOrg = await getActiveOrgFromCookies();
-
   const tokens = await getMQTTTokens();
-  // console.log("tokens", tokens);
 
   return (
     <SidebarProvider>

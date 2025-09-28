@@ -2,9 +2,7 @@
 
 import { Ungroup, Loader2 } from "lucide-react";
 
-import { ACTIVE_PROFILE_STORAGE_KEY } from "@/shared/constants";
 import React, { useEffect, useState } from "react";
-import useLocalStorageState from "ahooks/lib/useLocalStorageState";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +15,7 @@ import { CaretSortIcon } from "@radix-ui/react-icons";
 import { type Profile } from "@/data/profiles";
 import { useSession } from "next-auth/react";
 import { canMutateSidebarItems } from "@/lib/permissions";
+import { useSidebarItems } from "@/context/SideBarItemsProvider";
 
 type ProfileSelectorProps = {
   profiles?: Profile[];
@@ -27,22 +26,24 @@ export default function ProfileSelector(props: ProfileSelectorProps) {
   const { profiles } = props;
   const [isClient, setIsClient] = useState(false);
 
-  const [activeProfile, saveActiveProfile] = useLocalStorageState<
-    Profile | undefined
-  >(ACTIVE_PROFILE_STORAGE_KEY, {
-    listenStorageChange: true,
-    defaultValue: profiles?.[0],
-  });
+  const { activeProfile, setActiveProfile } = useSidebarItems();
 
   // Prevent hydration mismatch by only rendering after client-side mount
   useEffect(() => {
     setIsClient(true);
   }, []);
+  
+  // Auto-select first profile
+  useEffect(() => {
+    if (profiles && !activeProfile) {
+      setActiveProfile(profiles[0]);
+    }
+  }, [profiles, setActiveProfile, activeProfile]);
 
   if (!canMutateSidebarItems(session)) {
     return <></>;
   }
-  
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -85,7 +86,7 @@ export default function ProfileSelector(props: ProfileSelectorProps) {
               key={profile.id}
               disabled={!isClient}
               onClick={() => {
-                saveActiveProfile(profile);
+                setActiveProfile(profile);
               }}
               className="gap-2 p-2"
             >
