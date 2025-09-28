@@ -13,12 +13,13 @@ import { type OrgUsersListResponse } from "@/data/users";
 type SettingTabsProps = {
   groupsList?: UserGroupsListResponse;
   usersList?: OrgUsersListResponse;
+  onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void;
 };
 
 type SettingTab = "users" | "groups" | "general";
 
 export function SettingTabs(props: SettingTabsProps) {
-  const { groupsList, usersList } = props;
+  const { groupsList, usersList, onUserGroupUpdate } = props;
   
   // Check if experimental features should be shown
   const showExperimental = process.env.REACT_APP_BITSWAN_EXPERIMENTAL?.toLowerCase() === 'true';
@@ -74,7 +75,8 @@ export function SettingTabs(props: SettingTabsProps) {
       )}
       <TabsContent value="users">
         <div className="w-full">
-          <UserDetailTable userGroups={groupsList} usersList={usersList} />
+          {/* User management with optimistic updates */}
+          <UserDetailTable userGroups={groupsList} usersList={usersList} onUserGroupUpdate={onUserGroupUpdate} />
         </div>
       </TabsContent>
       <TabsContent value="groups">
