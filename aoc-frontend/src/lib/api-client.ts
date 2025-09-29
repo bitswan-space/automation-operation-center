@@ -6,7 +6,7 @@ export const authenticatedBitswanBackendInstance = async (
   const apiToken = localStorage.getItem('access_token');
 
   const currentHost = window.location.hostname;
-  const protocol = "https";
+  const protocol = "https:";
   const backendHost = currentHost.replace(/^aoc\./, 'api.');
   const baseURL = `${protocol}//${backendHost}/api/frontend`;
   
