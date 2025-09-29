@@ -43,6 +43,7 @@ RUN chmod +x /entrypoint /start /dev-command \
 
 USER django
 
+RUN uv venv
 # Reinstall Python dependencies as django user (ensures correct permissions)
 RUN uv pip install .
 
