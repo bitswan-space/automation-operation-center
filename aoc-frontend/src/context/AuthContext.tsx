@@ -109,7 +109,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Get user info from backend using the token
         try {
           console.log('Fetching user info from backend...');
-          const userResponse = await axios.get('/users/me/');
+          const userResponse = await axios.get('/users/me');
           console.log('User info received:', userResponse.data);
           setUser(userResponse.data);
         } catch (userError) {
@@ -189,7 +189,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
           console.log('Verifying existing token with backend...');
           // Verify token with backend
-          const response = await axios.get('/users/me/');
+          const response = await axios.get('/users/me');
           console.log('Token verification successful, user:', response.data);
           setUser(response.data);
         } catch (error) {
