@@ -26,49 +26,23 @@ class PublicSchemaView(SpectacularAPIView):
     permission_classes = []      # No permissions required
 
 
-class AutomationServerDocumentationView(TemplateView):
+class BaseDocumentationView(TemplateView):
     """
-    View to serve the automation server integration documentation as HTML.
+    Base class for documentation views that provides common markdown-to-HTML functionality.
     """
-    template_name = "cli_docs.html"
     authentication_classes = []
     permission_classes = []
-
+    docs_filename = None  # Subclasses must define this
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Read the automation server integration documentation
-        # The file is now in the Django static directory
-        docs_path = os.path.join(settings.BASE_DIR, "bitswan_backend", "static", "AUTOMATION_SERVER_INTEGRATION_DOCS.md")
+        if not self.docs_filename:
+            context['docs_content'] = "<p>Error: Documentation filename not specified.</p>"
+            return context
         
-        try:
-            with open(docs_path, 'r', encoding='utf-8') as f:
-                markdown_content = f.read()
-            
-            # Convert markdown to HTML using proper markdown library
-            html_content = self.markdown_to_html(markdown_content)
-            context['docs_content'] = html_content
-        except FileNotFoundError:
-            context['docs_content'] = f"<p>Documentation file not found at: {docs_path}</p>"
-        except Exception as e:
-            context['docs_content'] = f"<p>Error loading documentation: {str(e)}</p>"
-        
-        return context
-
-
-class AOCArchitectureDocumentationView(TemplateView):
-    """
-    View to serve the AOC architecture documentation as HTML.
-    """
-    template_name = "architecture_docs.html"
-    authentication_classes = []
-    permission_classes = []
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        
-        # Read the AOC architecture documentation
-        docs_path = os.path.join(settings.BASE_DIR, "bitswan_backend", "static", "AOC_ARCHITECTURE_GUIDE.md")
+        # Read the documentation file
+        docs_path = os.path.join(settings.BASE_DIR, "bitswan_backend", "static", self.docs_filename)
         
         try:
             with open(docs_path, 'r', encoding='utf-8') as f:
@@ -132,3 +106,19 @@ class AOCArchitectureDocumentationView(TemplateView):
         )
         
         return html
+
+
+class AutomationServerDocumentationView(BaseDocumentationView):
+    """
+    View to serve the automation server integration documentation as HTML.
+    """
+    template_name = "cli_docs.html"
+    docs_filename = "AUTOMATION_SERVER_INTEGRATION_DOCS.md"
+
+
+class AOCArchitectureDocumentationView(BaseDocumentationView):
+    """
+    View to serve the AOC architecture documentation as HTML.
+    """
+    template_name = "architecture_docs.html"
+    docs_filename = "AOC_ARCHITECTURE_GUIDE.md"
