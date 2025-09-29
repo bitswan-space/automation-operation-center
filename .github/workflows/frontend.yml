@@ -2,15 +2,14 @@ name: AOC UI Build and Push
 
 on:
   push:
-    branches: [main, new-cli] # TODO: Change to main
+    branches: [main]
     tags: ["v*"]
     paths:
-      - "nextjs/**"
-      - ".github/workflows/nextjs.yml"
+      - "aoc-frontend/**"
+      - ".github/workflows/frontend.yml"
 
 jobs:
   build-and-push-staging:
-    # if: github.ref_type == 'branch' && (github.ref_name == 'main' || github.ref_name == 'new-cli')
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -51,7 +50,7 @@ jobs:
           # Build and tag with both staging and unique tags
           docker build -t "$IMAGE_TAG:staging" -t "$UNIQUE_TAG" \
                        --build-arg COMMIT_HASH=$COMMIT_HASH \
-                       --build-arg BUILD_NO=$BUILD_NO -f ./nextjs/Dockerfile ./nextjs
+                       --build-arg BUILD_NO=$BUILD_NO -f ./aoc-frontend/Dockerfile ./nextjs
 
           # Push the staging and unique tags
           docker push "$IMAGE_TAG:staging"
