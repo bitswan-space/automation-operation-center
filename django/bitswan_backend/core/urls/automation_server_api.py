@@ -15,10 +15,10 @@ router.register(r'workspaces', WorkspaceAPIViewSet, basename='automation-server-
 
 urlpatterns = [
     # OTP exchange (no authentication required)
-    path('exchange-otp/', ExchangeOTPForTokenAPIView.as_view(), name='exchange_otp_for_token'),
+    path('exchange-otp', ExchangeOTPForTokenAPIView.as_view(), name='exchange_otp_for_token'),
     
     # Automation server info (requires authentication)
-    path('info/', AutomationServerInfoAPIView.as_view(), name='automation_server_info'),
+    path('info', AutomationServerInfoAPIView.as_view(), name='automation_server_info'),
     
     # Include ViewSet routes
     path('', include(router.urls)),
