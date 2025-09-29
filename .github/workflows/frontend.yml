@@ -50,7 +50,7 @@ jobs:
           # Build and tag with both staging and unique tags
           docker build -t "$IMAGE_TAG:staging" -t "$UNIQUE_TAG" \
                        --build-arg COMMIT_HASH=$COMMIT_HASH \
-                       --build-arg BUILD_NO=$BUILD_NO -f ./aoc-frontend/Dockerfile ./nextjs
+                       --build-arg BUILD_NO=$BUILD_NO -f ./aoc-frontend/Dockerfile ./aoc-frontend
 
           # Push the staging and unique tags
           docker push "$IMAGE_TAG:staging"
