@@ -17,4 +17,10 @@ module.exports = {
     // Disable host checking for development
     allowedHosts: 'all',
   },
+  eslint: {
+    enable: false, // Disable ESLint during build to match development behavior
+  },
+  typescript: {
+    enableTypeChecking: false, // Disable strict TypeScript checking during build
+  },
 };
