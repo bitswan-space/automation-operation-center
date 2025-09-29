@@ -53,7 +53,7 @@ export function useMQTTRequestResponse<ResponseT>({
         
         // Use dynamic host based on current location
         const currentHost = window.location.hostname;
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const protocol = 'wss:';
         
         // Replace subdomain with 'mqtt' for MQTT broker connection
         const mqttHostname = currentHost.replace(/^[^.]+\./, 'mqtt.');
