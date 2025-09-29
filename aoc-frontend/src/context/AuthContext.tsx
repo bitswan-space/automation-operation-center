@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     // Determine backend URL based on current hostname
     const currentHost = window.location.hostname;
-    const protocol = window.location.protocol;
+    const protocol = "https";
     const port = window.location.port;
     
     let backendUrl: string;
