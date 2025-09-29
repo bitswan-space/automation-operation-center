@@ -481,21 +481,6 @@ client.on_message = on_message
 client.loop_forever()
 ```
 
-## API Reference Summary
-
-### Frontend API Endpoints
-- Organizations: `/api/frontend/orgs/`
-- Users: `/api/frontend/org-users/`
-- Groups: `/api/frontend/user-groups/`
-- Automation Servers: `/api/frontend/automation-servers/`
-- Workspaces: `/api/frontend/workspaces/`
-- MQTT Tokens: `/api/frontend/user/emqx/jwts/`
-
-### Automation Server API Endpoints
-- Authentication: `/api/automation_server/exchange-otp/`
-- Server Info: `/api/automation_server/info/`
-- Workspaces: `/api/automation_server/workspaces/`
-- MQTT Tokens: `/api/automation_server/workspaces/{id}/emqx/jwt/`
 
 ### MQTT Topic Patterns
 - Groups: `/orgs/{org_id}/automation-servers/{server_id}/groups`

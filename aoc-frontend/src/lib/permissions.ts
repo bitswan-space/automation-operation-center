@@ -16,7 +16,7 @@ export const isUserAdminInCurrentOrg = async (): Promise<boolean> => {
     const activeOrg = await getActiveOrgFromCookies();
     const apiClient = await authenticatedBitswanBackendInstance();
     
-    const response = await apiClient.get('/users/me/admin-status/', {
+    const response = await apiClient.get('/users/me/admin-status', {
       headers: {
         "X-Org-Id": activeOrg?.id ?? "",
         "X-Org-Name": activeOrg?.name ?? "",
