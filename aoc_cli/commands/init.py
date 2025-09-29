@@ -250,18 +250,7 @@ async def init_async(
 
 
     # Create InitConfig using shared logic
-    init_config = create_init_config(configs, output_dir, mkcerts, certs_dir, from_url, **kwargs)
-    
-    # Always save config to YAML file
-    init_config.save_to_yaml()
-    click.echo("Configuration saved to config file.")
-    
-    await execute_init(init_config)
-
-
-def create_init_config(configs: dict, output_dir: Path, mkcerts: bool, certs_dir, from_url: str, **kwargs) -> InitConfig:
-    """Create InitConfig object from configuration dictionary."""
-    return InitConfig(
+    init_config =  InitConfig(
         env=Environment(configs.get("env")),
         aoc_dir=Path(output_dir),
         protocol=Protocol(configs.get("protocol")),
@@ -280,7 +269,17 @@ def create_init_config(configs: dict, output_dir: Path, mkcerts: bool, certs_dir
         certs_dir=certs_dir,
         from_url=from_url,
     )
+    
+    # Always save config to YAML file
+    init_config.save_to_yaml()
+    click.echo("Configuration saved to config file.")
+    
+    await execute_init(init_config)
 
+
+def create_init_config(configs: dict, output_dir: Path, mkcerts: bool, certs_dir, from_url: str, **kwargs) -> InitConfig:
+    """Create InitConfig object from configuration dictionary."""
+    return
 
 async def execute_init(config: InitConfig) -> None:
     """Execute the initialization process."""
