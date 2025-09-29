@@ -101,7 +101,7 @@ def collect_configurations(
             "env_var": AOC_PROTOCOL,
             "prompt_text": "Protocol",
             "hide_input": False,
-            "default": "http",
+            "default": "https",
             "type": click.Choice(["http", "https"]),
         },
         "admin_email": {

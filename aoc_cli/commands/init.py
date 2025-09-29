@@ -136,7 +136,7 @@ def is_in_automation_center_repo() -> bool:
 @click.option(
     "--dev",
     is_flag=True,
-    help="Use development environment defaults (sets env=dev, domain=bitswan.localhost, protocol=http, etc.)",
+    help="Use development environment defaults (sets env=dev, domain=bitswan.localhost, protocol=https, etc.)",
 )
 @click.option(
     "--continue",
@@ -229,7 +229,8 @@ async def init_async(
         dev_defaults = {
             "env": "dev",
             "domain": "bitswan.localhost", 
-            "protocol": "http",
+            "protocol": "https",
+            "mkcerts": True,
             "admin_email": kwargs.get("admin_email") or "admin@example.com",
             "org_name": kwargs.get("org_name") or "Example Org",
             "keycloak_smtp_username": "",

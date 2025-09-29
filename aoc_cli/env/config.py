@@ -37,7 +37,7 @@ class InitConfig:
     keycloak_smtp_port: str | None = None
     aoc_dir: Path = Path.home() / ".config" / "bitswan" / "aoc"
     domain: str = "bitswan.localhost"
-    protocol: Protocol = Protocol.HTTP
+    protocol: Protocol = Protocol.HTTPS
     admin_email: str = "admin@bitswan.localhost"
     org_name: str = "Example Org"
     aoc_be_image: str | None = None
