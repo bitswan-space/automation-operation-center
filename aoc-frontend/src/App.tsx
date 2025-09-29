@@ -10,6 +10,7 @@ import { AdminProvider } from '@/context/AdminContext';
 import { MQTTTokensProvider } from '@/context/MQTTTokensProvider';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { AdminProtectedRoute } from '@/components/auth/AdminProtectedRoute';
+import { useHttpsRedirect } from '@/hooks/useHttpsRedirect';
 import LoginPage from '@/pages/LoginPage';
 import AuthCallbackPage from '@/pages/AuthCallbackPage';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -31,6 +32,9 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  // Redirect to HTTPS if currently on HTTP (production only)
+  useHttpsRedirect();
+
   return (
     <QueryClientProvider client={queryClient}>
       <ReactFlowProvider>
