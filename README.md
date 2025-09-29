@@ -39,7 +39,6 @@ pip install .
 ```bash
 aoc init \
   --domain=yourdomain.com \
-  --protocol=https \
   --org-name="Your Organization" \
   --admin-email=admin@yourdomain.com
 ```
