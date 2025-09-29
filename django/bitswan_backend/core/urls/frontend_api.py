@@ -1,6 +1,6 @@
 """
 URL configuration for frontend API endpoints.
-These endpoints are used by the web interface (NextJS with Keycloak auth).
+These endpoints are used by the web interface (React with Keycloak auth).
 """
 from django.urls import path, include
 from rest_framework.routers import SimpleRouter
