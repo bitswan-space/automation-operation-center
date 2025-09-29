@@ -209,7 +209,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async () => {
     try {
       // Get the Keycloak OAuth URL from the backend
-      const response = await axios.get('/auth/keycloak-init/');
+      const response = await axios.get('/auth/keycloak-init');
       const { auth_url } = response.data;
       
       // Redirect to Keycloak for authentication

@@ -123,7 +123,7 @@ export function ConnectAutomationServerModal({
       const apiClient = await authenticatedBitswanBackendInstance();
       const activeOrg = await getActiveOrgFromCookies();
       
-      const response = await apiClient.post('/automation-servers/create-with-otp/', {
+      const response = await apiClient.post('/automation-servers/create-with-otp', {
         name: serverName.trim(),
       }, {
         headers: {
