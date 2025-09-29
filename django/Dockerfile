@@ -47,10 +47,4 @@ RUN uv venv
 # Reinstall Python dependencies as django user (ensures correct permissions)
 RUN uv pip install .
 
-# Compile messages with required environment variables
-RUN DATABASE_URL="" \
-    EMQX_JWT_SECRET="" \
-    DJANGO_SETTINGS_MODULE="config.settings.test" \
-    uv run python manage.py compilemessages
-
 ENTRYPOINT ["/entrypoint"]
