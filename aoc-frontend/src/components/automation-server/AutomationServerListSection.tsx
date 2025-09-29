@@ -26,7 +26,7 @@ export function AutomationServerListSection(
 
   // Construct API URL for CLI commands (base backend URL without /api/frontend)
   const currentHost = window.location.hostname;
-  const protocol = "https";
+  const protocol = "https:";
   const backendHost = currentHost.replace(/^aoc\./, 'api.');
   const apiUrl = `${protocol}//${backendHost}/`;
 
