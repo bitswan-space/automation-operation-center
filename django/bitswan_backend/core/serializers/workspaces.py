@@ -47,7 +47,7 @@ class WorkspaceSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["created_at", "updated_at"]
+        read_only_fields = ["created_at", "updated_at", "keycloak_org_id"]
 
 
 class AutomationServerSerializer(serializers.ModelSerializer):
