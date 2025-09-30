@@ -1,5 +1,6 @@
 import asyncio
 import json
+from operator import truediv
 import os
 import re
 import shutil
@@ -11,10 +12,6 @@ import click
 import requests
 import yaml
 
-from aoc_cli.aoc_config import (
-    collect_configurations,
-    load_environment,
-)
 from aoc_cli.env.config import Environment, InitConfig, Protocol
 from aoc_cli.env.services import write_env_files
 from aoc_cli.env.utils import get_env_path
@@ -155,7 +152,6 @@ def is_in_automation_center_repo() -> bool:
     help="The directory where the certificates are located",
 )
 @click.option("--from", "from_url", type=str, help="URL endpoint returning versions for update")
-@click.pass_context
 def init(
     *args, 
     **kwargs,
@@ -164,18 +160,18 @@ def init(
 
 
 async def init_async(
-    ctx,
-    output_dir: Path,
+    output_dir,
     env_file,
     overwrite,
     dev,
     continue_from_config,
-    mkcerts,
-    certs_dir,
-    from_url,
     **kwargs,
 ):
     """Initialize the Automation Operations Center (AOC)."""
+    
+    # Convert output_dir to Path object if it's a string
+    if isinstance(output_dir, str):
+        output_dir = Path(output_dir)
     
     # Check for required dependencies first
     check_dependencies()
@@ -191,84 +187,60 @@ async def init_async(
             click.echo("Error: No existing config file found. Run without --continue first.")
             return
     
-    # Original production/non-dev flow
+    # Build configuration using InitConfig methods
     click.echo("Initializing AoC...\n")
-
-    load_environment(env_file)
-
-    configs, config_metadata = collect_configurations(
-        interactive=kwargs["interactive"],
-        env=kwargs["env"],
-        domain=kwargs["domain"],
-        protocol=kwargs["protocol"],
-        admin_email=kwargs["admin_email"],
-        org_name=kwargs["org_name"],
-        keycloak_smtp_username=kwargs["keycloak_smtp_username"],
-        keycloak_smtp_password=kwargs["keycloak_smtp_password"],
-        keycloak_smtp_host=kwargs["keycloak_smtp_host"],
-        keycloak_smtp_from=kwargs["keycloak_smtp_from"],
-        keycloak_smtp_port=kwargs["keycloak_smtp_port"],
-    )
-
-    click.echo(f"env: {configs}")
-
-    ctx.obj = configs  # Store configurations in context object for further usage
-    ctx.obj["output_dir"] = output_dir
-    ctx.obj["overwrite"] = overwrite
-
-    if dev:
-        # Check if we're in the automation center git repo
-        if not is_in_automation_center_repo():
-            click.echo("Error: Dev mode can only be launched from within the automation center git repository.")
-            click.echo("Please navigate to the automation center repository and try again.")
-            return
-        
-        click.echo("\n\nInitializing AoC Dev environment...")
-        
-        # Apply dev defaults when --dev flag is used
-        dev_defaults = {
-            "env": "dev",
-            "domain": "bitswan.localhost", 
-            "protocol": "https",
-            "mkcerts": True,
-            "admin_email": kwargs.get("admin_email") or "admin@example.com",
-            "org_name": kwargs.get("org_name") or "Example Org",
-            "keycloak_smtp_username": "",
-            "keycloak_smtp_password": "",
-            "keycloak_smtp_port": "1025",
-            "keycloak_smtp_host": "mailpit",
-            "keycloak_smtp_from": "auth@bitswan.localhost",
-        }
-        
-        # Merge user-provided options with dev defaults, prioritizing user input
-        for key, default_value in dev_defaults.items():
-            if kwargs.get(key) is None:
-                kwargs[key] = default_value
-        
-        # Use the merged kwargs for config creation
-        configs = kwargs
-
-
-    # Create InitConfig using shared logic
-    init_config =  InitConfig(
-        env=Environment(configs.get("env")),
-        aoc_dir=Path(output_dir),
-        protocol=Protocol(configs.get("protocol")),
-        domain=configs.get("domain"),
-        admin_email=configs.get("admin_email"),
-        org_name=configs.get("org_name"),
-        aoc_be_image=kwargs.get("aoc_be_image"),
-        aoc_image=kwargs.get("aoc_image"),
-        keycloak_image=kwargs.get("keycloak_image"),
-        keycloak_smtp_username=configs.get("keycloak_smtp_username"),
-        keycloak_smtp_password=configs.get("keycloak_smtp_password"),
-        keycloak_smtp_host=configs.get("keycloak_smtp_host"),
-        keycloak_smtp_from=configs.get("keycloak_smtp_from"),
-        keycloak_smtp_port=configs.get("keycloak_smtp_port"),
-        mkcerts=mkcerts,
-        certs_dir=certs_dir,
-        from_url=from_url,
-    )
+    
+    try:
+        if dev:
+            # Check if we're in the automation center git repo
+            if not is_in_automation_center_repo():
+                click.echo("Error: Dev mode can only be launched from within the automation center git repository.")
+                click.echo("Please navigate to the automation center repository and try again.")
+                return
+            
+            click.echo("\n\nInitializing AoC Dev environment...")
+            
+            # Use the new dev config factory method
+            init_config = InitConfig.create_dev_config(
+                aoc_dir=output_dir,
+                admin_email=kwargs.get("admin_email"),
+                org_name=kwargs.get("org_name"),
+                aoc_be_image=kwargs.get("aoc_be_image"),
+                aoc_image=kwargs.get("aoc_image"),
+                keycloak_image=kwargs.get("keycloak_image"),
+                mkcerts=True if not kwargs.get("certs_dir") else False,
+                certs_dir=kwargs.get("certs_dir"),
+            )
+        else:
+            # Production/non-dev flow
+            load_environment(env_file)
+            
+            # Use the new collect_configurations method
+            init_config = InitConfig.collect_configurations(
+                interactive=kwargs["interactive"],
+                env=kwargs["env"],
+                domain=kwargs["domain"],
+                protocol=kwargs["protocol"],
+                admin_email=kwargs["admin_email"],
+                org_name=kwargs["org_name"],
+                keycloak_smtp_username=kwargs["keycloak_smtp_username"],
+                keycloak_smtp_password=kwargs["keycloak_smtp_password"],
+                keycloak_smtp_host=kwargs["keycloak_smtp_host"],
+                keycloak_smtp_from=kwargs["keycloak_smtp_from"],
+                keycloak_smtp_port=kwargs["keycloak_smtp_port"],
+                aoc_dir=output_dir,
+                mkcerts=mkcerts,
+                certs_dir=certs_dir,
+                from_url=from_url,
+                aoc_be_image=kwargs.get("aoc_be_image"),
+                aoc_image=kwargs.get("aoc_image"),
+                keycloak_image=kwargs.get("keycloak_image"),
+            )
+            
+            click.echo(f"env: {init_config.env.value}")
+    except click.Abort:
+        return
+    
     
     # Always save config to YAML file
     init_config.save_to_yaml()
@@ -277,9 +249,6 @@ async def init_async(
     await execute_init(init_config)
 
 
-def create_init_config(configs: dict, output_dir: Path, mkcerts: bool, certs_dir, from_url: str, **kwargs) -> InitConfig:
-    """Create InitConfig object from configuration dictionary."""
-    return
 
 async def execute_init(config: InitConfig) -> None:
     """Execute the initialization process."""

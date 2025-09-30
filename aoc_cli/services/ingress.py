@@ -14,9 +14,7 @@ class IngressService:
         
         # Add mkcerts flag if enabled
         if self.config.mkcerts:
-            cmd.append("--mkcerts")
-            # Add domain flag if mkcerts is enabled
-            cmd.extend(["--domain", self.config.domain])
+            cmd.append("--mkcert")
         
         # Add certs-dir if provided
         if self.config.certs_dir:
@@ -29,6 +27,7 @@ class IngressService:
                 text=True,
                 check=True
             )
+            print(cmd)
             print(f"Added route {domain} pointing to {target}")
             if result.stdout:
                 print(f"Output: {result.stdout}")
