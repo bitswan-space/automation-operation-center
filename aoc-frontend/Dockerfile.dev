@@ -1,0 +1,15 @@
+FROM node:18-alpine 
+
+WORKDIR /app
+
+# Install git for any git dependencies
+RUN apk add --no-cache git
+
+# Copy docker scripts
+COPY docker/dev /dev-command
+
+RUN chmod +x /dev-command
+
+EXPOSE 80 3000
+
+ENTRYPOINT ["/dev-command"]

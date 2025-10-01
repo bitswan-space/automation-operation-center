@@ -192,6 +192,17 @@ async def init_async(
     
     try:
         if dev:
+
+            #build the frontend dev
+            #the dockerfile is called Dockerfile.dev
+            pwd = os.getcwd()
+            click.echo(f"Building frontend dev image... {pwd}")
+            subprocess.run(
+                ["docker", "build", "-t", "aoc-frontend-dev", "-f", "Dockerfile.dev", "."],
+                check=True,
+                cwd=os.path.join(pwd, "aoc-frontend"),
+            )
+
             # Check if we're in the automation center git repo
             if not is_in_automation_center_repo():
                 click.echo("Error: Dev mode can only be launched from within the automation center git repository.")
@@ -200,13 +211,16 @@ async def init_async(
             
             click.echo("\n\nInitializing AoC Dev environment...")
             
-            # Use the new dev config factory method
+            if not kwargs.get("aoc_image"):
+                kwargs["aoc_image"] = "aoc-frontend-dev"
+
+            #0 Use the new dev config factory method
             init_config = InitConfig.create_dev_config(
                 aoc_dir=output_dir,
                 admin_email=kwargs.get("admin_email"),
                 org_name=kwargs.get("org_name"),
                 aoc_be_image=kwargs.get("aoc_be_image"),
-                aoc_image=kwargs.get("aoc_image"),
+                aoc_image=kwargs.get("aoc_image"), 
                 keycloak_image=kwargs.get("keycloak_image"),
                 mkcerts=True if not kwargs.get("certs_dir") else False,
                 certs_dir=kwargs.get("certs_dir"),
