@@ -23,7 +23,7 @@ RUN npm run build
 FROM nginx:alpine
 
 # Copy built application from builder stage
-COPY --from=builder /app/build /usr/build
+COPY --from=builder /app/build /app/build
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
