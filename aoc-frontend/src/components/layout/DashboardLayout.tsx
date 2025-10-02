@@ -1,79 +1,46 @@
 import "@/styles.css";
 
 import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarRail,
-  SidebarTrigger,
+    SidebarInset,
+    SidebarRail,
+    SidebarTrigger,
 } from "@/components/ui/sidebar";
 
 import { AppSidebar } from "@/components/layout/Sidebar/Sidebar";
-import { AutomationsProvider } from "@/context/AutomationsProvider";
-import { SidebarItemsProvider } from "@/context/SideBarItemsProvider";
 import { Toaster } from "sonner";
 import { useAuth } from "@/context/AuthContext";
-import { useMQTTTokens } from "@/context/MQTTTokensProvider";
-import { fetchOrgs, getActiveOrgFromCookies } from "@/data/organisations";
-import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
-import { useAdminStatus } from "@/hooks/useAdminStatus";
 
 export default function DashboardLayout() {
-  const { user } = useAuth();
-  const { tokens } = useMQTTTokens();
-  const { isAdmin } = useAdminStatus();
-  const [orgs, setOrgs] = useState<any[]>([]);
-  const [activeOrg, setActiveOrg] = useState<any>();
+    const { user } = useAuth();
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [orgsData, activeOrgData] = await Promise.all([
-          fetchOrgs(),
-          getActiveOrgFromCookies(),
-        ]);
-        
-        setOrgs(orgsData?.results ?? []);
-        setActiveOrg(activeOrgData);
-      } catch (error) {
-        console.error("Error loading dashboard data:", error);
-      }
-    };
+    if (!user) {
+        return null;
+    }
 
-    loadData();
-  }, []);
-
-  if (!user) {
-    return null;
-  }
-
-  return (
-    <SidebarProvider>
-      <SidebarItemsProvider>
-        {/* Sidebar */}
-        <AppSidebar session={{ user }} orgs={orgs} activeOrg={activeOrg} isAdmin={isAdmin} />
-        <SidebarRail />
-        <AutomationsProvider tokens={tokens}>
-          <SidebarInset>
-            <header>
-              <div className="border-border flex h-12 shrink-0 items-center gap-2 border-b px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 md:h-16">
-                <SidebarTrigger className="-ml-1" />
-              </div>
-            </header>
-            <div className="flex-1 py-0">
-              <div className="flex items-center justify-between pb-1">
-                {process.env.REACT_APP_AOC_BUILD_NO && (
-                  <div className="pr-4 text-xs font-medium">
-                    Build · {process.env.REACT_APP_AOC_BUILD_NO}
-                  </div>
-                )}
-              </div>
-              <Outlet />
-            </div>
-          </SidebarInset>
-        </AutomationsProvider>
-        <Toaster />
-      </SidebarItemsProvider>
-    </SidebarProvider>
-  );
+    return (
+        <>
+            {/* Sidebar */}
+            <AppSidebar user={user} />
+            <SidebarRail />
+            <SidebarInset>
+                <header>
+                    <div className="border-border flex h-12 shrink-0 items-center gap-2 border-b px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 md:h-16">
+                        <SidebarTrigger className="-ml-1" />
+                    </div>
+                </header>
+                <div className="flex-1 py-0">
+                    <div className="flex items-center justify-between pb-1">
+                        {process.env.REACT_APP_AOC_BUILD_NO && (
+                            <div className="pr-4 text-xs font-medium">
+                                Build · {process.env.REACT_APP_AOC_BUILD_NO}
+                            </div>
+                        )}
+                    </div>
+                    <Outlet />
+                </div>
+            </SidebarInset>
+            <Toaster />
+        </>
+    );
 }

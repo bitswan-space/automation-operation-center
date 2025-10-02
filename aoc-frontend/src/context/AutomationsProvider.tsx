@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { usePipelineStats } from '@/components/pipeline/hooks/usePipelineStats';
-import { type TokenData } from '@/data/mqtt';
 import { type PipelineWithStats } from '@/types';
 import MQTTService from '@/services/MQTTService';
+import { useMQTTTokens } from './MQTTTokensProvider';
 
 type WorkspaceGroup = {
   workspaceId: string;
@@ -27,9 +27,10 @@ let globalPipelineStats: any[] = [];
 
 const AutomationsContext = createContext<AutomationsGroups | null>(null);
 
-export const AutomationsProvider = ({ children, tokens }: { children: ReactNode, tokens: TokenData[] }) => {
+export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
   const [automations, setAutomations] = useState<AutomationsGroups>(() => MQTTService.getInstance().getState());
   const pipelineStats = usePipelineStats();
+  const { tokens } = useMQTTTokens();
 
   // Update global pipeline stats
   useEffect(() => {

@@ -16,19 +16,13 @@ import { CreateOrgDialog, CreateOrgDialogTrigger } from "./create-org-dialog";
 import { useAction } from "@/hooks/useAction";
 import { switchOrgAction } from "./actions";
 import { toast } from "sonner";
-import { type Organisation } from "@/data/organisations";
 import { SidebarMenuButton } from "../ui/sidebar";
 import { CaretSortIcon } from "@radix-ui/react-icons";
+import { useOrgs } from "@/context/OrgsProvider";
 
-type OrgSwitcherProps = {
-  orgs: Organisation[];
-  activeOrg?: Organisation;
-};
 
-export function OrgSwitcher({
-  orgs: orgs,
-  activeOrg: activeOrg,
-}: OrgSwitcherProps) {
+export function OrgSwitcher() {
+  const { orgs, activeOrg } = useOrgs();
   console.log("OrgSwitcher render - orgs:", orgs.length, "activeOrg:", activeOrg?.name);
   
   const [createOrgDialogOpen, setCreateOrgDialogOpen] = React.useState(false);
