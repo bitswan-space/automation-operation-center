@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import { Suspense } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -19,20 +19,20 @@ import { SidebarMenuLogo } from "./SidebarMenuLogo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 import { OrgSwitcher } from "@/components/organizations/org-switcher";
-import { type Organisation } from "@/data/organisations";
+import ProfileSelector from "@/components/groups/ProfileSelector";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
+import { User } from "@/context/AuthContext";
 
 type AppSidebarProps = {
-  session?: any;
-  orgs: Organisation[];
-  activeOrg?: Organisation;
-  isAdmin?: boolean;
+  user: User;
 };
 
 export function AppSidebar(props: AppSidebarProps) {
-  const { session, orgs, activeOrg, isAdmin } = props;
+  const { user } = props;
+  const { isAdmin } = useAdminStatus();
   
   // Check if experimental features should be shown
-  const showExperimental = process.env.REACT_APP_BITSWAN_EXPERIMENTAL?.toLowerCase() === 'true';
+  const showExperimental = true;
 
   return (
     <Sidebar collapsible="icon">
@@ -43,7 +43,10 @@ export function AppSidebar(props: AppSidebarProps) {
           </SidebarMenuItem>
           <SidebarSeparator />
           <SidebarMenuItem key={"orgs"}>
-            <OrgSwitcher orgs={orgs} activeOrg={activeOrg} />
+            <OrgSwitcher />
+          </SidebarMenuItem>
+          <SidebarMenuItem key={"profiles"}>
+            <ProfileSelector />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
@@ -129,8 +132,8 @@ export function AppSidebar(props: AppSidebarProps) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarFooterMenu
-              name={session?.user?.name}
-              email={session?.user?.email}
+              name={user?.name}
+              email={user?.email}
             />
           </SidebarMenuItem>
         </SidebarMenu>
