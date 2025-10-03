@@ -18,6 +18,7 @@ from bitswan_backend.core.views.frontend.groups import (
     OrgUsersViewSet,
     OrgViewSet,
     UserGroupViewSet,
+    ProfileViewSet,
 )
 from bitswan_backend.users.api.views import UserViewSet
 from bitswan_backend.core.views.frontend.config import ConfigAPIView
@@ -35,6 +36,7 @@ from bitswan_backend.core.views.frontend.auth import (
 router = SimpleRouter()
 router.register(r'users', UserViewSet)
 router.register(r'user-groups', UserGroupViewSet, basename='user-groups')
+router.register(r'profiles', ProfileViewSet, basename='profiles')
 router.register(r'org-users', OrgUsersViewSet, basename='org-users')
 router.register(r'orgs', OrgViewSet, basename='orgs')
 router.register(r'workspaces', WorkspaceViewSet, basename='workspaces')

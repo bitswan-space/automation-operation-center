@@ -23,6 +23,7 @@ from bitswan_backend.core.serializers.groups import OrgSerializer
 from bitswan_backend.core.serializers.groups import OrgUserSerializeer
 from bitswan_backend.core.serializers.groups import UpdateUserGroupSerializer
 from bitswan_backend.core.serializers.groups import UserGroupSerializer
+from bitswan_backend.core.serializers.groups import ProfileSerializer
 from bitswan_backend.core.managers.organization import GroupNavigationService
 from bitswan_backend.core.pagination import DefaultPagination
 from bitswan_backend.core.permissions import IsOrgAdmin
@@ -131,6 +132,55 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
             return Response(status=status.HTTP_200_OK)
         except KeycloakDeleteError as e:
             e.add_note("Error while removing user from group.")
+            return Response(
+                {"error": json.loads(e.error_message).get("errorMessage")},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class ProfileViewSet(KeycloakMixin, viewsets.ViewSet):
+    pagination_class = DefaultPagination
+    group_nav_service = GroupNavigationService()
+    authentication_classes = [KeycloakAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request):
+        try:
+            groups = self.get_user_org_groups()
+            profiles = []
+
+            if self.is_admin(request):
+                profiles = [
+                    {
+                        "id": group["id"],
+                        "name": group["name"],
+                        "nav_items": self.group_nav_service.get_nav_items(group["id"]),
+                    } for group in groups
+                ]
+
+            else:
+                merged_nav_items = []
+                for group in groups:
+                    nav_items = self.group_nav_service.get_nav_items(group["id"])
+                    merged_nav_items.extend(nav_items)
+                profiles = [
+                    {
+                        "id": "merged",
+                        "name": "merged",
+                        "nav_items": merged_nav_items,
+                    }
+                ]
+
+            paginator = self.pagination_class()
+            paginated_profiles = paginator.paginate_queryset(
+                profiles,
+                request,
+            )
+            serializer = ProfileSerializer(paginated_profiles, many=True)
+
+            return paginator.get_paginated_response(serializer.data)
+        except KeycloakGetError as e:
+            e.add_note("Error while getting profiles.")
             return Response(
                 {"error": json.loads(e.error_message).get("errorMessage")},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,

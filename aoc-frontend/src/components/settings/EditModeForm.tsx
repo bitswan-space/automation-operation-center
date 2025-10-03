@@ -1,40 +1,34 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { Label } from "../ui/label";
-import React from "react";
 import { Switch } from "@/components/ui/switch";
-import { useAdminStatus } from "@/hooks/useAdminStatus";
-import { useAuth } from "@/context/AuthContext";
 import { useSidebar } from "../ui/sidebar";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
-import { useAction } from "@/hooks/useAction";
+import { useAction } from "next-safe-action/hooks";
 import { toast } from "sonner";
 import { createOrUpdateOrgGroupAction } from "../groups/action";
-
-// TODO: fix nav items
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 
 export function SwitchForm() {
   const { editMode, setEditMode } = useSidebar();
 
-  const { deserializedNavItems } = useSidebarItems();
+  const { deserializedNavItems, activeProfile } = useSidebarItems();
 
-  const { user: session } = useAuth();
+  const { isAdmin } = useAdminStatus();
 
   const { execute, isPending, result } = useAction(
     createOrUpdateOrgGroupAction,
     {
       onSuccess: ({ data }) => {
-        toast.success((data as any)?.message ?? "Group updated successfully");
+        toast.success(data?.message ?? "Group updated successfully");
       },
       onError: ({ error }) => {
         console.error(error);
-        toast.error((error as any)?.serverError?.message ?? "Error updating group");
+        toast.error("Error updating group");
       },
     },
   );
 
-  const { isAdmin: hasPerms } = useAdminStatus();
+  const hasPerms = isAdmin;
 
   return (
     <div className="flex flex-col gap-4">
@@ -59,16 +53,33 @@ export function SwitchForm() {
         </div>
       </div>
       <div className="text-end">
-        <Button 
-          onClick={() => execute({
-            id: "",
-            name: "",
-            nav_items: deserializedNavItems
-          })}
-          disabled={!editMode || isPending || !hasPerms}
-        >
-          {isPending ? "Saving..." : "Save"}
-        </Button>
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          execute({
+            id: activeProfile?.id,
+            name: activeProfile?.name,
+            nav_items: JSON.stringify(deserializedNavItems),
+          });
+        }}>
+          <input
+            name="id"
+            type="hidden"
+            defaultValue={activeProfile?.id}
+          />
+          <input
+            name="name"
+            type="hidden"
+            defaultValue={activeProfile?.name}
+          />
+          <input
+            name="nav_items"
+            type="hidden"
+            defaultValue={JSON.stringify(deserializedNavItems)}
+          />
+          <Button type="submit" disabled={!editMode || isPending || !hasPerms}>
+            {isPending ? "Saving..." : "Save"}
+          </Button>
+        </form>
       </div>
     </div>
   );
