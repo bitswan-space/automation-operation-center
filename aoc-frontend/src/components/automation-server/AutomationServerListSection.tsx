@@ -28,7 +28,7 @@ export function AutomationServerListSection(
   const currentHost = window.location.hostname;
   const protocol = "https:";
   const backendHost = currentHost.replace(/^aoc\./, 'api.');
-  const apiUrl = `${protocol}//${backendHost}/`;
+  const apiUrl = `${protocol}//${backendHost}`;
 
   const [searchQuery, setSearchQuery] = React.useState("");
   const [highlightedServerId, setHighlightedServerId] = React.useState<string | null>(null);
