@@ -273,7 +273,7 @@ export const updateOrgGroup = async (userGroup: {
   name?: string;
   description?: string;
   tag_color?: string;
-  nav_items?: NavItem[];
+  nav_items?: NavItem[] | string;
 }) => {
   const bitswanBEInstance = await authenticatedBitswanBackendInstance();
   const activeOrg = await getActiveOrgFromCookies();

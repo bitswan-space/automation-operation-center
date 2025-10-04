@@ -12,6 +12,12 @@ from bitswan_backend.core.managers.organization import GroupNavigationService
 logger = logging.getLogger(__name__)
 
 
+class ProfileSerializer(serializers.Serializer):
+    id = serializers.CharField(required=True)
+    name = serializers.CharField(required=True)
+    nav_items = serializers.JSONField(required=False)
+
+
 class OrgSerializer(serializers.Serializer):
     id = serializers.CharField(required=True)
     name = serializers.CharField(required=True)
