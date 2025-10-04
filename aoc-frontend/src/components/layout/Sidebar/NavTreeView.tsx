@@ -1,5 +1,3 @@
-"use client";
-
 import { ChevronRight, GripVertical } from "lucide-react";
 import {
   type DropOptions,
@@ -28,12 +26,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 
 export default function NavTreeView() {
   const { sidebarItems, setSidebarItems } = useSidebarItems();
-
-  const { editMode } = useSidebar();
-
+  const { isAdmin } = useAdminStatus();
   const [isMounted, setIsMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -67,7 +64,7 @@ export default function NavTreeView() {
 
   return (
     <div className="flex flex-col gap-4">
-      {editMode && <CreateSidebarItem />}
+      {isAdmin && <CreateSidebarItem />}
       <DndProvider backend={MultiBackend} options={getBackendOptions()}>
         <Tree
           tree={sidebarItems}
@@ -76,7 +73,7 @@ export default function NavTreeView() {
           canDrop={(tree, options) => {
             const { dragSource, dropTarget } = options;
 
-            if (!editMode) return false;
+            if (!isAdmin) return false;
 
             if (!dragSource) return false;
 
@@ -102,7 +99,7 @@ export default function NavTreeView() {
             return !isChild(dragSource, dropTarget);
           }}
           canDrag={() => {
-            if (!editMode) return false;
+            if (!isAdmin) return false;
 
             return true;
           }}
@@ -144,7 +141,8 @@ type SideNavTreeItemProps = {
 export const SideNavTreeItem = (props: SideNavTreeItemProps) => {
   const { node, depth, onToggle, isOpen } = props;
 
-  const { open, editMode } = useSidebar();
+  const { open } = useSidebar();
+  const { isAdmin } = useAdminStatus();
 
   const getMarginLeft = () => (open ? depth * 10 : 0);
 
@@ -168,7 +166,7 @@ export const SideNavTreeItem = (props: SideNavTreeItemProps) => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <SidebarMenuButton title={node.text}>
-                  {editMode && open && (
+                  {isAdmin && open && (
                     <div className="my-auto cursor-grab">
                       <GripVertical
                         size={16}
@@ -188,7 +186,7 @@ export const SideNavTreeItem = (props: SideNavTreeItemProps) => {
             </Tooltip>
           </TooltipProvider>
         </Link>
-        {editMode && (
+        {isAdmin && (
           <SidebarItemActions
             type={node.data?.type ?? ""}
             parentId={node.id as number}
@@ -210,7 +208,7 @@ export const SideNavTreeItem = (props: SideNavTreeItemProps) => {
         <Tooltip>
           <TooltipTrigger asChild>
             <SidebarMenuButton>
-              {editMode && open && (
+              {isAdmin && open && (
                 <div className="my-auto cursor-grab">
                   <GripVertical
                     size={16}
@@ -236,7 +234,7 @@ export const SideNavTreeItem = (props: SideNavTreeItemProps) => {
           )}
         </Tooltip>
       </TooltipProvider>
-      {editMode && (
+      {isAdmin && (
         <SidebarItemActions
           type={node.data?.type ?? ""}
           parentId={node.id as number}

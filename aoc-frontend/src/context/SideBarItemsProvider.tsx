@@ -10,6 +10,7 @@ import {
 } from "@/components/layout/Sidebar/utils/NavItems";
 
 import { fetchProfiles, type Profile } from "@/data/profiles";
+import { updateOrgGroup } from "@/data/groups";
 
 type SidebarItemsType = {
   profiles: Profile[];
@@ -90,6 +91,17 @@ export function SidebarItemsProvider({
   const setSidebarItems = React.useCallback((items: NodeModel<NavItem>[]) => {
     setSidebarItemsState(items);
   }, []);
+
+  React.useEffect(() => {
+    const updateNavItems = async () => {
+      await updateOrgGroup({
+        id: activeProfile?.id,
+        name: activeProfile?.name,
+        nav_items: JSON.stringify(deserializedNavItems),
+      });
+    }
+    updateNavItems();
+  }, [deserializedNavItems]);
 
   const contextValue = React.useMemo(
     () => ({
