@@ -1,28 +1,66 @@
 import PanelItemsSection from "@/components/home/PanelItemsSection";
-import React from "react";
-import { TitleBar } from "@/components/layout/TitleBar";
-import { useAdminStatus } from "@/hooks/useAdminStatus";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { useTitleBar } from "@/context/TitleBarProvider";
+import { useAutomationsCounts } from "@/hooks/useAutomationsCounts";
+import { LayoutDashboard, Loader2, Plus } from "lucide-react";
+import { useEffect } from "react";
 
 export default function DashboardPage() {
-  const { isAdmin } = useAdminStatus();
+  const { setTitle, setIcon, setButtons } = useTitleBar();
+  const { 
+    automationCount, 
+    runningAutomationCount, 
+    pausedAutomationCount, 
+    isLoading 
+  } = useAutomationsCounts();
+  
+  useEffect(() => {
+    setTitle("Dashboard");
+    setIcon(<LayoutDashboard size={24} />);
+    setButtons(
+      <Button>
+        <Plus size={16} />
+        Automate processes
+      </Button>
+    );
+  }, [setTitle, setIcon, setButtons]);
 
   return (
     <div>
-      <TitleBar title="Dashboard"/>
-      <div className="w-full p-4">
-        <h1 className="text-2xl font-bold text-neutral-700 md:hidden">
-          PoC Admin Panel
-        </h1>
-        <div className="inset-x-0 mx-auto">
-          <div className="pt-6 text-base">
-            Welcome to the{" "}
-            <strong className="font-semibold text-neutral-700">
-              Bitswan Pipeline Operations Center,
-            </strong>
+      {/* Statistics Overview Section */}
+      <div className="flex items-center justify-between mb-7 mt-6">
+        <div className="flex-1 text-center">
+          <div className="text-sm text-muted-foreground">Total automations</div>
+          <div className="text-3xl font-semibold">
+            {isLoading ? <Loader2 size={24} className="animate-spin" /> : automationCount}
           </div>
         </div>
-        <div className="mx-auto mt-6 flex flex-col gap-8">
-          <PanelItemsSection showDefaultItems isAdmin={isAdmin} />
+        <Separator orientation="vertical" className="h-[60px]" />
+        <div className="flex-1 text-center">
+          <div className="text-sm text-muted-foreground">Running automations</div>
+          <div className="text-3xl font-semibold">
+            {isLoading ? <Loader2 size={24} className="animate-spin" /> : runningAutomationCount}
+          </div>
+        </div>
+        <Separator orientation="vertical" className="h-[60px]" />
+        <div className="flex-1 text-center">
+          <div className="text-sm text-muted-foreground">Paused automations</div>
+          <div className="text-3xl font-semibold">
+            {isLoading ? <Loader2 size={24} className="animate-spin" /> : pausedAutomationCount}
+          </div>
+        </div>
+      </div>
+
+      {/* Shortcuts Section */}
+      <div className="mt-5">
+        <div className="flex items-center gap-2 mb-5">
+          <Separator className="flex-1"/>
+          <h2 className="font-medium whitespace-nowrap">Shortcuts</h2>
+          <Separator className="flex-1"/>
+        </div>
+        <div>
+          <PanelItemsSection />
         </div>
       </div>
     </div>

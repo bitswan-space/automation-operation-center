@@ -1,25 +1,13 @@
-"use client";
-
-import { Server, Zap } from "lucide-react";
 import { DynamicIcon } from "../layout/Sidebar/DynamicIcon";
 import { FaFolderOpen } from "react-icons/fa";
 import PanelItemCard from "./PanelItemCard";
-import { type RawNavItem } from "../layout/Sidebar/utils/NavItems";
 import React from "react";
 import { useLocation } from "react-router-dom";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
 
-type PanelItemsSectionProps = {
-  showDefaultItems?: boolean;
-  sidebarItems?: RawNavItem[];
-  isAdmin?: boolean;
-};
 
-export default function PanelItemsSection(props: PanelItemsSectionProps) {
+export default function PanelItemsSection() {
   const { deserializedNavItems: sidebarItems } = useSidebarItems();
-  const { showDefaultItems = false, isAdmin = false } = props;
-
-  const sidebarItemsToUse = props.sidebarItems ?? sidebarItems;
 
   const location = useLocation();
 
@@ -34,26 +22,7 @@ export default function PanelItemsSection(props: PanelItemsSectionProps) {
   }
   return (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
-      {showDefaultItems && (
-        <>
-          <PanelItemCard
-            key={"automations_card"}
-            icon={<Zap size={32} className="text-neutral-900" />}
-            title={"Automations"}
-            url={"/automations"}
-          />
-
-          {isAdmin && (
-            <PanelItemCard
-              key={"automation_servers_card"}
-              icon={<Server size={32} className="text-neutral-900" />}
-              title={"Automation Servers"}
-              url={"/automation-servers"}
-            />
-          )}
-        </>
-      )}
-      {sidebarItemsToUse?.map((item) => (
+      {sidebarItems?.map((item) => (
         <PanelItemCard
           key={item.id + "card"}
           icon={

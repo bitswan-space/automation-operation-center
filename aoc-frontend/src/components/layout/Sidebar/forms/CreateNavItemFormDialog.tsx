@@ -191,23 +191,6 @@ function CreateNavItemForm(props: CreateNavItemFormProps) {
         />
         <FormField
           control={form.control}
-          name="link"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Link:</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="https://example.com"
-                  className="w-full"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
           name="type"
           render={({ field }) => (
             <FormItem>
@@ -219,10 +202,28 @@ function CreateNavItemForm(props: CreateNavItemFormProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="external-link">external-link</SelectItem>
-                  <SelectItem value="topic-link">topic-link</SelectItem>
+                  <SelectItem value="external-link">External Link</SelectItem>
+                  <SelectItem value="workspace">Workspace</SelectItem>
+                  <SelectItem value="automation">Automation</SelectItem>
                 </SelectContent>
               </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="link"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Link:</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="https://example.com"
+                  className="w-full"
+                  {...field}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}

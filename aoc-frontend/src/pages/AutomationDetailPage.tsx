@@ -1,4 +1,3 @@
-import { TitleBar } from "@/components/layout/TitleBar";
 import { getAutomationServers } from "@/data/automation-server";
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -6,8 +5,9 @@ import { getMQTTTokens } from "@/data/mqtt";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { Globe, Code } from "lucide-react";
+import { Globe, Code, Cog } from "lucide-react";
 import { useAutomations } from "@/context/AutomationsProvider";
+import { useTitleBar } from "@/context/TitleBarProvider";
 
 const AutomationDetailPage = () => {
   const { id, workspaceId, pipelineId } = useParams<{ 
@@ -21,6 +21,12 @@ const AutomationDetailPage = () => {
   const [workspace, setWorkspace] = useState<any>(null);
   const [token, setToken] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { setTitle, setIcon } = useTitleBar();
+
+  useEffect(() => {
+    setTitle("Automations");
+    setIcon(<Cog size={24} />);
+  }, [setTitle, setIcon]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -104,7 +110,6 @@ const AutomationDetailPage = () => {
         <h1 className="text-2xl font-bold text-stone-700 md:hidden">
           Automation
         </h1>
-        <TitleBar title={"Automation"} />
         <div className="p-4 text-center text-gray-500">
           Loading automation details...
         </div>
@@ -137,7 +142,6 @@ const AutomationDetailPage = () => {
       <h1 className="text-2xl font-bold text-stone-700 md:hidden">
         Automation
       </h1>
-      <TitleBar title={"Automation"} />
       <div className="py-4">
         {getBreadcrumbs()}
       </div>

@@ -1,15 +1,22 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import React, { useEffect, useState } from "react";
-import { TitleBar } from "@/components/layout/TitleBar";
+import { useTitleBar } from "@/context/TitleBarProvider";
 import { getAutomationServers } from "@/data/automation-server";
 import { WorkspaceDetailSection } from "@/components/workspaces/WorkspaceDetailSection";
 import { useParams } from "react-router-dom";
+import { Table } from "lucide-react";
 
 const WorkspaceDetailPage = () => {
   const { id, workspaceId } = useParams<{ id: string; workspaceId: string }>();
   const [workspace, setWorkspace] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { setTitle, setIcon } = useTitleBar();
+
+  useEffect(() => {
+    setTitle("Workspace Details");
+    setIcon(<Table size={24} />);
+  }, [setTitle, setIcon]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -50,7 +57,6 @@ const WorkspaceDetailPage = () => {
       <h1 className="text-2xl font-bold text-stone-700 md:hidden">
         Workspace Details
       </h1>
-      <TitleBar title="Workspace Details" />
       <div className="flex py-4 pt-6 lg:hidden">
         <Input
           placeholder="Find automation"
