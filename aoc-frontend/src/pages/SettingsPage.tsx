@@ -1,16 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { SettingTabs } from '@/components/settings/SettingTabs';
-import { TitleBar } from '@/components/layout/TitleBar';
+import { useTitleBar } from '@/context/TitleBarProvider';
 import { fetchOrgGroups } from '@/data/groups';
 import { fetchOrgUsers } from '@/data/users';
 import { UserGroupsListResponse } from '@/data/groups';
 import { OrgUsersListResponse } from '@/data/users';
+import { Settings2 } from 'lucide-react';
 
 const SettingsPage: React.FC = () => {
   const [groupsList, setGroupsList] = useState<UserGroupsListResponse | undefined>();
   const [usersList, setUsersList] = useState<OrgUsersListResponse | undefined>();
   const [isLoading, setIsLoading] = useState(true);
+  const { setTitle, setIcon } = useTitleBar();
+
+  useEffect(() => {
+    setTitle("Settings");
+    setIcon(<Settings2 size={24} />);
+  }, [setTitle, setIcon]);
 
   const handleGroupCreated = () => {
     loadData();
@@ -81,7 +88,6 @@ const SettingsPage: React.FC = () => {
     return (
       <div className="flex w-full flex-col gap-4">
         <h1 className="text-2xl font-bold text-stone-700 md:hidden">Settings</h1>
-        <TitleBar title="Settings" />
         <div className="hidden min-h-[100vh] flex-1 md:min-h-min lg:flex">
           <Card className="h-full w-full rounded-md border border-slate-300 shadow-sm">
             <CardContent className="h-full p-3">
@@ -98,7 +104,6 @@ const SettingsPage: React.FC = () => {
   return (
     <div className="flex w-full flex-col gap-4">
       <h1 className="text-2xl font-bold text-stone-700 md:hidden">Settings</h1>
-      <TitleBar title="Settings" />
 
       <div className="hidden min-h-[100vh] flex-1 md:min-h-min lg:flex">
         <Card

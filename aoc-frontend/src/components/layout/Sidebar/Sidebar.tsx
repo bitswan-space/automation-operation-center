@@ -10,9 +10,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
+  SidebarGroupLabel
 } from "@/components/ui/sidebar";
 
-import { Cog, Server, LayoutDashboard, Table, Network, Settings } from "lucide-react";
+import { Cog, Server, LayoutDashboard, Table, Network, Settings, Loader2 } from "lucide-react";
 import NavTreeView from "./NavTreeView";
 import { SidebarFooterMenu } from "./SidebarFooterMenu";
 import { SidebarMenuLogo } from "./SidebarMenuLogo";
@@ -22,15 +23,23 @@ import { OrgSwitcher } from "@/components/organizations/org-switcher";
 import ProfileSelector from "@/components/groups/ProfileSelector";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { User } from "@/context/AuthContext";
+import { useAutomationsCounts } from "@/hooks/useAutomationsCounts";
 
 type AppSidebarProps = {
   user: User;
+  path?: string;
 };
 
 export function AppSidebar(props: AppSidebarProps) {
-  const { user } = props;
+  const { user, path } = props;
   const { isAdmin } = useAdminStatus();
-  
+  const { 
+    automationCount, 
+    automationServerCount, 
+    workspaceCount, 
+    isLoading 
+  } = useAutomationsCounts();
+
   // Check if experimental features should be shown
   const showExperimental = true;
 
@@ -55,7 +64,7 @@ export function AppSidebar(props: AppSidebarProps) {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem key={"dashboard"}>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild isActive={path === "/dashboard"}>
                   <Link to={"/dashboard"}>
                     <LayoutDashboard />
                     <span>{"Dashboard"}</span>
@@ -64,10 +73,13 @@ export function AppSidebar(props: AppSidebarProps) {
               </SidebarMenuItem>
               {isAdmin && (
                 <SidebarMenuItem key={"automation-servers"}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild isActive={path === "/automation-servers"}>
                     <Link to={"/automation-servers"}>
                       <Server />
                       <span>{"Servers"}</span>
+                      <span className="ml-auto text-xs">
+                        { isLoading ? <Loader2 size={16} className="animate-spin ml-1" /> : automationServerCount}
+                      </span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -79,6 +91,9 @@ export function AppSidebar(props: AppSidebarProps) {
                       <Link to={"/dashboard/workspaces"}>
                         <Table />
                         <span>{"Workspaces"}</span>
+                        <span className="ml-auto text-xs">
+                          { isLoading ? <Loader2 size={16} className="animate-spin ml-1" /> : workspaceCount}
+                        </span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -93,16 +108,19 @@ export function AppSidebar(props: AppSidebarProps) {
                 </>
               )}
               <SidebarMenuItem key={"automations"}>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild isActive={path === "/automations"}>
                   <Link to={"/automations"}>
                     <Cog />
                     <span>{"Automations"}</span>
+                    <span className="ml-auto text-xs">
+                      { isLoading ? <Loader2 size={16} className="animate-spin ml-1" /> : automationCount}
+                    </span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               {isAdmin && (
                 <SidebarMenuItem key={"settings"}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild isActive={path === "/settings"}>
                     <Link to={"/settings"}>
                       <Settings />
                       <span>{"Settings"}</span>
@@ -115,6 +133,7 @@ export function AppSidebar(props: AppSidebarProps) {
         </SidebarGroup>
         <SidebarSeparator />
         <SidebarGroup>
+          <SidebarGroupLabel>SHORTCUTS</SidebarGroupLabel>
           <SidebarGroupContent>
             <Suspense
               fallback={

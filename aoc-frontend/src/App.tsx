@@ -42,7 +42,7 @@ function App() {
                         path="/dashboard"
                         element={
                             <ProtectedRoute>
-                                <DashboardLayout />
+                                <DashboardLayout path="/dashboard" />
                             </ProtectedRoute>
                         }
                     >
@@ -55,7 +55,7 @@ function App() {
                         path="/automation-servers"
                         element={
                             <AdminProtectedRoute>
-                                <DashboardLayout />
+                                <DashboardLayout path="/automation-servers" />
                             </AdminProtectedRoute>
                         }
                     >
@@ -79,7 +79,7 @@ function App() {
                         path="/automations"
                         element={
                             <ProtectedRoute>
-                                <DashboardLayout />
+                                <DashboardLayout path="/automations" />
                             </ProtectedRoute>
                         }
                     >
@@ -91,7 +91,7 @@ function App() {
                         path="/settings"
                         element={
                             <AdminProtectedRoute>
-                                <DashboardLayout />
+                                <DashboardLayout path="/settings" />
                             </AdminProtectedRoute>
                         }
                     >

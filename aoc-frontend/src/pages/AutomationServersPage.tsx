@@ -2,12 +2,19 @@ import { AutomationServerListSection } from "@/components/automation-server/Auto
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import React, { useEffect, useState } from "react";
-import { TitleBar } from "@/components/layout/TitleBar";
+import { useTitleBar } from "@/context/TitleBarProvider";
 import { getAutomationServers } from "@/data/automation-server";
+import { Server } from "lucide-react";
 
 const AutomationServersPage = () => {
   const [automationServers, setAutomationServers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { setTitle, setIcon } = useTitleBar();
+
+  useEffect(() => {
+    setTitle("Automation Servers");
+    setIcon(<Server size={24} />);
+  }, [setTitle, setIcon]);
 
   useEffect(() => {
     const loadAutomationServers = async () => {
@@ -44,7 +51,6 @@ const AutomationServersPage = () => {
       <h1 className="text-2xl font-bold text-stone-700 md:hidden">
         Automation Servers
       </h1>
-      <TitleBar title="Automation Servers" />
       <div className="flex py-4 pt-6 lg:hidden">
         <Input
           placeholder="Find automation server"
