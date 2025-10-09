@@ -41,11 +41,11 @@ def update(from_url):
             versions = response.json()
 
             if versions.get("aoc"):
-                aoc_image = f"bitswan/automation-operations-centre:{versions['aoc']}"
+                aoc_image = versions['aoc']
             if versions.get("bitswan-backend"):
-                aoc_be_image = f"bitswan/bitswan-backend:{versions['bitswan-backend']}"
+                aoc_be_image = versions['bitswan-backend']
             if versions.get("keycloak"):
-                keycloak_image = f"bitswan/bitswan-keycloak:{versions['keycloak']}"
+                keycloak_image = versions['keycloak']
 
     init_config = InitConfig(
         env=saved_env,

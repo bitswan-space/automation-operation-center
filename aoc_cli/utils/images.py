@@ -18,11 +18,11 @@ def resolve_images_from_url(config: InitConfig, from_url: str) -> None:
             versions = response.json()
 
             if versions.get("aoc") and not config.aoc_image:
-                config.aoc_image = f"bitswan/automation-operations-centre:{versions['aoc']}"
+                config.aoc_image = versions['aoc']
             if versions.get("bitswan-backend") and not config.aoc_be_image:
-                config.aoc_be_image = f"bitswan/bitswan-backend:{versions['bitswan-backend']}"
+                config.aoc_be_image = versions['bitswan-backend']
             if versions.get("keycloak") and not config.keycloak_image:
-                config.keycloak_image = f"bitswan/bitswan-keycloak:{versions['keycloak']}"
+                config.keycloak_image = versions['keycloak']
     except Exception as e:
         click.echo(f"Warning: Could not fetch versions from {from_url}: {e}")
         click.echo("Falling back to Docker Hub for image resolution...")
