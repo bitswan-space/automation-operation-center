@@ -94,14 +94,17 @@ export function SidebarItemsProvider({
 
   React.useEffect(() => {
     const updateNavItems = async () => {
-      await updateOrgGroup({
-        id: activeProfile?.id,
-        name: activeProfile?.name,
-        nav_items: JSON.stringify(deserializedNavItems),
-      });
+      // Only update if we have a valid activeProfile with an ID
+      if (activeProfile?.id) {
+        await updateOrgGroup({
+          id: activeProfile.id,
+          name: activeProfile.name,
+          nav_items: JSON.stringify(deserializedNavItems),
+        });
+      }
     }
     updateNavItems();
-  }, [deserializedNavItems]);
+  }, [deserializedNavItems, activeProfile?.id]);
 
   const contextValue = React.useMemo(
     () => ({

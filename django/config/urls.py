@@ -7,6 +7,7 @@ from django.urls import include, path
 from django.views import defaults as default_views
 from django.views.generic import RedirectView
 from bitswan_backend.core.views.swagger import PublicSwaggerView, PublicSchemaView, AutomationServerDocumentationView, AOCArchitectureDocumentationView
+from bitswan_backend.core.views.general import VersionAPIView
 from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
@@ -16,17 +17,12 @@ urlpatterns = [
     # User management
     path("users/", include("bitswan_backend.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
+    # Version endpoint - always available
+    path("api/version", VersionAPIView.as_view(), name="version"),
     # Your stuff: custom urls includes go here
     # ...
     # Media files
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
-]
-if settings.DEBUG:
-    # Static file serving when using Gunicorn + Uvicorn for local web socket development
-    urlpatterns += staticfiles_urlpatterns()
-
-    # API URLS
-urlpatterns += [
     # API base url
     path("api/", include("config.api_router")),
     # DRF auth token
@@ -50,6 +46,9 @@ urlpatterns += [
         name="aoc-architecture-docs",
     ),
 ]
+if settings.DEBUG:
+    # Static file serving when using Gunicorn + Uvicorn for local web socket development
+    urlpatterns += staticfiles_urlpatterns()
 
 if settings.DEBUG:
     # This allows the error pages to be debugged during development, just visit
