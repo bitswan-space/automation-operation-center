@@ -36,16 +36,9 @@ class ConfigAPIView(APIView):
     
     def get(self, request):
         """Get frontend configuration"""
-        try:
-            # Get the current request's host to build the API URL
-            api_url = request.build_absolute_uri('/')[:-1]  # Remove trailing slash
-            
-            return Response({
-                "bitswanBackendApiUrl": api_url,
-            }, status=status.HTTP_200_OK)
-            
-        except Exception as e:
-            return Response(
-                {"error": "Internal server error"}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+        # Get the current request's host to build the API URL
+        api_url = request.build_absolute_uri('/')[:-1]  # Remove trailing slash
+        
+        return Response({
+            "bitswanBackendApiUrl": api_url,
+        }, status=status.HTTP_200_OK)
