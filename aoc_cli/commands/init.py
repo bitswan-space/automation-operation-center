@@ -226,9 +226,7 @@ async def init_async(
                 certs_dir=kwargs.get("certs_dir"),
             )
         else:
-            # Production/non-dev flow
-            load_environment(env_file)
-            
+            # Production/non-dev flo
             # Use the new collect_configurations method
             init_config = InitConfig.collect_configurations(
                 interactive=kwargs["interactive"],
