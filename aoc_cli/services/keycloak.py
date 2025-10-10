@@ -5,7 +5,7 @@ from pathlib import Path
 
 import click
 import requests
-from keycloak import KeycloakAdmin, KeycloakPostError
+from keycloak import KeycloakAdmin, KeycloakPostError, KeycloakConnectionError
 
 from aoc_cli.env.config import (
     BITSWAN_BACKEND_DOCKER_ENV_FILE,
@@ -49,8 +49,16 @@ class KeycloakService:
     def setup(self) -> None:
         self.start_services()
         self.wait_for_service()
-        self.connect()
-        self.configure_realm_settings()
+        for i in range(1,5):
+          try:
+              self.connect()
+              self.configure_realm_settings()
+          except KeycloakConnectionError as e:
+              if i >= 4:
+                  print(f"Failed to connect to keycloak {e}")
+              time.sleep(5)
+              continue
+          break
         client_secrets = self.create_clients()
         self.setup_bitswan_backend_client()
         self.initialize_admin_user()
