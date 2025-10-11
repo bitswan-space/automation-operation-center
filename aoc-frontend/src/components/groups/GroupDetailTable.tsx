@@ -63,7 +63,7 @@ const createColumns = (onGroupCreated?: () => void): ColumnDef<UserGroup>[] => [
     id: "actions",
     cell: ({ row }) => {
       const id = row.original.id;
-      return <GroupActions id={id} group={row.original} onGroupCreated={onGroupCreated} />;
+      return row.getValue("name") === "admin" ? null : <GroupActions id={id} group={row.original} onGroupCreated={onGroupCreated} />;
     },
     enableSorting: false,
     enableHiding: false,
