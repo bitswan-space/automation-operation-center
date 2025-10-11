@@ -70,6 +70,14 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
 
     def destroy(self, request, pk=None):
         try:
+            admin_group = self.keycloak.get_admin_org_group(self.get_org_id())
+        
+            if admin_group["id"] == pk:
+                return Response(
+                    {"error": "Admin group cannot be deleted."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            
             self.delete_org_group(group_id=pk)
             
             WorkspaceGroupMembership.objects.filter(keycloak_group_id=pk).delete()
@@ -84,6 +92,14 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
 
     def update(self, request, pk=None):
         existing_group = self.get_org_group(pk)
+        
+        admin_group = self.keycloak.get_admin_org_group(self.get_org_id())
+        
+        if admin_group["id"] == pk:
+            return Response(
+                {"error": "Admin group cannot be updated."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         navigation = self.group_nav_service.get_or_create_navigation(group_id=pk)
 
