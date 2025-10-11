@@ -23,7 +23,7 @@ export default function PanelItemCard(props: PanelItemCardProps) {
   return (
     <Card className="h-40 rounded-xl border-border shadow-sm hover:cursor-pointer">
       <CardContent className="h-full pt-4">
-        <Link to={url ?? "#"}>
+        <Link to={url ?? "#"} target="_blank">
           <div className="my-auto flex h-full flex-col justify-center gap-3 pt-4 text-center">
             <div className=" mx-auto">{icon}</div>
             <div className="mx-auto flex  gap-2 align-bottom">
