@@ -1,27 +1,13 @@
-import { useMQTTRequestResponse } from '@/shared/hooks/useMQTTRequestResponse';
-import { usePipelineStats } from '@/components/pipeline/hooks/usePipelineStats';
 import { type AutomationServer } from '@/data/automation-server';
 import { getAutomationServersAction } from '@/data/automation-servers';
 import { type TokenData } from '@/data/mqtt';
-import { type PipelineWithStats, type WorkspaceTopologyResponse } from '@/types';
-
-type WorkspaceGroup = {
-  workspaceId: string;
-  automationServerId: string;
-  pipelines: PipelineWithStats[];
-};
-
-type AutomationServerGroup = {
-  serverId: string;
-  workspaces: Record<string, WorkspaceGroup>;
-  pipelines: PipelineWithStats[];
-};
-
-type AutomationsGroups = {
-  all: PipelineWithStats[];
-  automationServers: Record<string, AutomationServerGroup>;
-  isLoading: boolean;
-};
+import { 
+  type PipelineWithStats, 
+  type WorkspaceTopologyResponse, 
+  type WorkspaceGroup, 
+  type AutomationServerGroup, 
+  type AutomationsGroups 
+} from '@/types';
 
 // Global state that persists across component unmounts
 let globalAutomationsState: AutomationsGroups = {
@@ -32,7 +18,6 @@ let globalAutomationsState: AutomationsGroups = {
 
 let globalWorkspaces: Record<string, WorkspaceGroup> = {};
 let globalAutomationServers: Record<string, AutomationServer> = {};
-let globalAutomationServersAreFetched = false;
 let globalPipelineStats: any[] = [];
 
 // Global MQTT connection manager
@@ -176,30 +161,44 @@ class GlobalMQTTManager {
   ) {
     console.log('GlobalMQTTManager: Received topology message for', automationServerId, workspaceId);
     
-    // Get the automation server name
+    // Get the automation server and workspace data
     const automationServer = globalAutomationServers[automationServerId];
     const automationServerName = automationServer?.name ?? automationServerId;
+    const workspace = automationServer?.workspaces?.find(ws => ws.id === workspaceId);
+    const workspaceName = workspace?.name ?? workspaceId;
 
     // Process pipelines for this workspace
     const workspacePipelines = Object.entries(
       workspaceTopology.topology ?? {},
-    ).map(([_, value]) => ({
-      _key: value.properties["container-id"],
-      ...value,
-      pipelineStat:
-        globalPipelineStats?.filter((stat) =>
-          value.properties["deployment-id"].startsWith(stat.deployment_id),
-        ) || [],
-      automationServerId,
-      automationServerName,
-      workspaceId,
-    }));
+    ).map(([_, value]) => {
+      // Compute vscode link if editor_url and relative-path are available
+      let vscodeLink: string | undefined;
+      if (workspace?.editor_url && value.properties["relative-path"]) {
+        vscodeLink = workspace.editor_url + "?folder=/home/coder/workspace" + 
+          `&payload=[["openFile","vscode-remote:///home/coder/workspace/${value.properties["relative-path"]}/main.ipynb"]]`;
+      }
 
-    // Update global workspaces state
+      return {
+        _key: value.properties["container-id"],
+        ...value,
+        pipelineStat:
+          globalPipelineStats?.filter((stat) =>
+            value.properties["deployment-id"].startsWith(stat.deployment_id),
+          ) || [],
+        automationServerId,
+        automationServerName,
+        workspaceId,
+        workspaceName,
+        vscodeLink,
+      };
+    });
+
+    // Update global workspaces state with full metadata
     globalWorkspaces[workspaceId] = {
       workspaceId,
       automationServerId,
       pipelines: workspacePipelines,
+      workspace: workspace!,
     };
 
     // Update global automations state
@@ -213,10 +212,12 @@ class GlobalMQTTManager {
         const { automationServerId } = workspace;
 
         if (!acc[automationServerId]) {
+          const automationServer = globalAutomationServers[automationServerId];
           acc[automationServerId] = {
             serverId: automationServerId,
             workspaces: {},
             pipelines: [],
+            automationServer: automationServer!,
           };
         }
 
@@ -331,7 +332,6 @@ export class MQTTService {
         {} as Record<string, AutomationServer>,
       );
       globalAutomationServers = serversMap;
-      globalAutomationServersAreFetched = true;
       console.log('MQTTService: Automation servers fetched:', serversMap);
     } catch (error) {
       console.error("MQTTService: Failed to fetch automation servers:", error);
@@ -360,6 +360,10 @@ export class MQTTService {
     if (this.isInitialized) {
       globalMQTTManager.connect(tokens);
     }
+  }
+
+  updatePipelineStats(pipelineStats: any[]) {
+    globalPipelineStats = pipelineStats;
   }
 
   disconnect() {
