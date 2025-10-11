@@ -36,6 +36,7 @@ import { useForm } from "react-hook-form";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAutomations } from "@/context/AutomationsProvider";
 
 type CreateNavItemFormDialogProps = {
   parentId?: number;
@@ -98,6 +99,22 @@ function CreateNavItemForm(props: CreateNavItemFormProps) {
   const { onSubmit, parentId, navItem } = props;
 
   const { sidebarItems, setSidebarItems } = useSidebarItems();
+  const { all: automations, automationServers } = useAutomations();
+
+  const workspaceLinks = Object.values(automationServers)
+    .flatMap((server) => Object.values(server.workspaces))
+    .filter((workspace) => workspace.workspace.editor_url)
+    .map((workspace) => ({
+      name: workspace.workspace.name,
+      link: workspace.workspace.editor_url
+    }));
+
+  const automationLinks = automations
+    .filter(automation => automation.properties?.['automation-url'])
+    .map(automation => ({
+      name: automation.properties.name,
+      link: automation.properties['automation-url'] as string
+    }));
 
   const form = useForm<z.infer<typeof navItemSchema>>({
     resolver: zodResolver(navItemSchema),
@@ -216,14 +233,54 @@ function CreateNavItemForm(props: CreateNavItemFormProps) {
           name="link"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Link:</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="https://example.com"
-                  className="w-full"
-                  {...field}
-                />
-              </FormControl>
+              {form.watch('type') === 'workspace' ? (
+                <>
+                  <FormLabel>Workspace:</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="w-full" id="workspacelink">
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {workspaceLinks.map((workspace) => (
+                        <SelectItem value={workspace.link} key={workspace.link}>
+                          {workspace.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </>
+              ) : form.watch('type') === 'automation' ? (
+                <>
+                  <FormLabel>Automation:</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="w-full" id="automationlink">
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {automationLinks.map((automation) => (
+                        <SelectItem value={automation.link} key={automation.link}>
+                          {automation.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </>
+              ) : (
+                <>
+                  <FormLabel>Link:</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="https://example.com"
+                      className="w-full"
+                      {...field}
+                    />
+                  </FormControl>
+                </>
+              )}
               <FormMessage />
             </FormItem>
           )}

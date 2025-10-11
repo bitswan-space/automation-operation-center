@@ -147,10 +147,7 @@ export const SideNavTreeItem = (props: SideNavTreeItemProps) => {
   const getMarginLeft = () => (open ? depth * 10 : 0);
 
   const getLinkHref = () => {
-    if (node.data?.type === "external-link") {
-      return node.data?.href ?? "#";
-    }
-    return "#";
+    return node.data?.href ?? "#";
   };
 
   if (!node.droppable) {
