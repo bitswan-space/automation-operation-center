@@ -1,3 +1,6 @@
+// Import backend types for enhanced group types
+import { type Workspace, type AutomationServer } from '@/data/automation-server';
+
 export type Endpoint = {
   Id: string;
   Name: string;
@@ -142,6 +145,8 @@ export type PipelineWithStats = PipelineTopology & {
   automationServerId: string;
   automationServerName: string;
   workspaceId: string;
+  workspaceName: string;
+  vscodeLink?: string; // Computed from editor_url + relative-path
 };
 
 export interface PipelineNode {
@@ -235,3 +240,25 @@ export interface Properties {
   state: string;
   status: string;
 }
+
+export type WorkspaceGroup = {
+  workspaceId: string;
+  automationServerId: string;
+  pipelines: PipelineWithStats[];
+  // Full workspace metadata from backend
+  workspace: Workspace;
+};
+
+export type AutomationServerGroup = {
+  serverId: string;
+  workspaces: Record<string, WorkspaceGroup>;
+  pipelines: PipelineWithStats[];
+  // Full automation server metadata from backend
+  automationServer: AutomationServer;
+};
+
+export type AutomationsGroups = {
+  all: PipelineWithStats[];
+  automationServers: Record<string, AutomationServerGroup>;
+  isLoading: boolean;
+};

@@ -1,29 +1,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { usePipelineStats } from '@/components/pipeline/hooks/usePipelineStats';
-import { type PipelineWithStats } from '@/types';
+import { type AutomationsGroups } from '@/types';
 import MQTTService from '@/services/MQTTService';
 import { useMQTTTokens } from './MQTTTokensProvider';
-
-type WorkspaceGroup = {
-  workspaceId: string;
-  automationServerId: string;
-  pipelines: PipelineWithStats[];
-};
-
-type AutomationServerGroup = {
-  serverId: string;
-  workspaces: Record<string, WorkspaceGroup>;
-  pipelines: PipelineWithStats[];
-};
-
-type AutomationsGroups = {
-  all: PipelineWithStats[];
-  automationServers: Record<string, AutomationServerGroup>;
-  isLoading: boolean;
-};
-
-// Global pipeline stats for the service
-let globalPipelineStats: any[] = [];
 
 const AutomationsContext = createContext<AutomationsGroups | null>(null);
 
@@ -34,7 +13,7 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
 
   // Update global pipeline stats
   useEffect(() => {
-    globalPipelineStats = pipelineStats;
+    MQTTService.getInstance().updatePipelineStats(pipelineStats);
   }, [pipelineStats]);
 
   // Initialize MQTT service when tokens are available
