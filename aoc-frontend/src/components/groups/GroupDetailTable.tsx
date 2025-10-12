@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 
 import {
@@ -31,7 +29,6 @@ import { Loader2, PenLine, Trash2 } from "lucide-react";
 import { CreateGroupFormSheet } from "./CreateGroupFormSheet";
 import { Separator } from "../ui/separator";
 
-import { useAuth } from "@/context/AuthContext";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
 
 import { type UserGroup, type UserGroupsListResponse } from "@/data/groups";
@@ -63,7 +60,7 @@ const createColumns = (onGroupCreated?: () => void): ColumnDef<UserGroup>[] => [
     id: "actions",
     cell: ({ row }) => {
       const id = row.original.id;
-      return row.getValue("name") === "admin" ? null : <GroupActions id={id} group={row.original} onGroupCreated={onGroupCreated} />;
+      return <GroupActions id={id} group={row.original} onGroupCreated={onGroupCreated} />;
     },
     enableSorting: false,
     enableHiding: false,
@@ -78,7 +75,6 @@ type GroupDetailTableProps = {
 export function GroupDetailTable(props: GroupDetailTableProps) {
   const { userGroups, onGroupCreated } = props;
 
-  const { user: session } = useAuth();
   const { isAdmin: hasPerms } = useAdminStatus();
 
   const userGroupsData = React.useMemo(
@@ -181,7 +177,7 @@ export function GroupDetailTable(props: GroupDetailTableProps) {
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={columns.length}
+                    colSpan={table.getAllColumns().length}
                     className="h-24 text-center"
                   >
                     No results.
@@ -225,12 +221,12 @@ type GroupActionProps = {
 function GroupActions(props: GroupActionProps) {
   const { id, group, onGroupCreated } = props;
 
-  const { user: session } = useAuth();
   const { isAdmin: hasPerms } = useAdminStatus();
 
   const { execute, isPending } = useAction(deleteOrgGroupAction, {
     onSuccess: () => {
       toast.success("Group deleted");
+      onGroupCreated?.(); // Refresh the group list
     },
     onError: ({ error }) => {
       toast.error((error as any)?.serverError?.message ?? "Error deleting group");
@@ -260,7 +256,7 @@ function GroupActions(props: GroupActionProps) {
         />
         <Separator orientation="vertical" className="h-8 w-px" />
         <form onSubmit={handleSubmit}>
-          <Button variant={"ghost"} disabled={isPending || !hasPerms} type="submit">
+          <Button variant={"ghost"} disabled={isPending || !hasPerms || group.name === "admin"} type="submit">
             <input type="hidden" name="id" defaultValue={id} />
             {isPending ? (
               <Loader2 size={20} className="animate-spin" />

@@ -95,9 +95,9 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
         
         admin_group = self.keycloak.get_admin_org_group(self.get_org_id())
         
-        if admin_group["id"] == pk:
+        if admin_group["id"] == pk and request.data.get("name") != admin_group["name"]:
             return Response(
-                {"error": "Admin group cannot be updated."},
+                {"error": "Admin group name cannot be updated."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

@@ -24,7 +24,7 @@ export function CreateOrEditGroupForm(props: CreateGroupFormProps) {
 
   const tagColorInputRef = React.useRef<HTMLInputElement>(null);
 
-  const { execute, isPending, result } = useAction(
+  const { execute, isPending } = useAction(
     createOrUpdateOrgGroupAction,
     {
       onSuccess: ({ data }) => {
@@ -76,6 +76,7 @@ export function CreateOrEditGroupForm(props: CreateGroupFormProps) {
             minLength={2}
             name="name"
             defaultValue={group?.name ?? ""}
+            disabled={group?.name === "admin"}
             className=""
           />
         </div>
