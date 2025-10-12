@@ -131,7 +131,6 @@ export function UserDetailTable(props: UserDetailTableProps) {
   const [searchParams] = useSearchParams();
   const page = searchParams.get("page") ?? "1";
 
-  const { user: session } = useAuth();
   const { isAdmin: hasPerms } = useAdminStatus();
 
   console.log('UserDetailTable received data:', { orgUsers, userGroups });
