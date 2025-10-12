@@ -1,11 +1,7 @@
-"use client";
-
 import { GroupComboBoxSelector } from "../groups/GroupComboBoxSelector";
-import React from "react";
 import { type UserGroup } from "@/data/groups";
 import { UserGroupBadge } from "./UserGroupBadge";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
-import { useAuth } from "@/context/AuthContext";
 import {
   type AddWorkspaceToGroupActionType,
   type RemoveWorkspaceFromGroupActionType,
@@ -32,7 +28,6 @@ export type UserGroupsBadgeListProps = {
 
 export function UserGroupsBadgeList(props: UserGroupsBadgeListProps) {
   const { memberGroups, id, nonMemberGroups, addAction, removeAction, onUserGroupUpdate } = props;
-  const { user: session } = useAuth();
 
   const { isAdmin: hasPerms } = useAdminStatus();
   return (
