@@ -50,7 +50,7 @@ class GlobalMQTTManager {
     };
     this.notifyListeners();
     
-    // Set a timeout to stop loading after 30 seconds if no data is received
+    // Set a timeout to stop loading after 10 seconds if no data is received
     this.connectionTimeout = setTimeout(() => {
       if (globalAutomationsState.all.length === 0) {
         console.log('GlobalMQTTManager: MQTT connection timeout, stopping loading');
@@ -61,7 +61,7 @@ class GlobalMQTTManager {
         };
         this.notifyListeners();
       }
-    }, 30000);
+    }, 10000);
     
     tokens.forEach((token) => {
       const { automation_server_id, workspace_id } = token;

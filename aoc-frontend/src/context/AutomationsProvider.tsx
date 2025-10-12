@@ -23,7 +23,7 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
       MQTTService.getInstance().initialize(tokens);
     } else if (tokens && tokens.length === 0) {
       console.log('AutomationsProvider: No MQTT tokens available');
-      MQTTService.getInstance().updateTokens([]);
+      MQTTService.getInstance().initialize([]);
     }
   }, [tokens]);
 
