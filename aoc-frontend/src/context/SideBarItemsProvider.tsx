@@ -93,6 +93,9 @@ export function SidebarItemsProvider({
   }, []);
 
   React.useEffect(() => {
+    // Don't update the user merged profile
+    if (activeProfile?.id === "merged") return;
+
     const updateNavItems = async () => {
       // Only update if we have a valid activeProfile with an ID
       if (activeProfile?.id) {
@@ -104,7 +107,7 @@ export function SidebarItemsProvider({
       }
     }
     updateNavItems();
-  }, [deserializedNavItems, activeProfile?.id]);
+  }, [deserializedNavItems, activeProfile?.id, activeProfile?.name]);
 
   const contextValue = React.useMemo(
     () => ({
