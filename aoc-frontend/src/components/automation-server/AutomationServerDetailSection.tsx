@@ -37,12 +37,14 @@ import React from "react";
 type AutomationServerDetailSectionProps = {
   server?: AutomationServer;
   groupsList: UserGroup[];
+  onAutomationServerGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void;
+  onWorkspaceGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void;
 };
 
 export function AutomationServerDetailSection(
   props: AutomationServerDetailSectionProps,
 ) {
-  const { server, groupsList } = props;
+  const { server, groupsList, onAutomationServerGroupUpdate, onWorkspaceGroupUpdate } = props;
 
   const navigate = useNavigate();
   const { automationServers, isLoading } = useAutomations();
@@ -82,6 +84,15 @@ export function AutomationServerDetailSection(
     },
     [server, groupsList],
   );
+
+  // Wrapper functions for optimistic updates
+  const handleAutomationServerGroupUpdate = (userId: string, groupId: string, action: 'add' | 'remove') => {
+    onAutomationServerGroupUpdate?.(userId, groupId, action);
+  };
+
+  const handleWorkspaceGroupUpdate = (userId: string, groupId: string, action: 'add' | 'remove') => {
+    onWorkspaceGroupUpdate?.(userId, groupId, action);
+  };
 
   if (!server) {
     navigate("/automation-servers");
@@ -136,6 +147,7 @@ export function AutomationServerDetailSection(
                   nonMemberGroups={automationServerGroups.nonMemberGroups}
                   addAction={addAutomationServerToGroupAction}
                   removeAction={removeAutomationServerFromGroupAction}
+                  onUserGroupUpdate={handleAutomationServerGroupUpdate}
                 />
               </div>
             </div>
@@ -226,6 +238,7 @@ export function AutomationServerDetailSection(
                             nonMemberGroups={workspace.nonMemberGroups}
                             addAction={addWorkspaceToGroupAction}
                             removeAction={removeWorkspaceFromGroupAction}
+                            onUserGroupUpdate={handleWorkspaceGroupUpdate}
                           />
                         </TableCell>
                         <TableCell className="text-right font-medium">

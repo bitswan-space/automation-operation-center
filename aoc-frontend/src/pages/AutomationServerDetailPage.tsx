@@ -7,11 +7,13 @@ import { fetchOrgGroups } from "@/data/groups";
 import { useParams } from "react-router-dom";
 import { useTitleBar } from "@/context/TitleBarProvider";
 import { Server } from "lucide-react";
+import { type AutomationServer } from "@/data/automation-server";
+import { type UserGroup } from "@/data/groups";
 
 const AutomationServerDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const [automationServer, setAutomationServer] = useState<any>(null);
-  const [groupsList, setGroupsList] = useState<any[]>([]);
+  const [automationServer, setAutomationServer] = useState<AutomationServer | null>(null);
+  const [groupsList, setGroupsList] = useState<UserGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const { setTitle, setIcon } = useTitleBar();
 
@@ -19,6 +21,88 @@ const AutomationServerDetailPage = () => {
     setTitle("Automation Servers");
     setIcon(<Server size={24} />);
   }, [setTitle, setIcon]);
+
+  // Optimistic update functions
+  const updateAutomationServerGroups = (userId: string, groupId: string, action: 'add' | 'remove') => {
+    setAutomationServer(prevServer => {
+      if (!prevServer) return prevServer;
+      
+      const groupToAdd = groupsList.find(g => g.id === groupId);
+      if (!groupToAdd) return prevServer;
+
+      if (action === 'add') {
+        // Check if group is already a member
+        const isAlreadyMember = prevServer.group_memberships?.find(
+          (g) => g.keycloak_group_id === groupId
+        );
+        if (isAlreadyMember) return prevServer;
+
+        return {
+          ...prevServer,
+          group_memberships: [
+            ...(prevServer.group_memberships || []),
+            { 
+              id: Date.now(), // Temporary ID for optimistic update
+              automation_server: prevServer.automation_server_id,
+              keycloak_group_id: groupId 
+            }
+          ]
+        };
+      } else if (action === 'remove') {
+        return {
+          ...prevServer,
+          group_memberships: (prevServer.group_memberships || []).filter(
+            (g) => g.keycloak_group_id !== groupId
+          )
+        };
+      }
+      return prevServer;
+    });
+  };
+
+  const updateWorkspaceGroups = (userId: string, groupId: string, action: 'add' | 'remove') => {
+    setAutomationServer(prevServer => {
+      if (!prevServer) return prevServer;
+      
+      const groupToAdd = groupsList.find(g => g.id === groupId);
+      if (!groupToAdd) return prevServer;
+
+      return {
+        ...prevServer,
+        workspaces: prevServer.workspaces?.map(workspace => {
+          if (workspace.id !== userId) return workspace;
+
+          if (action === 'add') {
+            // Check if group is already a member
+            const isAlreadyMember = workspace.group_memberships?.find(
+              (g) => g.keycloak_group_id === groupId
+            );
+            if (isAlreadyMember) return workspace;
+
+            return {
+              ...workspace,
+              group_memberships: [
+                ...(workspace.group_memberships || []),
+                { 
+                  id: Date.now(), // Temporary ID for optimistic update
+                  workspace: workspace.id,
+                  keycloak_group_id: groupId 
+                }
+              ]
+            };
+          } else if (action === 'remove') {
+            return {
+              ...workspace,
+              group_memberships: (workspace.group_memberships || []).filter(
+                (g) => g.keycloak_group_id !== groupId
+              )
+            };
+          }
+          return workspace;
+        }) || []
+      };
+    });
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -67,6 +151,8 @@ const AutomationServerDetailPage = () => {
       <AutomationServerDetailSection
         server={automationServer}
         groupsList={groupsList}
+        onAutomationServerGroupUpdate={updateAutomationServerGroups}
+        onWorkspaceGroupUpdate={updateWorkspaceGroups}
       />
     </div>
   );

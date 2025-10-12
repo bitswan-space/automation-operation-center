@@ -15,7 +15,7 @@ from drf_spectacular.types import OpenApiTypes
 
 from bitswan_backend.core.authentication import KeycloakAuthentication
 from bitswan_backend.core.models import AutomationServer, AutomationServerGroupMembership
-from bitswan_backend.core.serializers.automation_server import (
+from bitswan_backend.core.serializers.workspaces_new import (
     AutomationServerSerializer,
     CreateAutomationServerSerializer,
 )
