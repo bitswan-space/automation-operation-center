@@ -25,7 +25,7 @@ interface MQTTTokensProviderProps {
 
 export const MQTTTokensProvider: React.FC<MQTTTokensProviderProps> = ({ children }) => {
   const [tokens, setTokens] = useState<TokenData[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
 

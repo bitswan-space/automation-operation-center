@@ -9,7 +9,7 @@ const AutomationsContext = createContext<AutomationsGroups | null>(null);
 export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
   const [automations, setAutomations] = useState<AutomationsGroups>(() => MQTTService.getInstance().getState());
   const pipelineStats = usePipelineStats();
-  const { tokens } = useMQTTTokens();
+  const { tokens, isLoading } = useMQTTTokens();
 
   // Update global pipeline stats
   useEffect(() => {
@@ -18,14 +18,14 @@ export const AutomationsProvider = ({ children }: { children: ReactNode }) => {
 
   // Initialize MQTT service when tokens are available
   useEffect(() => {
-    if (tokens && tokens.length > 0) {
+    if (tokens && tokens.length > 0 && !isLoading) {
       console.log('AutomationsProvider: Initializing MQTT service with tokens:', tokens);
       MQTTService.getInstance().initialize(tokens);
-    } else if (tokens && tokens.length === 0) {
+    } else if (tokens && tokens.length === 0 && !isLoading) {
       console.log('AutomationsProvider: No MQTT tokens available');
       MQTTService.getInstance().initialize([]);
     }
-  }, [tokens]);
+  }, [tokens, isLoading]);
 
   // Listen for state changes from the persistent MQTT service
   useEffect(() => {
