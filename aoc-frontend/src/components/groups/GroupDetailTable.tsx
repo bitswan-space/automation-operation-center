@@ -33,8 +33,7 @@ import { useAdminStatus } from "@/hooks/useAdminStatus";
 
 import { type UserGroup, type UserGroupsListResponse } from "@/data/groups";
 import { toast } from "sonner";
-import { useAction } from "@/hooks/useAction";
-import { deleteOrgGroupAction } from "./action";
+import { useDeleteGroup } from "@/hooks/useGroupQuery";
 
 const columnHelper = createColumnHelper<UserGroup>();
 
@@ -223,23 +222,22 @@ function GroupActions(props: GroupActionProps) {
 
   const { isAdmin: hasPerms } = useAdminStatus();
 
-  const { execute, isPending } = useAction(deleteOrgGroupAction, {
-    onSuccess: () => {
-      toast.success("Group deleted");
-      onGroupCreated?.(); // Refresh the group list
-    },
-    onError: ({ error }) => {
-      toast.error((error as any)?.serverError?.message ?? "Error deleting group");
-    },
-  });
+  const deleteGroupMutation = useDeleteGroup();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const data = {
-      id: formData.get("id") as string,
-    };
-    await execute(data);
+    const groupId = formData.get("id") as string;
+    
+    deleteGroupMutation.mutate(groupId, {
+      onSuccess: () => {
+        toast.success("Group deleted");
+        onGroupCreated?.(); // Refresh the group list
+      },
+      onError: (error) => {
+        toast.error((error as any)?.message ?? "Error deleting group");
+      },
+    });
   };
 
   return (
@@ -256,9 +254,9 @@ function GroupActions(props: GroupActionProps) {
         />
         <Separator orientation="vertical" className="h-8 w-px" />
         <form onSubmit={handleSubmit}>
-          <Button variant={"ghost"} disabled={isPending || !hasPerms || group.name === "admin"} type="submit">
+          <Button variant={"ghost"} disabled={deleteGroupMutation.isPending || !hasPerms || group.name === "admin"} type="submit">
             <input type="hidden" name="id" defaultValue={id} />
-            {isPending ? (
+            {deleteGroupMutation.isPending ? (
               <Loader2 size={20} className="animate-spin" />
             ) : (
               <Trash2 size={20} className="text-neutral-500" />

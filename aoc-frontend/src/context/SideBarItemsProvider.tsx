@@ -9,8 +9,9 @@ import {
   type NavItem,
 } from "@/components/layout/Sidebar/utils/NavItems";
 
-import { fetchProfiles, type Profile } from "@/data/profiles";
+import { type Profile } from "@/data/profiles";
 import { updateOrgGroup } from "@/data/groups";
+import { useProfilesQuery } from "@/hooks/useProfilesQuery";
 
 type SidebarItemsType = {
   profiles: Profile[];
@@ -36,24 +37,16 @@ export function SidebarItemsProvider({
   children,
 }: React.PropsWithChildren<unknown>) {
   const [activeProfile, setActiveProfile] = React.useState<Profile | undefined>(undefined);
-  const [profiles, setProfiles] = React.useState<Profile[]>([]);
 
+  const { data: profilesData } = useProfilesQuery();
+  const profiles = React.useMemo(() => profilesData?.results ?? [], [profilesData?.results]);
+
+  // Set active profile when profiles are loaded
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const profilesData = await fetchProfiles();
-        console.log("profilesData", profilesData);
-        setProfiles(profilesData?.results ?? []);
-        if (!activeProfile) {
-          setActiveProfile(profilesData?.results[0] ?? undefined);
-        }
-      } catch (error) {
-        console.error("Error loading profiles data:", error);
-      }
-    };
-
-    loadData();
-  }, []);
+    if (profiles.length > 0 && !activeProfile) {
+      setActiveProfile(profiles[0]);
+    }
+  }, [profiles, activeProfile]);
   
   // Get the initial items
   const sourceItems = useSerializedNavItemData(activeProfile?.nav_items ?? []);
