@@ -11,8 +11,7 @@ import { Label } from "../ui/label";
 import { Loader } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 import { toast } from "sonner";
-import { useAction } from "@/hooks/useAction";
-import { createOrUpdateOrgGroupAction } from "./action";
+import { useCreateGroup, useUpdateGroup } from "@/hooks/useGroupQuery";
 
 type CreateGroupFormProps = {
   group?: UserGroup;
@@ -24,18 +23,10 @@ export function CreateOrEditGroupForm(props: CreateGroupFormProps) {
 
   const tagColorInputRef = React.useRef<HTMLInputElement>(null);
 
-  const { execute, isPending } = useAction(
-    createOrUpdateOrgGroupAction,
-    {
-      onSuccess: ({ data }) => {
-        toast.success((data as any)?.message ?? "Group updated successfully");
-        onSuccess?.();
-      },
-      onError: ({ error }) => {
-        toast.error((error as any)?.serverError?.message ?? "Error updating group");
-      },
-    },
-  );
+  const createGroupMutation = useCreateGroup();
+  const updateGroupMutation = useUpdateGroup();
+
+  const isPending = createGroupMutation.isPending || updateGroupMutation.isPending;
 
   const [tagColor, setTagColor] = React.useState<string>(
     group?.tag_color ?? "#2f3b46",
@@ -57,12 +48,32 @@ export function CreateOrEditGroupForm(props: CreateGroupFormProps) {
       tag_color: formData.get("tag_color") as string,
     };
     
-    // Only include id for updates, not for creation
     if (group?.id) {
-      (data as any).id = group.id;
+      // Update existing group
+      updateGroupMutation.mutate(
+        { ...data, id: group.id },
+        {
+          onSuccess: (result) => {
+            toast.success((result as any)?.message ?? "Group updated successfully");
+            onSuccess?.();
+          },
+          onError: (error) => {
+            toast.error((error as any)?.message ?? "Error updating group");
+          },
+        }
+      );
+    } else {
+      // Create new group
+      createGroupMutation.mutate(data, {
+        onSuccess: (result) => {
+          toast.success((result as any)?.message ?? "Group created successfully");
+          onSuccess?.();
+        },
+        onError: (error) => {
+          toast.error((error as any)?.message ?? "Error creating group");
+        },
+      });
     }
-    
-    await execute(data);
   };
 
   return (
