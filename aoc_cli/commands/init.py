@@ -14,8 +14,7 @@ import yaml
 
 from aoc_cli.env.config import Environment, InitConfig, Protocol
 from aoc_cli.env.services import write_env_files
-from aoc_cli.env.utils import get_env_path
-from aoc_cli.utils.env import get_env_value
+from aoc_cli.env.utils import get_env_path, get_env_value
 from aoc_cli.env.variables import get_var_defaults
 from aoc_cli.services.ingress import IngressService
 from aoc_cli.services.influxdb import InfluxDBService

@@ -13,8 +13,7 @@ from aoc_cli.env.config import (
     Environment,
     InitConfig,
 )
-from aoc_cli.env.utils import get_env_path
-from aoc_cli.utils.env import get_env_value
+from aoc_cli.env.utils import get_env_path, get_env_value
 
 
 @dataclass

@@ -7,8 +7,7 @@ import requests
 import yaml
 
 from aoc_cli.env.config import Environment, InitConfig
-from aoc_cli.env.utils import get_env_path
-from aoc_cli.utils.env import get_env_map, write_env_file
+from aoc_cli.env.utils import get_env_path, get_env_map, write_env_file
 from aoc_cli.utils.images import resolve_images, replace_docker_compose_services_versions
 
 # Define mapping between config attributes and environment variable names

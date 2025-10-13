@@ -13,8 +13,7 @@ from aoc_cli.env.config import (
     OPERATIONS_CENTRE_DOCKER_ENV_FILE,
     Environment,
 )
-from aoc_cli.env.utils import get_env_path
-from aoc_cli.utils.env import get_env_value
+from aoc_cli.env.utils import get_env_path, get_env_value
 
 
 @dataclass
