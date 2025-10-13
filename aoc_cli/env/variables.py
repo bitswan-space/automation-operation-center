@@ -44,19 +44,19 @@ def get_var_defaults(
                 "EMQX_EXTERNAL_URL": "aoc-emqx:8084",
                 
                 # Keycloak dev overrides
-                "KC_HOSTNAME_URL": "http://localhost:8080",
-                "KC_HOSTNAME": "http://localhost:8080",
-                "KC_HOSTNAME_ADMIN_URL": "http://localhost:8080",
-                "KC_HOSTNAME_ADMIN": "http://localhost:8080",
-                "KEYCLOAK_FRONTEND_URL": "http://localhost:8080",
-                "KEYCLOAK_ADMIN_URL": "http://localhost:8080",
+                "KC_HOSTNAME_URL": "https://keycloak.bitswan.localhost",
+                "KC_HOSTNAME": "https://keycloak.bitswan.localhost",
+                "KC_HOSTNAME_ADMIN_URL": "https://keycloak.bitswan.localhost",
+                "KC_HOSTNAME_ADMIN": "https://keycloak.bitswan.localhost",
+                "KEYCLOAK_FRONTEND_URL": "https://keycloak.bitswan.localhost",
+                "KEYCLOAK_ADMIN_URL": "https://keycloak.bitswan.localhost",
                 
                 # Service URLs for dev
                 "INFLUXDB_URL": "http://localhost:8086/",
                 "EMQX_MQTT_URL": f"ws://mqtt.{config.domain}/mqtt",
-                "KEYCLOAK_ISSUER": "http://localhost:8080/realms/master",
-                "KEYCLOAK_REFRESH_URL": "http://localhost:8080/realms/master/protocol/openid-connect/token",
-                "KEYCLOAK_END_SESSION_URL": "http://localhost:8080/realms/master/protocol/openid-connect/logout",
+                "KEYCLOAK_ISSUER": "https://keycloak.bitswan.localhost/realms/master",
+                "KEYCLOAK_REFRESH_URL": "https://keycloak.bitswan.localhost/realms/master/protocol/openid-connect/token",
+                "KEYCLOAK_END_SESSION_URL": "https://keycloak.bitswan.localhost/realms/master/protocol/openid-connect/logout",
             }
         )
 
