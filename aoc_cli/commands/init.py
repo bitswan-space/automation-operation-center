@@ -264,20 +264,6 @@ async def init_async(
 
 async def execute_init(config: InitConfig) -> None:
     """Execute the initialization process."""
-    # Check if 'aoc' workspace already exists
-    try:
-        result = subprocess.run(
-            ["bitswan", "workspace", "list"], capture_output=True, text=True, check=True
-        )
-    except subprocess.CalledProcessError as e:
-        click.echo(f"❌ Error running bitswan workspace list: {e}")
-        click.echo("Make sure bitswan CLI is properly installed and accessible.")
-        raise click.Abort()
-    except FileNotFoundError:
-        click.echo("❌ bitswan command not found. Please install bitswan CLI first.")
-        click.echo("Run the init command again after installing bitswan CLI.")
-        raise click.Abort()
-
     try:
         subprocess.run(
             [
