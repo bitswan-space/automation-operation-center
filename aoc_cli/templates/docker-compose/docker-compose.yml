@@ -25,7 +25,7 @@ services:
     environment:
       - DOCKER_INFLUXDB_INIT_MODE=setup
     ports:
-      - "8086:8086"
+      - "9086:8086"
 
 
   emqx:
@@ -50,7 +50,6 @@ services:
     networks:
       - bitswan_network
     ports:
-      - "8080:8080"
       - "9000:9000"
 
   keycloak-postgres:

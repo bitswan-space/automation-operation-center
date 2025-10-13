@@ -23,7 +23,7 @@ class InfluxDBConfig:
     org: str
     bucket: str
     aoc_dir: Path
-    url: str = "http://localhost:8086"
+    url: str = "http://localhost:9086"
     token_name: str = "aoc-token"
     token_description: str = "Token for AOC services"
 
@@ -53,7 +53,7 @@ class InfluxDBService:
                 "DOCKER_INFLUXDB_INIT_BUCKET",
             ),
             aoc_dir=config.aoc_dir,
-            url="http://localhost:8086",
+            url="http://localhost:9086",
             token_name="aoc-token",
             token_description="Token for AOC services",
         )
