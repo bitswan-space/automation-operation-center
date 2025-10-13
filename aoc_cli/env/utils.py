@@ -5,6 +5,8 @@ from typing import Dict, Optional, Union, Tuple, List
 import click
 
 from aoc_cli.env.config import InitConfig, Environment
+from aoc_cli.utils.env import write_env_file, get_env_var
+
 
 def get_env_path(aoc_dir, service_name):
     return aoc_dir / "envs" / f"{service_name.lower().replace(' ','-')}.env"
@@ -42,7 +44,8 @@ def write_env_files_service(
         )
 
         if override_dot_env:
-            write_env_file(env_str, env_path)
+            write_env_file(env_str, str(env_path))
+            click.echo(f"✓ Wrote variables to {env_path}")
         else:
             if verbose:
                 # Display the env content without overriding
@@ -51,24 +54,8 @@ def write_env_files_service(
                 click.echo("-------------------------------------------")
 
     else:
-        write_env_file(env_str, env_path)
-
-
-def write_env_file(env_content: str, env_path: str) -> None:
-    """
-    Write environment variables to a file.
-    Creates the directory path if it doesn't exist.
-    """
-    # Create directory if it doesn't exist
-    directory = os.path.dirname(env_path)
-    if directory and not os.path.exists(directory):
-        os.makedirs(directory)
-        click.echo(f"✓ Created directory {directory}")
-
-    # Write the file
-    with open(env_path, "w") as f:
-        f.write(env_content)
-    click.echo(f"✓ Wrote variables to {env_path}")
+        write_env_file(env_str, str(env_path))
+        click.echo(f"✓ Wrote variables to {env_path}")
 
 
 def marshall_env(env_dict, env_config):
@@ -96,35 +83,3 @@ def marshall_env(env_dict, env_config):
         sections.append("\n".join(lines))
 
     return "\n\n".join(sections)
-
-
-def get_env_var(
-    var_name: str,
-    default: str | None = None,
-    env: Environment = Environment.DEV,
-    required_in_prod: bool = False,
-) -> str | None:
-    """
-    Get an environment variable, optionally requiring it in production.
-
-    Args:
-        var_name: Name of the environment variable.
-        default: Default value if the variable is not set.
-        env: Configured App environment
-        required_in_prod: If True, raise an error in production if var is not set.
-
-    Returns:
-        The value of the environment variable, or default if provided and applicable.
-
-    Raises:
-        RuntimeError: If required_in_prod is True and we're in production and the variable is not set.
-    """
-    value = os.getenv(var_name, default)
-    is_prod = env == Environment.PROD
-
-    if required_in_prod and is_prod and (value is None or str(value).strip() == ""):
-        raise RuntimeError(
-            f"Missing required environment variable '{var_name}' in production."
-        )
-
-    return value

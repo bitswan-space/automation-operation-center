@@ -7,8 +7,48 @@ import requests
 import yaml
 
 from aoc_cli.env.config import Environment, InitConfig
-from aoc_cli.env.services import write_env_files
+from aoc_cli.env.utils import get_env_path
+from aoc_cli.utils.env import get_env_map, write_env_file
 from aoc_cli.utils.images import resolve_images, replace_docker_compose_services_versions
+
+# Define mapping between config attributes and environment variable names
+IMAGE_ENV_MAPPING = {
+    'aoc_be_image': 'BITSWAN_BACKEND_IMAGE',
+    'aoc_image': 'AOC_IMAGE', 
+    'keycloak_image': 'KEYCLOAK_IMAGE',
+}
+IMAGE_ENV_VARS = list(IMAGE_ENV_MAPPING.values())
+
+
+def update_image_env_vars(init_config: InitConfig) -> None:
+    """Update only the image environment variables in bitswan-backend.env without prompting."""
+    env_path = get_env_path(init_config.aoc_dir, "bitswan-backend")
+    
+    # Parse existing environment file using existing utility
+    try:
+        env_vars = get_env_map(env_path)
+    except FileNotFoundError:
+        env_vars = {}
+    
+    # Update image variables using the mapping
+    for config_attr, env_var in IMAGE_ENV_MAPPING.items():
+        value = getattr(init_config, config_attr) or ''
+        env_vars[env_var] = value
+    
+    # Write updated environment file
+    write_env_file_from_dict(env_vars, env_path)
+
+
+def write_env_file_from_dict(env_vars: dict, env_path: Path) -> None:
+    """Write environment variables from a dictionary to a file."""
+    # Create simple key=value format
+    lines = []
+    for key, value in sorted(env_vars.items()):
+        lines.append(f'{key}="{value}"')
+    
+    # Write to file using existing utility
+    content = '\n'.join(lines)
+    write_env_file(content, str(env_path))
 
 
 @click.command()
@@ -61,7 +101,7 @@ def update(from_url):
     
     # Update environment variables with new image versions
     click.echo("Updating environment variables with new image versions...")
-    write_env_files(init_config)
+    update_image_env_vars(init_config)
 
     subprocess.run(
         ["docker", "compose", "-f", "docker-compose.yml", "up", "-d"],
