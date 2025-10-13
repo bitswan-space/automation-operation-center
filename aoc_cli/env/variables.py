@@ -52,7 +52,7 @@ def get_var_defaults(
                 "KEYCLOAK_ADMIN_URL": "https://keycloak.bitswan.localhost",
                 
                 # Service URLs for dev
-                "INFLUXDB_URL": "http://localhost:8086/",
+                "INFLUXDB_URL": "http://localhost:9086/",
                 "EMQX_MQTT_URL": f"ws://mqtt.{config.domain}/mqtt",
                 "KEYCLOAK_ISSUER": "https://keycloak.bitswan.localhost/realms/master",
                 "KEYCLOAK_REFRESH_URL": "https://keycloak.bitswan.localhost/realms/master/protocol/openid-connect/token",
