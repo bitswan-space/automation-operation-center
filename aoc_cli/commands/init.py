@@ -295,6 +295,34 @@ async def execute_init(config: InitConfig) -> None:
         click.echo("❌ bitswan command not found. Please install bitswan CLI first.")
         click.echo("Run the init command again after installing bitswan CLI.")
         raise click.Abort()
+    
+    # Configure caddy with keycloak alias in dev mode
+    if config.env == Environment.DEV:
+        click.echo("Connecting caddy to bitswan_network with keycloak.bitswan.localhost alias...")
+        try:
+            # Always disconnect first (quietly)
+            subprocess.run(
+                ["docker", "network", "disconnect", "bitswan_network", "caddy"],
+                check=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+
+            # Then reconnect with both aliases
+            subprocess.run(
+                [
+                    "docker", "network", "connect",
+                    "--alias", "caddy",
+                    "--alias", "keycloak.bitswan.localhost",
+                    "bitswan_network",
+                    "caddy"
+                ],
+                check=True,
+            )
+            click.echo("✓ Caddy connected to bitswan_network with keycloak.bitswan.localhost alias")
+        except subprocess.CalledProcessError as e:
+            click.echo(f"⚠️  Warning: Could not connect caddy to bitswan_network: {e}")
+    
     create_aoc_directory(config)
     copy_config_files(config)
     # 1) Resolve images (fill in config image fields if missing)
@@ -354,32 +382,6 @@ async def execute_init(config: InitConfig) -> None:
         click.echo("❌ docker command not found. Please install Docker first.")
         click.echo("Run the init command again after installing Docker.")
         raise click.Abort()
-
-    if config.env == Environment.DEV:
-        click.echo("Connecting caddy to bitswan_network with keycloak.bitswan.localhost alias...")
-        try:
-            # Always disconnect first (quietly)
-            subprocess.run(
-                ["docker", "network", "disconnect", "bitswan_network", "caddy"],
-                check=False,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-
-            # Then reconnect with both aliases
-            subprocess.run(
-                [
-                    "docker", "network", "connect",
-                    "--alias", "caddy",
-                    "--alias", "keycloak.bitswan.localhost",
-                    "bitswan_network",
-                    "caddy"
-                ],
-                check=True,
-            )
-            click.echo("✓ Caddy connected to bitswan_network with keycloak.bitswan.localhost alias")
-        except subprocess.CalledProcessError as e:
-            click.echo(f"⚠️  Warning: Could not connect caddy to bitswan_network: {e}")
 
     # Build comprehensive access message with env vars and Keycloak info
     try:
