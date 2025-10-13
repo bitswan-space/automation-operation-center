@@ -7,6 +7,7 @@ import requests
 import yaml
 
 from aoc_cli.env.config import Environment, InitConfig
+from aoc_cli.env.services import write_env_files
 from aoc_cli.utils.images import resolve_images, replace_docker_compose_services_versions
 
 
@@ -57,6 +58,10 @@ def update(from_url):
 
     resolve_images(init_config)
     replace_docker_compose_services_versions(init_config)
+    
+    # Update environment variables with new image versions
+    click.echo("Updating environment variables with new image versions...")
+    write_env_files(init_config)
 
     subprocess.run(
         ["docker", "compose", "-f", "docker-compose.yml", "up", "-d"],
