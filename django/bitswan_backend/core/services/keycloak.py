@@ -248,6 +248,7 @@ class KeycloakService:
             {
                 "id": group["id"],
                 "name": group["name"],
+                "path": group.get("path", ""),
                 "tag_color": next(iter(group["attributes"].get("tag_color", [])), None),
                 "permissions": group["attributes"].get("permissions", []),
                 "description": next(
@@ -321,6 +322,7 @@ class KeycloakService:
         return {
             "id": org_group["id"],
             "name": org_group["name"],
+            "path": org_group.get("path", ""),
             "tag_color": next(iter(org_group["attributes"].get("tag_color", [])), None),
             "permissions": org_group["attributes"].get("permissions", []),
             "description": next(
