@@ -90,12 +90,15 @@ class MQTTService:
                 automation_server=automation_server
             )
             
-            # Extract group IDs
-            group_ids = [membership.keycloak_group_id for membership in memberships]
+            # Extract group paths
+            group_paths = []
+            for membership in memberships:
+                group = self.keycloak_service.get_org_group(membership.keycloak_group_id)
+                group_paths.append(group.get("path", ""))
             
             topic = f"/orgs/{automation_server.keycloak_org_id}/automation-servers/{automation_server.automation_server_id}/groups"
-            self.mqtt_client.publish(topic, group_ids, retain=True)
-            logger.info(f"Published automation server groups to {topic}: {group_ids}")
+            self.mqtt_client.publish(topic, group_paths, retain=True)
+            logger.info(f"Published automation server groups to {topic}: {group_paths}")
             
         except Exception as e:
             logger.error(f"Error publishing automation server groups: {e}")
@@ -112,23 +115,23 @@ class MQTTService:
                 workspace=workspace
             )
             
-            # Extract group IDs and add admin group
-            group_ids = []
+            # Extract group paths and add admin group
+            group_paths = []
             
             # Add admin group
             admin_group = self.keycloak_service.get_admin_org_group(workspace.keycloak_org_id)
             if admin_group:
-                group_ids.append(admin_group["id"])
+                group_paths.append(admin_group.get("path", ""))
             
             # Add editor groups
             for membership in memberships:
                 group = self.keycloak_service.get_org_group(membership.keycloak_group_id)
                 if "workspace-editor" in group.get("permissions", []):
-                    group_ids.append(membership.keycloak_group_id)
+                    group_paths.append(group.get("path", ""))
             
             topic = f"/orgs/{workspace.keycloak_org_id}/automation-servers/{workspace.automation_server_id}/c/{workspace.id}/groups"
-            self.mqtt_client.publish(topic, group_ids, retain=True)
-            logger.info(f"Published workspace groups to {topic}: {group_ids}")
+            self.mqtt_client.publish(topic, group_paths, retain=True)
+            logger.info(f"Published workspace groups to {topic}: {group_paths}")
             
         except Exception as e:
             logger.error(f"Error publishing workspace groups: {e}")
