@@ -24,6 +24,7 @@ import ProfileSelector from "@/components/groups/ProfileSelector";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { User } from "@/context/AuthContext";
 import { useAutomationsCounts } from "@/hooks/useAutomationsCounts";
+import { useMQTTTokens } from "@/context/MQTTTokensProvider";
 
 type AppSidebarProps = {
   user: User;
@@ -39,6 +40,8 @@ export function AppSidebar(props: AppSidebarProps) {
     workspaceCount, 
     isLoading 
   } = useAutomationsCounts();
+  const { tokens, isLoading: tokensLoading } = useMQTTTokens();
+  const isMaker = (!tokensLoading && tokens && tokens.length > 0) || isAdmin;
 
   // Check if experimental features should be shown
   const showExperimental = true;
@@ -71,6 +74,8 @@ export function AppSidebar(props: AppSidebarProps) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              {isMaker && (
+              <>
               {isAdmin && (
                 <SidebarMenuItem key={"automation-servers"}>
                   <SidebarMenuButton asChild isActive={path === "/automation-servers"}>
@@ -127,6 +132,8 @@ export function AppSidebar(props: AppSidebarProps) {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+              )}
+              </>
               )}
             </SidebarMenu>
           </SidebarGroupContent>
