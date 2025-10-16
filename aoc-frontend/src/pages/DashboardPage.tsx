@@ -27,12 +27,14 @@ export default function DashboardPage() {
     setTitle("Dashboard");
     setIcon(<LayoutDashboard size={24} />);
     setButtons(
-      <Button>
-        <Plus size={16} />
-        Automate processes
-      </Button>
+      isMaker && (
+        <Button>
+          <Plus size={16} />
+          Automate processes
+        </Button>
+      )
     );
-  }, [setTitle, setIcon, setButtons]);
+  }, [setTitle, setIcon, setButtons, isMaker]);
 
   return (
     <div>
