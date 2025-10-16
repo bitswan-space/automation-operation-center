@@ -10,6 +10,7 @@ import {
     useEffect,
     useState,
 } from "react";
+import { useAuth } from "./AuthContext";
 
 interface OrgsContextType {
     orgs: Organisation[];
@@ -29,8 +30,13 @@ export const useOrgs = () => {
 export const OrgsProvider = ({ children }: { children: ReactNode }) => {
     const [orgs, setOrgs] = useState<any[]>([]);
     const [activeOrg, setActiveOrg] = useState<any>();
+    const { isAuthenticated } = useAuth();
 
     useEffect(() => {
+        if (!isAuthenticated) {
+            return;
+        }
+
         const loadData = async () => {
             try {
                 const [orgsData, activeOrgData] = await Promise.all([
@@ -46,7 +52,7 @@ export const OrgsProvider = ({ children }: { children: ReactNode }) => {
         };
 
         loadData();
-    }, []);
+    }, [isAuthenticated]);
 
     return (
         <OrgsContext.Provider value={{ orgs, activeOrg }}>
