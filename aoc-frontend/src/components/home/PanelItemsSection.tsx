@@ -1,16 +1,12 @@
 import { DynamicIcon } from "../layout/Sidebar/DynamicIcon";
-import { FaFolderOpen } from "react-icons/fa";
 import PanelItemCard from "./PanelItemCard";
 import React from "react";
-import { useLocation } from "react-router-dom";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
 import PanelItemFolder from "./PanelItemFolder";
 
 
 export default function PanelItemsSection() {
   const { deserializedNavItems: sidebarItems } = useSidebarItems();
-
-  const location = useLocation();
 
   const [isMounted, setIsMounted] = React.useState(false);
 
