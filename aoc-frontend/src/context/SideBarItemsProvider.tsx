@@ -11,7 +11,8 @@ import {
 
 import { type Profile } from "@/data/profiles";
 import { updateOrgGroup } from "@/data/groups";
-import { useProfilesQuery } from "@/hooks/useProfilesQuery";
+import { PROFILES_QUERY_KEY, useProfilesQuery } from "@/hooks/useProfilesQuery";
+import { useQueryClient } from "@tanstack/react-query";
 
 type SidebarItemsType = {
   profiles: Profile[];
@@ -37,7 +38,7 @@ export function SidebarItemsProvider({
   children,
 }: React.PropsWithChildren<unknown>) {
   const [activeProfile, setActiveProfile] = React.useState<Profile | undefined>(undefined);
-
+  const queryClient = useQueryClient();
   const { data: profilesData } = useProfilesQuery();
   const profiles = React.useMemo(() => profilesData?.results ?? [], [profilesData?.results]);
 
@@ -97,6 +98,9 @@ export function SidebarItemsProvider({
           name: activeProfile.name,
           nav_items: JSON.stringify(deserializedNavItems),
         });
+
+        // Invalidate profiles query to refresh data
+        queryClient.invalidateQueries({ queryKey: PROFILES_QUERY_KEY });
       }
     }
     updateNavItems();
