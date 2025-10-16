@@ -92,6 +92,12 @@ class MQTTService:
             
             # Extract group paths
             group_paths = []
+            
+            # Add admin group
+            admin_group = self.keycloak_service.get_admin_org_group(automation_server.keycloak_org_id)
+            if admin_group:
+                group_paths.append(admin_group.get("path", ""))
+            
             for membership in memberships:
                 group = self.keycloak_service.get_org_group(membership.keycloak_group_id)
                 group_paths.append(group.get("path", ""))
@@ -126,8 +132,7 @@ class MQTTService:
             # Add editor groups
             for membership in memberships:
                 group = self.keycloak_service.get_org_group(membership.keycloak_group_id)
-                if "workspace-editor" in group.get("permissions", []):
-                    group_paths.append(group.get("path", ""))
+                group_paths.append(group.get("path", ""))
             
             topic = f"/orgs/{workspace.keycloak_org_id}/automation-servers/{workspace.automation_server_id}/c/{workspace.id}/groups"
             self.mqtt_client.publish(topic, group_paths, retain=True)
