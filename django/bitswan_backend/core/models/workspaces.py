@@ -3,7 +3,7 @@ import uuid
 from django.db import models
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
-
+from bitswan_backend.core.services.keycloak import KeycloakService
 
 class Workspace(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -91,3 +91,16 @@ def create_workspace_editor_group(sender, instance, created, **kwargs):
         import logging
         logger = logging.getLogger(__name__)
         logger.error(f"Failed to create workspace groups for {instance.name}: {e}")
+
+@receiver([post_save], sender=Workspace)
+def create_workspace_keycloak_client(sender, instance, **kwargs):
+    """
+    Create workspace keycloak client for the workspace
+    """
+    keycloak_service = KeycloakService()
+    workspace_name = instance.name
+    workspace_id = str(instance.id)
+
+    # Create workspace keycloak client
+    keycloak_service.create_workspace_client(workspace_id, workspace_name)
+    
