@@ -5,6 +5,7 @@ import string
 
 from django.conf import settings
 from keycloak import KeycloakAdmin
+from keycloak import KeycloakGetError
 from keycloak import KeycloakOpenID
 from keycloak import KeycloakOpenIDConnection
 from keycloak import KeycloakPostError
@@ -239,6 +240,98 @@ class KeycloakService:
             client_id=client_id,
             payload=client,
         )
+
+    def create_workspace_client(self, workspace_id, workspace_name):
+        """
+        Create a Keycloak client for a workspace.
+        
+        Args:
+            workspace_id: UUID of the workspace
+            workspace_name: Name of the workspace
+            
+        Returns:
+            dict: Client information including client_id and client_secret
+        """
+        try:
+            # Generate a unique client ID for the workspace using the workspace ID
+            client_id = f"workspace-{workspace_id}-code-server-client"
+            
+            # Generate a secure client secret
+            client_secret = self.generate_temporary_password(32)
+            
+            # Create the client payload
+            client_payload = {
+                "clientId": client_id,
+                "enabled": True,
+                "clientAuthenticatorType": "client-secret",
+                "secret": client_secret,
+                "standardFlowEnabled": True,
+                "implicitFlowEnabled": False,
+                "directAccessGrantsEnabled": True,
+                "serviceAccountsEnabled": True,
+                "publicClient": False,
+                "protocol": "openid-connect",
+                "redirectUris": [f"https://{workspace_name}-editor.bitswan.localhost/oauth2/callback"],
+                "webOrigins": [f"https://{workspace_name}-editor.bitswan.localhost"],
+                "attributes": {
+                },
+                "defaultClientScopes": [
+                    "acr",
+                    "address",
+                    "basic",
+                    "email",
+                    "profile",
+                    "group_membership"
+                ],
+                "optionalClientScopes": [
+                    "microprofile-jwt",
+                    "offline_access",
+                    "organization",
+                    "phone"
+                ]
+            }
+            
+            # Create the client
+            created_client = self.keycloak_admin.create_client(payload=client_payload)
+            
+            logger.info("Created Keycloak client for workspace %s", client_id)
+            
+            return {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "keycloak_client_id": created_client,
+                "success": True
+            }
+            
+        except KeycloakPostError as e:
+            logger.error("Failed to create Keycloak client for workspace %s: %s", client_id, e)
+            return {
+                "client_id": None,
+                "client_secret": None,
+                "keycloak_client_id": None,
+                "error": str(e)
+            }
+
+    def get_client_secrets(self, client_id):
+        logger.info("Trying to get client secret from client list for: %s", client_id)
+        try:
+            clients = self.keycloak_admin.get_clients()
+            for client in clients:
+                if client.get("clientId") == client_id:
+                    client_secret = client.get("secret", "")
+                    if client_secret:
+                        logger.info("Successfully retrieved client secret from client list for: %s", client_id)
+                        return client_secret
+                    else:
+                        logger.error("Client secret not found in client list for: %s", client_id)
+                        return None
+            
+            logger.error("Client not found in client list: %s", client_id)
+            return None
+            
+        except KeycloakGetError as e:
+            logger.exception("Failed to get client secrets for %s: %s", client_id, e)
+            return None
 
     def get_org_groups(self, org_id):
         org_groups = self.keycloak_admin.get_group(group_id=org_id)["subGroups"]

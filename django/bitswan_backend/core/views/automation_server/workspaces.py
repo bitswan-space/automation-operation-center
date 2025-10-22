@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
 
+from bitswan_backend.core.services.keycloak import KeycloakService
 from bitswan_backend.core.authentication import AutomationServerAuthentication
 from bitswan_backend.core.models import Workspace
 from bitswan_backend.core.serializers.workspaces import WorkspaceSerializer
@@ -78,3 +79,44 @@ class WorkspaceAPIViewSet(AutomationServerMixin, viewsets.ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="keycloak/client-secret",
+    )
+    def keycloak_client_secret(self, request, pk=None):
+        """Get Keycloak client secret for a workspace"""
+        workspace = self.get_object()
+        automation_server = self.get_automation_server()
+        
+        # Ensure this workspace belongs to the authenticated automation server
+        if workspace.automation_server_id != automation_server.automation_server_id:
+            return Response(
+                {"error": "Workspace does not belong to this automation server"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
+        keycloak_service = KeycloakService()
+        
+        # Get the client secret
+        client_id = f"workspace-{workspace.id}-code-server-client"
+        client_secret = keycloak_service.get_client_secrets(client_id)            
+        
+        if not client_secret:
+            return Response(
+                {"error": f"Client secret not found for workspace {workspace.name}. The workspace client may not have been created yet."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        return Response(
+            {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "workspace_name": workspace.name,
+                "issuer_url": f"{settings.KEYCLOAK_FRONTEND_URL}/realms/{settings.KEYCLOAK_REALM_NAME}",
+            },
+            status=status.HTTP_200_OK,
+        
+        )
+        

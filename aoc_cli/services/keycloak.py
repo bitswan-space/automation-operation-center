@@ -300,6 +300,7 @@ class KeycloakService:
                 "manage-users",
                 "query-users",
                 "view-groups",
+                "manage-clients",
             ],
         }
 
