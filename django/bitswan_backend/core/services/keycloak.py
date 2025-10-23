@@ -239,14 +239,13 @@ class KeycloakService:
             payload=client,
         )
 
-    def create_workspace_client(self, workspace_id, workspace_name):
+    def create_workspace_client(self, workspace_id, editor_url):
         """
         Create a Keycloak client for a workspace.
         
         Args:
             workspace_id: UUID of the workspace
-            workspace_name: Name of the workspace
-            
+            editor_url: URL of the editor
         Returns:
             dict: Client information including client_id and client_secret
         """
@@ -269,8 +268,8 @@ class KeycloakService:
                 "serviceAccountsEnabled": True,
                 "publicClient": False,
                 "protocol": "openid-connect",
-                "redirectUris": [f"https://{workspace_name}-editor.bitswan.localhost/oauth2/callback"],
-                "webOrigins": [f"https://{workspace_name}-editor.bitswan.localhost"],
+                "redirectUris": [f"{editor_url}/oauth2/callback"],
+                "webOrigins": [editor_url],
                 "attributes": {
                 },
                 "defaultClientScopes": [
