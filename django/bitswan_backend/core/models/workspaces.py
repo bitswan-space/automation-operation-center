@@ -19,6 +19,7 @@ class Workspace(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     editor_url = models.CharField(max_length=255, null=True, blank=True)
+    keycloak_internal_client_id = models.CharField(max_length=255, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -93,14 +94,47 @@ def create_workspace_editor_group(sender, instance, created, **kwargs):
         logger.error(f"Failed to create workspace groups for {instance.name}: {e}")
 
 @receiver([post_save], sender=Workspace)
-def create_workspace_keycloak_client(sender, instance, **kwargs):
+def create_workspace_keycloak_client(sender, instance, created, **kwargs):
     """
     Create workspace keycloak client for the workspace
     """
-    keycloak_service = KeycloakService()
-    workspace_name = instance.name
-    workspace_id = str(instance.id)
-
-    # Create workspace keycloak client
-    keycloak_service.create_workspace_client(workspace_id, workspace_name)
+    if not created:
+        return
+    
+    try:
+        import logging
+        logger = logging.getLogger(__name__)
+        keycloak_service = KeycloakService()
+        workspace_name = instance.name
+        workspace_id = str(instance.id)
+        result = keycloak_service.create_workspace_client(workspace_id, workspace_name)
+        
+        # Store the Keycloak internal ID for efficient secret retrieval
+        if result and result.get("success") and result.get("keycloak_internal_client_id"):
+            Workspace.objects.filter(pk=instance.pk).update(
+                    keycloak_internal_client_id=result["keycloak_internal_client_id"]
+                )
+            logger.info("Successfully created and stored Keycloak client for workspace %s", workspace_name)
+        else:
+            logger.warning("Failed to create Keycloak client for workspace %s: %s", workspace_name, result.get("error", "Unknown error"))
+            
+    except Exception as e:
+        logger.error("Error creating Keycloak client for workspace %s: %s", instance.name, e)
+  
+@receiver([post_delete], sender=Workspace)
+def delete_workspace_keycloak_client(sender, instance, **kwargs):
+    """
+    Delete workspace keycloak client for the workspace
+    """
+    try:
+        import logging
+        logger = logging.getLogger(__name__)
+        if instance.keycloak_internal_client_id:
+            keycloak_service = KeycloakService()
+            keycloak_service.delete_workspace_client(instance.keycloak_internal_client_id)
+            logger.info("Successfully deleted Keycloak client for workspace %s", instance.name)
+        else:
+            logger.warning("No Keycloak internal client ID found for workspace %s, skipping deletion", instance.name)
+    except Exception as e:
+        logger.error("Error deleting Keycloak client for workspace %s: %s", instance.name, e)
     

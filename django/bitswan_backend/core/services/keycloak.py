@@ -5,11 +5,9 @@ import string
 
 from django.conf import settings
 from keycloak import KeycloakAdmin
-from keycloak import KeycloakGetError
+from keycloak import KeycloakGetError, KeycloakDeleteError, KeycloakError, KeycloakPostError
 from keycloak import KeycloakOpenID
 from keycloak import KeycloakOpenIDConnection
-from keycloak import KeycloakPostError
-from keycloak.exceptions import KeycloakError
 
 from bitswan_backend.core.utils import encryption
 
@@ -257,7 +255,7 @@ class KeycloakService:
             client_id = f"workspace-{workspace_id}-code-server-client"
             
             # Generate a secure client secret
-            client_secret = self.generate_temporary_password(32)
+            client_secret = self.generate_client_secret()
             
             # Create the client payload
             client_payload = {
@@ -297,40 +295,33 @@ class KeycloakService:
             logger.info("Created Keycloak client for workspace %s", client_id)
             
             return {
-                "client_id": client_id,
-                "client_secret": client_secret,
-                "keycloak_client_id": created_client,
+                "keycloak_internal_client_id": created_client,
                 "success": True
             }
             
         except KeycloakPostError as e:
             logger.error("Failed to create Keycloak client for workspace %s: %s", client_id, e)
             return {
-                "client_id": None,
-                "client_secret": None,
-                "keycloak_client_id": None,
+                "keycloak_internal_client_id": None,
+                "success": False,
                 "error": str(e)
             }
 
-    def get_client_secrets(self, client_id):
-        logger.info("Trying to get client secret from client list for: %s", client_id)
+    def delete_workspace_client(self, internal_id):    
         try:
-            clients = self.keycloak_admin.get_clients()
-            for client in clients:
-                if client.get("clientId") == client_id:
-                    client_secret = client.get("secret", "")
-                    if client_secret:
-                        logger.info("Successfully retrieved client secret from client list for: %s", client_id)
-                        return client_secret
-                    else:
-                        logger.error("Client secret not found in client list for: %s", client_id)
-                        return None
-            
-            logger.error("Client not found in client list: %s", client_id)
-            return None
-            
+            self.keycloak_admin.delete_client(internal_id)
+        except KeycloakDeleteError as e:
+            logger.warning("Failed to delete client with internal ID %s: %s", internal_id, e)
+
+    def get_client_secrets(self, internal_id):
+        """
+        Get client secret by its internal ID.
+        """
+        try:
+            secrets_response = self.keycloak_admin.get_client_secrets(internal_id)
+            return secrets_response.get("value", "")
         except KeycloakGetError as e:
-            logger.exception("Failed to get client secrets for %s: %s", client_id, e)
+            logger.warning("Failed to get secret with internal ID %s: %s", internal_id, e)
             return None
 
     def get_org_groups(self, org_id):
@@ -489,6 +480,14 @@ class KeycloakService:
         except Exception as e:
             logger.exception("Failed to find user by email: %s", email)
             return None
+
+    def generate_client_secret(self):
+        """
+        Generate a secure client secret.
+        """
+        # Only use letters and digits
+        characters = string.ascii_letters + string.digits
+        return ''.join(secrets.choice(characters) for _ in range(32))
 
     def generate_temporary_password(self, length=12):
         """

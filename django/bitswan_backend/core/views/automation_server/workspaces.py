@@ -96,27 +96,41 @@ class WorkspaceAPIViewSet(AutomationServerMixin, viewsets.ModelViewSet):
                 {"error": "Workspace does not belong to this automation server"},
                 status=status.HTTP_403_FORBIDDEN
             )
+        
+        # Check if workspace has a Keycloak client ID
+        if not workspace.keycloak_internal_client_id:
+            return Response(
+                {
+                    "error": "No Keycloak client found for this workspace. The workspace may not have been properly configured.",
+                    "client_id": None,
+                    "client_secret": None,
+                    "issuer_url": f"{settings.KEYCLOAK_FRONTEND_URL}/realms/{settings.KEYCLOAK_REALM_NAME}",
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
             
         keycloak_service = KeycloakService()
-        
-        # Get the client secret
         client_id = f"workspace-{workspace.id}-code-server-client"
-        client_secret = keycloak_service.get_client_secrets(client_id)            
+        client_secret = keycloak_service.get_client_secrets(str(workspace.keycloak_internal_client_id))
         
-        if not client_secret:
+        # Check if client secret retrieval was successful
+        if client_secret is None:
             return Response(
-                {"error": f"Client secret not found for workspace {workspace.name}. The workspace client may not have been created yet."},
-                status=status.HTTP_404_NOT_FOUND
+                {
+                    "error": "Failed to retrieve client secret from Keycloak",
+                    "client_id": client_id,
+                    "client_secret": None,
+                    "issuer_url": f"{settings.KEYCLOAK_FRONTEND_URL}/realms/{settings.KEYCLOAK_REALM_NAME}",
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         
         return Response(
             {
                 "client_id": client_id,
                 "client_secret": client_secret,
-                "workspace_name": workspace.name,
                 "issuer_url": f"{settings.KEYCLOAK_FRONTEND_URL}/realms/{settings.KEYCLOAK_REALM_NAME}",
             },
             status=status.HTTP_200_OK,
-        
         )
         
