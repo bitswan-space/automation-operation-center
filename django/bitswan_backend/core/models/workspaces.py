@@ -107,13 +107,16 @@ def create_workspace_keycloak_client(sender, instance, created, **kwargs):
         keycloak_service = KeycloakService()
         workspace_name = instance.name
         workspace_id = str(instance.id)
-        result = keycloak_service.create_workspace_client(workspace_id, workspace_name)
+        editor_url = instance.editor_url
+        if not editor_url:
+            logger.warning("No editor URL found for workspace %s, skipping creation of Keycloak client", workspace_name)
+            return
+        result = keycloak_service.create_workspace_client(workspace_id, editor_url)
         
         # Store the Keycloak internal ID for efficient secret retrieval
-        if result and result.get("success") and result.get("keycloak_internal_client_id"):
-            Workspace.objects.filter(pk=instance.pk).update(
-                    keycloak_internal_client_id=result["keycloak_internal_client_id"]
-                )
+        if result and result.get("success") and result.get("keycloak_internal_client_id"):            
+            instance.keycloak_internal_client_id = result["keycloak_internal_client_id"]
+            instance.save(update_fields=['keycloak_internal_client_id'])
             logger.info("Successfully created and stored Keycloak client for workspace %s", workspace_name)
         else:
             logger.warning("Failed to create Keycloak client for workspace %s: %s", workspace_name, result.get("error", "Unknown error"))
