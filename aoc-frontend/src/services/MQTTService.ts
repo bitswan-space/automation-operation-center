@@ -6,12 +6,15 @@ import {
   type WorkspaceTopologyResponse, 
   type WorkspaceGroup, 
   type AutomationServerGroup, 
-  type AutomationsGroups 
+  type AutomationsGroups,
+  type Process,
 } from '@/types';
+import { type MqttClient } from 'mqtt';
 
 // Global state that persists across component unmounts
 let globalAutomationsState: AutomationsGroups = {
   all: [],
+  processes: {},
   automationServers: {},
   isLoading: true,
 };
@@ -22,8 +25,9 @@ let globalPipelineStats: any[] = [];
 
 // Global MQTT connection manager
 class GlobalMQTTManager {
-  private connections: Map<string, any> = new Map();
-  private subscriptions: Map<string, any> = new Map();
+  private connections: Map<string, Promise<MqttClient> | MqttClient> = new Map();
+  private topologySubscriptions: Map<string, any> = new Map();
+  private processesSubscriptions: Map<string, any> = new Map();
   private isConnected = false;
   private connectionTimeout: NodeJS.Timeout | null = null;
 
@@ -45,6 +49,7 @@ class GlobalMQTTManager {
     // Set loading state
     globalAutomationsState = {
       all: [],
+      processes: {},
       automationServers: {},
       isLoading: true,
     };
@@ -56,6 +61,7 @@ class GlobalMQTTManager {
         console.log('GlobalMQTTManager: MQTT connection timeout, stopping loading');
         globalAutomationsState = {
           all: [],
+          processes: {},
           automationServers: {},
           isLoading: false,
         };
@@ -74,8 +80,12 @@ class GlobalMQTTManager {
           this.connections.set(connectionKey, connection);
           
           // Subscribe to topology updates
-          const subscription = this.subscribeToTopology(connection, automation_server_id, workspace_id);
-          this.subscriptions.set(connectionKey, subscription);
+          const topologySubscription = this.subscribeToTopology(connection, automation_server_id, workspace_id);
+          this.topologySubscriptions.set(connectionKey, topologySubscription);
+          
+          // Subscribe to processes updates
+          const processesSubscription = this.subscribeToProcesses(connection, automation_server_id, workspace_id);
+          this.processesSubscriptions.set(connectionKey, processesSubscription);
           
           console.log(`GlobalMQTTManager: Connected to ${automation_server_id}/${workspace_id}`);
         } catch (error) {
@@ -126,7 +136,7 @@ class GlobalMQTTManager {
         client.subscribe(responseTopic, { qos: 0 });
         
         this.connections.set(connectionKey, client);
-        this.subscriptions.set(connectionKey, { requestTopic, responseTopic });
+        this.topologySubscriptions.set(connectionKey, { requestTopic, responseTopic });
       });
 
       client.on("error", (err) => {
@@ -199,12 +209,86 @@ class GlobalMQTTManager {
       automationServerId,
       pipelines: workspacePipelines,
       workspace: workspace!,
+      processes: globalWorkspaces[workspaceId]?.processes ?? {},
     };
 
     // Update global automations state
     this.updateGlobalAutomationsState();
   }
 
+  private subscribeToProcesses(connectionPromise: Promise<MqttClient>, automationServerId: string, workspaceId: string) {
+    const connectionKey = `${automationServerId}-${workspaceId}`;
+    console.log("GlobalMQTTManager: Subscribing to processes for", connectionKey);
+    connectionPromise.then((client) => {
+      client.on("connect", () => {
+        console.log("GlobalMQTTManager: Connection successful for", connectionKey);
+        client.subscribe(`/processes/list`, { qos: 0 });
+      });
+
+      client.on("error", (err) => {
+        console.error("GlobalMQTTManager: Connection error:", err);
+      });
+
+      client.on("message", (topic, message) => {
+        if (topic === `/processes/list`) {
+          try {
+            const data = JSON.parse(message.toString()) as { processes: Record<string, Process> };
+            this.handleProcessMessage(data.processes, automationServerId, workspaceId);
+          } catch (error) {
+            console.error("GlobalMQTTManager: Failed to parse processes message:", error);
+          }
+        }
+      });
+    }).catch((error) => {
+      console.error("GlobalMQTTManager: Failed to create MQTT connection:", error);
+    });
+
+    return {
+      unsubscribe: () => {
+        console.log(`GlobalMQTTManager: Unsubscribed from ${automationServerId}/${workspaceId}`);
+      }
+    };
+  }
+
+  private handleProcessMessage(processes: Record<string, Process>, automationServerId: string, workspaceId: string) {
+    
+    // Handle case where workspace doesn't exist yet (processes arrive before topology)
+    if (!globalWorkspaces[workspaceId]) {
+      console.warn(`Workspace ${workspaceId} not found when handling process message. Creating placeholder.`);
+      // Get the automation server data if available
+      const automationServer = globalAutomationServers[automationServerId];
+      const workspace = automationServer?.workspaces?.find(ws => ws.id === workspaceId);
+      
+      globalWorkspaces[workspaceId] = {
+        workspaceId,
+        automationServerId,
+        pipelines: [],
+        workspace: workspace || {
+          id: workspaceId,
+          name: workspaceId,
+          keycloak_org_id: '',
+          automation_server: automationServerId,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          editor_url: null,
+        },
+        processes: {},
+      };
+    }
+    
+    Object.entries(processes).forEach(([processId, process]) => {
+      process.automation_server_id = automationServerId;
+      process.workspace_id = workspaceId;
+
+      globalAutomationsState.processes![processId] = process;
+    });
+
+    globalWorkspaces[workspaceId].processes = processes;
+    
+    // Notify listeners that processes have been updated
+    this.updateGlobalAutomationsState();
+  }
+  
   private updateGlobalAutomationsState() {
     // First, group workspaces by server to build the server structure
     const serverGroups = Object.values(globalWorkspaces).reduce(
@@ -239,9 +323,21 @@ class GlobalMQTTManager {
       // Add them to the total
       allPipelines.push(...server.pipelines);
     });
+    
+    // Aggregate all processes from all workspaces into globalAutomationsState.processes
+    const allProcesses = Object.values(globalWorkspaces).reduce(
+      (acc, workspace) => {
+        if (workspace.processes) {
+          Object.assign(acc, workspace.processes);
+        }
+        return acc;
+      },
+      {} as Record<string, Process>
+    );
 
     globalAutomationsState = {
       all: allPipelines,
+      processes: allProcesses,
       automationServers: serverGroups,
       isLoading: false,
     };
@@ -274,13 +370,202 @@ class GlobalMQTTManager {
     return { ...globalAutomationsState };
   }
 
+  // Helper method to get the client, handling both Promise and actual client
+  private async getClient(automationServerId: string, workspaceId: string): Promise<MqttClient | null> {
+    const connection = this.connections.get(`${automationServerId}-${workspaceId}`);
+    if (!connection) return Promise.resolve(null);
+    
+    // If it's already a client, return it directly as a resolved Promise
+    if ('publish' in connection && typeof (connection as any).publish === 'function') {
+      return Promise.resolve(connection as MqttClient);
+    }
+    
+    // Otherwise it's a Promise, return it
+    return connection as Promise<MqttClient>;
+  }
+
+  createProcess(processName: string, workspaceId: string, automationServerId: string) {
+    const processId = crypto.randomUUID();
+    
+    this.getClient(automationServerId, workspaceId).then(client => {
+      if (client) {
+        client.publish(`/processes/c/${processId}/create`, JSON.stringify({ name: processName }), { qos: 0 });
+      }
+    }).catch((error) => {
+      console.error("GlobalMQTTManager: Failed to create process:", error);
+    });
+    
+    return processId;
+  }
+
+  deleteProcess(processId: string, workspaceId: string, automationServerId: string) {
+    this.getClient(automationServerId, workspaceId).then(client => {
+      if (client) {
+        client.publish(`/processes/c/${processId}/gitops-req`, JSON.stringify({ action: "delete" }), { qos: 0 });
+      }
+    }).catch((error) => {
+      console.error("GlobalMQTTManager: Failed to delete process:", error);
+    });
+    return true;
+  }
+
+  async getProcessContent(processId: string, workspaceId: string, automationServerId: string): Promise<string | null> {
+    try {
+      const mqttClient = await this.getClient(automationServerId, workspaceId);
+      
+      if (!mqttClient) return null;
+      
+      return new Promise((resolve, reject) => {
+        const messageHandler = (topic: string, message: Buffer) => {
+          if (topic === `/processes/c/${processId}/contents`) {
+            try {
+              // Clean up subscription and listener
+              mqttClient.unsubscribe(`/processes/c/${processId}/contents`);
+              mqttClient.removeListener("message", messageHandler);
+              
+              const data = JSON.parse(message.toString()) as { content: string };
+              resolve(data.content);
+            } catch (error) {
+              mqttClient.unsubscribe(`/processes/c/${processId}/contents`);
+              mqttClient.removeListener("message", messageHandler);
+              reject(error);
+            }
+          }
+        };
+        
+        // Subscribe first
+        mqttClient.subscribe(`/processes/c/${processId}/contents`, { qos: 1 });
+        
+        // Add message listener
+        mqttClient.on("message", messageHandler);
+        
+        // Publish the request
+        mqttClient.publish(`/processes/c/${processId}/gitops-req`, JSON.stringify({ action: "get" }), { qos: 0 });
+        
+        // Set timeout to avoid hanging forever
+        setTimeout(() => {
+          mqttClient.unsubscribe(`/processes/c/${processId}/contents`);
+          mqttClient.removeListener("message", messageHandler);
+          reject(new Error("Timeout waiting for response"));
+        }, 10000); // 10 second timeout
+      });
+    } catch (error) {
+      console.error("GlobalMQTTManager: Failed to get process content:", error);
+      return null;
+    }
+  }
+
+  setProcessContent(processId: string, content: string, workspaceId: string, automationServerId: string) {
+    this.getClient(automationServerId, workspaceId).then(client => {
+      if (client) {
+        client.publish(`/processes/c/${processId}/set`, JSON.stringify({ content: content }), { qos: 1 });
+      }
+    }).catch((error) => {
+      console.error("GlobalMQTTManager: Failed to set process content:", error);
+    });
+    return true;
+  }
+
+  deleteProcessAttachment(processId: string, fileName: string, workspaceId: string, automationServerId: string) {
+    this.getClient(automationServerId, workspaceId).then(client => {
+      if (client) {
+        client.publish(`/processes/c/${processId}/attachments/c/${fileName}/gitops-req`, JSON.stringify({ action: "delete" }), { qos: 0 });
+      }
+    }).catch((error) => {
+      console.error("GlobalMQTTManager: Failed to delete process attachment:", error);
+    });
+    return true;
+  }
+
+  async getProcessAttachment(processId: string, fileName: string, workspaceId: string, automationServerId: string): Promise<Blob | null> {
+    try {
+      const mqttClient = await this.getClient(automationServerId, workspaceId);
+      
+      if (!mqttClient) return null;
+      
+      return new Promise((resolve, reject) => {
+        const messageHandler = (topic: string, message: Buffer) => {
+          if (topic === `/processes/c/${processId}/attachments/c/${fileName}/contents`) {
+            try {
+              // Clean up subscription and listener
+              mqttClient.unsubscribe(`/processes/c/${processId}/attachments/c/${fileName}/contents`);
+              mqttClient.removeListener("message", messageHandler);
+              
+              // Python publishes raw binary content, not JSON
+              // Convert Buffer to Uint8Array for Blob
+              const uint8Array = new Uint8Array(message);
+              resolve(new Blob([uint8Array]));
+            } catch (error) {
+              mqttClient.unsubscribe(`/processes/c/${processId}/attachments/c/${fileName}/contents`);
+              mqttClient.removeListener("message", messageHandler);
+              reject(error);
+            }
+          }
+        };
+        
+        // Subscribe first
+        mqttClient.subscribe(`/processes/c/${processId}/attachments/c/${fileName}/contents`, { qos: 1 });
+        
+        // Add message listener
+        mqttClient.on("message", messageHandler);
+        
+        // Publish the request
+        mqttClient.publish(`/processes/c/${processId}/attachments/c/${fileName}/gitops-req`, JSON.stringify({ action: "get" }), { qos: 0 });
+        
+        // Set timeout to avoid hanging forever
+        setTimeout(() => {
+          mqttClient.unsubscribe(`/processes/c/${processId}/attachments/c/${fileName}/contents`);
+          mqttClient.removeListener("message", messageHandler);
+          reject(new Error("Timeout waiting for response"));
+        }, 10000); // 10 second timeout
+      });
+    } catch (error) {
+      console.error("GlobalMQTTManager: Failed to get process content:", error);
+      return null;
+    }
+  }
+
+  async setProcessAttachment(processId: string, fileName: string, file: File, workspaceId: string, automationServerId: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      // Read file as base64 string
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64Content = reader.result as string;
+        // Remove data URL prefix if present
+        const content = base64Content.includes(',') ? base64Content.split(',')[1] : base64Content;
+        
+        this.getClient(automationServerId, workspaceId).then(client => {
+          if (client) {
+            client.publish(`/processes/c/${processId}/attachments/c/${fileName}/set`, JSON.stringify({ content: content }), { qos: 1 });
+            resolve(true);
+          } else {
+            reject(new Error("Client not available"));
+          }
+        }).catch((error) => {
+          console.error("GlobalMQTTManager: Failed to set process attachment:", error);
+          reject(error);
+        });
+      };
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsDataURL(file);
+    });
+  }
+
   disconnect() {
-    this.subscriptions.forEach(subscription => {
+    this.topologySubscriptions.forEach(subscription => {
       if (subscription.unsubscribe) {
         subscription.unsubscribe();
       }
     });
-    this.subscriptions.clear();
+    this.topologySubscriptions.clear();
+
+    this.processesSubscriptions.forEach(subscription => {
+      if (subscription.unsubscribe) {
+        subscription.unsubscribe();
+      }
+    });
+    this.processesSubscriptions.clear();
+
     this.connections.clear();
 
     if (this.connectionTimeout) {
@@ -364,6 +649,34 @@ export class MQTTService {
 
   updatePipelineStats(pipelineStats: any[]) {
     globalPipelineStats = pipelineStats;
+  }
+
+  createProcess(processName: string, workspaceId: string, automationServerId: string) {
+    return globalMQTTManager.createProcess(processName, workspaceId, automationServerId);
+  }
+
+  deleteProcess(processId: string, workspaceId: string, automationServerId: string) {
+    return globalMQTTManager.deleteProcess(processId, workspaceId, automationServerId);
+  }
+
+  getProcessContent(processId: string, workspaceId: string, automationServerId: string): Promise<string | null> {
+    return globalMQTTManager.getProcessContent(processId, workspaceId, automationServerId);
+  }
+
+  setProcessContent(processId: string, content: string, workspaceId: string, automationServerId: string) {
+    return globalMQTTManager.setProcessContent(processId, content, workspaceId, automationServerId);
+  }
+
+  deleteProcessAttachment(processId: string, fileName: string, workspaceId: string, automationServerId: string) {
+    return globalMQTTManager.deleteProcessAttachment(processId, fileName, workspaceId, automationServerId);
+  }
+
+  getProcessAttachment(processId: string, fileName: string, workspaceId: string, automationServerId: string): Promise<Blob | null> {
+    return globalMQTTManager.getProcessAttachment(processId, fileName, workspaceId, automationServerId);
+  }
+
+  setProcessAttachment(processId: string, fileName: string, file: File, workspaceId: string, automationServerId: string) {
+    return globalMQTTManager.setProcessAttachment(processId, fileName, file, workspaceId, automationServerId);
   }
 
   disconnect() {
