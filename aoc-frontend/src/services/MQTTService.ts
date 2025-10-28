@@ -279,8 +279,6 @@ class GlobalMQTTManager {
     Object.entries(processes).forEach(([processId, process]) => {
       process.automation_server_id = automationServerId;
       process.workspace_id = workspaceId;
-
-      globalAutomationsState.processes![processId] = process;
     });
 
     globalWorkspaces[workspaceId].processes = processes;
