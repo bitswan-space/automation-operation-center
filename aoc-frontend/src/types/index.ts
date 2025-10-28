@@ -247,6 +247,7 @@ export type WorkspaceGroup = {
   pipelines: PipelineWithStats[];
   // Full workspace metadata from backend
   workspace: Workspace;
+  processes?: Record<string, Process>;
 };
 
 export type AutomationServerGroup = {
@@ -259,6 +260,16 @@ export type AutomationServerGroup = {
 
 export type AutomationsGroups = {
   all: PipelineWithStats[];
+  processes?: Record<string, Process>;
   automationServers: Record<string, AutomationServerGroup>;
   isLoading: boolean;
+};
+
+export type Process = {
+  id: string;
+  automation_server_id: string;
+  workspace_id: string;
+  name: string;
+  attachments: string[];
+  automation_sources: string[];
 };
