@@ -1,6 +1,5 @@
 import { AutomationServerListSection } from "@/components/automation-server/AutomationServerListSection";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import React, { useEffect, useState } from "react";
 import { useTitleBar } from "@/context/TitleBarProvider";
 import { getAutomationServers } from "@/data/automation-server";
