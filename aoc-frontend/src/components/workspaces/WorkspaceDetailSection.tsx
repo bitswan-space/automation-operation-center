@@ -8,15 +8,20 @@ import { PipelineDataTable } from "../pipeline/PipelineDataTable";
 import { useAutomations } from "@/context/AutomationsProvider";
 import { PipelineDataCardList } from "../pipeline/PipelineDataCardList";
 import { VscVscode } from "react-icons/vsc";
+import { UserGroupsBadgeList } from "../users/UserGroupsBadgeList";
+import { addWorkspaceToGroupAction, removeWorkspaceFromGroupAction } from "../groups/action";
+import { type UserGroup } from "@/data/groups";
 
 type WorkspaceDetailSectionProps = {
   workspace?: Workspace;
+  groupsList: UserGroup[];
+  onWorkspaceGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void;
 };
 
 export function WorkspaceDetailSection(
   props: WorkspaceDetailSectionProps,
 ) {
-  const { workspace } = props;
+  const { workspace, groupsList, onWorkspaceGroupUpdate } = props;
 
   const { automationServers, isLoading } = useAutomations();
 
@@ -30,6 +35,28 @@ export function WorkspaceDetailSection(
   
   console.log("WorkspaceDetailSection - automationServer:", automationServer);
   console.log("WorkspaceDetailSection - workspacePipelines:", workspacePipelines);
+
+  const workspaceGroups = React.useMemo(
+    () => {
+      const memberGroups = groupsList.filter((group) =>
+        workspace?.group_memberships?.find(
+          (g) => g.keycloak_group_id === group.id
+        )
+      );
+      const nonMemberGroups = groupsList.filter((group) =>
+        !workspace?.group_memberships?.find(
+          (g) => g.keycloak_group_id === group.id
+        )
+      );
+      return { memberGroups, nonMemberGroups };
+    },
+    [workspace, groupsList],
+  );
+
+  // Wrapper function for optimistic updates
+  const handleWorkspaceGroupUpdate = (userId: string, groupId: string, action: 'add' | 'remove') => {
+    onWorkspaceGroupUpdate?.(userId, groupId, action);
+  };
   
   return (
     <div className="container mx-auto flex-1 px-0 py-4">
@@ -44,20 +71,33 @@ export function WorkspaceDetailSection(
             </Button>
           </div>
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="mr-3 flex h-10 w-10 items-center justify-center rounded bg-blue-100 text-blue-600">
-                <Server className="h-5 w-5" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-semibold text-gray-900">
-                  {workspace?.name}
-                </h1>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <span>
-                    {workspacePipelines?.length ?? 0} automations
-                  </span>
-                  {isLoading && <span className="text-blue-500">(Loading...)</span>}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center">
+                <div className="mr-3 flex h-10 w-10 items-center justify-center rounded bg-blue-100 text-blue-600">
+                  <Server className="h-5 w-5" />
                 </div>
+                <div>
+                  <h1 className="text-2xl font-semibold text-gray-900">
+                    {workspace?.name}
+                  </h1>
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <span>
+                      {workspacePipelines?.length ?? 0} automations
+                    </span>
+                    {isLoading && <span className="text-blue-500">(Loading...)</span>}
+                  </div>
+                </div>
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-sm text-gray-500">Groups:</span>
+                <UserGroupsBadgeList
+                  memberGroups={workspaceGroups.memberGroups}
+                  id={workspace?.id ?? ""}
+                  nonMemberGroups={workspaceGroups.nonMemberGroups}
+                  addAction={addWorkspaceToGroupAction}
+                  removeAction={removeWorkspaceFromGroupAction}
+                  onUserGroupUpdate={handleWorkspaceGroupUpdate}
+                />
               </div>
             </div>
             {workspace?.editor_url && (
