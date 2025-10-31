@@ -1,56 +1,27 @@
 "use client";
 
 import { Card, CardContent } from "../ui/card";
-import { Search, Server, RotateCcw, Loader2, Plus } from "lucide-react";
+import { Search, Server, Loader2 } from "lucide-react";
 
 import { type AutomationServer } from "@/data/automation-server";
 import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Link } from "react-router-dom";
 import React from "react";
 import { useAutomations } from "@/context/AutomationsProvider";
-import { ConnectAutomationServerModal } from "./ConnectAutomationServerModal";
-import { useAdminStatus } from "@/hooks/useAdminStatus";
 
 type AutomationServerListSectionProps = {
   servers: AutomationServer[];
+  highlightedServerId: string | null;
 };
 
 export function AutomationServerListSection(
   props: AutomationServerListSectionProps,
 ) {
-  const { servers } = props;
+  const { servers, highlightedServerId } = props;
   const { automationServers: automationServersGroup, isLoading } = useAutomations();
-  const { isAdmin } = useAdminStatus();
-
-  // Construct API URL for CLI commands (base backend URL without /api/frontend)
-  const currentHost = window.location.hostname;
-  const protocol = "https:";
-  const backendHost = currentHost.replace(/^aoc\./, 'api.');
-  const apiUrl = `${protocol}//${backendHost}`;
 
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [highlightedServerId, setHighlightedServerId] = React.useState<string | null>(null);
-  const [isRefreshing, setIsRefreshing] = React.useState(false);
-
-  // Handle server creation callback
-  const handleServerCreated = (serverId: string) => {
-    setHighlightedServerId(serverId);
-    // Remove highlighting after 5 seconds
-    setTimeout(() => {
-      setHighlightedServerId(null);
-    }, 5000);
-    
-    // Refresh the page to show the new server
-    window.location.reload();
-  };
-
-  // Handle refresh
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    window.location.reload();
-  };
 
   const filteredServers = servers.filter((server) =>
     server.name.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -68,31 +39,6 @@ export function AutomationServerListSection(
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-        </div>
-        <div className="flex gap-2">
-          {isAdmin && (
-            <ConnectAutomationServerModal 
-              apiUrl={apiUrl}
-              onServerCreated={handleServerCreated}
-            >
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                <Plus size={20} className="mr-2" />
-                Connect Automation Server
-              </Button>
-            </ConnectAutomationServerModal>
-          )}
-          <Button 
-            className="bg-blue-600 hover:bg-blue-700"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-          >
-            {isRefreshing ? (
-              <Loader2 size={20} className="animate-spin" />
-            ) : (
-              <RotateCcw size={20} />
-            )}
-            Refresh
-          </Button>
         </div>
       </div>
 

@@ -4,17 +4,59 @@ import { Input } from "@/components/ui/input";
 import React, { useEffect, useState } from "react";
 import { useTitleBar } from "@/context/TitleBarProvider";
 import { getAutomationServers } from "@/data/automation-server";
-import { Server } from "lucide-react";
+import { Plus, RefreshCw, Server } from "lucide-react";
+import { ConnectAutomationServerModal } from "@/components/automation-server/ConnectAutomationServerModal";
 
 const AutomationServersPage = () => {
   const [automationServers, setAutomationServers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { setTitle, setIcon } = useTitleBar();
+  const { setTitle, setIcon, setButtons } = useTitleBar();
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+  const [highlightedServerId, setHighlightedServerId] = React.useState<string | null>(null);
+
+  // Construct API URL for CLI commands (base backend URL without /api/frontend)
+  const currentHost = window.location.hostname;
+  const protocol = "https:";
+  const backendHost = currentHost.replace(/^aoc\./, 'api.');
+  const apiUrl = `${protocol}//${backendHost}`;
 
   useEffect(() => {
+    // Handle server creation callback
+    const handleServerCreated = (serverId: string) => {
+      setHighlightedServerId(serverId);
+      // Remove highlighting after 5 seconds
+      setTimeout(() => {
+        setHighlightedServerId(null);
+      }, 5000);
+      
+      // Refresh the automation servers list
+      setIsRefreshing(true);
+    };
+    
     setTitle("Automation Servers");
     setIcon(<Server size={24} />);
-  }, [setTitle, setIcon]);
+    setButtons(
+      <>
+        <Button
+          variant="outline"
+          onClick={() => setIsRefreshing(true)}
+          disabled={isRefreshing}
+        >
+          <RefreshCw size={20} className={isRefreshing ? "animate-spin" : ""} />
+          Refresh
+        </Button>
+        <ConnectAutomationServerModal
+          apiUrl={apiUrl}
+          onServerCreated={handleServerCreated}
+        >
+          <Button>
+            <Plus size={20} />
+            New server
+          </Button>
+        </ConnectAutomationServerModal>
+      </>
+    )
+  }, [setTitle, setIcon, setButtons, isRefreshing, apiUrl]);
 
   useEffect(() => {
     const loadAutomationServers = async () => {
@@ -35,16 +77,13 @@ const AutomationServersPage = () => {
       } catch (error) {
         console.error("Error loading automation servers:", error);
       } finally {
+        setIsRefreshing(false);
         setLoading(false);
       }
     };
 
     loadAutomationServers();
-  }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  }, [isRefreshing]);
 
   return (
     <div className="w-full">
@@ -60,7 +99,9 @@ const AutomationServersPage = () => {
           Search
         </Button>
       </div>
-      <AutomationServerListSection servers={automationServers} />
+      {!loading && (
+        <AutomationServerListSection servers={automationServers} highlightedServerId={highlightedServerId} />
+      )}
     </div>
   );
 };
