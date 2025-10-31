@@ -1,4 +1,4 @@
-import { format, parse } from "date-fns";
+import { format, parse, formatDistanceToNow } from "date-fns";
 
 export function unixToNormalTime(unixTimestamp: number): string {
   // Convert Unix timestamp to milliseconds
@@ -35,4 +35,18 @@ export function parseDateTimeStringToPandaFormat(
   const formattedDate = format(parsedDate, "yyyy-MM-dd HH:mm:ss");
 
   return formattedDate;
+}
+
+export function formatTimeAgo(dateString: string): string {
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return "";
+    }
+    const distance = formatDistanceToNow(date);
+    
+    return `Updated ${distance} ago`;
+  } catch (error) {
+    return "";
+  }
 }
