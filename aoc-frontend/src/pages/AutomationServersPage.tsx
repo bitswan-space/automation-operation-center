@@ -86,19 +86,7 @@ const AutomationServersPage = () => {
   }, [isRefreshing]);
 
   return (
-    <div className="w-full">
-      <h1 className="text-2xl font-bold text-stone-700 md:hidden">
-        Automation Servers
-      </h1>
-      <div className="flex py-4 pt-6 lg:hidden">
-        <Input
-          placeholder="Find automation server"
-          className="rounded-r-none bg-white"
-        />
-        <Button type="submit" className="my-auto rounded-l-none bg-stone-800">
-          Search
-        </Button>
-      </div>
+    <div>
       {!loading && (
         <AutomationServerListSection servers={automationServers} highlightedServerId={highlightedServerId} />
       )}
