@@ -21,12 +21,13 @@ const AutomationDetailPage = () => {
   const [workspace, setWorkspace] = useState<any>(null);
   const [token, setToken] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const { setTitle, setIcon } = useTitleBar();
+  const { setTitle, setIcon, setButtons } = useTitleBar();
 
   useEffect(() => {
     setTitle("Automations");
     setIcon(<Cog size={24} />);
-  }, [setTitle, setIcon]);
+    setButtons(null)
+  }, [setTitle, setIcon, setButtons]);
 
   useEffect(() => {
     const loadData = async () => {

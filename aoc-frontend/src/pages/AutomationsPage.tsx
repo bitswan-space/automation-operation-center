@@ -6,12 +6,13 @@ import { useTitleBar } from "@/context/TitleBarProvider";
 import { Cog } from "lucide-react";
 
 const AutomationsPage = () => {
-  const { setTitle, setIcon } = useTitleBar();
+  const { setTitle, setIcon, setButtons } = useTitleBar();
 
   useEffect(() => {
     setTitle("Automations");
     setIcon(<Cog size={24} />);
-  }, [setTitle, setIcon]);
+    setButtons(null)
+  }, [setTitle, setIcon, setButtons]);
 
   return (
     <div className="w-full">

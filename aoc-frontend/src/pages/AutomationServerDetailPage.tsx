@@ -12,12 +12,13 @@ const AutomationServerDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const [automationServer, setAutomationServer] = useState<AutomationServer | null>(null);
   const [loading, setLoading] = useState(true);
-  const { setTitle, setIcon } = useTitleBar();
+  const { setTitle, setIcon, setButtons } = useTitleBar();
 
   useEffect(() => {
     setTitle("Automation Servers");
     setIcon(<Server size={24} />);
-  }, [setTitle, setIcon]);
+    setButtons(null)
+  }, [setTitle, setIcon, setButtons]);
 
   useEffect(() => {
     const loadData = async () => {

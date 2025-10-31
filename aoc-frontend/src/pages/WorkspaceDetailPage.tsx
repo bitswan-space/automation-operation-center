@@ -14,12 +14,13 @@ const WorkspaceDetailPage = () => {
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [groupsList, setGroupsList] = useState<UserGroup[]>([]);
   const [loading, setLoading] = useState(true);
-  const { setTitle, setIcon } = useTitleBar();
+  const { setTitle, setIcon, setButtons } = useTitleBar();
 
   useEffect(() => {
     setTitle("Workspace Details");
     setIcon(<Table size={24} />);
-  }, [setTitle, setIcon]);
+    setButtons(null)
+  }, [setTitle, setIcon, setButtons]);
 
   const updateWorkspaceGroups = (userId: string, groupId: string, action: 'add' | 'remove') => {
     setWorkspace(prevWorkspace => {
