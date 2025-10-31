@@ -57,7 +57,7 @@ urlpatterns = [
     
     # Automation server OTP management
     path('automation-servers/create-with-otp', CreateAutomationServerWithOTPAPIView.as_view(), name='create_automation_server_with_otp'),
-    path('automation-servers/check-otp-status/', CheckOTPStatusAPIView.as_view(), name='check_otp_status'),
+    path('automation-servers/check-otp-status', CheckOTPStatusAPIView.as_view(), name='check_otp_status'),
     
     # User EMQX tokens
     path('user/emqx/jwts', GetUserEmqxJwtsAPIView.as_view(), name='user_emqx_jwts'),

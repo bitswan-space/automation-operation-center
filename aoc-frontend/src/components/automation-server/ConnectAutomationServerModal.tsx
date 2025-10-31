@@ -58,7 +58,7 @@ export function ConnectAutomationServerModal({
       const activeOrg = await getActiveOrgFromCookies();
       const apiClient = await authenticatedBitswanBackendInstance();
       const response = await apiClient.get(
-        `/automation-servers/check-otp-status/?automation_server_id=${automationServerId}`,
+        `/automation-servers/check-otp-status?automation_server_id=${automationServerId}`,
         {
           headers: {
             "X-Org-Id": activeOrg?.id ?? "",
