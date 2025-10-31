@@ -12,12 +12,13 @@ const SettingsPage: React.FC = () => {
   const [groupsList, setGroupsList] = useState<UserGroupsListResponse | undefined>();
   const [usersList, setUsersList] = useState<OrgUsersListResponse | undefined>();
   const [isLoading, setIsLoading] = useState(true);
-  const { setTitle, setIcon } = useTitleBar();
+  const { setTitle, setIcon, setButtons } = useTitleBar();
 
   useEffect(() => {
     setTitle("Settings");
     setIcon(<Settings2 size={24} />);
-  }, [setTitle, setIcon]);
+    setButtons(null)
+  }, [setTitle, setIcon, setButtons]);
 
   const handleGroupCreated = () => {
     loadData();

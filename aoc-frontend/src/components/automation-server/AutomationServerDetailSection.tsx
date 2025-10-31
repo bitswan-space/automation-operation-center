@@ -1,4 +1,4 @@
-import { Trash2, Network, Users, Loader2 } from "lucide-react";
+import { Trash2, Network, Users, Loader2, Server } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { type AutomationServer } from "@/data/automation-server";
@@ -18,10 +18,11 @@ export function AutomationServerDetailSection(
 ) {
   const { server } = props;
   const { isLoading, processes } = useAutomations();
-  const { setTitle, setButtons } = useTitleBar();
+  const { setTitle, setButtons, setIcon } = useTitleBar();
 
   useEffect(() => {
     setTitle(`${server?.name} workspaces`);
+    setIcon(<Server size={24} />);
     setButtons(
       <DeleteAutomationServerModal
         serverName={server?.name ?? ""}
@@ -35,7 +36,7 @@ export function AutomationServerDetailSection(
         </Button>
       </DeleteAutomationServerModal>
     );
-  }, [server, setTitle, setButtons]);
+  }, [server, setTitle, setButtons, setIcon]);
 
   const getProcessCount = (workspaceId: string) => {
     if (!processes) return 0;
