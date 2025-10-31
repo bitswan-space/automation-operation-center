@@ -59,7 +59,7 @@ export function AutomationServerDetailSection(
             <Card key={workspace.id}>
               <CardHeader>
                 <div>
-                  <CardTitle>
+                  <CardTitle className="text-lg font-semibold">
                     {workspace.name}
                   </CardTitle>
                   <div className="flex items-center gap-3 mt-3">
