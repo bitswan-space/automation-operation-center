@@ -43,7 +43,7 @@ export function CreateOrEditGroupForm(props: CreateGroupFormProps) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const data = {
-      name: formData.get("name") as string,
+      name: group?.name === "admin" ? group.name : (formData.get("name") as string),
       description: formData.get("description") as string,
       tag_color: formData.get("tag_color") as string,
     };
