@@ -1,4 +1,3 @@
-import json
 import logging
 import secrets
 import string
@@ -92,19 +91,11 @@ class KeycloakService:
 
     def validate_token(self, token):
         try:
-            # Get the public key from Keycloak
-            public_key = self.keycloak.public_key()
-            
-            # Format the public key for use with decode_token
-            formatted_public_key = f"-----BEGIN PUBLIC KEY-----\n{public_key}\n-----END PUBLIC KEY-----"
-            
             logger.info("Token length: %d", len(token))
             logger.info("Token starts with: %s", token[:20] if len(token) > 20 else token)
             
-            result = self.keycloak.decode_token(
-                token,
-                key=formatted_public_key,
-            )
+            # decode_token formats and validates the public key by default in new python-keycloak version
+            result = self.keycloak.decode_token(token)
 
             logger.info("Token validation successful")
             return result
@@ -387,7 +378,11 @@ class KeycloakService:
             return None
 
     def get_org_groups(self, org_id):
-        org_groups = self.keycloak_admin.get_group(group_id=org_id)["subGroups"]
+        # Use get_group_children to get all subgroups (not limited to 10)
+        org_groups = self.keycloak_admin.get_group_children(
+            group_id=org_id,
+            full_hierarchy=True,
+        )
         logger.info("Got org groups: %s", org_groups)
 
         return [
