@@ -67,12 +67,13 @@ const createColumns = (onGroupCreated?: () => void): ColumnDef<UserGroup>[] => [
 ];
 
 type GroupDetailTableProps = {
+  setGroupPage: React.Dispatch<React.SetStateAction<number>>;
   userGroups?: UserGroupsListResponse;
   onGroupCreated?: () => void;
 };
 
 export function GroupDetailTable(props: GroupDetailTableProps) {
-  const { userGroups, onGroupCreated } = props;
+  const { setGroupPage, userGroups, onGroupCreated } = props;
 
   const { isAdmin: hasPerms } = useAdminStatus();
 
@@ -192,16 +193,16 @@ export function GroupDetailTable(props: GroupDetailTableProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            onClick={() => setGroupPage(prev => prev - 1)}
+            disabled={!userGroups?.previous}
           >
             Previous
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            onClick={() => setGroupPage(prev => prev + 1)}
+            disabled={!userGroups?.next}
           >
             Next
           </Button>

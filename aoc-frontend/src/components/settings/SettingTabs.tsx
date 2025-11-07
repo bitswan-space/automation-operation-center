@@ -9,6 +9,8 @@ import { type UserGroupsListResponse } from "@/data/groups";
 import { type OrgUsersListResponse } from "@/data/users";
 
 type SettingTabsProps = {
+  setGroupPage: React.Dispatch<React.SetStateAction<number>>;
+  setUserPage: React.Dispatch<React.SetStateAction<number>>;
   groupsList?: UserGroupsListResponse;
   usersList?: OrgUsersListResponse;
   onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void;
@@ -20,7 +22,16 @@ type SettingTabsProps = {
 type SettingTab = "users" | "groups";
 
 export function SettingTabs(props: SettingTabsProps) {
-  const { groupsList, usersList, onUserGroupUpdate, onGroupCreated, onUserInvited, onUserDeleted } = props;
+  const { 
+    setGroupPage, 
+    setUserPage, 
+    groupsList, 
+    usersList, 
+    onUserGroupUpdate, 
+    onGroupCreated, 
+    onUserInvited, 
+    onUserDeleted 
+  } = props;
 
   // Get initial tab from URL or use default
   const getInitialTab = (): SettingTab => {
@@ -62,6 +73,7 @@ export function SettingTabs(props: SettingTabsProps) {
         <div className="w-full">
           {/* User management with optimistic updates */}
           <UserDetailTable 
+            setUserPage={setUserPage}
             userGroups={groupsList} 
             usersList={usersList} 
             onUserGroupUpdate={onUserGroupUpdate}
@@ -72,7 +84,11 @@ export function SettingTabs(props: SettingTabsProps) {
       </TabsContent>
       <TabsContent value="groups">
         <div className="w-full">
-          <GroupDetailTable userGroups={groupsList} onGroupCreated={onGroupCreated} />
+          <GroupDetailTable 
+            setGroupPage={setGroupPage} 
+            userGroups={groupsList} 
+            onGroupCreated={onGroupCreated} 
+          />
         </div>
       </TabsContent>
     </Tabs>

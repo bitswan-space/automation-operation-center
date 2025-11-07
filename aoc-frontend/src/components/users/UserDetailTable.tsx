@@ -118,6 +118,7 @@ const createColumns = (
 ];
 
 type UserDetailTableProps = {
+  setUserPage: React.Dispatch<React.SetStateAction<number>>;
   usersList?: OrgUsersListResponse;
   userGroups?: UserGroupsListResponse;
   onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void; // Optimistic update callback
@@ -126,10 +127,14 @@ type UserDetailTableProps = {
 };
 
 export function UserDetailTable(props: UserDetailTableProps) {
-  const { usersList: orgUsers, userGroups, onUserGroupUpdate, onUserInvited, onUserDeleted } = props;
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const page = searchParams.get("page") ?? "1";
+  const { 
+    setUserPage, 
+    usersList: orgUsers, 
+    userGroups, 
+    onUserGroupUpdate, 
+    onUserInvited, 
+    onUserDeleted 
+  } = props;
 
   const { isAdmin: hasPerms } = useAdminStatus();
 
@@ -175,10 +180,6 @@ export function UserDetailTable(props: UserDetailTableProps) {
       rowSelection,
     },
   });
-
-  const handlePageChange = (page: number) => {
-    navigate(`/settings?activeTab=users&page=${page}`);
-  };
 
   return (
     <div className="w-full">
@@ -241,15 +242,15 @@ export function UserDetailTable(props: UserDetailTableProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handlePageChange(Number(page) - 1)}
-            disabled={page === "1"}
+            onClick={() => setUserPage(prev => prev - 1)}
+            disabled={!orgUsers?.previous}
           >
             Previous
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handlePageChange(Number(page) + 1)}
+            onClick={() => setUserPage(prev => prev + 1)}
             disabled={!orgUsers?.next}
           >
             Next
