@@ -12,7 +12,7 @@ export type Profile = {
 
 export type ProfileListResponse = ApiListResponse<Profile>;
 
-export const fetchProfiles = async () => {
+export const fetchProfiles = async ({ pageParam = 1 }: { pageParam?: number } = {}) => {
   const bitswanBEInstance = await authenticatedBitswanBackendInstance();
   const activeOrg = await getActiveOrgFromCookies();
 
@@ -20,6 +20,9 @@ export const fetchProfiles = async () => {
     const res = await bitswanBEInstance.get<ProfileListResponse>(
       `/profiles`,
       {
+        params: {
+          page: pageParam,
+        },
         headers: {
           "X-Org-Id": activeOrg?.id ?? "",
           "X-Org-Name": activeOrg?.name ?? "",

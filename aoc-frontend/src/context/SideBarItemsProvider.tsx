@@ -40,7 +40,11 @@ export function SidebarItemsProvider({
   const [activeProfile, setActiveProfile] = React.useState<Profile | undefined>(undefined);
   const queryClient = useQueryClient();
   const { data: profilesData } = useProfilesQuery();
-  const profiles = React.useMemo(() => profilesData?.results ?? [], [profilesData?.results]);
+  // Flatten all pages from infinite query into a single array
+  const profiles = React.useMemo(() => {
+    if (!profilesData?.pages) return [];
+    return profilesData.pages.flatMap((page) => page.results ?? []);
+  }, [profilesData?.pages]);
 
   // Set active profile when profiles are loaded
   useEffect(() => {
