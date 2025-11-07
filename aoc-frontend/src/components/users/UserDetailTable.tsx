@@ -1,9 +1,5 @@
-"use client";
-
 import { UserGroupsBadgeList } from "./UserGroupsBadgeList";
-
 import * as React from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   type ColumnDef,
