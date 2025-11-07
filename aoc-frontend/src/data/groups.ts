@@ -15,13 +15,13 @@ export type UserGroup = {
 
 export type UserGroupsListResponse = ApiListResponse<UserGroup>;
 
-export const fetchOrgGroups = async () => {
+export const fetchOrgGroups = async (page: number | undefined = 1): Promise<UserGroupsListResponse> => {
   const bitswanBEInstance = await authenticatedBitswanBackendInstance();
   const activeOrg = await getActiveOrgFromCookies();
 
   try {
     const res = await bitswanBEInstance.get<ApiListResponse<UserGroup>>(
-      "/user-groups",
+      `/user-groups?page=${page}`,
       {
         headers: {
           "X-Org-Id": activeOrg?.id ?? "",

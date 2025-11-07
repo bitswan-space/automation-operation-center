@@ -10,7 +10,9 @@ import { Settings2 } from 'lucide-react';
 
 const SettingsPage: React.FC = () => {
   const [groupsList, setGroupsList] = useState<UserGroupsListResponse | undefined>();
+  const [groupPage, setGroupPage] = useState(1);
   const [usersList, setUsersList] = useState<OrgUsersListResponse | undefined>();
+  const [userPage, setUserPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const { setTitle, setIcon, setButtons } = useTitleBar();
 
@@ -67,8 +69,8 @@ const SettingsPage: React.FC = () => {
       setIsLoading(true);
       console.log('Loading settings data...');
       const [groups, users] = await Promise.all([
-        fetchOrgGroups(),
-        fetchOrgUsers(1)
+        fetchOrgGroups(groupPage),
+        fetchOrgUsers(userPage)
       ]);
       console.log('Groups loaded:', groups);
       console.log('Users loaded:', users);
@@ -83,7 +85,7 @@ const SettingsPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [groupPage, userPage]);
 
   if (isLoading) {
     return (
@@ -114,6 +116,8 @@ const SettingsPage: React.FC = () => {
         >
           <CardContent className="h-full p-3">
             <SettingTabs 
+              setGroupPage={setGroupPage}
+              setUserPage={setUserPage}
               groupsList={groupsList} 
               usersList={usersList} 
               onUserGroupUpdate={updateUserGroups} 
