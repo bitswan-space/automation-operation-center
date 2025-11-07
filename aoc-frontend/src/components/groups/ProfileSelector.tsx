@@ -1,4 +1,5 @@
-import { Ungroup, Loader2 } from "lucide-react";import React from "react";
+import { Ungroup, Loader2 } from "lucide-react";
+import React, { useRef, useCallback } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,12 +11,27 @@ import { SidebarMenuButton } from "../ui/sidebar";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
+import { useProfilesQuery } from "@/hooks/useProfilesQuery";
 
 
 export default function ProfileSelector() {
   const { isAdmin, isLoading } = useAdminStatus();
-
   const { activeProfile, setActiveProfile, profiles } = useSidebarItems();
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = useProfilesQuery();
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    const scrollTop = target.scrollTop;
+    const scrollHeight = target.scrollHeight;
+    const clientHeight = target.clientHeight;
+    
+    // Load more when scrolled within 50px of the bottom
+    const scrollBottom = scrollHeight - scrollTop - clientHeight;
+    if (scrollBottom < 50 && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   if (!isAdmin) {
     return <></>;
@@ -42,7 +58,9 @@ export default function ProfileSelector() {
         </SidebarMenuButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+        ref={contentRef}
+        onScroll={handleScroll}
+        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 max-h-80 rounded-lg"
         align="start"
         side={"bottom"}
         sideOffset={4}
@@ -71,6 +89,11 @@ export default function ProfileSelector() {
             </DropdownMenuItem>
           );
         })}
+        {isFetchingNextPage && (
+          <div className="flex items-center justify-center py-2">
+            <Loader2 className="size-4 animate-spin text-muted-foreground" />
+          </div>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
