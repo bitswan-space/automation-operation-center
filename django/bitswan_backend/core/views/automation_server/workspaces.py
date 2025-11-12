@@ -133,4 +133,63 @@ class WorkspaceAPIViewSet(AutomationServerMixin, viewsets.ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="keycloak/add-redirect-uri",
+    )
+    def add_redirect_uri(self, request, pk=None):
+        """Add a redirect URI to the workspace's Keycloak client"""
+        workspace = self.get_object()
+        automation_server = self.get_automation_server()
         
+        # Ensure this workspace belongs to the authenticated automation server
+        if workspace.automation_server_id != automation_server.automation_server_id:
+            return Response(
+                {"error": "Workspace does not belong to this automation server"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Check if workspace has a Keycloak client ID
+        if not workspace.keycloak_internal_client_id:
+            return Response(
+                {
+                    "error": "No Keycloak client found for this workspace. The workspace may not have been properly configured.",
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        redirect_uri = request.data.get("redirect_uri")
+        if not redirect_uri:
+            return Response(
+                {
+                    "error": "Missing required field: redirect_uri"
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Add the redirect URI
+        keycloak_service = KeycloakService()
+        result = keycloak_service.add_workspace_redirect_uri(
+            str(workspace.keycloak_internal_client_id),
+            redirect_uri.strip()
+        )
+        
+        # Check if the operation was successful
+        if not result.get("success"):
+            return Response(
+                {
+                    "error": result.get("error", "Failed to add redirect URI")
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response(
+            {
+                "success": True,
+                "message": result.get("message", "Redirect URI added successfully"),
+                "redirect_uris": result.get("redirect_uris", [])
+            },
+            status=status.HTTP_200_OK,
+        )

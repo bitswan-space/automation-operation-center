@@ -299,6 +299,7 @@ async def execute_init(config: InitConfig) -> None:
                     "docker", "network", "connect",
                     "--alias", "caddy",
                     "--alias", "keycloak.bitswan.localhost",
+                    "--alias", "api.bitswan.localhost",
                     "bitswan_network",
                     "caddy"
                 ],

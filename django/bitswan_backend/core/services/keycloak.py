@@ -239,6 +239,69 @@ class KeycloakService:
             payload=client,
         )
 
+    def add_workspace_redirect_uri(self, internal_client_id, uri):
+        """
+        Add a redirect URI to a workspace Keycloak client.
+        
+        Args:
+            internal_client_id: The Keycloak internal client ID (UUID)
+            uri: The redirect URI to add
+            
+        Returns:
+            dict: Result with success status and updated redirect URIs, or error information
+        """
+        try:
+            # Get the client by internal ID
+            client = self.keycloak_admin.get_client(client_id=internal_client_id)
+            
+            # Get current redirect URIs, default to empty list if not present
+            current_uris = client.get("redirectUris", [])
+            
+            # Check if URI already exists to avoid duplicates
+            if uri in current_uris:
+                logger.info("Redirect URI %s already exists for client %s", uri, internal_client_id)
+                return {
+                    "success": True,
+                    "message": "Redirect URI already exists",
+                    "redirect_uris": current_uris
+                }
+            
+            # Add the new URI to the beginning of the list
+            updated_uris = [uri] + current_uris
+            
+            # Update the client
+            client.update({"redirectUris": updated_uris})
+            self.keycloak_admin.update_client(
+                client_id=internal_client_id,
+                payload=client,
+            )
+            
+            logger.info("Successfully added redirect URI %s to client %s", uri, internal_client_id)
+            return {
+                "success": True,
+                "message": "Redirect URI added successfully",
+                "redirect_uris": updated_uris
+            }
+            
+        except KeycloakGetError as e:
+            logger.error("Failed to get client %s: %s", internal_client_id, e)
+            return {
+                "success": False,
+                "error": f"Client not found: {str(e)}"
+            }
+        except KeycloakError as e:
+            logger.error("Failed to update client %s: %s", internal_client_id, e)
+            return {
+                "success": False,
+                "error": f"Failed to update client: {str(e)}"
+            }
+        except Exception as e:
+            logger.exception("Unexpected error adding redirect URI to client %s: %s", internal_client_id, e)
+            return {
+                "success": False,
+                "error": f"Unexpected error: {str(e)}"
+            }
+
     def create_workspace_client(self, workspace_id, editor_url):
         """
         Create a Keycloak client for a workspace.
