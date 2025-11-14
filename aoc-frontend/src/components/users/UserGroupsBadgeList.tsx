@@ -24,10 +24,12 @@ export type UserGroupsBadgeListProps = {
     | RemoveWorkspaceFromGroupActionType
     | RemoveAutomationServerFromGroupActionType;
   onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void;
+  handleNextPage: () => Promise<boolean>;
+  hasMoreGroups?: boolean;
 };
 
 export function UserGroupsBadgeList(props: UserGroupsBadgeListProps) {
-  const { memberGroups, id, nonMemberGroups, addAction, removeAction, onUserGroupUpdate } = props;
+  const { memberGroups, id, nonMemberGroups, addAction, removeAction, onUserGroupUpdate, handleNextPage, hasMoreGroups } = props;
 
   const { isAdmin: hasPerms } = useAdminStatus();
   return (
@@ -46,10 +48,13 @@ export function UserGroupsBadgeList(props: UserGroupsBadgeListProps) {
 
       {hasPerms && (
         <GroupComboBoxSelector
+          key={`group-selector-${id}`}
           groups={nonMemberGroups}
           id={id}
           action={addAction}
           onUserGroupUpdate={onUserGroupUpdate}
+          handleNextPage={handleNextPage}
+          hasMoreGroups={hasMoreGroups}
         />
       )}
     </div>

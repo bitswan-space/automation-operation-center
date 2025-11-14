@@ -16,12 +16,14 @@ type WorkspaceDetailSectionProps = {
   workspace?: Workspace;
   groupsList: UserGroup[];
   onWorkspaceGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void;
+  onLoadMoreGroups?: () => Promise<boolean>;
+  hasMoreGroups?: boolean;
 };
 
 export function WorkspaceDetailSection(
   props: WorkspaceDetailSectionProps,
 ) {
-  const { workspace, groupsList, onWorkspaceGroupUpdate } = props;
+  const { workspace, groupsList, onWorkspaceGroupUpdate, onLoadMoreGroups, hasMoreGroups } = props;
 
   const { automationServers, isLoading } = useAutomations();
 
@@ -57,6 +59,14 @@ export function WorkspaceDetailSection(
   const handleWorkspaceGroupUpdate = (userId: string, groupId: string, action: 'add' | 'remove') => {
     onWorkspaceGroupUpdate?.(userId, groupId, action);
   };
+
+  // Create handleNextPage wrapper
+  const handleNextPage = React.useCallback(async (): Promise<boolean> => {
+    if (onLoadMoreGroups) {
+      return await onLoadMoreGroups();
+    }
+    return false;
+  }, [onLoadMoreGroups]);
   
   return (
     <div className="container mx-auto flex-1 px-0 py-4">
@@ -97,6 +107,8 @@ export function WorkspaceDetailSection(
                   addAction={addWorkspaceToGroupAction}
                   removeAction={removeWorkspaceFromGroupAction}
                   onUserGroupUpdate={handleWorkspaceGroupUpdate}
+                  handleNextPage={handleNextPage}
+                  hasMoreGroups={hasMoreGroups}
                 />
               </div>
             </div>

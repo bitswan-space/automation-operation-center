@@ -12,7 +12,10 @@ import { type UserGroup } from "@/data/groups";
 const WorkspaceDetailPage = () => {
   const { id, workspaceId } = useParams<{ id: string; workspaceId: string }>();
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
-  const [groupsList, setGroupsList] = useState<UserGroup[]>([]);
+  const [allGroups, setAllGroups] = useState<UserGroup[]>([]);
+  const [groupsPage, setGroupsPage] = useState(1);
+  const [hasMoreGroups, setHasMoreGroups] = useState(false);
+  const [isLoadingGroups, setIsLoadingGroups] = useState(false);
   const [loading, setLoading] = useState(true);
   const { setTitle, setIcon, setButtons } = useTitleBar();
 
@@ -22,11 +25,34 @@ const WorkspaceDetailPage = () => {
     setButtons(null)
   }, [setTitle, setIcon, setButtons]);
 
+  const loadMoreGroups = async (): Promise<boolean> => {
+    if (!hasMoreGroups || isLoadingGroups) return false;
+    
+    setIsLoadingGroups(true);
+    try {
+      const nextPage = groupsPage + 1;
+      const response = await fetchOrgGroups(nextPage);
+      
+      if (response.status === 'success' && response.results.length > 0) {
+        setAllGroups(prev => [...prev, ...response.results]);
+        setGroupsPage(nextPage);
+        setHasMoreGroups(!!response.next);
+        return !!response.next;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error loading more groups:', error);
+      return false;
+    } finally {
+      setIsLoadingGroups(false);
+    }
+  };
+
   const updateWorkspaceGroups = (userId: string, groupId: string, action: 'add' | 'remove') => {
     setWorkspace(prevWorkspace => {
       if (!prevWorkspace) return prevWorkspace;
       
-      const groupToAdd = groupsList.find(g => g.id === groupId);
+      const groupToAdd = allGroups.find(g => g.id === groupId);
       if (!groupToAdd) return prevWorkspace;
 
       if (action === 'add') {
@@ -76,7 +102,13 @@ const WorkspaceDetailPage = () => {
         );
 
         setWorkspace(workspaceData);
-        setGroupsList(groupsData.results ?? []);
+        
+        // Initialize groups pagination state
+        if (groupsData.status === 'success') {
+          setAllGroups(groupsData.results);
+          setGroupsPage(1);
+          setHasMoreGroups(!!groupsData.next);
+        }
       } catch (error) {
         console.error("Error loading workspace data:", error);
       } finally {
@@ -113,8 +145,10 @@ const WorkspaceDetailPage = () => {
       </div>
       <WorkspaceDetailSection 
         workspace={workspace}
-        groupsList={groupsList}
+        groupsList={allGroups}
         onWorkspaceGroupUpdate={updateWorkspaceGroups}
+        onLoadMoreGroups={loadMoreGroups}
+        hasMoreGroups={hasMoreGroups}
       />
     </div>
   );

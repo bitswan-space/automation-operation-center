@@ -5,15 +5,18 @@ import { useState, useEffect } from "react";
 import { GroupDetailTable } from "@/components/groups/GroupDetailTable";
 
 import { UserDetailTable } from "../users/UserDetailTable";
-import { type UserGroupsListResponse } from "@/data/groups";
+import { type UserGroupsListResponse, type UserGroup } from "@/data/groups";
 import { type OrgUsersListResponse } from "@/data/users";
 
 type SettingTabsProps = {
   setGroupPage: React.Dispatch<React.SetStateAction<number>>;
   setUserPage: React.Dispatch<React.SetStateAction<number>>;
   groupsList?: UserGroupsListResponse;
+  allGroups?: UserGroup[];
   usersList?: OrgUsersListResponse;
   onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void;
+  onLoadMoreGroups?: () => Promise<boolean>;
+  hasMoreGroups?: boolean;
   onGroupCreated?: () => void;
   onUserInvited?: () => void;
   onUserDeleted?: () => void;
@@ -25,9 +28,12 @@ export function SettingTabs(props: SettingTabsProps) {
   const { 
     setGroupPage, 
     setUserPage, 
-    groupsList, 
+    groupsList,
+    allGroups,
     usersList, 
-    onUserGroupUpdate, 
+    onUserGroupUpdate,
+    onLoadMoreGroups,
+    hasMoreGroups,
     onGroupCreated, 
     onUserInvited, 
     onUserDeleted 
@@ -74,9 +80,12 @@ export function SettingTabs(props: SettingTabsProps) {
           {/* User management with optimistic updates */}
           <UserDetailTable 
             setUserPage={setUserPage}
-            userGroups={groupsList} 
+            userGroups={groupsList}
+            allGroups={allGroups}
             usersList={usersList} 
             onUserGroupUpdate={onUserGroupUpdate}
+            onLoadMoreGroups={onLoadMoreGroups}
+            hasMoreGroups={hasMoreGroups}
             onUserInvited={onUserInvited}
             onUserDeleted={onUserDeleted}
           />
