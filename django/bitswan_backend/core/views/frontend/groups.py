@@ -307,3 +307,21 @@ class OrgViewSet(KeycloakMixin, viewsets.ViewSet):
             return Response(group, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, pk=None):
+        try:
+            orgs = self.get_active_user_orgs()
+            org = next((org for org in orgs if org["id"] == pk), None)
+            if not org:
+                return Response(
+                    {"error": "Org not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            serializer = OrgSerializer(org)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.exception("Error while getting org: %s", str(e))
+            return Response(
+                {"error": "An unexpected error occurred while getting the org."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

@@ -45,7 +45,7 @@ export const OrgsProvider = ({ children }: { children: ReactNode }) => {
                 ]);
 
                 setOrgs(orgsData?.results ?? []);
-                setActiveOrg(activeOrgData);
+                setActiveOrg(activeOrgData ?? orgsData?.results[0]);
             } catch (error) {
                 console.error("Error loading dashboard data:", error);
             }
