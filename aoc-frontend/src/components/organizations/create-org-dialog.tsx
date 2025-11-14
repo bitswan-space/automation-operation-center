@@ -1,12 +1,10 @@
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Loader2, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -16,9 +14,8 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createOrgAction } from "./actions";
 import { toast } from "sonner";
-import { useAction } from "@/hooks/useAction";
+import { useCreateOrg } from "@/hooks/useOrgsQuery";
 import { ACTIVE_ORG_COOKIE_NAME } from "@/shared/constants";
 
 interface CreateOrgDialogTriggerProps {
@@ -67,55 +64,63 @@ export function CreateOrgDialog({ open, onOpenChange }: CreateOrgDialogProps) {
     }
   });
   
-  const { execute, isPending } = useAction(createOrgAction, {
-    onSuccess: (result) => {
-      console.log("CreateOrgDialog - onSuccess called with full result:", result);
-      console.log("CreateOrgDialog - result.data:", result.data);
-      console.log("CreateOrgDialog - result structure:", JSON.stringify(result, null, 2));
-      
-      // Extract the organization ID from the result
-      // The result structure is: { id: string, name: string, status: "success" }
-      const orgId = result.id;
-      console.log("CreateOrgDialog - extracted orgId:", orgId);
-      
-      if (orgId) {
-        console.log("CreateOrgDialog - Switching to organization:", orgId);
-        // Switch to the newly created organization
-        document.cookie = `${ACTIVE_ORG_COOKIE_NAME}=${orgId}; path=/; max-age=${60 * 60 * 24 * 30}`;
-        
-        // Close dialog
-        onOpenChange(false);
-        
-        // Show success message
-        toast.success("Organization created successfully");
-        
-        // Navigate to settings users tab
-        navigate("/settings?activeTab=users");
-        
-        // Schedule page reload for after current render cycle
-        shouldReloadRef.current = true;
-      } else {
-        console.error("CreateOrgDialog - No organization ID found in result:", result);
-        toast.error("Organization created but failed to switch to it");
-        onOpenChange(false);
-      }
-    },
-    onError: ({ error: { serverError } }) => {
-      console.log("CreateOrgDialog - onError called:", serverError);
-      toast.error(serverError?.message ?? "Error creating organization");
-      // Keep dialog open on error so user can retry
-    },
-  });
+  const { mutate: createOrgMutation, isPending } = useCreateOrg();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     console.log("CreateOrgDialog - handleSubmit called");
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const data = {
-      name: formData.get("name") as string,
-    };
-    console.log("CreateOrgDialog - submitting data:", data);
-    await execute(data);
+    const name = formData.get("name") as string;
+    console.log("CreateOrgDialog - submitting data:", { name });
+    
+    createOrgMutation(
+      { name },
+      {
+        onSuccess: (result) => {
+          console.log("CreateOrgDialog - onSuccess called with full result:", result);
+          console.log("CreateOrgDialog - result structure:", JSON.stringify(result, null, 2));
+          
+          // Extract the organization ID from the result
+          // The result structure is: { id: string, name: string, status: "success" } or { status: "error", message: string, data: null }
+          if (result.status === "error") {
+            console.error("CreateOrgDialog - Error creating organization:", result.message);
+            toast.error(result.message ?? "Error creating organization");
+            return;
+          }
+          
+          const orgId = result.id;
+          console.log("CreateOrgDialog - extracted orgId:", orgId);
+          
+          if (orgId) {
+            console.log("CreateOrgDialog - Switching to organization:", orgId);
+            // Switch to the newly created organization
+            document.cookie = `${ACTIVE_ORG_COOKIE_NAME}=${orgId}; path=/; max-age=${60 * 60 * 24 * 30}`;
+            
+            // Close dialog
+            onOpenChange(false);
+            
+            // Show success message
+            toast.success("Organization created successfully");
+            
+            // Navigate to settings users tab
+            navigate("/settings?activeTab=users");
+            
+            // Schedule page reload for after current render cycle
+            shouldReloadRef.current = true;
+          } else {
+            console.error("CreateOrgDialog - No organization ID found in result:", result);
+            toast.error("Organization created but failed to switch to it");
+            onOpenChange(false);
+          }
+        },
+        onError: (error: any) => {
+          console.log("CreateOrgDialog - onError called:", error);
+          const errorMessage = error?.message ?? "Error creating organization";
+          toast.error(errorMessage);
+          // Keep dialog open on error so user can retry
+        },
+      }
+    );
   };
 
   console.log("CreateOrgDialog - rendering with open:", open, "isPending:", isPending);
