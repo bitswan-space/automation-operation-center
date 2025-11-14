@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRef, useCallback, useMemo } from "react";
 
 import { GalleryVerticalEnd, Loader2 } from "lucide-react";
 import {
@@ -19,13 +20,44 @@ import { toast } from "sonner";
 import { SidebarMenuButton } from "../ui/sidebar";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import { useOrgs } from "@/context/OrgsProvider";
+import { useOrgsQuery } from "@/hooks/useOrgsQuery";
 
 
 export function OrgSwitcher() {
-  const { orgs, activeOrg } = useOrgs();
-  console.log("OrgSwitcher render - orgs:", orgs.length, "activeOrg:", activeOrg?.name);
+  const { activeOrg } = useOrgs();
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useOrgsQuery();
+  const contentRef = useRef<HTMLDivElement>(null);
+  
+  console.log("OrgSwitcher render - activeOrg:", activeOrg?.name);
   
   const [createOrgDialogOpen, setCreateOrgDialogOpen] = React.useState(false);
+  
+  // Flatten all pages from the infinite query into a single array
+  const orgs = useMemo(() => {
+    if (!data?.pages) {
+      return [];
+    }
+    return data.pages.flatMap((page) => {
+      // Handle both success and error responses
+      if (page.status === "success") {
+        return page.results ?? [];
+      }
+      return [];
+    });
+  }, [data]);
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    const scrollTop = target.scrollTop;
+    const scrollHeight = target.scrollHeight;
+    const clientHeight = target.clientHeight;
+    
+    // Load more when scrolled within 50px of the bottom
+    const scrollBottom = scrollHeight - scrollTop - clientHeight;
+    if (scrollBottom < 50 && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
   
   const { execute: switchOrg, isPending } = useAction(switchOrgAction, {
     onSuccess: () => {
@@ -77,8 +109,11 @@ export function OrgSwitcher() {
           <CaretSortIcon className="ml-auto" />
         </SidebarMenuButton>
       </DropdownMenuTrigger>
+      
       <DropdownMenuContent
-        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+        ref={contentRef}
+        onScroll={handleScroll}
+        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 max-h-80 rounded-lg"
         align="start"
         side={"bottom"}
         sideOffset={4}
@@ -86,6 +121,15 @@ export function OrgSwitcher() {
         <DropdownMenuLabel className="text-muted-foreground text-xs">
           Organizations
         </DropdownMenuLabel>
+        <CreateOrgDialogTrigger onTriggerClick={handleCreateOrgClick} />
+        <DropdownMenuSeparator />
+        {orgs.length === 0 && (
+          <div className="my-2 flex h-16 flex-col items-center justify-center gap-2 rounded border border-dashed">
+            <div className="text-center text-xs font-normal text-neutral-500">
+              No organizations found
+            </div>
+          </div>
+        )}
         {orgs.map((org) => {
           return (
             <DropdownMenuItem
@@ -101,9 +145,11 @@ export function OrgSwitcher() {
             </DropdownMenuItem>
           );
         })}
-        <DropdownMenuSeparator />
-
-        <CreateOrgDialogTrigger onTriggerClick={handleCreateOrgClick} />
+        {isFetchingNextPage && (
+          <div className="flex items-center justify-center py-2">
+            <Loader2 className="size-4 animate-spin text-muted-foreground" />
+          </div>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
     

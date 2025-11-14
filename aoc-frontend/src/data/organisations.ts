@@ -1,6 +1,6 @@
 import { ACTIVE_ORG_COOKIE_NAME } from "@/shared/constants";
 import { authenticatedBitswanBackendInstance } from "@/lib/api-client";
-import { type ApiListResponse, type ApiResponse } from "./shared";
+import { type ApiListResponse } from "./shared";
 import { type AxiosError } from "axios";
 
 export type Organisation = {
@@ -28,12 +28,19 @@ export const getActiveOrgFromCookies = async () => {
   return undefined;
 };
 
-export const fetchOrgs = async () => {
+export const fetchOrgs = async ({ pageParam = 1 }: { pageParam?: number } = {}) => {
   try {
     const bitswanBEInstance = await authenticatedBitswanBackendInstance();
 
     const res =
-      await bitswanBEInstance.get<ApiListResponse<Organisation>>("/orgs");
+      await bitswanBEInstance.get<ApiListResponse<Organisation>>(
+        "/orgs",
+        {
+          params: {
+            page: pageParam,
+          },
+        }
+      );
     return { ...res.data, status: "success" as const };
   } catch (error) {
     console.error("Error fetching orgs", error);
@@ -73,7 +80,7 @@ export const fetchOrg = async (orgId: string) => {
     const bitswanBEInstance = await authenticatedBitswanBackendInstance();
 
     const res =
-      await bitswanBEInstance.get<ApiResponse<Organisation>>(`/orgs/${orgId}`);
+      await bitswanBEInstance.get<Organisation>(`/orgs/${orgId}`);
     return { data: res.data, status: "success" as const };
   } catch (error) {
     console.error("Error fetching org by id", error);
