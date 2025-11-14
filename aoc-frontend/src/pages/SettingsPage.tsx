@@ -4,11 +4,15 @@ import { SettingTabs } from '@/components/settings/SettingTabs';
 import { useTitleBar } from '@/context/TitleBarProvider';
 import { fetchOrgGroups } from '@/data/groups';
 import { fetchOrgUsers } from '@/data/users';
-import { UserGroupsListResponse } from '@/data/groups';
+import { UserGroupsListResponse, type UserGroup } from '@/data/groups';
 import { OrgUsersListResponse } from '@/data/users';
 import { Settings2 } from 'lucide-react';
 
 const SettingsPage: React.FC = () => {
+  const [allGroups, setAllGroups] = useState<UserGroup[]>([]);
+  const [groupsPage, setGroupsPage] = useState(1);
+  const [hasMoreGroups, setHasMoreGroups] = useState(false);
+  const [isLoadingGroups, setIsLoadingGroups] = useState(false);
   const [groupsList, setGroupsList] = useState<UserGroupsListResponse | undefined>();
   const [groupPage, setGroupPage] = useState(1);
   const [usersList, setUsersList] = useState<OrgUsersListResponse | undefined>();
@@ -34,6 +38,29 @@ const SettingsPage: React.FC = () => {
     loadData();
   };
 
+  const loadMoreGroups = async (): Promise<boolean> => {
+    if (!hasMoreGroups || isLoadingGroups) return false;
+    
+    setIsLoadingGroups(true);
+    try {
+      const nextPage = groupsPage + 1;
+      const response = await fetchOrgGroups(nextPage);
+      
+      if (response.status === 'success' && response.results.length > 0) {
+        setAllGroups(prev => [...prev, ...response.results]);
+        setGroupsPage(nextPage);
+        setHasMoreGroups(!!response.next);
+        return !!response.next;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error loading more groups:', error);
+      return false;
+    } finally {
+      setIsLoadingGroups(false);
+    }
+  };
+
   const updateUserGroups = (userId: string, groupId: string, action: 'add' | 'remove') => {
     setUsersList(prevUsers => {
       if (!prevUsers) return prevUsers;
@@ -43,8 +70,8 @@ const SettingsPage: React.FC = () => {
         results: prevUsers.results.map(user => {
           if (user.id === userId) {
             if (action === 'add') {
-              // Find the group to add
-              const groupToAdd = groupsList?.results.find(g => g.id === groupId);
+              // Find the group to add from allGroups
+              const groupToAdd = allGroups.find(g => g.id === groupId);
               if (groupToAdd && !user.groups.find(g => g.id === groupId)) {
                 return {
                   ...user,
@@ -74,6 +101,15 @@ const SettingsPage: React.FC = () => {
       ]);
       console.log('Groups loaded:', groups);
       console.log('Users loaded:', users);
+      
+      // Initialize groups pagination state
+      if (groups.status === 'success') {
+        setAllGroups(groups.results);
+        setGroupsPage(1);
+        setHasMoreGroups(!!groups.next);
+      }
+      
+      // Keep groupsList for backward compatibility (used in UserDetailTable)
       setGroupsList(groups);
       setUsersList(users);
     } catch (error) {
@@ -118,9 +154,12 @@ const SettingsPage: React.FC = () => {
             <SettingTabs 
               setGroupPage={setGroupPage}
               setUserPage={setUserPage}
-              groupsList={groupsList} 
+              groupsList={groupsList}
+              allGroups={allGroups}
               usersList={usersList} 
-              onUserGroupUpdate={updateUserGroups} 
+              onUserGroupUpdate={updateUserGroups}
+              onLoadMoreGroups={loadMoreGroups}
+              hasMoreGroups={hasMoreGroups}
               onGroupCreated={handleGroupCreated}
               onUserInvited={handleUserInvited}
               onUserDeleted={handleUserDeleted}

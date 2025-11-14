@@ -59,7 +59,9 @@ const columnHelper = createColumnHelper<OrgUserFull>();
 
 const createColumns = (
   onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void,
-  onUserDeleted?: () => void
+  onUserDeleted?: () => void,
+  handleNextPage?: () => Promise<boolean>,
+  hasMoreGroups?: boolean
 ): ColumnDef<OrgUserFull>[] => [
   {
     accessorKey: "email",
@@ -100,6 +102,8 @@ const createColumns = (
           addAction={addUserToGroupAction}
           removeAction={removeUserFromGroupAction}
           onUserGroupUpdate={onUserGroupUpdate}
+          handleNextPage={handleNextPage}
+          hasMoreGroups={hasMoreGroups}
         />
       );
     },
@@ -117,7 +121,10 @@ type UserDetailTableProps = {
   setUserPage: React.Dispatch<React.SetStateAction<number>>;
   usersList?: OrgUsersListResponse;
   userGroups?: UserGroupsListResponse;
+  allGroups?: UserGroup[];
   onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void; // Optimistic update callback
+  onLoadMoreGroups?: () => Promise<boolean>;
+  hasMoreGroups?: boolean;
   onUserInvited?: () => void; // Callback when user is invited
   onUserDeleted?: () => void; // Callback when user is deleted
 };
@@ -126,26 +133,37 @@ export function UserDetailTable(props: UserDetailTableProps) {
   const { 
     setUserPage, 
     usersList: orgUsers, 
-    userGroups, 
-    onUserGroupUpdate, 
+    userGroups,
+    allGroups,
+    onUserGroupUpdate,
+    onLoadMoreGroups,
+    hasMoreGroups,
     onUserInvited, 
     onUserDeleted 
   } = props;
 
   const { isAdmin: hasPerms } = useAdminStatus();
 
-  console.log('UserDetailTable received data:', { orgUsers, userGroups });
+  console.log('UserDetailTable received data:', { orgUsers, userGroups, allGroups });
+
+  // Create handleNextPage wrapper
+  const handleNextPage = React.useCallback(async (): Promise<boolean> => {
+    if (onLoadMoreGroups) {
+      return await onLoadMoreGroups();
+    }
+    return false;
+  }, [onLoadMoreGroups]);
 
   const orgUsersData = React.useMemo(
     () =>
       orgUsers?.results?.map((user) => ({
         ...user,
         nonMemberGroups:
-          userGroups?.results.filter(
+          (allGroups ?? userGroups?.results ?? []).filter(
             (group) => !user.groups.find((g) => g.id === group.id),
           ) ?? [],
       })) ?? [],
-    [orgUsers, userGroups],
+    [orgUsers, allGroups, userGroups],
   );
 
   console.log('Processed users data:', orgUsersData);
@@ -160,7 +178,7 @@ export function UserDetailTable(props: UserDetailTableProps) {
 
   const table = useReactTable({
     data: orgUsersData,
-    columns: createColumns(onUserGroupUpdate, onUserDeleted),
+    columns: createColumns(onUserGroupUpdate, onUserDeleted, handleNextPage, hasMoreGroups),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -222,7 +240,7 @@ export function UserDetailTable(props: UserDetailTableProps) {
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={createColumns(onUserGroupUpdate, onUserDeleted).length}
+                    colSpan={createColumns(onUserGroupUpdate, onUserDeleted, handleNextPage, hasMoreGroups).length}
                     className="h-24 text-center"
                   >
                     No results.
