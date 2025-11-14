@@ -1,5 +1,3 @@
-"use server";
-
 import { ACTIVE_ORG_COOKIE_NAME } from "@/shared/constants";
 import { authenticatedBitswanBackendInstance } from "@/lib/api-client";
 import { type ApiListResponse, type ApiResponse } from "./shared";
@@ -13,22 +11,21 @@ export type Organisation = {
 export type OrgListResponse = ApiListResponse<Organisation>;
 
 export const getActiveOrgFromCookies = async () => {
-  const orgs = (await fetchOrgs()).results;
-
   const cookieValue = document.cookie
     .split('; ')
     .find(row => row.startsWith(ACTIVE_ORG_COOKIE_NAME))
     ?.split('=')[1];
-  
-  let activeOrg = undefined;
 
-  if (cookieValue && orgs.some((org) => org.id === cookieValue)) {
-    activeOrg = orgs.find((org) => org.id === cookieValue);
-  } else {
-    activeOrg = orgs[0] ?? undefined;
+  if (!cookieValue) {
+    return undefined;
   }
 
-  return activeOrg;
+  const org = await fetchOrg(cookieValue);
+  if (org.status === "success") {
+    return org.data;
+  }
+
+  return undefined;
 };
 
 export const fetchOrgs = async () => {
@@ -67,6 +64,43 @@ export const fetchOrgs = async () => {
       next: null,
       previous: null,
       count: 0,
+    };
+  }
+};
+
+export const fetchOrg = async (orgId: string) => {
+  try {
+    const bitswanBEInstance = await authenticatedBitswanBackendInstance();
+
+    const res =
+      await bitswanBEInstance.get<ApiResponse<Organisation>>(`/orgs/${orgId}`);
+    return { data: res.data, status: "success" as const };
+  } catch (error) {
+    console.error("Error fetching org by id", error);
+    
+    // Provide more detailed error information
+    let errorMessage = "Error fetching org by id";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
+    // Check if it's an axios error for more details
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as AxiosError<{ error?: string; message?: string }>;
+      if (axiosError.response) {
+        console.error("API Error Response:", axiosError.response.data);
+        console.error("API Error Status:", axiosError.response.status);
+        errorMessage = `API Error (${axiosError.response.status}): ${axiosError.response.data?.error ?? axiosError.response.data?.message ?? errorMessage}`;
+      } else if (axiosError.request) {
+        console.error("Network Error:", axiosError.request);
+        errorMessage = "Network error - unable to reach the API";
+      }
+    }
+    
+    return {
+      status: "error" as const,
+      message: errorMessage,
+      data: null,
     };
   }
 };
