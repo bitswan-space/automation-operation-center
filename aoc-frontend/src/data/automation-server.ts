@@ -42,12 +42,15 @@ export type AutomationServerGroupMembership = {
   keycloak_group_id: string;
 };
 
-export async function getAutomationServers() {
+export async function getAutomationServers(page: number = 1) {
   const bitswanBEInstance = await authenticatedBitswanBackendInstance();
 
   const activeOrg = await getActiveOrgFromCookies();
 
   const res = await bitswanBEInstance.get("/automation-servers", {
+    params: {
+      page: page,
+    },
     headers: {
       "X-Org-Id": activeOrg?.id ?? "",
       "X-Org-Name": activeOrg?.name ?? "",
@@ -70,4 +73,36 @@ export async function deleteAutomationServer(serverId: string) {
   });
 
   return res.data;
+}
+
+export async function createAutomationServerWithOTP(name: string) {
+  const apiClient = await authenticatedBitswanBackendInstance();
+  const activeOrg = await getActiveOrgFromCookies();
+  
+  const response = await apiClient.post('/automation-servers/create-with-otp', {
+    name: name.trim(),
+  }, {
+    headers: {
+      "X-Org-Id": activeOrg?.id ?? "",
+      "X-Org-Name": activeOrg?.name ?? "",
+    },
+  });
+
+  return response.data;
+}
+
+export async function checkAutomationServerOTPStatus(automationServerId: string) {
+  const activeOrg = await getActiveOrgFromCookies();
+  const apiClient = await authenticatedBitswanBackendInstance();
+  const response = await apiClient.get(
+    `/automation-servers/check-otp-status?automation_server_id=${automationServerId}`,
+    {
+      headers: {
+        "X-Org-Id": activeOrg?.id ?? "",
+        "X-Org-Name": activeOrg?.name ?? "",
+      },
+    }
+  );
+
+  return response.data;
 }
