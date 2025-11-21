@@ -32,13 +32,13 @@ export function useOrgsQuery() {
 }
 
 export function useCreateOrg() {
-    const queryClient = useQueryClient();
-    
-    return useMutation({
-      mutationFn: ({ name }: { name: string }) => createOrg(name),
-      onSuccess: () => {
-        // Invalidate orgs when org is created successfully
-        queryClient.invalidateQueries({ queryKey: ORGS_QUERY_KEY });
-      },
-    });
-  }
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ name }: { name: string }) => createOrg(name),
+    onSuccess: () => {
+      // Invalidate orgs when org is created successfully
+      queryClient.invalidateQueries({ queryKey: ORGS_QUERY_KEY });
+    },
+  });
+}

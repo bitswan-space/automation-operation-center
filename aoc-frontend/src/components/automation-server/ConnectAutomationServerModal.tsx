@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -13,22 +11,20 @@ import { Input } from "../ui/input";
 import { Copy, CheckCheck, Server, Loader2, CheckCircle } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { useClipboard } from "use-clipboard-copy";
-import { useAuth } from "@/context/AuthContext";
-import { authenticatedBitswanBackendInstance } from "@/lib/api-client";
-import { getActiveOrgFromCookies } from "@/data/organisations";
+import { 
+  checkAutomationServerOTPStatus,
+} from "@/data/automation-server";
+import { useCreateAutomationServer } from "@/hooks/useAutomationServersQuery";
 
 interface ConnectAutomationServerModalProps {
   children: React.ReactNode;
-  apiUrl: string;
   onServerCreated?: (serverId: string) => void;
 }
 
 export function ConnectAutomationServerModal({
   children,
-  apiUrl,
   onServerCreated,
 }: ConnectAutomationServerModalProps) {
-  const { user } = useAuth();
   const [serverName, setServerName] = useState("");
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
@@ -39,6 +35,13 @@ export function ConnectAutomationServerModal({
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const [otpRedeemed, setOtpRedeemed] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const { mutate: createAutomationServer } = useCreateAutomationServer();
+
+  // Construct API URL for CLI commands (base backend URL without /api/frontend)
+  const currentHost = window.location.hostname;
+  const protocol = "https";
+  const backendHost = currentHost.replace(/^aoc\./, 'api.');
+  const apiUrl = `${protocol}://${backendHost}`;
 
   const clipboard = useClipboard({
     onSuccess() {
@@ -50,49 +53,40 @@ export function ConnectAutomationServerModal({
     },
   });
 
-  // Check OTP status every 3 seconds
-  const checkOTPStatus = async () => {
-    if (!automationServerId || otpRedeemed) return;
-
-    try {
-      const activeOrg = await getActiveOrgFromCookies();
-      const apiClient = await authenticatedBitswanBackendInstance();
-      const response = await apiClient.get(
-        `/automation-servers/check-otp-status?automation_server_id=${automationServerId}`,
-        {
-          headers: {
-            "X-Org-Id": activeOrg?.id ?? "",
-            "X-Org-Name": activeOrg?.name ?? "",
-          },
-        }
-      );
-
-      if (response.data.redeemed) {
-        setOtpRedeemed(true);
-        setIsCheckingStatus(false);
-        
-        // Clear the interval
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-
-        // Close modal after a short delay to show success state
-        setTimeout(() => {
-          setOpen(false);
-          // Call the callback to refresh the automation servers list
-          if (onServerCreated && automationServerId) {
-            onServerCreated(automationServerId);
-          }
-        }, 2000);
-      }
-    } catch (err) {
-      console.error("Failed to check OTP status:", err);
-    }
-  };
-
   // Start checking OTP status when OTP is generated
   useEffect(() => {
+    // Check OTP status every 3 seconds
+    const checkOTPStatus = async () => {
+      if (!automationServerId || otpRedeemed) return;
+
+      try {
+        const data = await checkAutomationServerOTPStatus(automationServerId);
+
+        if (data.redeemed) {
+          setOtpRedeemed(true);
+          setIsCheckingStatus(false);
+          
+          // Clear the interval
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+
+          // Close modal after a short delay to show success state
+          setTimeout(() => {
+            setOpen(false);
+            handleOpenChange(false);
+            // Call the callback to refresh the automation servers list
+            if (onServerCreated && automationServerId) {
+              onServerCreated(automationServerId);
+            }
+          }, 2000);
+        }
+      } catch (err) {
+        console.error("Failed to check OTP status:", err);
+      }
+    };
+
     if (otp && automationServerId && !otpRedeemed) {
       setIsCheckingStatus(true);
       // Check immediately
@@ -108,7 +102,7 @@ export function ConnectAutomationServerModal({
         intervalRef.current = null;
       }
     };
-  }, [otp, automationServerId, otpRedeemed]);
+  }, [otp, automationServerId, otpRedeemed, onServerCreated]);
 
   const handleCreateServer = async () => {
     if (!serverName.trim()) {
@@ -119,27 +113,17 @@ export function ConnectAutomationServerModal({
     setIsCreating(true);
     setError(null);
 
-    try {
-      const apiClient = await authenticatedBitswanBackendInstance();
-      const activeOrg = await getActiveOrgFromCookies();
-      
-      const response = await apiClient.post('/automation-servers/create-with-otp', {
-        name: serverName.trim(),
-      }, {
-        headers: {
-          "X-Org-Id": activeOrg?.id ?? "",
-          "X-Org-Name": activeOrg?.name ?? "",
-        },
-      });
-
-      const data = response.data;
-      setOtp(data.otp);
-      setAutomationServerId(data.automation_server_id);
-    } catch (err: any) {
-      setError(err.response?.data?.error || err.message || "Failed to create automation server");
-    } finally {
-      setIsCreating(false);
-    }
+    createAutomationServer(serverName, {
+      onSuccess: (data) => {
+        setOtp(data.otp);
+        setAutomationServerId(data.automation_server_id);
+        setIsCreating(false);
+      },
+      onError: (err: any) => {
+        setError(err.response?.data?.error || err.message || "Failed to create automation server");
+        setIsCreating(false);
+      }
+    });
   };
 
   const command = otp && automationServerId 
