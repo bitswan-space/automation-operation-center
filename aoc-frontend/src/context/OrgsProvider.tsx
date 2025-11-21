@@ -12,6 +12,7 @@ import {
 } from "react";
 import { useAuth } from "./AuthContext";
 import { useOrgsQuery } from "@/hooks/useOrgsQuery";
+import { switchOrgAction } from "@/components/organizations/actions";
 
 interface OrgsContextType {
     orgs: Organisation[];
@@ -58,6 +59,10 @@ export const OrgsProvider = ({ children }: { children: ReactNode }) => {
                 const activeOrgData = await getActiveOrgFromCookies();
                 // If we have an active org from cookies, use it; otherwise use the first org
                 setActiveOrg(activeOrgData ?? orgs[0]);
+                // If we don't have an active org from cookies, set cookie to the first org
+                if (!activeOrgData) {
+                    await switchOrgAction({ orgId: orgs[0].id });
+                }
             } catch (error) {
                 console.error("Error loading active org:", error);
                 // Fallback to first org if cookie lookup fails
