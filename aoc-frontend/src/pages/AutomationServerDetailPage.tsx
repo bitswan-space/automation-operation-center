@@ -1,17 +1,15 @@
 import { AutomationServerDetailSection } from "@/components/automation-server/AutomationServerDetailSection";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
-import { getAutomationServers } from "@/data/automation-server";
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useTitleBar } from "@/context/TitleBarProvider";
 import { Server } from "lucide-react";
-import { type AutomationServer } from "@/data/automation-server";
+import { useAutomationServersQuery } from "@/hooks/useAutomationServersQuery";
 
 const AutomationServerDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const [automationServer, setAutomationServer] = useState<AutomationServer | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: automationServersData } = useAutomationServersQuery();
   const { setTitle, setIcon, setButtons } = useTitleBar();
 
   useEffect(() => {
@@ -20,30 +18,12 @@ const AutomationServerDetailPage = () => {
     setButtons(null)
   }, [setTitle, setIcon, setButtons]);
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const serversData = await getAutomationServers();
+  const automationServer = automationServersData?.pages.flatMap((page) => page.results).find(
+    (server) => server.automation_server_id === id,
+  );
 
-        const server = serversData.results.find(
-          (server: any) => server.automation_server_id === id,
-        );
-
-        setAutomationServer(server);
-      } catch (error) {
-        console.error("Error loading automation server data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (id) {
-      loadData();
-    }
-  }, [id]);
-
-  if (loading) {
-    return <div>Loading...</div>;
+  if (!automationServer) {
+    return <div>Automation server not found</div>;
   }
 
   return (
