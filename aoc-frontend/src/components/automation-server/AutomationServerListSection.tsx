@@ -81,7 +81,7 @@ export function AutomationServerListSection(
 
       {filteredServers.length === 0 ? (
         <div className="py-8 text-center text-gray-500">
-          No servers found matching your search.
+          No servers found
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">

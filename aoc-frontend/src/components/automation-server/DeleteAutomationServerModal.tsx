@@ -1,5 +1,3 @@
-"use client";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { deleteAutomationServer } from "@/data/automation-server";
+import { useDeleteAutomationServer } from "@/hooks/useAutomationServersQuery";
 
 interface DeleteAutomationServerModalProps {
   children: React.ReactNode;
@@ -31,18 +29,17 @@ export function DeleteAutomationServerModal({
   onDelete,
 }: DeleteAutomationServerModalProps) {
   const [confirmationName, setConfirmationName] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const deleteMutation = useDeleteAutomationServer();
 
   const isNameValid = confirmationName === serverName;
 
   const handleDelete = async () => {
     if (!isNameValid) return;
 
-    setIsDeleting(true);
     try {
-      await deleteAutomationServer(serverId);
+      await deleteMutation.mutateAsync(serverId);
 
       // Close modal and redirect
       setOpen(false);
@@ -62,8 +59,6 @@ export function DeleteAutomationServerModal({
       }
       
       alert(errorMessage);
-    } finally {
-      setIsDeleting(false);
     }
   };
 
@@ -71,7 +66,6 @@ export function DeleteAutomationServerModal({
     setOpen(newOpen);
     if (!newOpen) {
       setConfirmationName("");
-      setIsDeleting(false);
     }
   };
 
@@ -109,13 +103,13 @@ export function DeleteAutomationServerModal({
           </div>
         </div>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={deleteMutation.isPending}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDelete}
-            disabled={!isNameValid || isDeleting}
+            disabled={!isNameValid || deleteMutation.isPending}
             className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
           >
-            {isDeleting ? (
+            {deleteMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Deleting...

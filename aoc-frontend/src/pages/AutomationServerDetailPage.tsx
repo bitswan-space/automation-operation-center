@@ -4,25 +4,38 @@ import { Input } from "@/components/ui/input";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useTitleBar } from "@/context/TitleBarProvider";
-import { Server } from "lucide-react";
+import { Server, Trash2 } from "lucide-react";
 import { useAutomationServersQuery } from "@/hooks/useAutomationServersQuery";
+import { DeleteAutomationServerModal } from "@/components/automation-server/DeleteAutomationServerModal";
 
 const AutomationServerDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const { data: automationServersData } = useAutomationServersQuery();
   const { setTitle, setIcon, setButtons } = useTitleBar();
 
-  useEffect(() => {
-    setTitle("Automation Servers");
-    setIcon(<Server size={24} />);
-    setButtons(null)
-  }, [setTitle, setIcon, setButtons]);
-
-  const automationServer = automationServersData?.pages.flatMap((page) => page.results).find(
+  const server = automationServersData?.pages.flatMap((page) => page.results).find(
     (server) => server.automation_server_id === id,
   );
 
-  if (!automationServer) {
+  useEffect(() => {
+    setTitle(`${server?.name} workspaces`);
+    setIcon(<Server size={24} />);
+    setButtons(
+      <DeleteAutomationServerModal
+        serverName={server?.name ?? ""}
+        serverId={server?.automation_server_id ?? ""}
+      >
+        <Button
+          variant="destructive"
+        >
+          <Trash2 className="h-4 w-4 mr-1" />
+          Delete server
+        </Button>
+      </DeleteAutomationServerModal>
+    );
+  }, [server, setTitle, setButtons, setIcon]);
+
+  if (!server) {
     return <div>Automation server not found</div>;
   }
 
@@ -41,7 +54,7 @@ const AutomationServerDetailPage = () => {
         </Button>
       </div>
       <AutomationServerDetailSection
-        server={automationServer}
+        server={server}
       />
     </div>
   );
