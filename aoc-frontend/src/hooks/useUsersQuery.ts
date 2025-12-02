@@ -6,12 +6,12 @@ import { useAuth } from "@/context/AuthContext";
 export const USERS_QUERY_KEY = ["users"];
 export const USER_NON_MEMBER_GROUPS_QUERY_KEY = ["user-non-member-groups"];
 
-export function useUsersQuery(page: number = 1) {
+export function useUsersQuery(page: number = 1, search?: string) {
   const { isAuthenticated } = useAuth();
   
   return useQuery<OrgUsersListResponse>({
-    queryKey: [...USERS_QUERY_KEY, page],
-    queryFn: () => fetchOrgUsers(page),
+    queryKey: [...USERS_QUERY_KEY, page, search || ""],
+    queryFn: () => fetchOrgUsers(page, search),
     enabled: isAuthenticated, // Only fetch when user is authenticated
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1,

@@ -13,14 +13,25 @@ export type OrgUser = {
 
 export type OrgUsersListResponse = ApiListResponse<OrgUser>;
 
-export const fetchOrgUsers = async (page: number | undefined = 1): Promise<OrgUsersListResponse> => {
+export const fetchOrgUsers = async (
+  page: number | undefined = 1,
+  search?: string
+): Promise<OrgUsersListResponse> => {
   const activeOrg = await getActiveOrgFromCookies();
 
   try {
     const bitswanBEInstance = await authenticatedBitswanBackendInstance();
+    const params: Record<string, string | number> = {
+      page: page,
+    };
+    if (search && search.trim()) {
+      params.search = search.trim();
+    }
+    
     const response = await bitswanBEInstance.get<ApiListResponse<OrgUser>>(
-      `/org-users?page=${page}`,
+      `/org-users`,
       {
+        params,
         headers: {
           "X-Org-Id": activeOrg?.id ?? "",
           "X-Org-Name": activeOrg?.name ?? "",

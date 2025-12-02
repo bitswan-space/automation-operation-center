@@ -3,14 +3,12 @@ import * as React from "react";
 
 import {
   type ColumnDef,
-  type ColumnFiltersState,
   type PaginationState,
   type SortingState,
   type VisibilityState,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
@@ -103,9 +101,24 @@ export function UserDetailTable() {
     pageSize: 10,
   });
 
+  // Search state with debouncing
+  const [search, setSearch] = React.useState("");
+  const [debouncedSearch, setDebouncedSearch] = React.useState("");
+
+  // Debounce search input to avoid too many requests while typing
+  React.useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearch(search);
+      // Reset to first page when search changes
+      setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [search]);
+
   // Convert 0-based pageIndex to 1-based page number for API
   const page = pagination.pageIndex + 1;
-  const { data: usersData, isFetching: isFetchingUsers } = useUsersQuery(page);
+  const { data: usersData, isFetching: isFetchingUsers } = useUsersQuery(page, debouncedSearch);
 
   const orgUsersData = React.useMemo(
     () => usersData?.results ?? [],
@@ -113,9 +126,6 @@ export function UserDetailTable() {
   );
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    [],
-  );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
@@ -124,19 +134,17 @@ export function UserDetailTable() {
     data: orgUsersData,
     columns: createColumns(),
     manualPagination: true, // Server-side pagination
+    manualFiltering: true, // Server-side filtering/search
     rowCount: usersData?.count ?? 10,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
       pagination,
       sorting,
-      columnFilters,
       columnVisibility,
       rowSelection,
     },
@@ -144,7 +152,7 @@ export function UserDetailTable() {
 
   return (
     <div className="w-full">
-      <UserInviteForm />
+      <UserInviteForm search={search} onSearchChange={setSearch} />
 
       <div className="rounded-md border">
         <Table>
