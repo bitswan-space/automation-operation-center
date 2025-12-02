@@ -12,12 +12,12 @@ import {
 
 export const AUTOMATION_SERVERS_QUERY_KEY = ["automation-servers"];
 
-export function useAutomationServersQuery() {
+export function useAutomationServersQuery(search?: string) {
   const { isAuthenticated } = useAuth();
 
   return useInfiniteQuery({
-    queryKey: AUTOMATION_SERVERS_QUERY_KEY,
-    queryFn: ({ pageParam = 1 }) => getAutomationServers(pageParam),
+    queryKey: [...AUTOMATION_SERVERS_QUERY_KEY, search || ""],
+    queryFn: ({ pageParam = 1 }) => getAutomationServers(pageParam, search),
     getNextPageParam: (lastPage) => {
       // If there's a next URL, extract the page number from it
       if (lastPage.next) {

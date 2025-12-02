@@ -57,24 +57,29 @@ class AutomationServerViewSet(KeycloakMixin, viewsets.ModelViewSet):
         
         # Check if user is admin in the org - admins can see all automation servers
         if self.is_admin(self.request):
-            return AutomationServer.objects.filter(keycloak_org_id=org_id).order_by(
-                "-updated_at",
+            queryset = AutomationServer.objects.filter(keycloak_org_id=org_id)
+        else:
+            # For non-admin users, filter by AutomationServerGroupMembership
+            user_id = self.get_active_user()
+            user_groups = self.keycloak.get_user_groups(user_id)
+            user_group_ids = [group['id'] for group in user_groups]
+            
+            # Get automation servers that the user has access to through group memberships
+            accessible_automation_server_ids = AutomationServerGroupMembership.objects.filter(
+                keycloak_group_id__in=user_group_ids
+            ).values_list('automation_server_id', flat=True)
+            
+            queryset = AutomationServer.objects.filter(
+                keycloak_org_id=org_id,
+                id__in=accessible_automation_server_ids
             )
         
-        # For non-admin users, filter by AutomationServerGroupMembership
-        user_id = self.get_active_user()
-        user_groups = self.keycloak.get_user_groups(user_id)
-        user_group_ids = [group['id'] for group in user_groups]
+        # Apply search filter if provided
+        search_query = self.request.query_params.get("search", "").strip().lower()
+        if search_query:
+            queryset = queryset.filter(name__icontains=search_query)
         
-        # Get automation servers that the user has access to through group memberships
-        accessible_automation_server_ids = AutomationServerGroupMembership.objects.filter(
-            keycloak_group_id__in=user_group_ids
-        ).values_list('automation_server_id', flat=True)
-        
-        return AutomationServer.objects.filter(
-            keycloak_org_id=org_id,
-            id__in=accessible_automation_server_ids
-        ).order_by("-updated_at")
+        return queryset.order_by("-updated_at")
 
     def create(self, request):
         # Only admin users can create automation servers
