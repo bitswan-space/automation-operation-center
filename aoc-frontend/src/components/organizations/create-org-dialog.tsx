@@ -7,8 +7,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Loader2, Plus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useLayoutEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -50,19 +48,6 @@ interface CreateOrgDialogProps {
 
 export function CreateOrgDialog({ open, onOpenChange }: CreateOrgDialogProps) {
   console.log("CreateOrgDialog render - open state:", open);
-  const navigate = useNavigate();
-  const shouldReloadRef = useRef(false);
-  
-  // Handle page reload after component has finished rendering
-  useLayoutEffect(() => {
-    if (shouldReloadRef.current) {
-      shouldReloadRef.current = false;
-      // Use requestAnimationFrame to ensure it happens after the current render
-      requestAnimationFrame(() => {
-        window.location.reload();
-      });
-    }
-  });
   
   const { mutate: createOrgMutation, isPending } = useCreateOrg();
 
@@ -102,11 +87,10 @@ export function CreateOrgDialog({ open, onOpenChange }: CreateOrgDialogProps) {
             // Show success message
             toast.success("Organization created successfully");
             
-            // Navigate to settings users tab
-            navigate("/settings?activeTab=users");
-            
-            // Schedule page reload for after current render cycle
-            shouldReloadRef.current = true;
+            // Reload page after a short delay
+            setTimeout(() => {
+              window.location.reload();
+            }, 100);
           } else {
             console.error("CreateOrgDialog - No organization ID found in result:", result);
             toast.error("Organization created but failed to switch to it");

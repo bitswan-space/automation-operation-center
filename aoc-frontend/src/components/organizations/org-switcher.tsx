@@ -74,8 +74,6 @@ export function OrgSwitcher() {
   const handleSwitchOrg = async (orgId: string) => {
     console.log("OrgSwitcher - handleSwitchOrg called with orgId:", orgId);
     switchOrg({ orgId });
-    // Force a full page refresh
-    window.location.reload();
   };
 
   const handleCreateOrgClick = () => {
