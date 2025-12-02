@@ -79,18 +79,24 @@ export const deleteUser = async (id: string): Promise<ApiResponse<null>> => {
 
 export const fetchUserNonMemberGroups = async (
   userId: string,
-  page: number | undefined = 1
+  page: number | undefined = 1,
+  search?: string
 ): Promise<UserGroupsListResponse> => {
   const activeOrg = await getActiveOrgFromCookies();
 
   try {
     const bitswanBEInstance = await authenticatedBitswanBackendInstance();
+    const params: Record<string, string | number> = {
+      page: page,
+    };
+    if (search && search.trim()) {
+      params.search = search.trim();
+    }
+    
     const response = await bitswanBEInstance.get<ApiListResponse<UserGroup>>(
       `/org-users/${userId}/non_member_groups/`,
       {
-        params: {
-          page: page,
-        },
+        params,
         headers: {
           "X-Org-Id": activeOrg?.id ?? "",
           "X-Org-Name": activeOrg?.name ?? "",

@@ -244,6 +244,15 @@ class OrgUsersViewSet(KeycloakMixin, viewsets.ViewSet):
             org_groups = self.get_org_groups()
             user_group_ids = {group["id"] for group in user_groups}
             non_member_groups = [group for group in org_groups if group["id"] not in user_group_ids]
+            
+            # Apply search filter if provided
+            search_query = request.query_params.get("search", "").strip().lower()
+            if search_query:
+                non_member_groups = [
+                    group for group in non_member_groups
+                    if search_query in group.get("name", "").lower()
+                ]
+            
             paginator = self.pagination_class()
             paginated_groups = paginator.paginate_queryset(non_member_groups, request)
             serializer = UserGroupSerializer(paginated_groups, many=True)
