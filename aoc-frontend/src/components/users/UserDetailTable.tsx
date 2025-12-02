@@ -42,6 +42,7 @@ import {
 import { type OrgUser } from "@/data/users";
 import { toast } from "sonner";
 import { useDeleteUser, useUsersQuery } from "@/hooks/useUsersQuery";
+import { useAuth } from "@/context/AuthContext";
 
 const columnHelper = createColumnHelper<OrgUser>();
 
@@ -256,6 +257,7 @@ function UserActions(props: UserActionProps) {
 
   const [open, setOpen] = React.useState(false);
 
+  const { user } = useAuth();
   const deleteUserMutation = useDeleteUser();
 
   const handleDelete = async () => {
@@ -282,7 +284,7 @@ function UserActions(props: UserActionProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={"ghost"} disabled={deleteUserMutation.isPending}>
+        <Button variant={"ghost"} disabled={deleteUserMutation.isPending || user?.id === id}>
           {deleteUserMutation.isPending ? (
             <Loader2 size={20} className="mr-2 animate-spin" />
           ) : (
