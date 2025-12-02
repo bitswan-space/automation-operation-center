@@ -1,7 +1,5 @@
-"use client";
-
 import * as React from "react";
-import { useRef, useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 import { GalleryVerticalEnd, Loader2 } from "lucide-react";
 import {
@@ -26,7 +24,6 @@ import { useOrgsQuery } from "@/hooks/useOrgsQuery";
 export function OrgSwitcher() {
   const { activeOrg } = useOrgs();
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useOrgsQuery();
-  const contentRef = useRef<HTMLDivElement>(null);
   
   console.log("OrgSwitcher render - activeOrg:", activeOrg?.name);
   
@@ -77,6 +74,8 @@ export function OrgSwitcher() {
   const handleSwitchOrg = async (orgId: string) => {
     console.log("OrgSwitcher - handleSwitchOrg called with orgId:", orgId);
     switchOrg({ orgId });
+    // Force a full page refresh
+    window.location.reload();
   };
 
   const handleCreateOrgClick = () => {
@@ -111,7 +110,6 @@ export function OrgSwitcher() {
       </DropdownMenuTrigger>
       
       <DropdownMenuContent
-        ref={contentRef}
         onScroll={handleScroll}
         className="w-(--radix-dropdown-menu-trigger-width) min-w-56 max-h-80 rounded-lg"
         align="start"

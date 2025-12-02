@@ -100,6 +100,7 @@ export function WorkspaceDetailSection(
               </div>
               <div className="mt-2 flex items-center gap-2">
                 <span className="text-sm text-gray-500">Groups:</span>
+                {/* TODO: Add back in when groups are implemented for workspaces
                 <UserGroupsBadgeList
                   memberGroups={workspaceGroups.memberGroups}
                   id={workspace?.id ?? ""}
@@ -109,7 +110,7 @@ export function WorkspaceDetailSection(
                   onUserGroupUpdate={handleWorkspaceGroupUpdate}
                   handleNextPage={handleNextPage}
                   hasMoreGroups={hasMoreGroups}
-                />
+                />*/}
               </div>
             </div>
             {workspace?.editor_url && (
