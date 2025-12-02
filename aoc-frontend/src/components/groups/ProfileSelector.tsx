@@ -1,5 +1,5 @@
 import { Ungroup, Loader2 } from "lucide-react";
-import React, { useRef, useCallback } from "react";
+import React, { useCallback } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,7 +18,6 @@ export default function ProfileSelector() {
   const { isAdmin, isLoading } = useAdminStatus();
   const { activeProfile, setActiveProfile, profiles } = useSidebarItems();
   const { fetchNextPage, hasNextPage, isFetchingNextPage } = useProfilesQuery();
-  const contentRef = useRef<HTMLDivElement>(null);
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
@@ -58,7 +57,6 @@ export default function ProfileSelector() {
         </SidebarMenuButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        ref={contentRef}
         onScroll={handleScroll}
         className="w-(--radix-dropdown-menu-trigger-width) min-w-56 max-h-80 rounded-lg"
         align="start"
