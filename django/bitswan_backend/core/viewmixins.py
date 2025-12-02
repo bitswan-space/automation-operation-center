@@ -48,7 +48,7 @@ class KeycloakMixin:
 
     def get_org_groups(self):
         """
-        Helper method to get the Keycloak group ID
+        Helper method to get groups for current org
         """
         org_id = self.get_org_id()
 
@@ -109,7 +109,7 @@ class KeycloakMixin:
 
     def get_org_users(self):
         """
-        Helper method to get the Keycloak group ID
+        Helper method to get users for current org
         """
 
         org_id = self.get_org_id()
@@ -147,16 +147,16 @@ class KeycloakMixin:
         # FIXME: this will delete a user from any org
         self.keycloak.delete_user(user_id=user_id)
 
-    def get_user_org_groups(self):
+    def get_user_org_groups(self, user_id = None):
         """
-        Helper method to get user org groups
-        
-        Returns all groups if user is admin
+        Helper method to get user org group
+        params:
+            user_id: (optional) if not provided, the active user will be used
         """
 
         org_id = self.get_org_id()
 
-        return self.keycloak.get_user_org_groups(self.request, org_id)
+        return self.keycloak.get_user_org_groups(self.request, org_id, user_id)
 
     def get_user_org_id(self, token):
         """

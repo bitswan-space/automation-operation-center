@@ -1,8 +1,7 @@
 import { type ApiListResponse, type ApiResponse } from "./shared";
-import { type UserGroup } from "./groups";
+import { type UserGroup, type UserGroupsListResponse } from "./groups";
 import { authenticatedBitswanBackendInstance } from "@/lib/api-client";
 import { getActiveOrgFromCookies } from "./organisations";
-import { AxiosError } from "axios";
 
 export type OrgUser = {
   name: string;
@@ -13,8 +12,6 @@ export type OrgUser = {
 };
 
 export type OrgUsersListResponse = ApiListResponse<OrgUser>;
-
-const USERS_CACHE_KEY = "org-users";
 
 export const fetchOrgUsers = async (page: number | undefined = 1): Promise<OrgUsersListResponse> => {
   const activeOrg = await getActiveOrgFromCookies();
@@ -77,5 +74,39 @@ export const deleteUser = async (id: string): Promise<ApiResponse<null>> => {
   } catch (error) {
     console.error("Error deleting user", error);
     throw error;
+  }
+};
+
+export const fetchUserNonMemberGroups = async (
+  userId: string,
+  page: number | undefined = 1
+): Promise<UserGroupsListResponse> => {
+  const activeOrg = await getActiveOrgFromCookies();
+
+  try {
+    const bitswanBEInstance = await authenticatedBitswanBackendInstance();
+    const response = await bitswanBEInstance.get<ApiListResponse<UserGroup>>(
+      `/org-users/${userId}/non_member_groups/`,
+      {
+        params: {
+          page: page,
+        },
+        headers: {
+          "X-Org-Id": activeOrg?.id ?? "",
+          "X-Org-Name": activeOrg?.name ?? "",
+        },
+      }
+    );
+    return { ...response.data, status: "success" as const };
+  } catch (error) {
+    console.error("Error fetching user non-member groups", error);
+    return {
+      status: "error" as const,
+      message: "Error fetching user non-member groups",
+      results: [],
+      next: null,
+      previous: null,
+      count: 0,
+    };
   }
 };

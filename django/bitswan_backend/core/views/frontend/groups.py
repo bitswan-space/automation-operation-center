@@ -162,10 +162,11 @@ class ProfileViewSet(KeycloakMixin, viewsets.ViewSet):
 
     def list(self, request):
         try:
-            groups = self.get_user_org_groups()
             profiles = []
 
+            # Return all groups if user is admin
             if self.is_admin(request):
+                groups = self.get_org_groups()
                 profiles = [
                     {
                         "id": group["id"],
@@ -175,6 +176,7 @@ class ProfileViewSet(KeycloakMixin, viewsets.ViewSet):
                 ]
 
             else:
+                groups = self.get_user_org_groups()
                 merged_nav_items = []
                 for group in groups:
                     nav_items = self.group_nav_service.get_nav_items(group["id"])
@@ -230,6 +232,25 @@ class OrgUsersViewSet(KeycloakMixin, viewsets.ViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except KeycloakDeleteError as e:
             e.add_note("Error while deleting user.")
+            return Response(
+                {"error": json.loads(e.error_message).get("errorMessage")},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    @action(methods=["get"], detail=True)
+    def non_member_groups(self, request, pk=None):
+        try:
+            user_groups = self.get_user_org_groups(user_id=pk)
+            org_groups = self.get_org_groups()
+            user_group_ids = {group["id"] for group in user_groups}
+            non_member_groups = [group for group in org_groups if group["id"] not in user_group_ids]
+            paginator = self.pagination_class()
+            paginated_groups = paginator.paginate_queryset(non_member_groups, request)
+            serializer = UserGroupSerializer(paginated_groups, many=True)
+
+            return paginator.get_paginated_response(serializer.data)
+        except KeycloakGetError as e:
+            e.add_note("Error while getting non-member groups.")
             return Response(
                 {"error": json.loads(e.error_message).get("errorMessage")},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
