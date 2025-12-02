@@ -4,13 +4,13 @@ import * as React from "react";
 import {
   type ColumnDef,
   type ColumnFiltersState,
+  type PaginationState,
   type SortingState,
   type VisibilityState,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
@@ -28,12 +28,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "../ui/badge";
 
 import { Loader2, Trash2 } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
-import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { UserInviteForm } from "./UserInviteForm";
 
-import { type UserGroup, type UserGroupsListResponse } from "@/data/groups";
+import { type UserGroup } from "@/data/groups";
 import {
   Dialog,
   DialogClose,
@@ -44,10 +42,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import { type OrgUser, type OrgUsersListResponse } from "@/data/users";
+import { type OrgUser } from "@/data/users";
 import { toast } from "sonner";
-import { useAction } from "@/hooks/useAction";
-import { deleteUserAction } from "./actions";
+import { useDeleteUser, useUsersQuery } from "@/hooks/useUsersQuery";
+import { useGroupsQuery } from "@/hooks/useGroupQuery";
 import {
   addUserToGroupAction,
   removeUserFromGroupAction,
@@ -57,12 +55,7 @@ type OrgUserFull = OrgUser & { nonMemberGroups: UserGroup[] };
 
 const columnHelper = createColumnHelper<OrgUserFull>();
 
-const createColumns = (
-  onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void,
-  onUserDeleted?: () => void,
-  handleNextPage?: () => Promise<boolean>,
-  hasMoreGroups?: boolean
-): ColumnDef<OrgUserFull>[] => [
+const createColumns = (): ColumnDef<OrgUserFull>[] => [
   {
     accessorKey: "email",
     header: () => <div className="p-2 px-6 text-left font-semibold">Email</div>,
@@ -77,8 +70,8 @@ const createColumns = (
       return (
         <Badge
           className={cn({
-            "bg-green-600": verified,
-            "bg-amber-500": !verified,
+            "bg-green-600 hover:bg-green-600": verified,
+            "bg-amber-500 hover:bg-amber-500": !verified,
           })}
         >
           {verified ? "Active" : "Invited"}
@@ -101,72 +94,53 @@ const createColumns = (
           nonMemberGroups={nonMemberGroups}
           addAction={addUserToGroupAction}
           removeAction={removeUserFromGroupAction}
-          onUserGroupUpdate={onUserGroupUpdate}
-          handleNextPage={handleNextPage}
-          hasMoreGroups={hasMoreGroups}
+          handleNextPage={async () => false}
+          hasMoreGroups={false}
         />
       );
     },
   }),
   columnHelper.display({
     id: "actions",
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
       const id = row.original.id;
-      return <UserActions id={id} onUserDeleted={onUserDeleted} />;
+      return <UserActions 
+        id={id} 
+        isLastItemOnPage={row.index === table.getRowModel().rows.length - 1}
+        currentPageIndex={table.getState().pagination.pageIndex}
+        onNavigateBack={() => table.previousPage()}
+      />;
     },
   }),
 ];
 
-type UserDetailTableProps = {
-  setUserPage: React.Dispatch<React.SetStateAction<number>>;
-  usersList?: OrgUsersListResponse;
-  userGroups?: UserGroupsListResponse;
-  allGroups?: UserGroup[];
-  onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void; // Optimistic update callback
-  onLoadMoreGroups?: () => Promise<boolean>;
-  hasMoreGroups?: boolean;
-  onUserInvited?: () => void; // Callback when user is invited
-  onUserDeleted?: () => void; // Callback when user is deleted
-};
+export function UserDetailTable() { 
+  // TanStack Table pagination state (pageIndex is 0-based, but API uses 1-based)
+  const [pagination, setPagination] = React.useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
 
-export function UserDetailTable(props: UserDetailTableProps) {
-  const { 
-    setUserPage, 
-    usersList: orgUsers, 
-    userGroups,
-    allGroups,
-    onUserGroupUpdate,
-    onLoadMoreGroups,
-    hasMoreGroups,
-    onUserInvited, 
-    onUserDeleted 
-  } = props;
-
-  const { isAdmin: hasPerms } = useAdminStatus();
-
-  console.log('UserDetailTable received data:', { orgUsers, userGroups, allGroups });
-
-  // Create handleNextPage wrapper
-  const handleNextPage = React.useCallback(async (): Promise<boolean> => {
-    if (onLoadMoreGroups) {
-      return await onLoadMoreGroups();
-    }
-    return false;
-  }, [onLoadMoreGroups]);
+  // Convert 0-based pageIndex to 1-based page number for API
+  const page = pagination.pageIndex + 1;
+  const { data: usersData, isFetching: isFetchingUsers } = useUsersQuery(page);
+  
+  // Fetch all groups for the nonMemberGroups calculation
+  // We'll fetch page 1 and accumulate if needed, or use infinite query
+  // For now, let's fetch the first page of groups
+  const { data: groupsData } = useGroupsQuery(1);
 
   const orgUsersData = React.useMemo(
     () =>
-      orgUsers?.results?.map((user) => ({
+      usersData?.results?.map((user) => ({
         ...user,
         nonMemberGroups:
-          (allGroups ?? userGroups?.results ?? []).filter(
+          (groupsData?.results ?? []).filter(
             (group) => !user.groups.find((g) => g.id === group.id),
           ) ?? [],
       })) ?? [],
-    [orgUsers, allGroups, userGroups],
+    [usersData, groupsData],
   );
-
-  console.log('Processed users data:', orgUsersData);
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -178,16 +152,19 @@ export function UserDetailTable(props: UserDetailTableProps) {
 
   const table = useReactTable({
     data: orgUsersData,
-    columns: createColumns(onUserGroupUpdate, onUserDeleted, handleNextPage, hasMoreGroups),
+    columns: createColumns(),
+    manualPagination: true, // Server-side pagination
+    rowCount: usersData?.count ?? 10,
+    onPaginationChange: setPagination,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
+      pagination,
       sorting,
       columnFilters,
       columnVisibility,
@@ -197,77 +174,91 @@ export function UserDetailTable(props: UserDetailTableProps) {
 
   return (
     <div className="w-full">
-      {hasPerms && <UserInviteForm onUserInvited={onUserInvited} />}
+      <UserInviteForm />
 
-      {orgUsersData && (
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="font-bold">
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
-                      </TableHead>
-                    );
-                  })}
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id} className="font-bold">
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {isFetchingUsers && !usersData ? (
+              <TableRow>
+                <TableCell
+                  colSpan={table.getAllColumns().length}
+                  className="h-24 text-center"
+                >
+                  <div className="flex items-center justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
                 </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={createColumns(onUserGroupUpdate, onUserDeleted, handleNextPage, hasMoreGroups).length}
-                    className="h-24 text-center"
-                  >
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={table.getAllColumns().length}
+                  className="h-24 text-center"
+                >
+                  No results.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="space-x-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setUserPage(prev => prev - 1)}
-            disabled={!orgUsers?.previous}
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage() || isFetchingUsers}
           >
             Previous
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setUserPage(prev => prev + 1)}
-            disabled={!orgUsers?.next}
+            className="w-14"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage() || isFetchingUsers}
           >
-            Next
+            {isFetchingUsers ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              "Next"
+            )}
           </Button>
         </div>
       </div>
@@ -277,47 +268,44 @@ export function UserDetailTable(props: UserDetailTableProps) {
 
 type UserActionProps = {
   id: string;
-  onUserDeleted?: () => void;
+  isLastItemOnPage: boolean;
+  currentPageIndex: number;
+  onNavigateBack: () => void;
 };
 
 function UserActions(props: UserActionProps) {
-  const { id, onUserDeleted } = props;
+  const { id, isLastItemOnPage, currentPageIndex, onNavigateBack } = props;
 
   const [open, setOpen] = React.useState(false);
 
-  const { execute, isPending } = useAction(deleteUserAction, {
-    onSuccess: () => {
-      setOpen(false);
-      toast.success("User deleted");
-      // Notify parent component to refresh user list
-      onUserDeleted?.();
-    },
-    onError: ({ error }) => {
-      toast.error((error as any)?.serverError?.message ?? "Error deleting user");
-    },
-  });
+  const deleteUserMutation = useDeleteUser();
 
-  const { user: session } = useAuth();
-  const { isAdmin } = useAdminStatus();
-
-  const activeUserId = session?.id;
-
-  const hasPerms = isAdmin && activeUserId !== id;
+  const handleDelete = async () => {
+    deleteUserMutation.mutate(id, {
+      onSuccess: () => {
+        setOpen(false);
+        toast.success("User deleted");
+        // If this was the last item on the page and we're not on the first page, go back
+        if (isLastItemOnPage && currentPageIndex > 0) {
+          onNavigateBack();
+        }
+      },
+      onError: (error) => {
+        toast.error((error as any)?.message ?? "Error deleting user");
+      },
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const data = {
-      id: formData.get("id") as string,
-    };
-    await execute(data);
+    await handleDelete();
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={"ghost"} disabled={isPending || !hasPerms}>
-          {isPending ? (
+        <Button variant={"ghost"} disabled={deleteUserMutation.isPending}>
+          {deleteUserMutation.isPending ? (
             <Loader2 size={20} className="mr-2 animate-spin" />
           ) : (
             <Trash2 size={20} className="text-neutral-500" />
@@ -332,15 +320,14 @@ function UserActions(props: UserActionProps) {
               Do you really want to delete the user?
             </DialogDescription>
           </DialogHeader>
-          <input type="hidden" name="id" defaultValue={id} />
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline" type="button">
                 Cancel
               </Button>
             </DialogClose>
-            <Button variant="destructive" type="submit" disabled={isPending}>
-              {isPending ? (
+            <Button variant="destructive" type="submit" disabled={deleteUserMutation.isPending}>
+              {deleteUserMutation.isPending ? (
                 <Loader2 size={20} className="mr-2 animate-spin" />
               ) : (
                 "Confirm"
