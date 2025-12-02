@@ -17,7 +17,7 @@ import {
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { useAddUserToGroup } from "@/hooks/useGroupQuery";
 import { useUserNonMemberGroupsQuery } from "@/hooks/useUsersQuery";
 
@@ -28,9 +28,29 @@ type GroupComboBoxSelectorProps = {
 export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
   const { userId } = props;
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // Fetch non-member groups for this user
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useUserNonMemberGroupsQuery(userId);
+  // Debounce search input to avoid too many requests while typing
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [search]);
+
+  // Reset search when popover closes
+  useEffect(() => {
+    if (!open) {
+      setSearch("");
+      setDebouncedSearch("");
+    }
+  }, [open]);
+
+  // Fetch non-member groups for this user with server-side search
+  // The query key includes debouncedSearch, so changing it will automatically trigger a new query
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetching } = useUserNonMemberGroupsQuery(userId, debouncedSearch);
 
   // Flatten all pages into a single array
   const groups = useMemo(
@@ -69,9 +89,13 @@ export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
           key={`command-${userId}`} 
           shouldFilter={false}
         >
-          <CommandInput placeholder="Search groups..." />
+          <CommandInput 
+            placeholder="Search groups..." 
+            value={search}
+            onValueChange={setSearch}
+          />
           <CommandList onScroll={handleScroll}>
-            <CommandEmpty>No group found.</CommandEmpty>
+            {!isFetching && groups.length === 0 && <CommandEmpty>No group found.</CommandEmpty>}
             <CommandGroup>
               {groups.map((group) => (
                 <CommandItem
@@ -88,6 +112,11 @@ export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
                 </CommandItem>
               ))}
             </CommandGroup>
+            {(isFetching && !data) && (
+              <div className="flex items-center justify-center py-2">
+                <Loader2 className="size-4 animate-spin text-muted-foreground" />
+              </div>
+            )}
             {isFetchingNextPage && (
               <div className="flex items-center justify-center py-2">
                 <Loader2 className="size-4 animate-spin text-muted-foreground" />

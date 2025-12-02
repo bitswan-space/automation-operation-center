@@ -43,12 +43,12 @@ export function useDeleteUser() {
   });
 }
 
-export function useUserNonMemberGroupsQuery(userId: string) {
+export function useUserNonMemberGroupsQuery(userId: string, search?: string) {
   const { isAuthenticated } = useAuth();
   
   return useInfiniteQuery<UserGroupsListResponse>({
-    queryKey: [...USER_NON_MEMBER_GROUPS_QUERY_KEY, userId],
-    queryFn: ({ pageParam = 1 }) => fetchUserNonMemberGroups(userId, pageParam as number),
+    queryKey: [...USER_NON_MEMBER_GROUPS_QUERY_KEY, userId, search || ""],
+    queryFn: ({ pageParam = 1 }) => fetchUserNonMemberGroups(userId, pageParam as number, search),
     getNextPageParam: (lastPage) => {
       // If there's a next URL, extract the page number from it
       if (lastPage.next) {
