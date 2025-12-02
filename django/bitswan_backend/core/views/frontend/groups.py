@@ -42,6 +42,15 @@ class UserGroupViewSet(KeycloakMixin, viewsets.ViewSet):
     def list(self, request):
         try:
             groups = self.get_org_groups()
+            
+            # Apply search filter if provided
+            search_query = request.query_params.get("search", "").strip().lower()
+            if search_query:
+                groups = [
+                    group for group in groups
+                    if search_query in group.get("name", "").lower()
+                ]
+            
             paginator = self.pagination_class()
             paginated_groups = paginator.paginate_queryset(groups, request)
             serializer = UserGroupSerializer(paginated_groups, many=True)

@@ -2,14 +2,12 @@ import * as React from "react";
 
 import {
   type ColumnDef,
-  type ColumnFiltersState,
   type PaginationState,
   type SortingState,
   type VisibilityState,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
@@ -81,9 +79,24 @@ export function GroupDetailTable() {
     pageSize: 10,
   });
 
+  // Search state with debouncing
+  const [search, setSearch] = React.useState("");
+  const [debouncedSearch, setDebouncedSearch] = React.useState("");
+
+  // Debounce search input to avoid too many requests while typing
+  React.useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearch(search);
+      // Reset to first page when search changes
+      setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [search]);
+
   // Convert 0-based pageIndex to 1-based page number for API
   const page = pagination.pageIndex + 1;
-  const { data, isFetching } = useGroupsQuery(page);
+  const { data, isFetching } = useGroupsQuery(page, debouncedSearch);
 
   const userGroupsData = React.useMemo(
     () => data?.results ?? [],
@@ -91,9 +104,6 @@ export function GroupDetailTable() {
   );
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    [],
-  );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
@@ -102,19 +112,17 @@ export function GroupDetailTable() {
     data: userGroupsData,
     columns: createColumns(),
     manualPagination: true, // Server-side pagination
+    manualFiltering: true, // Server-side filtering/search
     rowCount: data?.count ?? 10,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
       pagination,
       sorting,
-      columnFilters,
       columnVisibility,
       rowSelection,
     },
@@ -126,9 +134,9 @@ export function GroupDetailTable() {
         <Input 
           placeholder="Search groups..." 
           className="max-w-xs"
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          value={search}
           onChange={(event) => {
-            table.getColumn("name")?.setFilterValue(event.target.value);
+            setSearch(event.target.value);
           }}
         />
 

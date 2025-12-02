@@ -1,5 +1,3 @@
-"use server";
-
 import { authenticatedBitswanBackendInstance } from "@/lib/api-client";
 import { type ApiResponse, type ApiListResponse } from "./shared";
 import { type NavItem } from "@/components/layout/Sidebar/utils/NavItems";
@@ -15,17 +13,25 @@ export type UserGroup = {
 
 export type UserGroupsListResponse = ApiListResponse<UserGroup>;
 
-export const fetchOrgGroups = async (page: number | undefined = 1): Promise<UserGroupsListResponse> => {
+export const fetchOrgGroups = async (
+  page: number | undefined = 1,
+  search?: string
+): Promise<UserGroupsListResponse> => {
   const bitswanBEInstance = await authenticatedBitswanBackendInstance();
   const activeOrg = await getActiveOrgFromCookies();
 
   try {
+    const params: Record<string, string | number> = {
+      page: page,
+    };
+    if (search && search.trim()) {
+      params.search = search.trim();
+    }
+    
     const res = await bitswanBEInstance.get<ApiListResponse<UserGroup>>(
       `/user-groups`,
       {
-        params: {
-          page: page,
-        },
+        params,
         headers: {
           "X-Org-Id": activeOrg?.id ?? "",
           "X-Org-Name": activeOrg?.name ?? "",
