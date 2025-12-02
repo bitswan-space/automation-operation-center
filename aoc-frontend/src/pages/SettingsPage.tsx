@@ -14,7 +14,7 @@ const SettingsPage: React.FC = () => {
   const [hasMoreGroups, setHasMoreGroups] = useState(false);
   const [isLoadingGroups, setIsLoadingGroups] = useState(false);
   const [groupsList, setGroupsList] = useState<UserGroupsListResponse | undefined>();
-  const [groupPage, setGroupPage] = useState(1);
+  const [groupPage] = useState(1);
   const [usersList, setUsersList] = useState<OrgUsersListResponse | undefined>();
   const [userPage, setUserPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,10 +25,6 @@ const SettingsPage: React.FC = () => {
     setIcon(<Settings2 size={24} />);
     setButtons(null)
   }, [setTitle, setIcon, setButtons]);
-
-  const handleGroupCreated = () => {
-    loadData();
-  };
 
   const handleUserInvited = () => {
     loadData();
@@ -152,7 +148,6 @@ const SettingsPage: React.FC = () => {
         >
           <CardContent className="h-full p-3">
             <SettingTabs 
-              setGroupPage={setGroupPage}
               setUserPage={setUserPage}
               groupsList={groupsList}
               allGroups={allGroups}
@@ -160,7 +155,6 @@ const SettingsPage: React.FC = () => {
               onUserGroupUpdate={updateUserGroups}
               onLoadMoreGroups={loadMoreGroups}
               hasMoreGroups={hasMoreGroups}
-              onGroupCreated={handleGroupCreated}
               onUserInvited={handleUserInvited}
               onUserDeleted={handleUserDeleted}
             />

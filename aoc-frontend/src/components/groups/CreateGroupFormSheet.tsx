@@ -14,16 +14,14 @@ import { type UserGroup } from "@/data/groups";
 type CreateGroupFormSheetProps = {
   trigger: React.ReactNode;
   group?: UserGroup;
-  onGroupCreated?: () => void;
 };
 
 export function CreateGroupFormSheet(props: CreateGroupFormSheetProps) {
-  const { trigger, group, onGroupCreated } = props;
+  const { trigger, group } = props;
   const [open, setOpen] = React.useState(false);
 
   const handleSuccess = () => {
     setOpen(false);
-    onGroupCreated?.();
   };
 
   return (
