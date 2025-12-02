@@ -651,6 +651,7 @@ class KeycloakService:
             user_id = self.get_active_user(request)
 
         org_groups = self.get_org_groups(org_id=org_id)
+        org_group_ids = {group["id"] for group in org_groups}
 
         user_group_memberships = self.keycloak_admin.get_user_groups(
             user_id=user_id,
@@ -660,7 +661,7 @@ class KeycloakService:
         return [
             group
             for group in user_group_memberships
-            if group["id"] in [group["id"] for group in org_groups]
+            if group["id"] in org_group_ids
         ]
 
     def is_admin(self, request):
