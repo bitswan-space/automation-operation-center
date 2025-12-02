@@ -14,12 +14,12 @@ import { useAuth } from "@/context/AuthContext";
 
 export const USER_GROUPS_QUERY_KEY = ["user-groups"];
 
-export function useGroupsQuery(page: number = 1) {
+export function useGroupsQuery(page: number = 1, search?: string) {
   const { isAuthenticated } = useAuth();
   
   return useQuery<UserGroupsListResponse>({
-    queryKey: [...USER_GROUPS_QUERY_KEY, page],
-    queryFn: () => fetchOrgGroups(page),
+    queryKey: [...USER_GROUPS_QUERY_KEY, page, search || ""],
+    queryFn: () => fetchOrgGroups(page, search),
     enabled: isAuthenticated, // Only fetch when user is authenticated
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1,
