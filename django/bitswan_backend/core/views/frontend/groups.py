@@ -223,6 +223,15 @@ class OrgUsersViewSet(KeycloakMixin, viewsets.ViewSet):
         try:
             users = self.get_org_users()
 
+            # Apply search filter if provided
+            search_query = request.query_params.get("search", "").strip().lower()
+            if search_query:
+                users = [
+                    user for user in users
+                    if search_query in user.get("email", "").lower() or 
+                       search_query in user.get("name", "").lower()
+                ]
+
             paginator = self.pagination_class()
             paginated_users = paginator.paginate_queryset(users, request)
             serializer = OrgUserSerializeer(paginated_users, many=True)

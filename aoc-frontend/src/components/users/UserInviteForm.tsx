@@ -7,8 +7,12 @@ import { toast } from "sonner";
 import { useInviteUser } from "@/hooks/useUsersQuery";
 import { EmailSetupDialog } from "../ui/email-setup-dialog";
 
-export function UserInviteForm() {
-  const [inputValue, setInputValue] = React.useState("");
+type UserInviteFormProps = {
+  search: string;
+  onSearchChange: (value: string) => void;
+};
+
+export function UserInviteForm({ search, onSearchChange }: UserInviteFormProps) {
   const [showEmailDialog, setShowEmailDialog] = React.useState(false);
   const [dialogData, setDialogData] = React.useState<{
     email: string;
@@ -20,11 +24,18 @@ export function UserInviteForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const emailInput = e.currentTarget.querySelector('input[type="email"]') as HTMLInputElement;
     const email = formData.get("email") as string;
     
-    inviteUserMutation.mutate(email, {
+    // Use browser's native email validation
+    if (!emailInput || !emailInput.checkValidity()) {
+      emailInput?.reportValidity();
+      return;
+    }
+    
+    inviteUserMutation.mutate(email.trim(), {
       onSuccess: (result) => {
-        setInputValue("");
+        onSearchChange("");
         
         // Check if email was sent successfully
         if ((result as any).email_sent) {
@@ -50,11 +61,13 @@ export function UserInviteForm() {
       <form onSubmit={handleSubmit}>
         <div className="flex items-center gap-4 py-4">
           <Input
-            placeholder="Team member email "
+            type="email"
+            placeholder="Search or invite team member email"
             className="w-full"
-            onChange={(e) => setInputValue(e.target.value)}
-            value={inputValue}
+            onChange={(e) => onSearchChange(e.target.value)}
+            value={search}
             name="email"
+            required
           />
           <Button
             className="mb-auto bg-blue-600 hover:bg-blue-700/80"
