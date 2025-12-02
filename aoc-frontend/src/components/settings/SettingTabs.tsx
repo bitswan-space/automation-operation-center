@@ -9,7 +9,6 @@ import { type UserGroupsListResponse, type UserGroup } from "@/data/groups";
 import { type OrgUsersListResponse } from "@/data/users";
 
 type SettingTabsProps = {
-  setGroupPage: React.Dispatch<React.SetStateAction<number>>;
   setUserPage: React.Dispatch<React.SetStateAction<number>>;
   groupsList?: UserGroupsListResponse;
   allGroups?: UserGroup[];
@@ -17,7 +16,6 @@ type SettingTabsProps = {
   onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void;
   onLoadMoreGroups?: () => Promise<boolean>;
   hasMoreGroups?: boolean;
-  onGroupCreated?: () => void;
   onUserInvited?: () => void;
   onUserDeleted?: () => void;
 };
@@ -26,7 +24,6 @@ type SettingTab = "users" | "groups";
 
 export function SettingTabs(props: SettingTabsProps) {
   const { 
-    setGroupPage, 
     setUserPage, 
     groupsList,
     allGroups,
@@ -34,7 +31,6 @@ export function SettingTabs(props: SettingTabsProps) {
     onUserGroupUpdate,
     onLoadMoreGroups,
     hasMoreGroups,
-    onGroupCreated, 
     onUserInvited, 
     onUserDeleted 
   } = props;
@@ -93,11 +89,7 @@ export function SettingTabs(props: SettingTabsProps) {
       </TabsContent>
       <TabsContent value="groups">
         <div className="w-full">
-          <GroupDetailTable 
-            setGroupPage={setGroupPage} 
-            userGroups={groupsList} 
-            onGroupCreated={onGroupCreated} 
-          />
+          <GroupDetailTable />
         </div>
       </TabsContent>
     </Tabs>

@@ -21,8 +21,11 @@ export const fetchOrgGroups = async (page: number | undefined = 1): Promise<User
 
   try {
     const res = await bitswanBEInstance.get<ApiListResponse<UserGroup>>(
-      `/user-groups?page=${page}`,
+      `/user-groups`,
       {
+        params: {
+          page: page,
+        },
         headers: {
           "X-Org-Id": activeOrg?.id ?? "",
           "X-Org-Name": activeOrg?.name ?? "",

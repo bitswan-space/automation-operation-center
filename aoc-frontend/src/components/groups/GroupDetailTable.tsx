@@ -3,13 +3,13 @@ import * as React from "react";
 import {
   type ColumnDef,
   type ColumnFiltersState,
+  type PaginationState,
   type SortingState,
   type VisibilityState,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
@@ -31,13 +31,13 @@ import { Separator } from "../ui/separator";
 
 import { useAdminStatus } from "@/hooks/useAdminStatus";
 
-import { type UserGroup, type UserGroupsListResponse } from "@/data/groups";
+import { type UserGroup } from "@/data/groups";
 import { toast } from "sonner";
-import { useDeleteGroup } from "@/hooks/useGroupQuery";
+import { useDeleteGroup, useGroupsQuery } from "@/hooks/useGroupQuery";
 
 const columnHelper = createColumnHelper<UserGroup>();
 
-const createColumns = (onGroupCreated?: () => void): ColumnDef<UserGroup>[] => [
+const createColumns = (): ColumnDef<UserGroup>[] => [
   {
     accessorKey: "name",
     header: () => <div className="p-2 px-6 font-bold">Name</div>,
@@ -57,29 +57,37 @@ const createColumns = (onGroupCreated?: () => void): ColumnDef<UserGroup>[] => [
   },
   columnHelper.display({
     id: "actions",
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
       const id = row.original.id;
-      return <GroupActions id={id} group={row.original} onGroupCreated={onGroupCreated} />;
+      return <GroupActions 
+        id={id} 
+        group={row.original} 
+        isLastItemOnPage={row.index === table.getRowModel().rows.length - 1}
+        currentPageIndex={table.getState().pagination.pageIndex}
+        onNavigateBack={() => table.previousPage()}
+      />;
     },
     enableSorting: false,
     enableHiding: false,
   }),
 ];
 
-type GroupDetailTableProps = {
-  setGroupPage: React.Dispatch<React.SetStateAction<number>>;
-  userGroups?: UserGroupsListResponse;
-  onGroupCreated?: () => void;
-};
-
-export function GroupDetailTable(props: GroupDetailTableProps) {
-  const { setGroupPage, userGroups, onGroupCreated } = props;
-
+export function GroupDetailTable() {
   const { isAdmin: hasPerms } = useAdminStatus();
+  
+  // TanStack Table pagination state (pageIndex is 0-based, but API uses 1-based)
+  const [pagination, setPagination] = React.useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+
+  // Convert 0-based pageIndex to 1-based page number for API
+  const page = pagination.pageIndex + 1;
+  const { data, isFetching } = useGroupsQuery(page);
 
   const userGroupsData = React.useMemo(
-    () => userGroups?.results ?? [],
-    [userGroups],
+    () => data?.results ?? [],
+    [data],
   );
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -92,16 +100,19 @@ export function GroupDetailTable(props: GroupDetailTableProps) {
 
   const table = useReactTable({
     data: userGroupsData,
-    columns: createColumns(onGroupCreated),
+    columns: createColumns(),
+    manualPagination: true, // Server-side pagination
+    rowCount: data?.count ?? 10,
+    onPaginationChange: setPagination,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
+      pagination,
       sorting,
       columnFilters,
       columnVisibility,
@@ -131,80 +142,93 @@ export function GroupDetailTable(props: GroupDetailTableProps) {
                 Create Group
               </Button>
             }
-            onGroupCreated={onGroupCreated}
           />
         )}
       </div>
 
-      {userGroups && (
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="font-bold">
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
-                      </TableHead>
-                    );
-                  })}
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id} className="font-bold">
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {isFetching && !data ? (
+              <TableRow>
+                <TableCell
+                  colSpan={table.getAllColumns().length}
+                  className="h-24 text-center"
+                >
+                  <div className="flex items-center justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
                 </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={table.getAllColumns().length}
-                    className="h-24 text-center"
-                  >
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={table.getAllColumns().length}
+                  className="h-24 text-center"
+                >
+                  No results.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="space-x-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setGroupPage(prev => prev - 1)}
-            disabled={!userGroups?.previous}
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage() || isFetching}
           >
             Previous
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setGroupPage(prev => prev + 1)}
-            disabled={!userGroups?.next}
+            className="w-14"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage() || isFetching}
           >
-            Next
+            {isFetching ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              "Next"
+            )}
           </Button>
         </div>
       </div>
@@ -215,11 +239,13 @@ export function GroupDetailTable(props: GroupDetailTableProps) {
 type GroupActionProps = {
   id: string;
   group: UserGroup;
-  onGroupCreated?: () => void;
+  isLastItemOnPage: boolean;
+  currentPageIndex: number;
+  onNavigateBack: () => void;
 };
 
 function GroupActions(props: GroupActionProps) {
-  const { id, group, onGroupCreated } = props;
+  const { id, group, isLastItemOnPage, currentPageIndex, onNavigateBack } = props;
 
   const { isAdmin: hasPerms } = useAdminStatus();
 
@@ -233,7 +259,10 @@ function GroupActions(props: GroupActionProps) {
     deleteGroupMutation.mutate(groupId, {
       onSuccess: () => {
         toast.success("Group deleted");
-        onGroupCreated?.(); // Refresh the group list
+        // If this was the last item on the page and we're not on the first page, go back
+        if (isLastItemOnPage && currentPageIndex > 0) {
+          onNavigateBack();
+        }
       },
       onError: (error) => {
         toast.error((error as any)?.message ?? "Error deleting group");
@@ -251,7 +280,6 @@ function GroupActions(props: GroupActionProps) {
             </Button>
           }
           group={group}
-          onGroupCreated={onGroupCreated}
         />
         <Separator orientation="vertical" className="h-8 w-px" />
         <form onSubmit={handleSubmit}>
