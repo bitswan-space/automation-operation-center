@@ -42,15 +42,20 @@ export type AutomationServerGroupMembership = {
   keycloak_group_id: string;
 };
 
-export async function getAutomationServers(page: number = 1) {
+export async function getAutomationServers(page: number = 1, search?: string) {
   const bitswanBEInstance = await authenticatedBitswanBackendInstance();
 
   const activeOrg = await getActiveOrgFromCookies();
 
+  const params: Record<string, string | number> = {
+    page: page,
+  };
+  if (search && search.trim()) {
+    params.search = search.trim();
+  }
+
   const res = await bitswanBEInstance.get("/automation-servers", {
-    params: {
-      page: page,
-    },
+    params,
     headers: {
       "X-Org-Id": activeOrg?.id ?? "",
       "X-Org-Name": activeOrg?.name ?? "",

@@ -1,34 +1,47 @@
 import { Card, CardContent } from "../ui/card";
 import { Search, Loader2 } from "lucide-react";
 
-import { type AutomationServer } from "@/data/automation-server";
 import { Badge } from "../ui/badge";
 import { Input } from "../ui/input";
 import { Link } from "react-router-dom";
-import React from "react";
+import React, { useMemo, useEffect } from "react";
 import { useAutomations } from "@/context/AutomationsProvider";
 import { Button } from "../ui/button";
 import { useAutomationServersQuery } from "@/hooks/useAutomationServersQuery";
 import { Skeleton } from "../ui/skeleton";
 
 type AutomationServerListSectionProps = {
-  servers: AutomationServer[];
   highlightedServerId: string | null;
 };
 
 export function AutomationServerListSection(
   props: AutomationServerListSectionProps,
 ) {
-  const { servers, highlightedServerId } = props;
+  const { highlightedServerId } = props;
   const { automationServers: automationServersGroup, isLoading, processes } = useAutomations();
-  const { hasNextPage, fetchNextPage, isFetching } = useAutomationServersQuery();
-
+  
+  // Search state with debouncing
   const [searchQuery, setSearchQuery] = React.useState("");
-  const loadMoreRef = React.useRef<HTMLDivElement>(null);
+  const [debouncedSearch, setDebouncedSearch] = React.useState("");
 
-  const filteredServers = servers.filter((server) =>
-    server.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  // Debounce search input to avoid too many requests while typing
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  const { data, hasNextPage, fetchNextPage, isFetching, isFetchingNextPage } = useAutomationServersQuery(debouncedSearch);
+  
+  // Flatten all pages into a single array
+  const servers = useMemo(
+    () => data?.pages.flatMap((page) => page.results) ?? [],
+    [data],
   );
+
+  const loadMoreRef = React.useRef<HTMLDivElement>(null);
 
   const getProcessCount = (serverId: string) => {
     if (!processes) return 0;
@@ -39,12 +52,12 @@ export function AutomationServerListSection(
 
   React.useEffect(() => {
     const observerElement = loadMoreRef.current;
-    if (!observerElement || !hasNextPage || isFetching) return;
+    if (!observerElement || !hasNextPage || isFetchingNextPage) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
-        if (entry.isIntersecting && hasNextPage && !isFetching) {
+        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
           fetchNextPage();
         }
       },
@@ -60,11 +73,10 @@ export function AutomationServerListSection(
         observer.unobserve(observerElement);
       }
     };
-  }, [hasNextPage, isFetching, fetchNextPage]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
-    <div className="mx-auto flex-1 px-0 py-4">
-      {/* TODO: Implement server side search
+    <div className="mx-auto flex-1 px-0 py-4">      
       <div className="mb-4 flex items-center justify-between">
         <div className="relative w-64">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
@@ -77,15 +89,14 @@ export function AutomationServerListSection(
           />
         </div>
       </div>
-      */}
 
-      {filteredServers.length === 0 ? (
+      {!isFetching && servers.length === 0 ? (
         <div className="py-8 text-center text-gray-500">
           No servers found
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredServers.map((server) => {
+          {servers.map((server) => {
             const isHighlighted = highlightedServerId === server.automation_server_id;
             return (
               <Card key={server.id} className={`${
@@ -158,7 +169,7 @@ export function AutomationServerListSection(
               </Card>
             );
           })}
-          {hasNextPage && (
+          {(hasNextPage || isFetching) && (
             <Card ref={loadMoreRef}>
               <CardContent className="p-0">
                 <div className="flex items-start justify-between px-4 py-3">

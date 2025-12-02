@@ -9,7 +9,7 @@ import { useAutomationServersQuery } from "@/hooks/useAutomationServersQuery";
 const AutomationServersPage = () => {
   const { setTitle, setIcon, setButtons } = useTitleBar();
   const [highlightedServerId, setHighlightedServerId] = useState<string | null>(null);
-  const { data: automationServersData, isFetching, isLoading, refetch } = useAutomationServersQuery();
+  const { refetch, isFetching } = useAutomationServersQuery();
 
   useEffect(() => {
     // Handle server creation callback
@@ -45,16 +45,11 @@ const AutomationServersPage = () => {
     )
   }, [setTitle, setIcon, setButtons, isFetching, refetch]);
 
-  const automationServers = automationServersData?.pages.flatMap((page) => page.results) ?? [];
-
   return (
     <div>
-      {!isLoading && (
-        <AutomationServerListSection 
-          servers={automationServers} 
-          highlightedServerId={highlightedServerId} 
-        />
-      )}
+      <AutomationServerListSection 
+        highlightedServerId={highlightedServerId} 
+      />
     </div>
   );
 };
