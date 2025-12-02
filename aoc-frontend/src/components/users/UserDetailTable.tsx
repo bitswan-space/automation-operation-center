@@ -31,7 +31,6 @@ import { Loader2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserInviteForm } from "./UserInviteForm";
 
-import { type UserGroup } from "@/data/groups";
 import {
   Dialog,
   DialogClose,
@@ -45,17 +44,10 @@ import {
 import { type OrgUser } from "@/data/users";
 import { toast } from "sonner";
 import { useDeleteUser, useUsersQuery } from "@/hooks/useUsersQuery";
-import { useGroupsQuery } from "@/hooks/useGroupQuery";
-import {
-  addUserToGroupAction,
-  removeUserFromGroupAction,
-} from "../groups/action";
 
-type OrgUserFull = OrgUser & { nonMemberGroups: UserGroup[] };
+const columnHelper = createColumnHelper<OrgUser>();
 
-const columnHelper = createColumnHelper<OrgUserFull>();
-
-const createColumns = (): ColumnDef<OrgUserFull>[] => [
+const createColumns = (): ColumnDef<OrgUser>[] => [
   {
     accessorKey: "email",
     header: () => <div className="p-2 px-6 text-left font-semibold">Email</div>,
@@ -83,19 +75,9 @@ const createColumns = (): ColumnDef<OrgUserFull>[] => [
     id: "groups",
     header: () => <div className="font-semibold">Groups</div>,
     cell: ({ row }) => {
-      const groups = row.original.groups;
-      const userId = row.original.id;
-      const nonMemberGroups = row.original.nonMemberGroups;
-
       return (
         <UserGroupsBadgeList
-          memberGroups={groups}
-          id={userId}
-          nonMemberGroups={nonMemberGroups}
-          addAction={addUserToGroupAction}
-          removeAction={removeUserFromGroupAction}
-          handleNextPage={async () => false}
-          hasMoreGroups={false}
+          user={row.original}
         />
       );
     },
@@ -124,22 +106,10 @@ export function UserDetailTable() {
   // Convert 0-based pageIndex to 1-based page number for API
   const page = pagination.pageIndex + 1;
   const { data: usersData, isFetching: isFetchingUsers } = useUsersQuery(page);
-  
-  // Fetch all groups for the nonMemberGroups calculation
-  // We'll fetch page 1 and accumulate if needed, or use infinite query
-  // For now, let's fetch the first page of groups
-  const { data: groupsData } = useGroupsQuery(1);
 
   const orgUsersData = React.useMemo(
-    () =>
-      usersData?.results?.map((user) => ({
-        ...user,
-        nonMemberGroups:
-          (groupsData?.results ?? []).filter(
-            (group) => !user.groups.find((g) => g.id === group.id),
-          ) ?? [],
-      })) ?? [],
-    [usersData, groupsData],
+    () => usersData?.results ?? [],
+    [usersData],
   );
 
   const [sorting, setSorting] = React.useState<SortingState>([]);

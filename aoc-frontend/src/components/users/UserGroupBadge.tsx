@@ -7,54 +7,33 @@ import { type UserGroup } from "@/data/groups";
 
 import { Badge } from "../ui/badge";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
-import { useAuth } from "@/context/AuthContext";
-import { useAction } from "@/hooks/useAction";
 import { toast } from "sonner";
-import {
-  type RemoveUserFromGroupActionType,
-  type RemoveWorkspaceFromGroupActionType,
-  type RemoveAutomationServerFromGroupActionType,
-} from "../groups/action";
+import { useRemoveUserFromGroup } from "@/hooks/useGroupQuery";
 
 type UserGroupBadgeProps = {
   group: UserGroup;
   id: string;
-  action:
-    | RemoveUserFromGroupActionType
-    | RemoveWorkspaceFromGroupActionType
-    | RemoveAutomationServerFromGroupActionType;
-  onUserGroupUpdate?: (userId: string, groupId: string, action: 'add' | 'remove') => void;
 };
 
 export function UserGroupBadge(props: UserGroupBadgeProps) {
-  const { group, id, action, onUserGroupUpdate } = props;
+  const { group, id } = props;
 
-  const { user: session } = useAuth();
-
-  const { execute, isPending } = useAction(action, {
-    onSuccess: () => {
-      toast.success("Successfully removed from group");
-      if (onUserGroupUpdate) {
-        onUserGroupUpdate(id, group.id, 'remove');
-      }
-    },
-    onError: ({ error }) => {
-      toast.error(
-        (error as any)?.serverError?.message ?? "Error removing from group",
-      );
-    },
-  });
-
+  const removeUserFromGroupMutation = useRemoveUserFromGroup(id);
   const hasPerms = useAdminStatus().isAdmin;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const data = {
-      id: formData.get("id") as string,
-      groupId: formData.get("groupId") as string,
-    };
-    await execute(data);
+    const groupId = formData.get("groupId") as string;
+    
+    removeUserFromGroupMutation.mutate(groupId, {
+      onSuccess: () => {
+        toast.success("Successfully removed from group");
+      },
+      onError: (error) => {
+        toast.error((error as any)?.message ?? "Error removing from group");
+      },
+    });
   };
 
   return (
@@ -85,9 +64,9 @@ export function UserGroupBadge(props: UserGroupBadgeProps) {
           <button
             className="cursor-pointer"
             type="submit"
-            disabled={isPending || !hasPerms}
+            disabled={removeUserFromGroupMutation.isPending || !hasPerms}
           >
-            {isPending ? (
+            {removeUserFromGroupMutation.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <X className="h-4 w-4" />

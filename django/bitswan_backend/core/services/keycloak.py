@@ -646,16 +646,14 @@ class KeycloakService:
         logger.info("Deleted user: %s", user_id)
         return user_id
 
-    def get_user_org_groups(self, request, org_id):
-        active_user_id = self.get_active_user(request)
+    def get_user_org_groups(self, request, org_id, user_id = None):
+        if user_id is None:
+            user_id = self.get_active_user(request)
+
         org_groups = self.get_org_groups(org_id=org_id)
 
-        # Return all groups if user is admin
-        if self.is_admin(request):
-            return org_groups
-
         user_group_memberships = self.keycloak_admin.get_user_groups(
-            user_id=active_user_id,
+            user_id=user_id,
             brief_representation=False,
         )
 
