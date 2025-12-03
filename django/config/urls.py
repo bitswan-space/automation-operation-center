@@ -8,6 +8,7 @@ from django.views import defaults as default_views
 from django.views.generic import RedirectView
 from bitswan_backend.core.views.swagger import PublicSwaggerView, PublicSchemaView, AutomationServerDocumentationView, AOCArchitectureDocumentationView
 from bitswan_backend.core.views.general import VersionAPIView
+from bitswan_backend.core.views.errors import page_not_found
 from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
@@ -75,3 +76,6 @@ if settings.DEBUG:
         import debug_toolbar
 
         urlpatterns = [path("__debug__/", include(debug_toolbar.urls))] + urlpatterns
+
+# Custom error handlers
+handler404 = page_not_found

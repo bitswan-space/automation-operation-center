@@ -1,0 +1,1 @@
+Unlike the rest of the Bitswan ecosystem, the AOC is copyright 2025 LibertyAces Ltd. All rights reserved.

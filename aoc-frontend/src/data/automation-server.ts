@@ -80,6 +80,12 @@ export async function deleteAutomationServer(serverId: string) {
   return res.data;
 }
 
+export type AutomationServerMQTTToken = {
+  url: string;
+  token: string;
+  automation_server_id: string;
+};
+
 export async function createAutomationServerWithOTP(name: string) {
   const apiClient = await authenticatedBitswanBackendInstance();
   const activeOrg = await getActiveOrgFromCookies();
@@ -110,4 +116,19 @@ export async function checkAutomationServerOTPStatus(automationServerId: string)
   );
 
   return response.data;
+}
+
+export async function getAutomationServerMQTTToken(serverId: string): Promise<AutomationServerMQTTToken> {
+  const bitswanBEInstance = await authenticatedBitswanBackendInstance();
+
+  const activeOrg = await getActiveOrgFromCookies();
+
+  const res = await bitswanBEInstance.get(`/automation-servers/${serverId}/emqx/jwt/`, {
+    headers: {
+      "X-Org-Id": activeOrg?.id ?? "",
+      "X-Org-Name": activeOrg?.name ?? "",
+    },
+  });
+
+  return res.data;
 }

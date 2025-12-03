@@ -22,6 +22,9 @@ from bitswan_backend.core.serializers.workspaces_new import (
 from bitswan_backend.core.permissions import IsOrgAdmin
 from bitswan_backend.core.viewmixins import KeycloakMixin
 from bitswan_backend.core.pagination import DefaultPagination
+from bitswan_backend.core.utils.mqtt import create_mqtt_token
+from django.conf import settings
+import os
 
 L = logging.getLogger("core.views.frontend.automation_servers")
 
@@ -272,6 +275,68 @@ class AutomationServerViewSet(KeycloakMixin, viewsets.ModelViewSet):
             L.error(f"Error deleting automation server: {str(e)}")
             return Response(
                 {"error": "Failed to delete automation server"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=True, methods=["GET"], url_path="emqx/jwt")
+    def get_automation_server_mqtt_token(self, request, pk=None):
+        """
+        Get MQTT JWT token for an automation server.
+        This token allows admin users to publish to workspace/init and workspace/remove topics.
+        Only admin users in the automation server's organization can access this endpoint.
+        """
+        try:
+            # Get the automation server
+            automation_server = get_object_or_404(AutomationServer, automation_server_id=pk)
+            
+            # Get the organization that the automation server belongs to
+            server_org_id = automation_server.keycloak_org_id
+            
+            # Get the admin group for that organization
+            admin_group = self.keycloak.get_admin_org_group(server_org_id)
+            if not admin_group:
+                L.error(f"Admin group not found for org {server_org_id}")
+                return Response(
+                    {"error": "Admin group not found for this organization"}, 
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+            # Get the current user ID
+            user_id = self.keycloak.get_active_user(request)
+            
+            # Check if the user is a member of the admin group
+            is_admin = self.keycloak.is_group_member(user_id, admin_group["id"])
+            
+            if not is_admin:
+                L.warning(f"User {user_id} is not admin in org {server_org_id} for automation server {pk}")
+                return Response(
+                    {"error": "You don't have permission to access MQTT tokens for this automation server. Only admin users can access this endpoint."}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Create MQTT token with mountpoint at automation server level
+            # The mountpoint allows publishing to workspace/init and workspace/remove topics
+            mountpoint = f"/orgs/{server_org_id}/automation-servers/{automation_server.automation_server_id}/"
+            username = f"bitswan-frontend-{automation_server.automation_server_id}"
+            
+            token = create_mqtt_token(
+                secret=settings.EMQX_JWT_SECRET,
+                username=username,
+                mountpoint=mountpoint,
+            )
+            
+            return Response(
+                {
+                    "url": os.getenv("EMQX_EXTERNAL_URL"),
+                    "token": token,
+                    "automation_server_id": automation_server.automation_server_id,
+                },
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            L.error(f"Error getting automation server MQTT token: {str(e)}")
+            return Response(
+                {"error": "Failed to get MQTT token"}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 

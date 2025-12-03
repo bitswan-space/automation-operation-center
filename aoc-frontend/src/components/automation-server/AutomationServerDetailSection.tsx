@@ -1,10 +1,15 @@
-import { Network, Users, Loader2 } from "lucide-react";
+import { Network, Users, Loader2, Trash2, Server, Plus } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { type AutomationServer } from "@/data/automation-server";
 import { useAutomations } from "@/context/AutomationsProvider";
+import { DeleteAutomationServerModal } from "./DeleteAutomationServerModal";
+import { CreateWorkspaceModal } from "./CreateWorkspaceModal";
+import { useTitleBar } from "@/context/TitleBarProvider";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { formatTimeAgo } from "@/utils/time";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 
 type AutomationServerDetailSectionProps = {
   server?: AutomationServer;
@@ -16,6 +21,42 @@ export function AutomationServerDetailSection(
   const { server } = props;
   const { isLoading, processes } = useAutomations();
 
+  const { setTitle, setButtons, setIcon } = useTitleBar();
+  const { isAdmin } = useAdminStatus();
+
+  useEffect(() => {
+    setTitle(`${server?.name} workspaces`);
+    setIcon(<Server size={24} />);
+    setButtons(
+      <div className="flex gap-2">
+        {isAdmin && server && (
+          <CreateWorkspaceModal
+            automationServerId={server.automation_server_id}
+            onSuccess={() => {
+              // Refresh the page or reload data
+              window.location.reload();
+            }}
+          >
+            <Button variant="default">
+              <Plus className="h-4 w-4 mr-1" />
+              Create workspace
+            </Button>
+          </CreateWorkspaceModal>
+        )}
+        <DeleteAutomationServerModal
+          serverName={server?.name ?? ""}
+          serverId={server?.automation_server_id ?? ""}
+        >
+          <Button
+            variant="destructive"
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            Delete server
+          </Button>
+        </DeleteAutomationServerModal>
+      </div>
+    );
+  }, [server, setTitle, setButtons, setIcon, isAdmin]);
 
   const getProcessCount = (workspaceId: string) => {
     if (!processes) return 0;

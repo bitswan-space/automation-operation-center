@@ -6,7 +6,10 @@ from django.urls import path, include
 from rest_framework.routers import SimpleRouter
 
 from bitswan_backend.core.views.automation_server.workspaces import WorkspaceAPIViewSet
-from bitswan_backend.core.views.automation_server.server_info import AutomationServerInfoAPIView
+from bitswan_backend.core.views.automation_server.server_info import (
+    AutomationServerInfoAPIView,
+    AutomationServerEmqxJwtAPIView,
+)
 from bitswan_backend.core.views.automation_server.authentication import ExchangeOTPForTokenAPIView
 
 # Router for ViewSets
@@ -19,6 +22,9 @@ urlpatterns = [
     
     # Automation server info (requires authentication)
     path('info', AutomationServerInfoAPIView.as_view(), name='automation_server_info'),
+    
+    # Automation server MQTT credentials (requires authentication)
+    path('emqx/jwt', AutomationServerEmqxJwtAPIView.as_view(), name='automation_server_emqx_jwt'),
     
     # Include ViewSet routes
     path('', include(router.urls)),

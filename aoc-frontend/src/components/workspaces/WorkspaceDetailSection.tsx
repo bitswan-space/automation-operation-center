@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowLeft, Server } from "lucide-react";
+import { ArrowLeft, Server, Trash2 } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Link } from "react-router-dom";
@@ -11,6 +11,11 @@ import { VscVscode } from "react-icons/vsc";
 import { UserGroupsBadgeList } from "../users/UserGroupsBadgeList";
 import { addWorkspaceToGroupAction, removeWorkspaceFromGroupAction } from "../groups/action";
 import { type UserGroup } from "@/data/groups";
+import { DeleteWorkspaceModal } from "./DeleteWorkspaceModal";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
+import { useTitleBar } from "@/context/TitleBarProvider";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 type WorkspaceDetailSectionProps = {
   workspace?: Workspace;
@@ -26,6 +31,32 @@ export function WorkspaceDetailSection(
   const { workspace, groupsList, onWorkspaceGroupUpdate, onLoadMoreGroups, hasMoreGroups } = props;
 
   const { automationServers, isLoading } = useAutomations();
+  const { isAdmin } = useAdminStatus();
+  const { setButtons } = useTitleBar();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAdmin && workspace) {
+      setButtons(
+        <DeleteWorkspaceModal
+          workspaceName={workspace.name}
+          workspaceId={workspace.id}
+          automationServerId={workspace.automation_server}
+          onDelete={() => {
+            // Navigate back to automation server page
+            navigate(`/automation-servers/${workspace.automation_server}`);
+          }}
+        >
+          <Button variant="destructive">
+            <Trash2 className="h-4 w-4 mr-1" />
+            Delete workspace
+          </Button>
+        </DeleteWorkspaceModal>
+      );
+    } else {
+      setButtons(null);
+    }
+  }, [isAdmin, workspace, setButtons, navigate]);
 
   // Debug logging
   console.log("WorkspaceDetailSection - workspace:", workspace);
