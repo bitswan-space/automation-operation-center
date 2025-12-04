@@ -5,11 +5,24 @@ from rest_framework import serializers
 from bitswan_backend.core.serializers.workspaces import WorkspaceSerializer
 from bitswan_backend.core.services.keycloak import KeycloakService
 from bitswan_backend.core.models import AutomationServer
+from bitswan_backend.core.models.automation_server import AutomationServerGroupMembership
+
+
+class AutomationServerGroupMembershipSerializer(serializers.ModelSerializer):
+    """Serializer for AutomationServerGroupMembership model"""
+    
+    class Meta:
+        model = AutomationServerGroupMembership
+        fields = [
+            "id",
+            "keycloak_group_id",
+        ]
 
 
 class AutomationServerSerializer(serializers.ModelSerializer):
     workspaces = WorkspaceSerializer(many=True, read_only=True)
-
+    group_memberships = AutomationServerGroupMembershipSerializer(many=True, read_only=True)
+    
     class Meta:
         model = AutomationServer
         fields = [
@@ -18,6 +31,7 @@ class AutomationServerSerializer(serializers.ModelSerializer):
             "automation_server_id",
             "keycloak_org_id",
             "workspaces",
+            "group_memberships",
             "created_at",
             "updated_at",
         ]

@@ -15,12 +15,9 @@ from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
 
 from bitswan_backend.core.authentication import KeycloakAuthentication
-from bitswan_backend.core.models import AutomationServer
 from bitswan_backend.core.models import Workspace
 from bitswan_backend.core.viewmixins import KeycloakMixin
-from bitswan_backend.core.serializers.workspaces_new import AutomationServerSerializer
-from bitswan_backend.core.serializers.workspaces_new import CreateAutomationServerSerializer
-from bitswan_backend.core.serializers.workspaces_new import WorkspaceSerializer
+from bitswan_backend.core.serializers.workspaces import WorkspaceSerializer
 from bitswan_backend.core.utils.mqtt import create_mqtt_token
 from bitswan_backend.core.permissions.workspaces import CanReadWorkspaceEMQXJWT
 from bitswan_backend.core.permissions.workspaces import CanReadWorkspacePipelineEMQXJWT
