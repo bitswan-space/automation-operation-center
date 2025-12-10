@@ -62,7 +62,7 @@ export function AutomationServerDetailSection(
               </CardHeader>
               <CardFooter className="px-6 py-4 gap-3">
                 <Link
-                  to={`/automation-servers/${server!.automation_server_id}/workspaces/${workspace.id}`}
+                  to={`/workspaces/${workspace.id}`}
                   className="block"
                 >
                   <Button variant="outline">
