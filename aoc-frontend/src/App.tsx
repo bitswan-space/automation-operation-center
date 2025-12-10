@@ -74,6 +74,22 @@ function App() {
                         />
                     </Route>
 
+                    {/* Workspaces route */}
+                    <Route
+                        path="/workspaces"
+                        element={
+                            <ProtectedRoute>
+                                <DashboardLayout path="/workspaces" />
+                            </ProtectedRoute>
+                        }
+                    >
+                        <Route index element={<DashboardPage />} />
+                        <Route
+                            path=":id"
+                            element={<WorkspaceDetailPage />}
+                        />
+                    </Route>
+
                     {/* Automations route */}
                     <Route
                         path="/automations"
