@@ -24,6 +24,7 @@ import {
   ChevronUpIcon,
   CodeIcon,
   EllipsisIcon,
+  Search,
 } from "lucide-react";
 import {
   Table,
@@ -33,12 +34,18 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import { useReactTable, getCoreRowModel } from "@tanstack/react-table";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  type ColumnFiltersState,
+} from "@tanstack/react-table";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import MQTTService from "@/services/MQTTService";
 import { toast } from "sonner";
+import { Input } from "../ui/input";
 
 const columnHelper = createColumnHelper<Process>();
 
@@ -54,6 +61,7 @@ export default function ProcessesTable(props: ProcessesTableProps) {
     new Set()
   );
   const [processToDelete, setProcessToDelete] = useState<Process | null>(null);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const toggleProcess = (processId: string) => {
     setExpandedProcesses((prev) => {
@@ -100,9 +108,7 @@ export default function ProcessesTable(props: ProcessesTableProps) {
     const orphanedAutomations = automations.filter(
       (automation) =>
         automation?.properties?.["deployment-id"] &&
-        !referencedDeploymentIds.has(
-          automation.properties["deployment-id"]
-        )
+        !referencedDeploymentIds.has(automation.properties["deployment-id"])
     );
 
     // If there are orphaned automations, create an "Other" pseudo-process
@@ -238,125 +244,147 @@ export default function ProcessesTable(props: ProcessesTableProps) {
     data: processesWithOther,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    state: {
+      columnFilters,
+    },
   });
-
   return (
-    <div className="border rounded-lg">
-      <Table>
-        <TableHeader className="text-muted-foreground text-sm h-12">
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="hover:bg-transparent">
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id} className="px-4">
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.map((row) => {
-            const process = row.original;
-            const isExpanded = expandedProcesses.has(process.id);
-            const processAutomations = process.automation_sources
-              .map((deploymentId) =>
-                automations.find(
-                  (auto) => auto.properties["deployment-id"] === deploymentId
+    <>
+      <div className="mb-4 flex items-center justify-between">
+        <div className="relative w-64">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+          <Input
+            type="search"
+            placeholder="Search processes..."
+            className="border-gray-300 bg-white pl-8"
+            value={
+              (table.getColumn("name")?.getFilterValue() as string) ?? ""
+            }
+            onChange={(event) => {
+              table.getColumn("name")?.setFilterValue(event.target.value);
+            }}
+          />
+        </div>
+      </div>
+      <div className="border rounded-lg">
+        <Table>
+          <TableHeader className="text-muted-foreground text-sm h-12">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id} className="hover:bg-transparent">
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id} className="px-4">
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.map((row) => {
+              const process = row.original;
+              const isExpanded = expandedProcesses.has(process.id);
+              const processAutomations = process.automation_sources
+                .map((deploymentId) =>
+                  automations.find(
+                    (auto) => auto.properties["deployment-id"] === deploymentId
+                  )
                 )
-              )
-              .filter((auto): auto is PipelineWithStats => auto !== undefined);
-
-            return (
-              <>
-                <TableRow key={row.id} className="h-16 hover:bg-transparent">
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="px-4">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-                {isExpanded &&
-                  processAutomations.map((automation, index) => (
-                    <TableRow
-                      key={`${process.id}-automation-${index}`}
-                      className="h-16 bg-primary-foreground"
-                    >
-                      <TableCell
-                        colSpan={row.getVisibleCells().length}
-                        className="px-4"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="font-bold">
-                            {automation.properties.name}
-                          </div>
-                          <div>
-                            {format(
-                              new Date(automation.properties["created-at"]),
-                              "MMM d, yyyy; HH:mm"
-                            )}
-                          </div>
-                          <div>{automation.properties.status}</div>
-                          <Badge
-                            className={cn(
-                              "shadow-none capitalize",
-                              automation.properties.state === "running"
-                                ? "bg-green-100 text-green-700 hover:bg-green-100"
-                                : "bg-red-100 text-red-700 hover:bg-red-100"
-                            )}
-                          >
-                            {automation.properties.state}
-                          </Badge>
-                          <Link to={automation.vscodeLink} target="_blank">
-                            <Button>
-                              <CodeIcon size={16} /> Edit
-                            </Button>
-                          </Link>
-                        </div>
+                .filter(
+                  (auto): auto is PipelineWithStats => auto !== undefined
+                );
+              return (
+                <>
+                  <TableRow key={row.id} className="h-16 hover:bg-transparent">
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="px-4">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
                       </TableCell>
-                    </TableRow>
-                  ))}
-              </>
-            );
-          })}
-        </TableBody>
-      </Table>
-
-      <AlertDialog
-        open={processToDelete !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setProcessToDelete(null);
-          }
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Process</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete the process{" "}
-              <strong>&quot;{processToDelete?.name}&quot;</strong>? This action
-              cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteProcess}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+                    ))}
+                  </TableRow>
+                  {isExpanded &&
+                    processAutomations.map((automation, index) => (
+                      <TableRow
+                        key={`${process.id}-automation-${index}`}
+                        className="h-16 bg-primary-foreground"
+                      >
+                        <TableCell
+                          colSpan={row.getVisibleCells().length}
+                          className="px-4"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="font-bold">
+                              {automation.properties.name}
+                            </div>
+                            <div>
+                              {format(
+                                new Date(automation.properties["created-at"]),
+                                "MMM d, yyyy; HH:mm"
+                              )}
+                            </div>
+                            <div>{automation.properties.status}</div>
+                            <Badge
+                              className={cn(
+                                "shadow-none capitalize",
+                                automation.properties.state === "running"
+                                  ? "bg-green-100 text-green-700 hover:bg-green-100"
+                                  : "bg-red-100 text-red-700 hover:bg-red-100"
+                              )}
+                            >
+                              {automation.properties.state}
+                            </Badge>
+                            <Link to={automation.vscodeLink} target="_blank">
+                              <Button>
+                                <CodeIcon size={16} /> Edit
+                              </Button>
+                            </Link>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </>
+              );
+            })}
+          </TableBody>
+        </Table>
+        <AlertDialog
+          open={processToDelete !== null}
+          onOpenChange={(open) => {
+            if (!open) {
+              setProcessToDelete(null);
+            }
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Process</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete the process{" "}
+                <strong>&quot;{processToDelete?.name}&quot;</strong>? This
+                action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteProcess}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </>
   );
 }
