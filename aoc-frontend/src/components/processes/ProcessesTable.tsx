@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { createColumnHelper, flexRender } from "@tanstack/react-table";
 import { type PipelineWithStats, type Process } from "@/types";
 import { Button } from "../ui/button";
@@ -9,6 +9,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -43,6 +53,7 @@ export default function ProcessesTable(props: ProcessesTableProps) {
   const [expandedProcesses, setExpandedProcesses] = useState<Set<string>>(
     new Set()
   );
+  const [processToDelete, setProcessToDelete] = useState<Process | null>(null);
 
   const toggleProcess = (processId: string) => {
     setExpandedProcesses((prev) => {
@@ -55,6 +66,62 @@ export default function ProcessesTable(props: ProcessesTableProps) {
       return next;
     });
   };
+
+  const handleDeleteProcess = () => {
+    if (!processToDelete) return;
+
+    MQTTService.getInstance().deleteProcess(
+      processToDelete.id,
+      processToDelete.workspace_id,
+      processToDelete.automation_server_id
+    );
+    toast.success("Process deleted successfully");
+    setProcessToDelete(null);
+  };
+
+  // Create "Other" pseudo-process for automations not belonging to any process
+  const processesWithOther = useMemo(() => {
+    // Safety check: ensure processes and automations are defined
+    if (!processes || !automations) {
+      return processes || [];
+    }
+
+    // Collect all deployment IDs that are referenced by processes
+    const referencedDeploymentIds = new Set<string>();
+    processes.forEach((process) => {
+      if (process.automation_sources) {
+        process.automation_sources.forEach((deploymentId) => {
+          referencedDeploymentIds.add(deploymentId);
+        });
+      }
+    });
+
+    // Find automations that are not referenced by any process
+    const orphanedAutomations = automations.filter(
+      (automation) =>
+        automation?.properties?.["deployment-id"] &&
+        !referencedDeploymentIds.has(
+          automation.properties["deployment-id"]
+        )
+    );
+
+    // If there are orphaned automations, create an "Other" pseudo-process
+    if (orphanedAutomations.length > 0) {
+      const otherProcess: Process = {
+        id: "__other__",
+        name: "Other",
+        automation_server_id: orphanedAutomations[0]?.automationServerId ?? "",
+        workspace_id: orphanedAutomations[0]?.workspaceId ?? "",
+        attachments: [],
+        automation_sources: orphanedAutomations
+          .map((auto) => auto.properties["deployment-id"])
+          .filter((id): id is string => id !== undefined),
+      };
+      return [...processes, otherProcess];
+    }
+
+    return processes;
+  }, [processes, automations]);
 
   const columns = [
     columnHelper.accessor("name", {
@@ -143,27 +210,24 @@ export default function ProcessesTable(props: ProcessesTableProps) {
                 )}
               </Button>
             )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost">
-                  <EllipsisIcon size={16} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => {
-                    MQTTService.getInstance().deleteProcess(
-                      row.original.id,
-                      row.original.workspace_id,
-                      row.original.automation_server_id
-                    );
-                    toast.success("Process deleted successfully");
-                  }}
-                >
-                  Delete process
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {row.original.id !== "__other__" && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost">
+                    <EllipsisIcon size={16} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setProcessToDelete(row.original);
+                    }}
+                  >
+                    Delete process
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         );
       },
@@ -171,7 +235,7 @@ export default function ProcessesTable(props: ProcessesTableProps) {
   ];
 
   const table = useReactTable({
-    data: processes,
+    data: processesWithOther,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
@@ -199,12 +263,13 @@ export default function ProcessesTable(props: ProcessesTableProps) {
           {table.getRowModel().rows.map((row) => {
             const process = row.original;
             const isExpanded = expandedProcesses.has(process.id);
-            const processAutomations = process.automation_sources.map(
-              (deploymentId) =>
+            const processAutomations = process.automation_sources
+              .map((deploymentId) =>
                 automations.find(
                   (auto) => auto.properties["deployment-id"] === deploymentId
                 )
-            );
+              )
+              .filter((auto): auto is PipelineWithStats => auto !== undefined);
 
             return (
               <>
@@ -263,6 +328,35 @@ export default function ProcessesTable(props: ProcessesTableProps) {
           })}
         </TableBody>
       </Table>
+
+      <AlertDialog
+        open={processToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setProcessToDelete(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Process</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the process{" "}
+              <strong>&quot;{processToDelete?.name}&quot;</strong>? This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteProcess}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
