@@ -23,7 +23,8 @@ export type WorkspacesListResponse = ApiListResponse<Workspace>;
 
 export const getWorkspaces = async (
   page: number | undefined = 1,
-  search?: string
+  search?: string,
+  automationServerId?: string
 ): Promise<WorkspacesListResponse> => {
   const bitswanBEInstance = await authenticatedBitswanBackendInstance();
   const activeOrg = await getActiveOrgFromCookies();
@@ -35,7 +36,9 @@ export const getWorkspaces = async (
     if (search && search.trim()) {
       params.search = search.trim();
     }
-    
+    if (automationServerId) {
+      params.automation_server_id = automationServerId;
+    }
     const res = await bitswanBEInstance.get<WorkspacesListResponse>(
       `/workspaces`,
       {

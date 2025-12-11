@@ -1,12 +1,11 @@
-import { AutomationServerDetailSection } from "@/components/automation-server/AutomationServerDetailSection";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useTitleBar } from "@/context/TitleBarProvider";
 import { Server, Trash2 } from "lucide-react";
 import { useAutomationServersQuery } from "@/hooks/useAutomationServersQuery";
 import { DeleteAutomationServerModal } from "@/components/automation-server/DeleteAutomationServerModal";
+import { WorkspacesListSection } from "@/components/workspaces/WorkspacesListSection";
 
 const AutomationServerDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -40,22 +39,8 @@ const AutomationServerDetailPage = () => {
   }
 
   return (
-    <div className="w-full">
-      <h1 className="text-2xl font-bold text-stone-700 md:hidden">
-        Automation Servers
-      </h1>
-      <div className="flex py-4 pt-6 lg:hidden">
-        <Input
-          placeholder="Find automation"
-          className="rounded-r-none bg-white"
-        />
-        <Button type="submit" className="my-auto rounded-l-none bg-stone-800">
-          Search
-        </Button>
-      </div>
-      <AutomationServerDetailSection
-        server={server}
-      />
+    <div>
+      <WorkspacesListSection automationServerId={id} />
     </div>
   );
 }

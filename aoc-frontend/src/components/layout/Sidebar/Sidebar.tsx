@@ -92,8 +92,8 @@ export function AppSidebar(props: AppSidebarProps) {
               {showExperimental && (
                 <>
                   <SidebarMenuItem key={"workspaces"}>
-                    <SidebarMenuButton asChild>
-                      <Link to={"/dashboard/workspaces"}>
+                    <SidebarMenuButton asChild isActive={path === "/workspaces"}>
+                      <Link to={"/workspaces"}>
                         <Table />
                         <span>{"Workspaces"}</span>
                         <span className="ml-auto text-xs">

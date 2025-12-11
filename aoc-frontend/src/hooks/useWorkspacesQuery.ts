@@ -4,12 +4,12 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 export const WORKSAPCES_QUERY_KEY = ["workspaces"];
 
-export function useWorkspacesQuery(search?: string) {
+export function useWorkspacesQuery(search?: string, automationServerId?: string) {
   const { isAuthenticated } = useAuth();
 
   return useInfiniteQuery({
-    queryKey: [...WORKSAPCES_QUERY_KEY, search || ""],
-    queryFn: ({ pageParam = 1 }) => getWorkspaces(pageParam, search),
+    queryKey: [...WORKSAPCES_QUERY_KEY, search || "", automationServerId || ""],
+    queryFn: ({ pageParam = 1 }) => getWorkspaces(pageParam, search, automationServerId),
     getNextPageParam: (lastPage) => {
       // If there's a next URL, extract the page number from it
       if (lastPage.next) {

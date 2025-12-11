@@ -36,15 +36,31 @@ L = logging.getLogger("core.views.workspaces")
 class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
     queryset = Workspace.objects.all()
     serializer_class = WorkspaceSerializer
+    pagination_class = DefaultPagination
     authentication_classes = [KeycloakAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         org_id = self.get_org_id()
         
+        # Get query parameters
+        automation_server_id = self.request.query_params.get('automation_server_id')
+        search = self.request.query_params.get('search')
+        
+        # Base queryset filter
+        filters = {'keycloak_org_id': org_id}
+        
+        # Add automation server filter if provided
+        if automation_server_id:
+            filters['automation_server_id'] = automation_server_id
+        
+        # Add search filter if provided
+        if search:
+            filters['name__icontains'] = search
+        
         # Check if user is admin in the org - admins can see all workspaces
         if self.is_admin(self.request):
-            return Workspace.objects.filter(keycloak_org_id=org_id).order_by("-updated_at")
+            return Workspace.objects.filter(**filters).order_by("-updated_at")
         
         # For non-admin users, filter by WorkspaceGroupMembership
         user_id = self.get_active_user()
@@ -56,10 +72,10 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
             keycloak_group_id__in=user_group_ids
         ).values_list('workspace_id', flat=True)
         
-        return Workspace.objects.filter(
-            keycloak_org_id=org_id,
-            id__in=accessible_workspace_ids
-        ).order_by("-updated_at")
+        # Add workspace access filter
+        filters['id__in'] = accessible_workspace_ids
+        
+        return Workspace.objects.filter(**filters).order_by("-updated_at")
 
     @action(
         detail=True,
