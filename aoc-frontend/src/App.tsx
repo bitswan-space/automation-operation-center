@@ -20,6 +20,7 @@ import WorkspaceDetailPage from "@/pages/WorkspaceDetailPage";
 import AutomationDetailPage from "@/pages/AutomationDetailPage";
 import AutomationsPage from "@/pages/AutomationsPage";
 import SettingsPage from "@/pages/SettingsPage";
+import WorkspacesPage from "./pages/WorkspacesPage";
 
 
 function App() {
@@ -65,10 +66,6 @@ function App() {
                             element={<AutomationServerDetailPage />}
                         />
                         <Route
-                            path=":id/workspaces/:workspaceId"
-                            element={<WorkspaceDetailPage />}
-                        />
-                        <Route
                             path=":id/workspaces/:workspaceId/automations/:pipelineId"
                             element={<AutomationDetailPage />}
                         />
@@ -83,7 +80,7 @@ function App() {
                             </ProtectedRoute>
                         }
                     >
-                        <Route index element={<DashboardPage />} />
+                        <Route index element={<WorkspacesPage />} />
                         <Route
                             path=":id"
                             element={<WorkspaceDetailPage />}
