@@ -130,7 +130,7 @@ def create_workspace_keycloak_client(sender, instance, created, **kwargs):
 @receiver([post_delete], sender=Workspace)
 def delete_workspace_keycloak_client(sender, instance, **kwargs):
     """
-    Delete workspace keycloak client for the workspace
+    Delete workspace keycloak client for the workspace and delete the workspace group
     """
     try:
         import logging
@@ -139,8 +139,8 @@ def delete_workspace_keycloak_client(sender, instance, **kwargs):
             keycloak_service = KeycloakService()
             keycloak_service.delete_workspace_client(instance.keycloak_internal_client_id)
             logger.info("Successfully deleted Keycloak client for workspace %s", instance.name)
-        else:
-            logger.warning("No Keycloak internal client ID found for workspace %s, skipping deletion", instance.name)
+            keycloak_service.delete_group(instance.workspace_group_id)
+            logger.info("Successfully deleted workspace group for workspace %s", instance.name)
     except Exception as e:
-        logger.error("Error deleting Keycloak client for workspace %s: %s", instance.name, e)
+        logger.error("Error deleting workspace keycloak client and group for workspace %s: %s", instance.name, e)
     
