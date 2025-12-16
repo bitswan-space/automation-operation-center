@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { createColumnHelper, flexRender } from "@tanstack/react-table";
 import { type PipelineWithStats, type Process } from "@/types";
 import { Button } from "../ui/button";
@@ -303,8 +303,8 @@ export default function ProcessesTable(props: ProcessesTableProps) {
                   (auto): auto is PipelineWithStats => auto !== undefined
                 );
               return (
-                <>
-                  <TableRow key={row.id} className="h-16 hover:bg-transparent">
+                <React.Fragment key={row.id}>
+                  <TableRow className="h-16 hover:bg-transparent">
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className="px-4">
                         {flexRender(
@@ -314,47 +314,67 @@ export default function ProcessesTable(props: ProcessesTableProps) {
                       </TableCell>
                     ))}
                   </TableRow>
-                  {isExpanded &&
-                    processAutomations.map((automation, index) => (
-                      <TableRow
-                        key={`${process.id}-automation-${index}`}
-                        className="h-16 bg-primary-foreground"
+                  {isExpanded && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={row.getVisibleCells().length}
+                        className="p-0"
                       >
-                        <TableCell
-                          colSpan={row.getVisibleCells().length}
-                          className="px-4"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="font-bold">
-                              {automation.properties.name}
-                            </div>
-                            <div>
-                              {format(
-                                new Date(automation.properties["created-at"]),
-                                "MMM d, yyyy; HH:mm"
-                              )}
-                            </div>
-                            <div>{automation.properties.status}</div>
-                            <Badge
-                              className={cn(
-                                "shadow-none capitalize",
-                                automation.properties.state === "running"
-                                  ? "bg-green-100 text-green-700 hover:bg-green-100"
-                                  : "bg-red-100 text-red-700 hover:bg-red-100"
-                              )}
-                            >
-                              {automation.properties.state}
-                            </Badge>
-                            <Link to={automation.vscodeLink} target="_blank">
-                              <Button>
-                                <CodeIcon size={16} /> Edit
-                              </Button>
-                            </Link>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </>
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="bg-muted/50">
+                              <TableHead className="px-4 font-semibold">Name</TableHead>
+                              <TableHead className="px-4 font-semibold">Created</TableHead>
+                              <TableHead className="px-4 font-semibold">Status</TableHead>
+                              <TableHead className="px-4 font-semibold">State</TableHead>
+                              <TableHead className="px-4 font-semibold text-right">Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {processAutomations.map((automation, index) => (
+                              <TableRow
+                                key={`${process.id}-automation-${index}`}
+                                className="h-16 bg-primary-foreground"
+                              >
+                                <TableCell className="px-4 font-bold">
+                                  {automation.properties.name}
+                                </TableCell>
+                                <TableCell className="px-4">
+                                  {format(
+                                    new Date(automation.properties["created-at"]),
+                                    "MMM d, yyyy; HH:mm"
+                                  )}
+                                </TableCell>
+                                <TableCell className="px-4">
+                                  {automation.properties.status}
+                                </TableCell>
+                                <TableCell className="px-4">
+                                  <Badge
+                                    className={cn(
+                                      "shadow-none capitalize",
+                                      automation.properties.state === "running"
+                                        ? "bg-green-100 text-green-700 hover:bg-green-100"
+                                        : "bg-red-100 text-red-700 hover:bg-red-100"
+                                    )}
+                                  >
+                                    {automation.properties.state}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="px-4 text-right">
+                                  <Link to={automation.vscodeLink} target="_blank">
+                                    <Button>
+                                      <CodeIcon size={16} /> Edit
+                                    </Button>
+                                  </Link>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
               );
             })}
           </TableBody>
