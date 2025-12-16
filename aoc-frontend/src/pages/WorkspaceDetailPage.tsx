@@ -1,10 +1,12 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTitleBar } from "@/context/TitleBarProvider";
 import { useParams } from "react-router-dom";
-import { Table } from "lucide-react";
+import { Table, Lock } from "lucide-react";
 import { useWorkspaceByIdQuery } from "@/hooks/useWorkspacesQuery";
 import { useAutomations } from "@/context/AutomationsProvider";
 import ProcessListSection from "@/components/processes/ProcessListSection";
+import { Button } from "@/components/ui/button";
+import { WorkspaceAccessDialog } from "@/components/workspaces/WorkspaceAccessDialog";
 
 const WorkspaceDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,11 +16,22 @@ const WorkspaceDetailPage = () => {
   const workspacePipelines = automationServer?.workspaces[workspaceData?.id ?? ""]?.pipelines;
   const workspaceProcesses = Object.values(processes).filter((process) => process.workspace_id === workspaceData?.id);
   const { setTitle, setIcon, setButtons } = useTitleBar();
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     setTitle(workspaceData?.name ?? "Workspace");
     setIcon(<Table size={24} />);
-    setButtons(null)
+    setButtons(
+      <>
+        <Button
+          variant="outline"
+          onClick={() => setDialogOpen(true)}
+        >
+          <Lock size={16} />
+          User access
+        </Button>
+      </>
+    )
   }, [setTitle, setIcon, setButtons, workspaceData]);
 
   if (isLoading) {
@@ -30,12 +43,20 @@ const WorkspaceDetailPage = () => {
   }
 
   return (
-    <ProcessListSection
-      automations={workspacePipelines}
-      processes={workspaceProcesses}
-      isLoading={automationsLoading}
-      hideWorkspaceColumn={true}
-    />
+    <>
+      <ProcessListSection
+        automations={workspacePipelines}
+        processes={workspaceProcesses}
+        isLoading={automationsLoading}
+        hideWorkspaceColumn={true}
+        lastUpdated={workspaceData.updated_at}
+      />
+      <WorkspaceAccessDialog 
+        open={dialogOpen} 
+        onOpenChange={setDialogOpen}
+        workspaceId={workspaceData.id}
+      />
+    </>
   );
 };
 

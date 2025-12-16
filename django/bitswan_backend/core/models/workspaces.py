@@ -9,6 +9,7 @@ class Workspace(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     keycloak_org_id = models.CharField(max_length=255, null=False, blank=False)
+    workspace_group_id = models.CharField(max_length=255, null=True, blank=True)
     automation_server = models.ForeignKey(
         "AutomationServer",
         on_delete=models.CASCADE,
@@ -83,6 +84,8 @@ def create_workspace_editor_group(sender, instance, created, **kwargs):
             workspace=instance,
             keycloak_group_id=editor_group_id
         )
+        instance.workspace_group_id = editor_group_id
+        instance.save(update_fields=['workspace_group_id'])
         
         import logging
         logger = logging.getLogger(__name__)
