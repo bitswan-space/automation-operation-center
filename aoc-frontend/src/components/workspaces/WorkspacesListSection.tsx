@@ -131,7 +131,7 @@ export function WorkspacesListSection(
                   </Button>
                 </Link>
                 <span className="text-sm text-muted-foreground">
-                  {formatTimeAgo(workspace.updated_at)}
+                  {`Updated ${formatTimeAgo(workspace.updated_at)}`}
                 </span>
               </CardFooter>
             </Card>
