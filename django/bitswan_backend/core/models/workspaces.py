@@ -135,10 +135,15 @@ def delete_workspace_keycloak_client(sender, instance, **kwargs):
     try:
         import logging
         logger = logging.getLogger(__name__)
+        keycloak_service = KeycloakService()
+        
+        # Delete Keycloak client if it exists
         if instance.keycloak_internal_client_id:
-            keycloak_service = KeycloakService()
             keycloak_service.delete_workspace_client(instance.keycloak_internal_client_id)
             logger.info("Successfully deleted Keycloak client for workspace %s", instance.name)
+        
+        # Delete workspace group if it exists
+        if instance.workspace_group_id:
             keycloak_service.delete_group(instance.workspace_group_id)
             logger.info("Successfully deleted workspace group for workspace %s", instance.name)
     except Exception as e:
