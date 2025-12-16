@@ -45,7 +45,7 @@ export function formatTimeAgo(dateString: string): string {
     }
     const distance = formatDistanceToNow(date);
     
-    return `Updated ${distance} ago`;
+    return `${distance} ago`;
   } catch (error) {
     return "";
   }

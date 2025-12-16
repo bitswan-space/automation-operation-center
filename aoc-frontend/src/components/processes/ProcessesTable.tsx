@@ -153,7 +153,8 @@ export default function ProcessesTable(props: ProcessesTableProps) {
             },
           }),
         ]),
-    columnHelper.accessor("automation_sources", {
+    columnHelper.display({
+      id: "automations",
       header: "Automations",
       cell: ({ row }) => {
         return (
@@ -163,7 +164,8 @@ export default function ProcessesTable(props: ProcessesTableProps) {
         );
       },
     }),
-    columnHelper.accessor("automation_sources", {
+    columnHelper.display({
+      id: "running",
       header: "Running",
       cell: ({ row }) => {
         const runningAutomations = row.original.automation_sources.filter(
@@ -179,7 +181,8 @@ export default function ProcessesTable(props: ProcessesTableProps) {
         );
       },
     }),
-    columnHelper.accessor("automation_sources", {
+    columnHelper.display({
+      id: "failed",
       header: "Failed",
       cell: ({ row }) => {
         const failedAutomations = row.original.automation_sources.filter(

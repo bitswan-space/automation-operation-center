@@ -2,18 +2,20 @@ import { Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { PipelineWithStats, Process } from "@/types";
 import ProcessesTable from "./ProcessesTable";
+import { formatTimeAgo } from "@/utils/time";
 
 type ProcessListSectionProps = {
   automations: PipelineWithStats[];
   processes: Process[];
   isLoading: boolean;
   hideWorkspaceColumn?: boolean;
+  lastUpdated?: string;
 };
 
 export default function ProcessListSection(
   props: ProcessListSectionProps,
 ) {
-  const { automations, processes, isLoading, hideWorkspaceColumn } = props;
+  const { automations, processes, isLoading, hideWorkspaceColumn, lastUpdated } = props;
 
   return (
     <div className="w-full">
@@ -40,6 +42,17 @@ export default function ProcessListSection(
             )}
           </div>
         </div>
+        {lastUpdated && (
+          <>
+            <Separator orientation="vertical" className="h-[56px]" />
+            <div className="flex-1 px-4">
+              <div className="text-sm text-muted-foreground">Last update</div>
+              <div className="text-2xl font-semibold flex">
+                {formatTimeAgo(lastUpdated)}
+              </div>
+            </div>
+          </>
+        )}
       </div>
       <ProcessesTable
         processes={processes}
