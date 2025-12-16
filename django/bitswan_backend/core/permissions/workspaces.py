@@ -6,6 +6,7 @@ from rest_framework.permissions import BasePermission
 
 from bitswan_backend.core.models import AutomationServer
 from bitswan_backend.core.models import Workspace
+from bitswan_backend.core.models.workspaces import WorkspaceGroupMembership
 from bitswan_backend.core.services.keycloak import KeycloakService
 
 L = logging.getLogger("core.permissions.workspaces")
@@ -80,4 +81,37 @@ class CanReadAutomationServerEMQXJWT(BasePermission):
             and request.user.is_authenticated
             and request.method in SAFE_METHODS
         )
+
+
+class HasAccessToWorkspace(BasePermission):
+    """
+    Permission to allow a user to access a workspace.
+    Admins have access, otherwise users must be members of at least one group
+    that the workspace belongs to.
+    """
+
+    keycloak = KeycloakService()
+
+    def has_permission(self, request, view):
+        """
+        Check if the user has access to the workspace.
+        """
+        workspace = get_object_or_404(Workspace, pk=view.kwargs.get("pk"))
+
+        # Admins have access
+        if self.keycloak.is_admin(request):
+            return True
+
+        # Check if user has access through group membership
+        user_id = self.keycloak.get_active_user(request)
+        user_groups = self.keycloak.get_user_groups(user_id)
+        user_group_ids = [group['id'] for group in user_groups]
+
+        # Get workspace group memberships
+        workspace_group_ids = WorkspaceGroupMembership.objects.filter(
+            workspace=workspace
+        ).values_list('keycloak_group_id', flat=True)
+
+        # Check if user has access to any workspace group
+        return any(group_id in user_group_ids for group_id in workspace_group_ids)
 

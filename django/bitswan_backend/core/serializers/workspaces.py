@@ -2,18 +2,6 @@ from rest_framework import serializers
 
 from bitswan_backend.core.models import AutomationServer
 from bitswan_backend.core.models import Workspace
-from bitswan_backend.core.models.workspaces import WorkspaceGroupMembership
-
-
-class WorkspaceGroupMembershipSerializer(serializers.ModelSerializer):
-    """Serializer for WorkspaceGroupMembership model"""
-    
-    class Meta:
-        model = WorkspaceGroupMembership
-        fields = [
-            "id",
-            "keycloak_group_id",
-        ]
 
 
 class WorkspaceSerializer(serializers.ModelSerializer):
@@ -29,8 +17,7 @@ class WorkspaceSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     keycloak_org_id = serializers.CharField(read_only=True)
-    
-    group_memberships = WorkspaceGroupMembershipSerializer(many=True, read_only=True)
+    workspace_group_id = serializers.CharField(read_only=True)
 
     def validate(self, attrs):
         if not attrs.get("automation_server"):
@@ -52,11 +39,11 @@ class WorkspaceSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "keycloak_org_id",
+            "workspace_group_id",
             "automation_server",
             "automation_server_id",
             "editor_url",
             "created_at",
             "updated_at",
-            "group_memberships",
         ]
-        read_only_fields = ["created_at", "updated_at", "keycloak_org_id"]
+        read_only_fields = ["created_at", "updated_at", "keycloak_org_id", "workspace_group_id"]

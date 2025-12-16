@@ -1,11 +1,14 @@
 """
 Frontend API views for workspace management
 """
+import json
 import logging
 import os
 
 from django.conf import settings
 from django.shortcuts import get_object_or_404
+from keycloak import KeycloakDeleteError
+from keycloak import KeycloakPutError
 from rest_framework import status
 from rest_framework import views
 from rest_framework import viewsets
@@ -21,6 +24,7 @@ from bitswan_backend.core.serializers.workspaces import WorkspaceSerializer
 from bitswan_backend.core.utils.mqtt import create_mqtt_token
 from bitswan_backend.core.permissions.workspaces import CanReadWorkspaceEMQXJWT
 from bitswan_backend.core.permissions.workspaces import CanReadWorkspacePipelineEMQXJWT
+from bitswan_backend.core.permissions.workspaces import HasAccessToWorkspace
 from bitswan_backend.core.pagination import DefaultPagination
 
 from bitswan_backend.core.models.workspaces import WorkspaceGroupMembership
@@ -142,7 +146,12 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
-    @action(detail=True, methods=["POST"], url_path="add_to_group")
+    @action(
+        detail=True, 
+        methods=["POST"], 
+        url_path="add_to_group", 
+        permission_classes=[HasAccessToWorkspace],
+    )
     def add_to_group(self, request, pk=None):
         """
         Add workspace to a group by creating a WorkspaceGroupMembership entry
@@ -195,7 +204,12 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    @action(detail=True, methods=["POST"], url_path="remove_from_group")
+    @action(
+        detail=True, 
+        methods=["POST"], 
+        url_path="remove_from_group", 
+        permission_classes=[HasAccessToWorkspace],
+    )
     def remove_from_group(self, request, pk=None):
         """
         Remove workspace from a group by deleting the WorkspaceGroupMembership entry
@@ -230,6 +244,287 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
             L.error(f"Error removing workspace from group: {str(e)}")
             return Response(
                 {"error": "Failed to remove workspace from group"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(
+        detail=True,
+        methods=["GET"],
+        url_path="groups",
+        permission_classes=[HasAccessToWorkspace],
+    )
+    def groups(self, request, pk=None):
+        """
+        GET /workspaces/<workspace_id>/groups
+        Returns full group objects (not just IDs) for the specified workspace.
+        """
+        try:
+            # Get the workspace
+            workspace = get_object_or_404(Workspace, pk=pk)
+            
+            # Get all group memberships for this workspace
+            memberships = WorkspaceGroupMembership.objects.filter(workspace=workspace)
+            
+            # Fetch full group objects from Keycloak
+            groups = []
+            for membership in memberships:
+                try:
+                    group = self.keycloak.get_org_group(membership.keycloak_group_id)
+                    groups.append(group)
+                except Exception as e:
+                    L.warning(f"Failed to fetch group {membership.keycloak_group_id}: {str(e)}")
+                    # Continue with other groups even if one fails
+            
+            return Response(groups, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            L.error(f"Error fetching workspace groups: {str(e)}")
+            return Response(
+                {"error": "Failed to fetch workspace groups"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(
+        detail=True,
+        methods=["GET"],
+        url_path="users",
+        permission_classes=[HasAccessToWorkspace],
+    )
+    def users(self, request, pk=None):
+        """
+        GET /workspaces/<workspace_id>/users
+        Returns users that are members of the workspace's workspace_group_id group.
+        """
+        try:
+            # Get the workspace
+            workspace = get_object_or_404(Workspace, pk=pk)
+            
+            # Check if workspace has a group assigned
+            if not workspace.workspace_group_id:
+                return Response(
+                    {"error": "Workspace does not have a group assigned"}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Fetch users from the group using Keycloak
+            try:
+                users = self.keycloak.keycloak_admin.get_group_members(
+                    group_id=workspace.workspace_group_id,
+                )
+            except Exception as e:
+                L.error(f"Error fetching group members from Keycloak: {str(e)}")
+                return Response(
+                    {"error": "Failed to fetch group members"}, 
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+            return Response(users, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            L.error(f"Error fetching workspace group users: {str(e)}")
+            return Response(
+                {"error": "Failed to fetch workspace group users"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(
+        detail=True,
+        methods=["GET"],
+        url_path="non-member-groups",
+        permission_classes=[HasAccessToWorkspace],
+    )
+    def non_member_groups(self, request, pk=None):
+        """
+        GET /workspaces/<workspace_id>/non-member-groups
+        Returns groups that the workspace is NOT a member of.
+        """
+        try:
+            # Get the workspace
+            workspace = get_object_or_404(Workspace, pk=pk)
+            
+            # Get all org groups
+            org_groups = self.get_org_groups()
+            
+            # Get groups that workspace IS a member of
+            workspace_memberships = WorkspaceGroupMembership.objects.filter(workspace=workspace)
+            workspace_group_ids = {membership.keycloak_group_id for membership in workspace_memberships}
+            
+            # Filter to find groups the workspace is NOT a member of
+            non_member_groups = [
+                group for group in org_groups 
+                if group["id"] not in workspace_group_ids
+            ]
+            
+            return Response(non_member_groups, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            L.error(f"Error fetching non-member groups: {str(e)}")
+            return Response(
+                {"error": "Failed to fetch non-member groups"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(
+        detail=True,
+        methods=["GET"],
+        url_path="non-member-users",
+        permission_classes=[HasAccessToWorkspace],
+    )
+    def non_member_users(self, request, pk=None):
+        """
+        GET /workspaces/<workspace_id>/non-member-users
+        Returns users that are NOT members of the workspace's workspace_group_id group.
+        """
+        try:
+            # Get the workspace
+            workspace = get_object_or_404(Workspace, pk=pk)
+            
+            # Check if workspace has a group assigned
+            if not workspace.workspace_group_id:
+                return Response(
+                    {"error": "Workspace does not have a group assigned"}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Get all org users
+            org_users = self.get_org_users()
+            
+            # Get users that ARE members of the workspace group
+            try:
+                group_member_ids = set()
+                group_members = self.keycloak.keycloak_admin.get_group_members(
+                    group_id=workspace.workspace_group_id,
+                )
+                group_member_ids = {user["id"] for user in group_members}
+            except Exception as e:
+                L.warning(f"Error fetching group members for filtering: {str(e)}")
+                # If we can't get group members, return all org users
+                group_member_ids = set()
+            
+            # Filter to find users that are NOT members of the workspace group
+            non_member_users = [
+                user for user in org_users
+                if user.get("id") not in group_member_ids
+            ]
+            
+            return Response(non_member_users, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            L.error(f"Error fetching non-member users: {str(e)}")
+            return Response(
+                {"error": "Failed to fetch non-member users"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(
+        detail=True,
+        methods=["POST"],
+        url_path="add_user",
+        permission_classes=[HasAccessToWorkspace],
+    )
+    def add_user(self, request, pk=None):
+        """
+        POST /workspaces/<workspace_id>/add_user
+        Add a user to the workspace's workspace_group_id group.
+        """
+        try:
+            workspace = get_object_or_404(Workspace, pk=pk)
+            user_id = request.data.get("user_id")
+            
+            if not user_id:
+                return Response(
+                    {"error": "user_id is required"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Check if workspace has a group assigned
+            if not workspace.workspace_group_id:
+                return Response(
+                    {"error": "Workspace does not have a group assigned"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Add user to the workspace group
+            self.add_user_to_group(
+                group_id=workspace.workspace_group_id,
+                user_id=user_id
+            )
+            
+            return Response(status=status.HTTP_200_OK)
+            
+        except KeycloakPutError as e:
+            L.error(f"Error adding user to workspace group: {str(e)}")
+            error_message = "Failed to add user to workspace group"
+            try:
+                if hasattr(e, 'error_message') and e.error_message:
+                    parsed_error = json.loads(e.error_message)
+                    error_message = parsed_error.get("errorMessage", error_message)
+            except (json.JSONDecodeError, AttributeError):
+                pass
+            return Response(
+                {"error": error_message},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        except Exception as e:
+            L.error(f"Error adding user to workspace group: {str(e)}")
+            return Response(
+                {"error": "Failed to add user to workspace group"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(
+        detail=True,
+        methods=["POST"],
+        url_path="remove_user",
+        permission_classes=[HasAccessToWorkspace],
+    )
+    def remove_user(self, request, pk=None):
+        """
+        POST /workspaces/<workspace_id>/remove_user
+        Remove a user from the workspace's workspace_group_id group.
+        """
+        try:
+            workspace = get_object_or_404(Workspace, pk=pk)
+            user_id = request.data.get("user_id")
+            
+            if not user_id:
+                return Response(
+                    {"error": "user_id is required"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Check if workspace has a group assigned
+            if not workspace.workspace_group_id:
+                return Response(
+                    {"error": "Workspace does not have a group assigned"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Remove user from the workspace group
+            self.remove_user_from_group(
+                group_id=workspace.workspace_group_id,
+                user_id=user_id
+            )
+            
+            return Response(status=status.HTTP_200_OK)
+            
+        except KeycloakDeleteError as e:
+            L.error(f"Error removing user from workspace group: {str(e)}")
+            error_message = "Failed to remove user from workspace group"
+            try:
+                if hasattr(e, 'error_message') and e.error_message:
+                    parsed_error = json.loads(e.error_message)
+                    error_message = parsed_error.get("errorMessage", error_message)
+            except (json.JSONDecodeError, AttributeError):
+                pass
+            return Response(
+                {"error": error_message},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        except Exception as e:
+            L.error(f"Error removing user from workspace group: {str(e)}")
+            return Response(
+                {"error": "Failed to remove user from workspace group"}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
