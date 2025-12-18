@@ -9,13 +9,14 @@ type ProcessListSectionProps = {
   processes: Process[];
   isLoading: boolean;
   hideWorkspaceColumn?: boolean;
+  hideOther?: boolean;
   lastUpdated?: string;
 };
 
 export default function ProcessListSection(
   props: ProcessListSectionProps,
 ) {
-  const { automations, processes, isLoading, hideWorkspaceColumn, lastUpdated } = props;
+  const { automations, processes, isLoading, hideWorkspaceColumn, hideOther, lastUpdated } = props;
 
   return (
     <div className="w-full">
@@ -58,6 +59,7 @@ export default function ProcessListSection(
         processes={processes}
         automations={automations}
         hideWorkspaceColumn={hideWorkspaceColumn}
+        hideOther={hideOther}
       />
     </div>
   );

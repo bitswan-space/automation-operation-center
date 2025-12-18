@@ -103,8 +103,8 @@ export function AppSidebar(props: AppSidebarProps) {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem key={"processes"}>
-                    <SidebarMenuButton asChild>
-                      <Link to={"/dashboard/processes"}>
+                    <SidebarMenuButton asChild isActive={path === "/processes"}>
+                      <Link to={"/processes"}>
                         <Network />
                         <span>{"Processes"}</span>
                       </Link>

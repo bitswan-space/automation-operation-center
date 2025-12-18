@@ -21,6 +21,7 @@ import AutomationDetailPage from "@/pages/AutomationDetailPage";
 import AutomationsPage from "@/pages/AutomationsPage";
 import SettingsPage from "@/pages/SettingsPage";
 import WorkspacesPage from "./pages/WorkspacesPage";
+import ProcessesPage from "./pages/ProcessesPage";
 
 
 function App() {
@@ -85,6 +86,18 @@ function App() {
                             path=":id"
                             element={<WorkspaceDetailPage />}
                         />
+                    </Route>
+
+                    {/* Processes route */}
+                    <Route
+                        path="/processes"
+                        element={
+                            <ProtectedRoute>
+                                <DashboardLayout path="/processes" />
+                            </ProtectedRoute>
+                        }
+                    >
+                        <Route index element={<ProcessesPage />} />
                     </Route>
 
                     {/* Automations route */}

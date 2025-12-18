@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { createColumnHelper, flexRender } from "@tanstack/react-table";
-import { type PipelineWithStats, type Process } from "@/types";
+import { type PipelineWithStats, type Process, type WorkspaceGroup } from "@/types";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import {
@@ -46,6 +46,7 @@ import { cn } from "@/lib/utils";
 import MQTTService from "@/services/MQTTService";
 import { toast } from "sonner";
 import { Input } from "../ui/input";
+import { useAutomations } from "@/context/AutomationsProvider";
 
 const columnHelper = createColumnHelper<Process>();
 
@@ -53,15 +54,20 @@ type ProcessesTableProps = {
   processes: Process[];
   automations: PipelineWithStats[];
   hideWorkspaceColumn?: boolean;
+  hideOther?: boolean;
 };
 
 export default function ProcessesTable(props: ProcessesTableProps) {
-  const { processes, automations, hideWorkspaceColumn } = props;
+  const { processes, automations, hideWorkspaceColumn, hideOther } = props;
   const [expandedProcesses, setExpandedProcesses] = useState<Set<string>>(
     new Set()
   );
   const [processToDelete, setProcessToDelete] = useState<Process | null>(null);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const { automationServers } = useAutomations();
+  const workspaces = Object.values(automationServers).reduce((acc, server) => {
+    return { ...acc, ...server.workspaces };
+  }, {} as Record<string, WorkspaceGroup>);
 
   const toggleProcess = (processId: string) => {
     setExpandedProcesses((prev) => {
@@ -144,10 +150,7 @@ export default function ProcessesTable(props: ProcessesTableProps) {
             cell: ({ row }) => {
               return (
                 <div>
-                  {automations.find(
-                    (automation) =>
-                      automation.workspaceId === row.original.workspace_id
-                  )?.workspaceName ?? row.original.workspace_id}
+                  {workspaces[row.original.workspace_id]?.workspace.name ?? row.original.workspace_id}
                 </div>
               );
             },
@@ -244,7 +247,7 @@ export default function ProcessesTable(props: ProcessesTableProps) {
   ];
 
   const table = useReactTable({
-    data: processesWithOther,
+    data: hideOther ? processes : processesWithOther,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -296,7 +299,7 @@ export default function ProcessesTable(props: ProcessesTableProps) {
               const processAutomations = process.automation_sources
                 .map((deploymentId) =>
                   automations.find(
-                    (auto) => auto.properties["deployment-id"] === deploymentId
+                    (auto) => auto.properties["deployment-id"] === deploymentId && auto.workspaceId === process.workspace_id
                   )
                 )
                 .filter(
