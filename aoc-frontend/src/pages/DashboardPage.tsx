@@ -1,13 +1,13 @@
 import PanelItemsSection from "@/components/home/PanelItemsSection";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useMQTTTokens } from "@/context/MQTTTokensProvider";
 import { useSidebarItems } from "@/context/SideBarItemsProvider";
 import { useTitleBar } from "@/context/TitleBarProvider";
 import { useAutomationsCounts } from "@/hooks/useAutomationsCounts";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
-import { LayoutDashboard, Loader2, Plus } from "lucide-react";
+import { LayoutDashboard, Loader2 } from "lucide-react";
 import { useEffect } from "react";
+import AutomateProcessButton from "@/components/processes/AutomateProcessButton";
 
 export default function DashboardPage() {
   const { deserializedNavItems: sidebarItems } = useSidebarItems();
@@ -28,10 +28,7 @@ export default function DashboardPage() {
     setIcon(<LayoutDashboard size={24} />);
     setButtons(
       isMaker && (
-        <Button>
-          <Plus size={16} />
-          Automate processes
-        </Button>
+        <AutomateProcessButton />
       )
     );
   }, [setTitle, setIcon, setButtons, isMaker]);

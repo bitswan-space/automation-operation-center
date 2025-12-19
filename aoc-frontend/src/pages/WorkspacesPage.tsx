@@ -4,6 +4,7 @@ import { RefreshCw, Table } from "lucide-react";
 import { WorkspacesListSection } from "@/components/workspaces/WorkspacesListSection";
 import { Button } from "@/components/ui/button";
 import { useWorkspacesQuery } from "@/hooks/useWorkspacesQuery";
+import AutomateProcessButton from "@/components/processes/AutomateProcessButton";
 
 const WorkspacesPage = () => {
   const { setTitle, setIcon, setButtons } = useTitleBar();
@@ -14,6 +15,7 @@ const WorkspacesPage = () => {
     setIcon(<Table size={24} />);
     setButtons(
       <>
+        <AutomateProcessButton />
         <Button
           variant="outline"
           onClick={() => refetch()}

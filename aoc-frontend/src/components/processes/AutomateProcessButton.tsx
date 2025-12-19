@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Input } from "../ui/input";
@@ -16,6 +17,7 @@ type AutomateProcessButtonProps = {
 export default function AutomateProcessButton(props: AutomateProcessButtonProps) {
   const { workspaceId, automationServerId } = props;
   const { automationServers } = useAutomations();
+  const navigate = useNavigate();
   const workspaces = Object.values(automationServers).flatMap(server => Object.values(server.workspaces));
   const [open, setOpen] = useState(false);
   const [processName, setProcessName] = useState("");
@@ -34,11 +36,16 @@ export default function AutomateProcessButton(props: AutomateProcessButtonProps)
 
   const handleContinue = () => {
     if (processName.trim() && finalWorkspaceId && finalAutomationServerId) {
-      MQTTService.getInstance().createProcess(processName.trim(), finalWorkspaceId, finalAutomationServerId);
+      const processId = MQTTService.getInstance().createProcess(processName.trim(), finalWorkspaceId, finalAutomationServerId);
       setProcessName("");
       setSelectedWorkspaceId("");
       setSelectedAutomationServerId("");
       setOpen(false);
+      
+      // Redirect to process detail page after a small delay
+      setTimeout(() => {
+        navigate(`/workspaces/${finalWorkspaceId}/processes/${processId}`);
+      }, 500); // 500ms delay
     }
   };
 
