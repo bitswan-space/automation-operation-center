@@ -25,6 +25,7 @@ import {
   CodeIcon,
   EllipsisIcon,
   Search,
+  SquarePen,
 } from "lucide-react";
 import {
   Table,
@@ -223,22 +224,29 @@ export default function ProcessesTable(props: ProcessesTableProps) {
               </Button>
             )}
             {row.original.id !== "__other__" && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+              <>
+                <Link to={`/workspaces/${row.original.workspace_id}/processes/${row.original.id}`}>
                   <Button variant="ghost">
-                    <EllipsisIcon size={16} />
+                    <SquarePen size={16} />
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() => {
-                      setProcessToDelete(row.original);
-                    }}
-                  >
-                    Delete process
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost">
+                      <EllipsisIcon size={16} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setProcessToDelete(row.original);
+                      }}
+                    >
+                      Delete process
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
             )}
           </div>
         );
@@ -330,7 +338,6 @@ export default function ProcessesTable(props: ProcessesTableProps) {
                               <TableHead className="px-4 font-semibold">Created</TableHead>
                               <TableHead className="px-4 font-semibold">Status</TableHead>
                               <TableHead className="px-4 font-semibold">State</TableHead>
-                              <TableHead className="px-4 font-semibold text-right">Actions</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>

@@ -4,6 +4,7 @@ import { PipelineDataSection } from "@/components/pipeline/PipelineDataSection";
 import React, { useEffect } from "react";
 import { useTitleBar } from "@/context/TitleBarProvider";
 import { Cog } from "lucide-react";
+import AutomateProcessButton from "@/components/processes/AutomateProcessButton";
 
 const AutomationsPage = () => {
   const { setTitle, setIcon, setButtons } = useTitleBar();
@@ -11,7 +12,7 @@ const AutomationsPage = () => {
   useEffect(() => {
     setTitle("Automations");
     setIcon(<Cog size={24} />);
-    setButtons(null)
+    setButtons(<AutomateProcessButton />)
   }, [setTitle, setIcon, setButtons]);
 
   return (

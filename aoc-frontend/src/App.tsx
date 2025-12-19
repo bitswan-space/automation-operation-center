@@ -22,6 +22,7 @@ import AutomationsPage from "@/pages/AutomationsPage";
 import SettingsPage from "@/pages/SettingsPage";
 import WorkspacesPage from "./pages/WorkspacesPage";
 import ProcessesPage from "./pages/ProcessesPage";
+import ProcessDetailPage from "./pages/ProcessDetailPage";
 
 
 function App() {
@@ -85,6 +86,10 @@ function App() {
                         <Route
                             path=":id"
                             element={<WorkspaceDetailPage />}
+                        />
+                        <Route
+                            path=":id/processes/:processId"
+                            element={<ProcessDetailPage />}
                         />
                     </Route>
 

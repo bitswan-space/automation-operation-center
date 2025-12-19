@@ -7,6 +7,7 @@ import { useAutomations } from "@/context/AutomationsProvider";
 import ProcessListSection from "@/components/processes/ProcessListSection";
 import { Button } from "@/components/ui/button";
 import { WorkspaceAccessDialog } from "@/components/workspaces/WorkspaceAccessDialog";
+import AutomateProcessButton from "@/components/processes/AutomateProcessButton";
 
 const WorkspaceDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,6 +31,7 @@ const WorkspaceDetailPage = () => {
           <Lock size={16} />
           User access
         </Button>
+        <AutomateProcessButton workspaceId={workspaceData?.id} automationServerId={workspaceData?.automation_server} />
       </>
     )
   }, [setTitle, setIcon, setButtons, workspaceData]);
