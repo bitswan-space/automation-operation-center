@@ -19,6 +19,7 @@ import {
   Quote,
   Link,
   Image,
+  Minus,
 } from "lucide-react";
 import { useEditorEventCallback, useEditorState } from "@handlewithcare/react-prosemirror";
 import { Button } from "@/components/ui/button";
@@ -195,6 +196,21 @@ export default function EditorMenu() {
   const setCodeBlock = useEditorEventCallback((view) => {
     const setCode = setBlockType(view.state.schema.nodes.code_block);
     setCode(view.state, view.dispatch, view);
+    view.focus();
+  });
+
+  const insertHorizontalRule = useEditorEventCallback((view) => {
+    const { schema } = view.state;
+    const horizontalRule = schema.nodes.horizontal_rule;
+    
+    if (!horizontalRule) return;
+    
+    const { $from } = view.state.selection;
+    // Insert horizontal rule after the current block
+    const pos = $from.after($from.depth);
+    const hr = horizontalRule.create();
+    const tr = view.state.tr.insert(pos, hr);
+    view.dispatch(tr);
     view.focus();
   });
 
@@ -602,6 +618,12 @@ export default function EditorMenu() {
         onClick={toggleBlockquote}
       >
         <Quote className="h-4 w-4" />
+      </MenuButton>
+      <MenuButton
+        title="Horizontal Rule"
+        onClick={insertHorizontalRule}
+      >
+        <Minus className="h-4 w-4" />
       </MenuButton>
       <div className="mx-2 h-6 w-px bg-border" />
       {/* History */}
