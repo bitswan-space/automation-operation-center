@@ -57,7 +57,6 @@ const createEditorPlugins = () => [
     "Mod-i": toggleMark(markdownSchema.marks.em),
     "Mod-b": toggleMark(markdownSchema.marks.strong),
     "Mod-Shift-c": toggleMark(markdownSchema.marks.code),
-    "Mod-k": toggleMark(markdownSchema.marks.link),
     "Mod-z": undo,
     "Mod-Shift-z": redo,
     "Mod-y": redo,

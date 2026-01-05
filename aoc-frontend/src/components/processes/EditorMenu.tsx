@@ -203,6 +203,10 @@ export default function EditorMenu() {
   const [linkUrl, setLinkUrl] = useState("");
 
   const handleLinkPopoverOpenChange = (open: boolean) => {
+    // Prevent opening popover if no text is selected
+    if (open && state && state.selection.empty) {
+      return;
+    }
     if (open && state) {
       // Get current link URL from selection when opening
       const { $from, empty } = state.selection;
@@ -380,6 +384,9 @@ export default function EditorMenu() {
   const isBlockquote = isWrapped(schema.nodes.blockquote)(state);
   const isLink = schema.marks.link && isMarkActive(schema.marks.link, state);
   
+  // Check if text is selected (selection is not empty)
+  const hasTextSelection = !state.selection.empty;
+  
   // Check if cursor is at an image node
   const isImage = schema.nodes.image && (() => {
     const { $from } = state.selection;
@@ -426,111 +433,109 @@ export default function EditorMenu() {
       >
         <Code className="h-4 w-4" />
       </MenuButton>
-      {schema.marks.link && (
-        <Popover open={linkPopoverOpen} onOpenChange={handleLinkPopoverOpenChange}>
-          <PopoverTrigger asChild>
-            <MenuButton
-              title="Link (Ctrl+K)"
-              isActive={isLink}
-            >
-              <Link className="h-4 w-4" />
-            </MenuButton>
-          </PopoverTrigger>
-          <PopoverContent className="w-80" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="link-url" className="text-sm font-medium">
-                  URL
-                </label>
-                <Input
-                  id="link-url"
-                  type="url"
-                  placeholder="https://example.com"
-                  value={linkUrl}
-                  onChange={(e) => setLinkUrl(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleLinkSubmit();
-                    }
-                    if (e.key === "Escape") {
-                      setLinkPopoverOpen(false);
-                    }
-                  }}
-                  autoFocus
-                />
-              </div>
-              <div className="flex justify-end gap-2">
-                {isLink && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleLinkRemove}
-                  >
-                    Remove
-                  </Button>
-                )}
+      <Popover open={linkPopoverOpen} onOpenChange={handleLinkPopoverOpenChange}>
+        <PopoverTrigger asChild>
+          <MenuButton
+            title="Link"
+            isActive={isLink}
+            isDisabled={!hasTextSelection}
+          >
+            <Link className="h-4 w-4" />
+          </MenuButton>
+        </PopoverTrigger>
+        <PopoverContent className="w-80" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="link-url" className="text-sm font-medium">
+                URL
+              </label>
+              <p className="text-xs text-muted-foreground">Edit link for selected text</p>
+              <Input
+                id="link-url"
+                type="url"
+                placeholder="https://example.com"
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleLinkSubmit();
+                  }
+                  if (e.key === "Escape") {
+                    setLinkPopoverOpen(false);
+                  }
+                }}
+                autoFocus
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              {isLink && (
                 <Button
                   type="button"
+                  variant="outline"
                   size="sm"
-                  onClick={handleLinkSubmit}
+                  onClick={handleLinkRemove}
                 >
-                  {isLink ? "Update" : "Add"} Link
+                  Remove
                 </Button>
-              </div>
+              )}
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleLinkSubmit}
+              >
+                {isLink ? "Update" : "Add"} Link
+              </Button>
             </div>
-          </PopoverContent>
-        </Popover>
-      )}
-      {schema.nodes.image && (
-        <Popover open={imagePopoverOpen} onOpenChange={handleImagePopoverOpenChange}>
-          <PopoverTrigger asChild>
-            <MenuButton
-              title="Image"
-              isActive={isImage}
-            >
-              <Image className="h-4 w-4" />
-            </MenuButton>
-          </PopoverTrigger>
-          <PopoverContent className="w-80" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="image-url" className="text-sm font-medium">
-                  Image URL
-                </label>
-                <Input
-                  id="image-url"
-                  type="url"
-                  placeholder="https://example.com/image.png"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleImageSubmit();
-                    }
-                    if (e.key === "Escape") {
-                      setImagePopoverOpen(false);
-                    }
-                  }}
-                  autoFocus
-                />
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={handleImageSubmit}
-                  disabled={!imageUrl.trim()}
-                >
-                  {isImage ? "Update" : "Insert"} Image
-                </Button>
-              </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+      <Popover open={imagePopoverOpen} onOpenChange={handleImagePopoverOpenChange}>
+        <PopoverTrigger asChild>
+          <MenuButton
+            title="Image"
+            isActive={isImage}
+          >
+            <Image className="h-4 w-4" />
+          </MenuButton>
+        </PopoverTrigger>
+        <PopoverContent className="w-80" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="image-url" className="text-sm font-medium">
+                Image URL
+              </label>
+              <Input
+                id="image-url"
+                type="url"
+                placeholder="https://example.com/image.png"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleImageSubmit();
+                  }
+                  if (e.key === "Escape") {
+                    setImagePopoverOpen(false);
+                  }
+                }}
+                autoFocus
+              />
             </div>
-          </PopoverContent>
-        </Popover>
-      )}
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleImageSubmit}
+                disabled={!imageUrl.trim()}
+              >
+                {isImage ? "Update" : "Insert"} Image
+              </Button>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
       <div className="mx-2 h-6 w-px bg-border" />
       {/* Headings */}
       <MenuButton
