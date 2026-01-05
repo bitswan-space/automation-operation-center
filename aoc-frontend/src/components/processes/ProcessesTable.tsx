@@ -326,25 +326,27 @@ export default function ProcessesTable(props: ProcessesTableProps) {
                     ))}
                   </TableRow>
                   {isExpanded && (
-                    <TableRow>
+                    <TableRow className="hover:bg-muted/50">
                       <TableCell
                         colSpan={row.getVisibleCells().length}
                         className="p-0"
                       >
                         <Table>
                           <TableHeader>
-                            <TableRow className="bg-muted/50">
+                            <TableRow className="bg-muted/50 hover:bg-muted/50">
                               <TableHead className="px-4 font-semibold">Name</TableHead>
                               <TableHead className="px-4 font-semibold">Created</TableHead>
                               <TableHead className="px-4 font-semibold">Status</TableHead>
                               <TableHead className="px-4 font-semibold">State</TableHead>
+                              {/* Edit button */}
+                              <TableHead></TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
                             {processAutomations.map((automation, index) => (
                               <TableRow
                                 key={`${process.id}-automation-${index}`}
-                                className="h-16 bg-primary-foreground"
+                                className="h-16 bg-primary-foreground hover:bg-muted/50"
                               >
                                 <TableCell className="px-4 font-bold">
                                   {automation.properties.name}
