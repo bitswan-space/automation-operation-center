@@ -43,6 +43,27 @@ const trailingParagraphPlugin = new Plugin({
   },
 });
 
+// Helper function to create the plugins array for the editor
+const createEditorPlugins = () => [
+  reactKeys(),
+  history(),
+  trailingParagraphPlugin,
+  keymap({
+    ...baseKeymap,
+    Enter: chainCommands(
+      splitListItem(markdownSchema.nodes.list_item),
+      baseKeymap.Enter
+    ),
+    "Mod-i": toggleMark(markdownSchema.marks.em),
+    "Mod-b": toggleMark(markdownSchema.marks.strong),
+    "Mod-Shift-c": toggleMark(markdownSchema.marks.code),
+    "Mod-k": toggleMark(markdownSchema.marks.link),
+    "Mod-z": undo,
+    "Mod-Shift-z": redo,
+    "Mod-y": redo,
+  }),
+];
+
 export default function ProcessEditor({
   processId,
   workspaceId,
@@ -51,25 +72,7 @@ export default function ProcessEditor({
   const [state, setState] = useState(() =>
     EditorState.create({
       schema: markdownSchema,
-      plugins: [
-        reactKeys(),
-        history(),
-        trailingParagraphPlugin,
-        keymap({
-          ...baseKeymap,
-          Enter: chainCommands(
-            splitListItem(markdownSchema.nodes.list_item),
-            baseKeymap.Enter
-          ),
-          "Mod-i": toggleMark(markdownSchema.marks.em),
-          "Mod-b": toggleMark(markdownSchema.marks.strong),
-          "Mod-Shift-c": toggleMark(markdownSchema.marks.code),
-          "Mod-k": toggleMark(markdownSchema.marks.link),
-          "Mod-z": undo,
-          "Mod-Shift-z": redo,
-          "Mod-y": redo,
-        }),
-      ],
+      plugins: createEditorPlugins(),
     })
   );
 
@@ -96,25 +99,7 @@ export default function ProcessEditor({
             const newState = EditorState.create({
               schema: markdownSchema,
               doc,
-              plugins: [
-                reactKeys(),
-                history(),
-                trailingParagraphPlugin,
-                keymap({
-                  ...baseKeymap,
-                  Enter: chainCommands(
-                    splitListItem(markdownSchema.nodes.list_item),
-                    baseKeymap.Enter
-                  ),
-                  "Mod-i": toggleMark(markdownSchema.marks.em),
-                  "Mod-b": toggleMark(markdownSchema.marks.strong),
-                  "Mod-Shift-c": toggleMark(markdownSchema.marks.code),
-                  "Mod-k": toggleMark(markdownSchema.marks.link),
-                  "Mod-z": undo,
-                  "Mod-Shift-z": redo,
-                  "Mod-y": redo,
-                }),
-              ],
+              plugins: createEditorPlugins(),
             });
             setState(newState);
             lastSavedContentRef.current = content;
