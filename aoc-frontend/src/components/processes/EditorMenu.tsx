@@ -26,7 +26,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { useState, forwardRef } from "react";
+import { useState, forwardRef, useEffect, useRef } from "react";
+import { useAutomations } from "@/context/AutomationsProvider";
 
 // Check if a mark is active at the current selection
 function isMarkActive(mark: MarkType, state: EditorState): boolean {
@@ -114,8 +115,17 @@ const MenuButton = forwardRef<HTMLButtonElement, MenuButtonProps>(
 );
 MenuButton.displayName = "MenuButton";
 
-export default function EditorMenu() {
+interface EditorMenuProps {
+  processId: string;
+}
+
+export default function EditorMenu({
+  processId,
+}: EditorMenuProps) {
   const state = useEditorState();
+  const { processes } = useAutomations();
+  const process = processes[processId];
+  const [attachments, setAttachments] = useState<string[]>([]);
 
   const toggleBold = useEditorEventCallback((view) => {
     const toggleBoldMark = toggleMark(view.state.schema.marks["strong"]);
@@ -309,9 +319,19 @@ export default function EditorMenu() {
     view.focus();
   });
 
+  // Load attachments from process object
+  useEffect(() => {
+    if (process?.attachments) {
+      setAttachments(process.attachments);
+    } else {
+      setAttachments([]);
+    }
+  }, [process?.attachments]);
+
   // Image popover state
   const [imagePopoverOpen, setImagePopoverOpen] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
+  const attachmentFileNameRef = useRef<string>("");
 
   const handleImagePopoverOpenChange = (open: boolean) => {
     if (open && state) {
@@ -383,6 +403,31 @@ export default function EditorMenu() {
     setImageUrl("");
     view.focus();
   });
+
+  // Handler to insert image from attachment
+  const insertAttachmentImage = useEditorEventCallback((view) => {
+    const { $from } = view.state.selection;
+    const imageNode = view.state.schema.nodes.image;
+    
+    if (!imageNode) return;
+
+    // Create image with Attachments/ prefix
+    const imageSrc = `Attachments/${attachmentFileNameRef.current}`;
+    const image = imageNode.create({ src: imageSrc });
+    
+    // Insert new image as a new block after the current block
+    const pos = $from.after($from.depth);
+    const tr = view.state.tr.insert(pos, image);
+    view.dispatch(tr);
+    
+    setImagePopoverOpen(false);
+    view.focus();
+  });
+
+  const handleAttachmentImageSelect = (fileName: string) => {
+    attachmentFileNameRef.current = fileName;
+    insertAttachmentImage();
+  };
 
   if (!state) {
     return null;
@@ -539,6 +584,33 @@ export default function EditorMenu() {
                 autoFocus
               />
             </div>
+            {attachments.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Or select from attachments</label>
+                <div className="max-h-48 overflow-y-auto space-y-1 border rounded-md p-2">
+                  {attachments
+                    .filter((fileName) => {
+                      // Filter to show only image files
+                      return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(fileName);
+                    })
+                    .map((fileName) => (
+                      <Button
+                        key={fileName}
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start"
+                        onClick={() => handleAttachmentImageSelect(fileName)}
+                      >
+                        {fileName}
+                      </Button>
+                    ))}
+                  {attachments.filter((fileName) => /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(fileName)).length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-2">No image attachments available</p>
+                  )}
+                </div>
+              </div>
+            )}
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
