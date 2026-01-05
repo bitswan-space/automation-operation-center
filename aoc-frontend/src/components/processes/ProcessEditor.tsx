@@ -4,6 +4,8 @@ import { keymap } from "prosemirror-keymap";
 import { splitListItem } from "prosemirror-schema-list";
 import { inputRules, wrappingInputRule, textblockTypeInputRule, InputRule } from "prosemirror-inputrules";
 import { EditorState, Transaction, Plugin } from "prosemirror-state";
+import type { EditorView, NodeView } from "prosemirror-view";
+import type { Node } from "prosemirror-model";
 import {
   defaultMarkdownParser,
   defaultMarkdownSerializer,
@@ -44,6 +46,86 @@ const trailingParagraphPlugin = new Plugin({
   },
 });
 
+// Plugin to handle MQTT image fetching for attachments
+const createAttachmentImagePlugin = (
+  processId: string,
+  workspaceId: string,
+  automationServerId: string
+) => {
+  return new Plugin({
+    props: {
+      nodeViews: {
+        image(node: Node, view: EditorView, getPos: () => number | undefined): NodeView {
+          const dom = document.createElement("img");
+          const src = node.attrs.src || "";
+          
+          // Check if this is an attachment image
+          if (src.startsWith("Attachments/")) {
+            const fileName = src.replace("Attachments/", "");
+            
+            // Fetch image from MQTT
+            MQTTService.getInstance()
+              .getProcessAttachment(processId, fileName, workspaceId, automationServerId)
+              .then((blob) => {
+                if (blob) {
+                  const url = window.URL.createObjectURL(blob);
+                  dom.src = url;
+                  dom.alt = node.attrs.alt || fileName;
+                  
+                  // Clean up object URL when image is removed
+                  dom.addEventListener("load", () => {
+                    // Keep the URL alive while the image is displayed
+                  });
+                } else {
+                  dom.alt = `Failed to load: ${fileName}`;
+                  dom.style.border = "1px dashed red";
+                }
+              })
+              .catch((error) => {
+                console.error("Failed to load attachment image:", error);
+                dom.alt = `Error loading: ${fileName}`;
+                dom.style.border = "1px dashed red";
+              });
+          } else {
+            // Regular image URL
+            dom.src = src;
+            dom.alt = node.attrs.alt || "";
+          }
+          
+          return {
+            dom,
+            update(node: Node) {
+              const newSrc = node.attrs.src || "";
+              if (newSrc !== src) {
+                // Source changed, update the image
+                if (newSrc.startsWith("Attachments/")) {
+                  const fileName = newSrc.replace("Attachments/", "");
+                  MQTTService.getInstance()
+                    .getProcessAttachment(processId, fileName, workspaceId, automationServerId)
+                    .then((blob) => {
+                      if (blob) {
+                        const url = window.URL.createObjectURL(blob);
+                        dom.src = url;
+                        dom.alt = node.attrs.alt || fileName;
+                      }
+                    });
+                } else {
+                  dom.src = newSrc;
+                  dom.alt = node.attrs.alt || "";
+                }
+              }
+              return true;
+            },
+            destroy() {
+              // Cleanup if needed
+            },
+          };
+        },
+      },
+    },
+  });
+};
+
 // Input rules for markdown shortcuts
 const markdownInputRules = inputRules({
   rules: [
@@ -73,10 +155,15 @@ const markdownInputRules = inputRules({
 });
 
 // Helper function to create the plugins array for the editor
-const createEditorPlugins = () => [
+const createEditorPlugins = (
+  processId: string,
+  workspaceId: string,
+  automationServerId: string
+) => [
   reactKeys(),
   history(),
   trailingParagraphPlugin,
+  createAttachmentImagePlugin(processId, workspaceId, automationServerId),
   markdownInputRules,
   keymap({
     ...baseKeymap,
@@ -101,7 +188,7 @@ export default function ProcessEditor({
   const [state, setState] = useState(() =>
     EditorState.create({
       schema: markdownSchema,
-      plugins: createEditorPlugins(),
+      plugins: createEditorPlugins(processId, workspaceId, automationServerId),
     })
   );
 
@@ -128,7 +215,7 @@ export default function ProcessEditor({
             const newState = EditorState.create({
               schema: markdownSchema,
               doc,
-              plugins: createEditorPlugins(),
+              plugins: createEditorPlugins(processId, workspaceId, automationServerId),
             });
             setState(newState);
             lastSavedContentRef.current = content;
@@ -234,7 +321,7 @@ export default function ProcessEditor({
         state={state}
         dispatchTransaction={dispatchTransaction}
       >
-        <EditorMenu />
+        <EditorMenu processId={processId}/>
         <div className="flex-1 overflow-y-auto p-4 min-h-0">
           <ProseMirrorDoc spellCheck={false} />
         </div>
