@@ -2,6 +2,7 @@ import { baseKeymap, chainCommands, toggleMark } from "prosemirror-commands";
 import { history, redo, undo } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
 import { splitListItem } from "prosemirror-schema-list";
+import { inputRules, wrappingInputRule, textblockTypeInputRule, InputRule } from "prosemirror-inputrules";
 import { EditorState, Transaction, Plugin } from "prosemirror-state";
 import {
   defaultMarkdownParser,
@@ -43,11 +44,55 @@ const trailingParagraphPlugin = new Plugin({
   },
 });
 
+// Input rules for markdown shortcuts
+const markdownInputRules = inputRules({
+  rules: [
+    // Horizontal rule: "---" or "***" or "___" followed by space
+    new InputRule(/^(---|\*\*\*|___)\s$/, (state, match, start, end) => {
+      const { schema } = state;
+      const horizontalRule = schema.nodes.horizontal_rule;
+      if (horizontalRule) {
+        return state.tr.replaceWith(start, end, horizontalRule.create());
+      }
+      return null;
+    }),
+    // Heading level 1: "# " at start of line
+    textblockTypeInputRule(/^#\s$/, markdownSchema.nodes.heading, { level: 1 }),
+    // Heading level 2: "## " at start of line
+    textblockTypeInputRule(/^##\s$/, markdownSchema.nodes.heading, { level: 2 }),
+    // Heading level 3: "### " at start of line
+    textblockTypeInputRule(/^###\s$/, markdownSchema.nodes.heading, { level: 3 }),
+    // Heading level 4: "#### " at start of line
+    textblockTypeInputRule(/^####\s$/, markdownSchema.nodes.heading, { level: 4 }),
+    // Blockquote: "> " at start of line
+    wrappingInputRule(/^>\s$/, markdownSchema.nodes.blockquote),
+    // Unordered list: "- " at start of line
+    wrappingInputRule(/^-\s$/, markdownSchema.nodes.bullet_list),
+    // Unordered list: "* " at start of line
+    wrappingInputRule(/^\*\s$/, markdownSchema.nodes.bullet_list),
+    // Ordered list: "1. " (or any number) at start of line
+    new InputRule(/^(\d+)\.\s$/, (state, match, start, end) => {
+      const { schema } = state;
+      const orderedList = schema.nodes.ordered_list;
+      const listItem = schema.nodes.list_item;
+      if (orderedList && listItem) {
+        const tr = state.tr.delete(start, end);
+        const list = orderedList.create({}, listItem.create());
+        return tr.replaceSelectionWith(list);
+      }
+      return null;
+    }),
+    // Code block: "```" at start of line
+    textblockTypeInputRule(/^```$/, markdownSchema.nodes.code_block),
+  ],
+});
+
 // Helper function to create the plugins array for the editor
 const createEditorPlugins = () => [
   reactKeys(),
   history(),
   trailingParagraphPlugin,
+  markdownInputRules,
   keymap({
     ...baseKeymap,
     Enter: chainCommands(
