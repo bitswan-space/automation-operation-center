@@ -49,12 +49,7 @@ const markdownInputRules = inputRules({
   rules: [
     // Horizontal rule: "---" or "***" or "___" followed by space
     new InputRule(/^(---|\*\*\*|___)\s$/, (state, match, start, end) => {
-      const { schema } = state;
-      const horizontalRule = schema.nodes.horizontal_rule;
-      if (horizontalRule) {
-        return state.tr.replaceWith(start, end, horizontalRule.create());
-      }
-      return null;
+      return state.tr.replaceWith(start, end, state.schema.nodes.horizontal_rule.create());
     }),
     // Heading level 1: "# " at start of line
     textblockTypeInputRule(/^#\s$/, markdownSchema.nodes.heading, { level: 1 }),
@@ -71,17 +66,7 @@ const markdownInputRules = inputRules({
     // Unordered list: "* " at start of line
     wrappingInputRule(/^\*\s$/, markdownSchema.nodes.bullet_list),
     // Ordered list: "1. " (or any number) at start of line
-    new InputRule(/^(\d+)\.\s$/, (state, match, start, end) => {
-      const { schema } = state;
-      const orderedList = schema.nodes.ordered_list;
-      const listItem = schema.nodes.list_item;
-      if (orderedList && listItem) {
-        const tr = state.tr.delete(start, end);
-        const list = orderedList.create({}, listItem.create());
-        return tr.replaceSelectionWith(list);
-      }
-      return null;
-    }),
+    wrappingInputRule(/^\d+\.\s$/, markdownSchema.nodes.ordered_list),
     // Code block: "```" at start of line
     textblockTypeInputRule(/^```$/, markdownSchema.nodes.code_block),
   ],
