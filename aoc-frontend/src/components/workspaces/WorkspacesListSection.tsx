@@ -6,8 +6,9 @@ import { useAutomations } from "@/context/AutomationsProvider";
 import { Link } from "react-router-dom";
 import { formatTimeAgo } from "@/utils/time";
 import React, { useMemo, useEffect } from "react";
-import { useWorkspacesQuery, useWorkspaceUsersQuery } from "@/hooks/useWorkspacesQuery";
+import { useWorkspacesQuery } from "@/hooks/useWorkspacesQuery";
 import { Skeleton } from "../ui/skeleton";
+import { WorkspaceUserCount } from "./WorkspaceUserCount";
 
 type WorkspacesListSectionProps = {
   automationServerId?: string;
@@ -48,22 +49,6 @@ export function WorkspacesListSection(
       (process) => process.workspace_id === workspaceId
     ).length;
   };
-
-  function WorkspaceUserCount({ workspaceId }: { workspaceId: string }) {
-    const { data: workspaceUsers, isLoading: isLoadingUsers } = useWorkspaceUsersQuery(workspaceId);
-    const userCount = workspaceUsers?.length ?? 0;
-
-    return (
-      <span>
-        {isLoadingUsers ? (
-          <Loader2 size={14} className="animate-spin inline-block" />
-        ) : (
-          userCount
-        )}{" "}
-        users
-      </span>
-    );
-  }
 
   React.useEffect(() => {
     const observerElement = loadMoreRef.current;
