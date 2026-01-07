@@ -43,16 +43,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 const columnHelper = createColumnHelper<PipelineWithStats>();
 
-const createColumns = (processes?: Record<string, Process>) => {
-  // Create a mapping of deployment Id to process name
-  const deploymentIdToProcessName = new Map<string, string>();
-  if (processes) {
-    Object.values(processes).forEach((process) => {
-      process.automation_sources.forEach((deploymentId) => {
-        deploymentIdToProcessName.set(deploymentId, process.name);
-      });
-    });
-  }
+const createColumns = (deploymentIdToProcessName: Map<string, string>) => {
 
   return [
     columnHelper.display({
@@ -83,7 +74,7 @@ const createColumns = (processes?: Record<string, Process>) => {
     }),
     columnHelper.accessor((row) => {
       const deploymentId = row.properties["deployment-id"];
-      if (!deploymentId || !processes) {
+      if (!deploymentId) {
         return "—";
       }
       return deploymentIdToProcessName.get(deploymentId) ?? "—";
@@ -92,7 +83,7 @@ const createColumns = (processes?: Record<string, Process>) => {
       header: "Process",
       cell: ({ row }) => {
         const deploymentId = row.original.properties["deployment-id"];
-        if (!deploymentId || !processes) {
+        if (!deploymentId) {
           return <div className="text-xs">—</div>;
         }
         const processName = deploymentIdToProcessName.get(deploymentId);
@@ -281,7 +272,20 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
   const { isLoading, processes } = props;
   const data = React.useMemo(() => props.pipelines, [props.pipelines]);
   
-  const columns = React.useMemo(() => createColumns(processes), [processes]);
+  // Create a mapping of deployment Id to process name
+  const deploymentIdToProcessName = React.useMemo(() => {
+    const map = new Map<string, string>();
+    if (processes) {
+      Object.values(processes).forEach((process) => {
+        process.automation_sources.forEach((deploymentId) => {
+          map.set(deploymentId, process.name);
+        });
+      });
+    }
+    return map;
+  }, [processes]);
+  
+  const columns = React.useMemo(() => createColumns(deploymentIdToProcessName), [deploymentIdToProcessName]);
 
   // Get unique workspace IDs for the filter dropdown
   const workspaceIds = React.useMemo(
