@@ -223,6 +223,12 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
                     {"error": "group_id is required"}, 
                     status=status.HTTP_400_BAD_REQUEST
                 )
+                
+            if group_id == workspace.workspace_group_id:
+                return Response(
+                    {"error": "Workspace editor group cannot be removed"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             
             # Check if membership exists
             membership = WorkspaceGroupMembership.objects.filter(
@@ -268,6 +274,9 @@ class WorkspaceViewSet(KeycloakMixin, viewsets.ModelViewSet):
             # Fetch full group objects from Keycloak
             groups = []
             for membership in memberships:
+                # filter out workspace editor group
+                if membership.keycloak_group_id == workspace.workspace_group_id:
+                    continue
                 try:
                     group = self.keycloak.get_org_group(membership.keycloak_group_id)
                     groups.append(group)

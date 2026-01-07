@@ -71,7 +71,7 @@ def create_workspace_editor_group(sender, instance, created, **kwargs):
         # Create editor group
         editor_group_id = keycloak_service.create_group(
             org_id=instance.keycloak_org_id,
-            name=f"{workspace_name}-editor",
+            name=f"{instance.id}-editor",
             attributes={
                 "tag_color": ["#F44336"],  # Red color for editor
                 "description": [f"Editor access to workspace {workspace_name}"],
