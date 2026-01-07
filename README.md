@@ -22,7 +22,7 @@ The Automation Operations Center (AOC) is a comprehensive web-based platform des
 
 - Docker and Docker Compose
 - Python 3.11+
-- [Bitswan workspaces](https://github.com/bitswan-space/bitswan-workspaces)
+- [Bitswan automation server](https://github.com/bitswan-space/bitswan-automation-server)
 
 ## Quick Start
 
@@ -37,7 +37,7 @@ pip install .
 
 3. Initialize AOC:
 ```bash
-aoc init \
+bitswan on-prem-aoc init \
   --domain=yourdomain.com \
   --org-name="Your Organization" \
   --admin-email=admin@yourdomain.com
@@ -56,7 +56,7 @@ pip install -e .
 
 2. Initialize development environment:
 ```bash
-aoc init --dev
+bitswan on-prem-aoc init --dev
 ```
 
 3. Access the platform:
