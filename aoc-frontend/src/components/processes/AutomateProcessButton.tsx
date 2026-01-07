@@ -101,7 +101,7 @@ export default function AutomateProcessButton(props: AutomateProcessButtonProps)
                 value={selectedWorkspaceId && selectedAutomationServerId ? `${selectedAutomationServerId}|${selectedWorkspaceId}` : ""}
                 onValueChange={handleWorkspaceChange}
               >
-                <div className="space-y-2">
+                <div className="space-y-2 min-h-[200px] max-h-[80vh] overflow-y-auto">
                   {workspaces.map((workspace) => (
                     <div key={`${workspace.automationServerId}-${workspace.workspaceId}`} className="flex items-center space-x-2">
                       <RadioGroupItem
