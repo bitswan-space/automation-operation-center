@@ -403,6 +403,8 @@ class KeycloakService:
                 or [],
             }
             for group in org_groups
+            # filter out workspace editor groups
+            if "workspace-editor" not in group["attributes"].get("permissions", [])
         ]
 
     def delete_group(self, group_id):
