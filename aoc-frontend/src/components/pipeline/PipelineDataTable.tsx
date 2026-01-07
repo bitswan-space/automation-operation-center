@@ -243,7 +243,7 @@ const createColumns = (processes?: Record<string, Process>) => {
 
   columnHelper.display({
     id: "edit",
-    header: "Edit",
+    header: "",
     enableHiding: false,
     cell: ({ row }) => {
       const vscodeLink = row.original.vscodeLink;
@@ -367,7 +367,7 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
               <TableRow key={headerGroup.id} className="bg-stone-100/70">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="font-semibold text-sm">
+                    <TableHead key={header.id} className="font-semibold text-sm pl-2">
                       {header.isPlaceholder
                         ? null
                         : (
