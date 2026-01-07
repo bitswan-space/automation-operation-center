@@ -36,48 +36,69 @@ import { Checkbox } from "@radix-ui/react-checkbox";
 import { Input } from "../ui/input";
 import React from "react";
 import { Badge } from "../ui/badge";
-import { type PipelineStat, type PipelineWithStats } from "@/types";
+import { type PipelineStat, type PipelineWithStats, type Process } from "@/types";
 
 import { Area, AreaChart, XAxis } from "recharts";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const columnHelper = createColumnHelper<PipelineWithStats>();
 
-export const columns = [
-  columnHelper.display({
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected()}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  }),
-  columnHelper.accessor("properties.name", {
-    header: "Automation name",
-    cell: ({ row }) => {
-      const { properties } = row.original;
-      return <div className="text-xs">{properties.name}</div>;
-    },
-  }),
+const createColumns = (processes?: Record<string, Process>) => {
+  // Create a mapping of deployment Id to process name
+  const deploymentIdToProcessName = new Map<string, string>();
+  if (processes) {
+    Object.values(processes).forEach((process) => {
+      process.automation_sources.forEach((deploymentId) => {
+        deploymentIdToProcessName.set(deploymentId, process.name);
+      });
+    });
+  }
+
+  return [
     columnHelper.display({
-    id: "process",
-    header: "Process",
-    cell: () => {
-      // TODO: Implement process column
-      return <div className="text-xs">—</div>;
-    },
-  }),
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    }),
+    columnHelper.accessor("properties.name", {
+      header: "Automation name",
+      cell: ({ row }) => {
+        const { properties } = row.original;
+        return <div className="text-xs">{properties.name}</div>;
+      },
+    }),
+    columnHelper.accessor((row) => {
+      const deploymentId = row.properties["deployment-id"];
+      if (!deploymentId || !processes) {
+        return "—";
+      }
+      return deploymentIdToProcessName.get(deploymentId) ?? "—";
+    }, {
+      id: "process",
+      header: "Process",
+      cell: ({ row }) => {
+        const deploymentId = row.original.properties["deployment-id"];
+        if (!deploymentId || !processes) {
+          return <div className="text-xs">—</div>;
+        }
+        const processName = deploymentIdToProcessName.get(deploymentId);
+        return <div className="text-xs">{processName ?? "—"}</div>;
+      },
+    }),
   columnHelper.accessor("properties.automation-url", {
     header: "URL",
     cell: ({row}) => {
@@ -247,16 +268,20 @@ export const columns = [
       );
     },
   }),
-];
+  ];
+};
 
 type PipelineDataTableProps = {
   pipelines: PipelineWithStats[];
+  processes?: Record<string, Process>;
   isLoading: boolean;
 };
 
 export function PipelineDataTable(props: PipelineDataTableProps) {
-  const { isLoading } = props;
+  const { isLoading, processes } = props;
   const data = React.useMemo(() => props.pipelines, [props.pipelines]);
+  
+  const columns = React.useMemo(() => createColumns(processes), [processes]);
 
   // Get unique workspace IDs for the filter dropdown
   const workspaceIds = React.useMemo(
@@ -309,6 +334,7 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
 
   const isSortable = [
     "properties_name", 
+    "process",
     "automationServerName", 
     "properties_endpoint-name", 
     "properties_created-at", 

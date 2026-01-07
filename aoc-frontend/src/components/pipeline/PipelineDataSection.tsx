@@ -7,7 +7,7 @@ import { PipelineDataCardList } from "./PipelineDataCardList";
 import { PipelineDataTable } from "./PipelineDataTable";
 
 export function PipelineDataSection() {
-  const { all: pipelines, isLoading } = useAutomations();
+  const { all: pipelines, processes, isLoading } = useAutomations();
 
   console.log("pipelines", pipelines);
 
@@ -21,7 +21,7 @@ export function PipelineDataSection() {
           }
         >
           <CardContent className="p-3">
-             <PipelineDataTable pipelines={pipelines ?? []} isLoading={isLoading} />
+             <PipelineDataTable pipelines={pipelines ?? []} processes={processes} isLoading={isLoading} />
           </CardContent>
         </Card>
       </div>
