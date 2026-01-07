@@ -131,12 +131,16 @@ export const columns = [
     columnHelper.accessor("properties.created-at", {
         header: "Created",
         cell: ({ row }) => {
-            const createdAt = new Date(row.original.properties["created-at"])
-                .toISOString()
-                .slice(0, 16)
-                .replace("T", ", ");
+            const date = new Date(row.original.properties["created-at"]);
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const month = monthNames[date.getMonth()];
+            const day = date.getDate();
+            const year = date.getFullYear();
+            const hours = date.getHours().toString().padStart(2, "0");
+            const minutes = date.getMinutes().toString().padStart(2, "0");
+            const createdAt = `${month} ${day}, ${year}; ${hours}:${minutes}`;
 
-            return <div className="text-xs capitalize">{createdAt}</div>;
+            return <div className="text-xs">{createdAt}</div>;
         },
     }),
 
