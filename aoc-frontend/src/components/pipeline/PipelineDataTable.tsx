@@ -1,19 +1,23 @@
-import {
-    ArrowDownNarrowWide,
-    ArrowDownUp,
-    ArrowDownWideNarrow,
-    Check,
-    Code,
-    ExternalLink,
-    Filter,
-    Loader2, Search
+import { 
+  ArrowDownNarrowWide, 
+  ArrowDownUp, 
+  ArrowDownWideNarrow, 
+  Check, 
+  ChevronDownIcon, 
+  ChevronRight, 
+  ExternalLink, 
+  FileCog, 
+  Filter,
+  Loader2
 } from "lucide-react";
 import {
   type ColumnFiltersState,
+  type ExpandedState,
   type SortingState,
   type VisibilityState,
   flexRender,
   getCoreRowModel,
+  getExpandedRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
@@ -39,6 +43,7 @@ import { Badge } from "../ui/badge";
 import { type PipelineStat, type PipelineWithStats } from "@/types";
 
 import { Area, AreaChart, XAxis } from "recharts";
+import { Link } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const columnHelper = createColumnHelper<PipelineWithStats>();
@@ -64,58 +69,37 @@ export const columns = [
     enableHiding: false,
   }),
   columnHelper.accessor("properties.name", {
-    header: "Automation name",
+    header: "Name",
     cell: ({ row }) => {
       const { properties } = row.original;
-      return <div className="text-xs">{properties.name}</div>;
-    },
-  }),
-    columnHelper.display({
-    id: "process",
-    header: "Process",
-    cell: () => {
-      // TODO: Implement process column
-      return <div className="text-xs">—</div>;
+
+      return (
+        <Link
+          to={`/automation-servers/${row.original.automationServerId}/workspaces/${row.original.workspaceId}/automations/${row.original.properties["deployment-id"]}`}
+          className="text-xs text-blue-700 underline"
+        >
+          {properties.name}
+        </Link>
+      );
     },
   }),
   columnHelper.accessor("properties.automation-url", {
     header: "URL",
     cell: ({row}) => {
-      const url = row.original.properties["automation-url"];
-      if (!url) {
-        return <div className="text-xs">—</div>;
-      }
       return (
-        <div className="text-xs">
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex"
-          >
-            <ExternalLink size={18} />
-          </a>
-        </div>
-      );
+        row.original.properties["automation-url"] &&
+        <a
+          href={row.original.properties["automation-url"]}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <ExternalLink size={18} />
+        </a>
+      )
     }
   }),
-    columnHelper.accessor("properties.endpoint-name", {
-        header: "Workspace",
-        cell: ({ row }) => {
-            const machineName = row.original.properties["endpoint-name"];
-            return <div className="text-xs">{machineName}</div>;
-        },
-        filterFn: (
-            row: Row<PipelineWithStats>,
-            columnId: string,
-            filterValue: string[]
-        ) => {
-            if (!filterValue || filterValue.length === 0) return true;
-            return filterValue.includes(row.getValue(columnId));
-        },
-    }),
   columnHelper.accessor("automationServerName", {
-    header: "Server",
+    header: "Automation Server",
     cell: ({ row }) => {
       return <div className="text-xs">{row.original.automationServerName}</div>;
     },
@@ -128,27 +112,21 @@ export const columns = [
       return filterValue.includes(row.getValue(columnId));
     },
   }),
-    columnHelper.accessor("properties.created-at", {
-        header: "Created",
-        cell: ({ row }) => {
-            const createdAt = new Date(row.original.properties["created-at"])
-                .toISOString()
-                .slice(0, 16)
-                .replace("T", ", ");
-
-            return <div className="text-xs capitalize">{createdAt}</div>;
-        },
-    }),
-
-    columnHelper.accessor("properties.status", {
-        header: "Uptime",
-        cell: ({ row }) => {
-            const uptime = row.original.properties.status;
-
-            return <div className="text-xs capitalize">{uptime}</div>;
-        },
-    }),
-
+  columnHelper.accessor("properties.endpoint-name", {
+    header: "Workspace Name",
+    cell: ({ row }) => {
+      const machineName = row.original.properties["endpoint-name"];
+      return <div className="text-xs">{machineName}</div>;
+    },
+    filterFn: (
+      row: Row<PipelineWithStats>,
+      columnId: string,
+      filterValue: string[]
+    ) => {
+      if (!filterValue || filterValue.length === 0) return true;
+      return filterValue.includes(row.getValue(columnId));
+    },
+  }),
   columnHelper.accessor("properties.state", {
     header: "Status",
     cell: ({ row }) => {
@@ -157,12 +135,12 @@ export const columns = [
       const getStatusBadge = (status: string) => {
         switch (status) {
           case "running":
-            return <Badge className="bg-green-100 text-green-600 shadow-none">Running</Badge>;
+            return <Badge className="bg-green-600 shadow-none">Running</Badge>;
           case "stopped":
-            return <Badge className="bg-red-100 text-red-600 shadow-none">Stopped</Badge>;
+            return <Badge className="bg-red-600 shadow-none">Stopped</Badge>;
           default:
             return (
-              <Badge className="bg-yellow-100 text-yellow-600 shadow-none">{status}</Badge>
+              <Badge className="bg-yellow-600 shadow-none">{status}</Badge>
             );
         }
       };
@@ -178,68 +156,93 @@ export const columns = [
       return filterValue.includes(row.getValue(columnId));
     },
   }),
+  columnHelper.accessor("properties.created-at", {
+    header: "Date Created",
+    cell: ({ row }) => {
+      const createdAt = new Date(row.original.properties["created-at"])
+        .toISOString()
+        .slice(0, 16)
+        .replace("T", ", ");
 
-    // COMMENTED OUT UNTIL AOC MONITOR IS SET UP
+      return <div className="text-xs capitalize">{createdAt}</div>;
+    },
+  }),
 
-    // columnHelper.display({
-    //   id: "pipelineStatEpsIn",
-    //   header: "eps.in",
-    //   cell: ({ row }) => {
-    //     const epsInStat = row.original.pipelineStat?.filter(
-    //       (stat) => stat._field === "eps.in",
-    //     );
-    //     const latestEpsIn = epsInStat?.[epsInStat.length - 1]?._value;
-    //     return (
-    //       <div className="text-start">
-    //         <EpsTinyLineChart data={row.original.pipelineStat} type="in" />
-    //         <div className="text-xs font-semibold">: {latestEpsIn}</div>
-    //       </div>
-    //     );
-    //   },
-    // }),
-    // columnHelper.display({
-    //   id: "pipelineStatEpsOut",
-    //   header: "eps.out",
-    //   cell: ({ row }) => {
-    //     const epsOutStat = row.original.pipelineStat?.filter(
-    //       (stat) => stat._field === "eps.out",
-    //     );
-    //     const latestEpsOut = epsOutStat?.[epsOutStat.length - 1]?._value;
-    //     return (
-    //       <div>
-    //         <EpsTinyLineChart data={row.original.pipelineStat} type="out" />
-    //         <div className="text-xs font-semibold" title="Latest value">
-    //           : {latestEpsOut}
-    //         </div>
-    //       </div>
-    //     );
-    //   },
-    // }),
+  // COMMENTED OUT UNTIL AOC MONITOR IS SET UP
 
+  // columnHelper.display({
+  //   id: "pipelineStatEpsIn",
+  //   header: "eps.in",
+  //   cell: ({ row }) => {
+  //     const epsInStat = row.original.pipelineStat?.filter(
+  //       (stat) => stat._field === "eps.in",
+  //     );
+  //     const latestEpsIn = epsInStat?.[epsInStat.length - 1]?._value;
+  //     return (
+  //       <div className="text-start">
+  //         <EpsTinyLineChart data={row.original.pipelineStat} type="in" />
+  //         <div className="text-xs font-semibold">: {latestEpsIn}</div>
+  //       </div>
+  //     );
+  //   },
+  // }),
+  // columnHelper.display({
+  //   id: "pipelineStatEpsOut",
+  //   header: "eps.out",
+  //   cell: ({ row }) => {
+  //     const epsOutStat = row.original.pipelineStat?.filter(
+  //       (stat) => stat._field === "eps.out",
+  //     );
+  //     const latestEpsOut = epsOutStat?.[epsOutStat.length - 1]?._value;
+  //     return (
+  //       <div>
+  //         <EpsTinyLineChart data={row.original.pipelineStat} type="out" />
+  //         <div className="text-xs font-semibold" title="Latest value">
+  //           : {latestEpsOut}
+  //         </div>
+  //       </div>
+  //     );
+  //   },
+  // }),
+  
+  columnHelper.accessor("properties.status", {
+    header: "Uptime",
+    cell: ({ row }) => {
+      const uptime = row.original.properties.status;
+
+      return <div className="text-xs capitalize">{uptime}</div>;
+    },
+  }),
   columnHelper.display({
-    id: "edit",
-    header: "Edit",
+    id: "launchPipelineEditor",
+    cell: ({ row }) => {
+      return (
+        <Link
+          to={`/automations/launch-automation-editor/${row.original._key}`}
+          title="Launch automation editor"
+          className="hidden"
+        >
+          <Button variant={"outline"}>
+            <FileCog size={20} />
+          </Button>
+        </Link>
+      );
+    },
+  }),
+  columnHelper.display({
+    id: "expand",
     enableHiding: false,
     cell: ({ row }) => {
-      const vscodeLink = row.original.vscodeLink;
-      if (!vscodeLink) {
-        return <div className="text-xs text-gray-400">—</div>;
-      }
       return (
-        <Button
-          size="sm"
-          asChild
-        >
-          <a
-            href={vscodeLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Open in Editor"
-          >
-            <Code className="h-4 w-4" />
-            Edit
-          </a>
-        </Button>
+        <div>
+          <Button onClick={() => row.toggleExpanded()} variant={"ghost"}>
+            {row.getIsExpanded() ? (
+              <ChevronDownIcon size={20} />
+            ) : (
+              <ChevronRight size={20} />
+            )}
+          </Button>
+        </div>
       );
     },
   }),
@@ -283,16 +286,19 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const [expanded, setExpanded] = React.useState<ExpandedState>({});
 
   const table = useReactTable({
     data,
     columns,
+    onExpandedChange: setExpanded,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
@@ -300,6 +306,7 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
       columnFilters,
       columnVisibility,
       rowSelection,
+      expanded,
     },
   });
 
@@ -314,21 +321,20 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
 
   return (
     <div className="w-full">
-      <div className="relative flex items-center pb-4">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-          <Input
-              placeholder="Search automations..."
-              value={
-                (table.getColumn("properties_name")?.getFilterValue() as string) ??
-                ""
-              }
-              onChange={(event) => {
-                table
-                  .getColumn("properties_name")
-                  ?.setFilterValue(event.target.value);
-              }}
-              className="max-w-sm pl-8"
-          />
+      <div className="flex items-center pb-4">
+        <Input
+          placeholder="Find automations..."
+          value={
+            (table.getColumn("properties_name")?.getFilterValue() as string) ??
+            ""
+          }
+          onChange={(event) => {
+            table
+              .getColumn("properties_name")
+              ?.setFilterValue(event.target.value);
+          }}
+          className="max-w-sm"
+        />
       </div>
       <div className="rounded-md border">
         <Table>
@@ -337,11 +343,11 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
               <TableRow key={headerGroup.id} className="bg-stone-100/70">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="font-semibold text-sm">
+                    <TableHead key={header.id} className="font-semibold">
                       {header.isPlaceholder
                         ? null
                         : (
-                            <span className="inline-flex items-center gap-0.5">
+                            <span className="inline-flex items-center gap-2">
                               {flexRender(
                                 header.column.columnDef.header,
                                 header.getContext(),
@@ -390,20 +396,43 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
             {table.getRowModel().rows?.length || isLoading ? (
               <>
                 {table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                    className="rounded font-mono"
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
+                  <React.Fragment key={`dt_fragment_${row.id}`}>
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && "selected"}
+                      className="rounded font-mono"
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                    {row.getIsExpanded() && (
+                      <TableRow
+                        className="bg-blue-100/20 hover:bg-blue-50/50"
+                        key={`expandable-${row.id}`}
+                      >
+                        <TableCell colSpan={columns.length}>
+                          <Table>
+                            <TableBody>
+                              <TableRow>
+                                <TableCell
+                                  colSpan={columns.length}
+                                  className="h-24 text-center"
+                                >
+                                  No displayable data.
+                                </TableCell>
+                              </TableRow>
+                            </TableBody>
+                          </Table>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </React.Fragment>
                 ))}
                 {isLoading && (
                   <TableRow>
@@ -439,6 +468,10 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="text-muted-foreground flex-1 text-sm">
+          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+          {table.getFilteredRowModel().rows.length} row(s) selected.
+        </div>
         <div className="space-x-2">
           <Button
             variant="outline"
