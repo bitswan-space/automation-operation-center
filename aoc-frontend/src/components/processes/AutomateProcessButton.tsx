@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Plus } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Plus, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
@@ -23,10 +23,22 @@ export default function AutomateProcessButton(props: AutomateProcessButtonProps)
   const [processName, setProcessName] = useState("");
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>("");
   const [selectedAutomationServerId, setSelectedAutomationServerId] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const needsWorkspaceSelection = !workspaceId || !automationServerId;
   const finalWorkspaceId = workspaceId || selectedWorkspaceId;
   const finalAutomationServerId = automationServerId || selectedAutomationServerId;
+
+  // Filter workspaces based on search query
+  const filteredWorkspaces = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return workspaces;
+    }
+    const query = searchQuery.toLowerCase();
+    return workspaces.filter((workspace) =>
+      workspace.workspace.name.toLowerCase().includes(query)
+    );
+  }, [workspaces, searchQuery]);
 
   const handleWorkspaceChange = (value: string) => {
     const [serverId, wsId] = value.split("|");
@@ -63,6 +75,7 @@ export default function AutomateProcessButton(props: AutomateProcessButtonProps)
       setProcessName("");
       setSelectedWorkspaceId("");
       setSelectedAutomationServerId("");
+      setSearchQuery("");
     }
   };
 
@@ -97,25 +110,41 @@ export default function AutomateProcessButton(props: AutomateProcessButtonProps)
               <Label>
                 Choose a workspace for this process <span className="text-destructive">*</span>
               </Label>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                <Input
+                  type="search"
+                  placeholder="Search workspaces..."
+                  className="pl-8"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
               <RadioGroup
                 value={selectedWorkspaceId && selectedAutomationServerId ? `${selectedAutomationServerId}|${selectedWorkspaceId}` : ""}
                 onValueChange={handleWorkspaceChange}
               >
-                <div className="space-y-2 min-h-[200px] max-h-[80vh] overflow-y-auto">
-                  {workspaces.map((workspace) => (
-                    <div key={`${workspace.automationServerId}-${workspace.workspaceId}`} className="flex items-center space-x-2">
-                      <RadioGroupItem
-                        value={`${workspace.automationServerId}|${workspace.workspaceId}`}
-                        id={`workspace-${workspace.workspaceId}`}
-                      />
-                      <Label
-                        htmlFor={`workspace-${workspace.workspaceId}`}
-                        className="font-normal cursor-pointer"
-                      >
-                        {workspace.workspace.name}
-                      </Label>
+                <div className="space-y-2 min-h-[200px] max-h-[60vh] overflow-y-auto">
+                  {filteredWorkspaces.length === 0 ? (
+                    <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
+                      No workspaces found
                     </div>
-                  ))}
+                  ) : (
+                    filteredWorkspaces.map((workspace) => (
+                      <div key={`${workspace.automationServerId}-${workspace.workspaceId}`} className="flex items-center space-x-2">
+                        <RadioGroupItem
+                          value={`${workspace.automationServerId}|${workspace.workspaceId}`}
+                          id={`workspace-${workspace.workspaceId}`}
+                        />
+                        <Label
+                          htmlFor={`workspace-${workspace.workspaceId}`}
+                          className="font-normal cursor-pointer"
+                        >
+                          {workspace.workspace.name}
+                        </Label>
+                      </div>
+                    ))
+                  )}
                 </div>
               </RadioGroup>
             </div>
