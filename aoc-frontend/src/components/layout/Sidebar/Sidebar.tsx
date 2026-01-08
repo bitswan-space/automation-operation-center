@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -17,7 +16,6 @@ import { Cog, Server, LayoutDashboard, Table, Network, Settings, Loader2 } from 
 import NavTreeView from "./NavTreeView";
 import { SidebarFooterMenu } from "./SidebarFooterMenu";
 import { SidebarMenuLogo } from "./SidebarMenuLogo";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 import { OrgSwitcher } from "@/components/organizations/org-switcher";
 import ProfileSelector from "@/components/groups/ProfileSelector";
@@ -38,13 +36,11 @@ export function AppSidebar(props: AppSidebarProps) {
     automationCount, 
     automationServerCount, 
     workspaceCount, 
+    processCount,
     isLoading 
   } = useAutomationsCounts();
   const { tokens, isLoading: tokensLoading } = useMQTTTokens();
   const isMaker = (!tokensLoading && tokens && tokens.length > 0) || isAdmin;
-
-  // Check if experimental features should be shown
-  const showExperimental = true;
 
   return (
     <Sidebar collapsible="icon">
@@ -89,29 +85,28 @@ export function AppSidebar(props: AppSidebarProps) {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               )}
-              {showExperimental && (
-                <>
-                  <SidebarMenuItem key={"workspaces"}>
-                    <SidebarMenuButton asChild isActive={path === "/workspaces"}>
-                      <Link to={"/workspaces"}>
-                        <Table />
-                        <span>{"Workspaces"}</span>
-                        <span className="ml-auto text-xs">
-                          { isLoading ? <Loader2 size={16} className="animate-spin ml-1" /> : workspaceCount}
-                        </span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem key={"processes"}>
-                    <SidebarMenuButton asChild isActive={path === "/processes"}>
-                      <Link to={"/processes"}>
-                        <Network />
-                        <span>{"Processes"}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </>
-              )}
+              <SidebarMenuItem key={"workspaces"}>
+                <SidebarMenuButton asChild isActive={path === "/workspaces"}>
+                  <Link to={"/workspaces"}>
+                    <Table />
+                    <span>{"Workspaces"}</span>
+                    <span className="ml-auto text-xs">
+                      { isLoading ? <Loader2 size={16} className="animate-spin ml-1" /> : workspaceCount}
+                    </span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem key={"processes"}>
+                <SidebarMenuButton asChild isActive={path === "/processes"}>
+                  <Link to={"/processes"}>
+                    <Network />
+                    <span>{"Processes"}</span>
+                    <span className="ml-auto text-xs">
+                      { isLoading ? <Loader2 size={16} className="animate-spin ml-1" /> : processCount}
+                    </span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               <SidebarMenuItem key={"automations"}>
                 <SidebarMenuButton asChild isActive={path === "/automations"}>
                   <Link to={"/automations"}>
@@ -142,15 +137,7 @@ export function AppSidebar(props: AppSidebarProps) {
         <SidebarGroup>
           <SidebarGroupLabel>SHORTCUTS</SidebarGroupLabel>
           <SidebarGroupContent>
-            <Suspense
-              fallback={
-                <div className="p-2">
-                  <Skeleton className="h-40 w-full" />
-                </div>
-              }
-            >
-              <NavTreeView />
-            </Suspense>
+            <NavTreeView />
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
