@@ -15,8 +15,7 @@ export default function DashboardPage() {
   const { setTitle, setIcon, setButtons } = useTitleBar();
   const { 
     automationCount, 
-    runningAutomationCount, 
-    pausedAutomationCount, 
+    runningAutomationCount,
     isLoading 
   } = useAutomationsCounts();
   const { isAdmin } = useAdminStatus();
@@ -49,13 +48,6 @@ export default function DashboardPage() {
             <div className="text-sm text-muted-foreground">Running automations</div>
             <div className="text-3xl font-semibold flex items-center justify-center">
               {isLoading ? <Loader2 size={24} className="animate-spin" /> : runningAutomationCount}
-            </div>
-          </div>
-          <Separator orientation="vertical" className="h-[60px]" />
-          <div className="flex-1 text-center">
-            <div className="text-sm text-muted-foreground">Paused automations</div>
-            <div className="text-3xl font-semibold flex items-center justify-center">
-              {isLoading ? <Loader2 size={24} className="animate-spin" /> : pausedAutomationCount}
             </div>
           </div>
         </div>
