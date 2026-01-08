@@ -313,8 +313,15 @@ export default function ProcessesTable(props: ProcessesTableProps) {
                 .filter(
                   (auto): auto is PipelineWithStats => auto !== undefined
                 );
+              const isOtherRow = row.original.id === "__other__";
               return (
                 <React.Fragment key={row.id}>
+                  {/* Add a border-top to the table if the row is the other row */}
+                  {isOtherRow && (
+                    <TableRow className="h-0 border-0">
+                      <TableCell colSpan={row.getVisibleCells().length} className="h-0 p-0 border-t-2" />
+                    </TableRow>
+                  )}
                   <TableRow className="h-16 hover:bg-transparent">
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className="px-4">
