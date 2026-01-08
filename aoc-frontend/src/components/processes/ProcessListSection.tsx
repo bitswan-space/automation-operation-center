@@ -13,10 +13,23 @@ type ProcessListSectionProps = {
   lastUpdated?: string;
 };
 
-export default function ProcessListSection(
-  props: ProcessListSectionProps,
-) {
-  const { automations, processes, isLoading, hideWorkspaceColumn, hideOther, lastUpdated } = props;
+export default function ProcessListSection(props: ProcessListSectionProps) {
+  const {
+    automations,
+    processes,
+    isLoading,
+    hideWorkspaceColumn,
+    hideOther,
+    lastUpdated,
+  } = props;
+
+  // Count only automations that belong to a process if hideOther is true
+  const automationsCount = hideOther
+    ? processes?.reduce(
+        (sum, process) => sum + (process.automation_sources?.length ?? 0),
+        0
+      ) ?? 0
+    : automations?.length ?? 0;
 
   return (
     <div className="w-full">
@@ -39,7 +52,7 @@ export default function ProcessListSection(
             {isLoading ? (
               <Loader2 size={24} className="animate-spin" />
             ) : (
-              automations?.length ?? 0
+              automationsCount
             )}
           </div>
         </div>
