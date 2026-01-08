@@ -6,10 +6,13 @@ services:
     container_name: update-webhook
     ports:
       - "8081:8081"
+    env_file:
+      - .env
     environment:
       - UPDATE_WEBHOOK_SECRET=${UPDATE_WEBHOOK_SECRET}
       - PORT=8081
       - LOG_MODE=release
+      - AOC_VENV_PATH=${AOC_VENV_PATH}
     privileged: true
     pid: host
     restart: always
