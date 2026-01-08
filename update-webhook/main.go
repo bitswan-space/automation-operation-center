@@ -177,9 +177,9 @@ func updateWebhookHandler(w http.ResponseWriter, r *http.Request) {
 	// Construct command to activate venv and run update
 	// Source the activation script and then run the bitswan command
 	updateCommand := "source " + venvPath + "/bin/activate && bitswan on-prem-aoc update"
-	
+
 	// Run the update command using nsenter to execute in host context
-	cmd := exec.Command("nsenter", "-t", "1", "-m", "-u", "-n", "-i", "sh", "-c", updateCommand)
+	cmd := exec.Command("nsenter", "-t", "1", "-m", "-u", "-n", "-i", "bash", "-c", updateCommand)
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
