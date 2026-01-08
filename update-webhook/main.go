@@ -163,8 +163,23 @@ func updateWebhookHandler(w http.ResponseWriter, r *http.Request) {
 	// Trigger the AOC update
 	log.Info("Triggering AOC update via webhook")
 
+	// Get virtual environment path from environment variable
+	venvPath := os.Getenv("AOC_VENV_PATH")
+	if venvPath == "" {
+		log.Error("AOC_VENV_PATH environment variable not set")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "AOC_VENV_PATH environment variable not configured",
+		})
+		return
+	}
+
+	// Construct command to activate venv and run update
+	// Source the activation script and then run the bitswan command
+	updateCommand := "source " + venvPath + "/bin/activate && bitswan on-prem-aoc update"
+	
 	// Run the update command using nsenter to execute in host context
-	cmd := exec.Command("nsenter", "-t", "1", "-m", "-u", "-n", "-i", "sh", "-c", "bitswan on-prem-aoc update")
+	cmd := exec.Command("nsenter", "-t", "1", "-m", "-u", "-n", "-i", "sh", "-c", updateCommand)
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
