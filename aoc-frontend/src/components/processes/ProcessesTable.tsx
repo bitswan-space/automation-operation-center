@@ -343,7 +343,7 @@ export default function ProcessesTable(props: ProcessesTableProps) {
                             <TableRow className="bg-muted/50 hover:bg-muted/50">
                               <TableHead className="px-4 font-semibold">Name</TableHead>
                               <TableHead className="px-4 font-semibold">Created</TableHead>
-                              <TableHead className="px-4 font-semibold">Status</TableHead>
+                              <TableHead className="px-4 font-semibold">Last Updated</TableHead>
                               <TableHead className="px-4 font-semibold">State</TableHead>
                               {/* Edit button */}
                               <TableHead></TableHead>
