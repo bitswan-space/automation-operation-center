@@ -62,7 +62,7 @@ export function UserInviteForm({ search, onSearchChange }: UserInviteFormProps) 
         <div className="flex items-center gap-4 py-4">
           <Input
             type="email"
-            placeholder="Search or invite team member email"
+            placeholder="Team member email"
             className="w-full"
             onChange={(e) => onSearchChange(e.target.value)}
             value={search}

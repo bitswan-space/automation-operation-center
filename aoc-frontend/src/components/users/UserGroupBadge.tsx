@@ -39,7 +39,7 @@ export function UserGroupBadge(props: UserGroupBadgeProps) {
   return (
     <Badge
       variant={"outline"}
-      className={`border-[${group.tag_color}] bg-[${group.tag_color}]/10 text-[${group.tag_color}] flex gap-2`}
+      className={`border-[${group.tag_color}] bg-[${group.tag_color}]/10 text-[${group.tag_color}] flex gap-2 py-2`}
       style={{
         borderColor: group.tag_color,
         backgroundColor: `${group.tag_color}1A`,
@@ -62,7 +62,7 @@ export function UserGroupBadge(props: UserGroupBadgeProps) {
             className="hidden"
           />
           <button
-            className="cursor-pointer"
+            className="cursor-pointer flex items-center"
             type="submit"
             disabled={removeUserFromGroupMutation.isPending || !hasPerms}
           >

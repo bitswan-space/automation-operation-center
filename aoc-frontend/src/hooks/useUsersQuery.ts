@@ -19,6 +19,33 @@ export function useUsersQuery(page: number = 1, search?: string) {
   });
 }
 
+export function useUsersInfiniteQuery(search?: string) {
+  const { isAuthenticated } = useAuth();
+  
+  return useInfiniteQuery<OrgUsersListResponse>({
+    queryKey: [...USERS_QUERY_KEY, "infinite", search || ""],
+    queryFn: ({ pageParam = 1 }) => fetchOrgUsers(pageParam as number, search),
+    getNextPageParam: (lastPage) => {
+      // If there's a next URL, extract the page number from it
+      if (lastPage.next) {
+        try {
+          const url = new URL(lastPage.next);
+          const page = url.searchParams.get("page");
+          return page ? parseInt(page, 10) : undefined;
+        } catch (error) {
+          console.error("Error parsing next URL:", error);
+          return undefined;
+        }
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
+    enabled: isAuthenticated, // Only fetch when user is authenticated
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1,
+  });
+}
+
 export function useInviteUser() {
   const queryClient = useQueryClient();
   

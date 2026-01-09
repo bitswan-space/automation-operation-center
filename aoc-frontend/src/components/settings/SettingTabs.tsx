@@ -36,21 +36,22 @@ export function SettingTabs() {
     <Tabs
       value={activeTab}
       onValueChange={(value) => handleTabChange(value as SettingTab)}
+      className="w-full"
     >
       <TabsList>
-        <TabsTrigger value="users">
+        <TabsTrigger value="users" className="px-16">
           <Users size={16} className="mr-2" /> Users
         </TabsTrigger>
-        <TabsTrigger value="groups">
-          <Ungroup size={16} className="mr-2" /> Groups
+        <TabsTrigger value="groups" className="px-16">
+          <Ungroup size={16} className="mr-2" /> User groups
         </TabsTrigger>
       </TabsList>
-      <TabsContent value="users">
+      <TabsContent value="users" className="w-full">
         <div className="w-full">
           <UserDetailTable />
         </div>
       </TabsContent>
-      <TabsContent value="groups">
+      <TabsContent value="groups" className="w-full">
         <div className="w-full">
           <GroupDetailTable />
         </div>

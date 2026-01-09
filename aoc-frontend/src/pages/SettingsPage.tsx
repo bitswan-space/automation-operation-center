@@ -20,10 +20,10 @@ const SettingsPage: React.FC = () => {
       <div className="hidden min-h-[100vh] flex-1 md:min-h-min lg:flex">
         <Card
           className={
-            "h-full w-full rounded-md border border-slate-300 shadow-sm"
+            "h-full w-full border-0 shadow-none"
           }
         >
-          <CardContent className="h-full p-3">
+          <CardContent className="h-full w-full p-0">
             <SettingTabs/>
           </CardContent>
         </Card>

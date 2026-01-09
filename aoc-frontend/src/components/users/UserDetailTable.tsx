@@ -3,7 +3,6 @@ import * as React from "react";
 
 import {
   type ColumnDef,
-  type PaginationState,
   type SortingState,
   type VisibilityState,
   createColumnHelper,
@@ -25,7 +24,7 @@ import { Button } from "@/components/ui/button";
 
 import { Badge } from "../ui/badge";
 
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserInviteForm } from "./UserInviteForm";
 
@@ -41,7 +40,7 @@ import {
 } from "../ui/dialog";
 import { type OrgUser } from "@/data/users";
 import { toast } from "sonner";
-import { useDeleteUser, useUsersQuery } from "@/hooks/useUsersQuery";
+import { useDeleteUser, useUsersInfiniteQuery } from "@/hooks/useUsersQuery";
 import { useAuth } from "@/context/AuthContext";
 
 const columnHelper = createColumnHelper<OrgUser>();
@@ -49,8 +48,8 @@ const columnHelper = createColumnHelper<OrgUser>();
 const createColumns = (): ColumnDef<OrgUser>[] => [
   {
     accessorKey: "email",
-    header: () => <div className="p-2 px-6 text-left font-semibold">Email</div>,
-    cell: ({ row }) => <div className="p-2 px-6">{row.getValue("email")}</div>,
+    header: () => <div className="px-3 text-left font-semibold">Email</div>,
+    cell: ({ row }) => <div className="px-3">{row.getValue("email")}</div>,
   },
 
   {
@@ -61,8 +60,8 @@ const createColumns = (): ColumnDef<OrgUser>[] => [
       return (
         <Badge
           className={cn({
-            "bg-green-600 hover:bg-green-600": verified,
-            "bg-amber-500 hover:bg-amber-500": !verified,
+            "bg-green-100 text-green-600 hover:bg-green-100": verified,
+            "bg-orange-100 text-orange-600 hover:bg-amber-100": !verified,
           })}
         >
           {verified ? "Active" : "Invited"}
@@ -83,25 +82,14 @@ const createColumns = (): ColumnDef<OrgUser>[] => [
   }),
   columnHelper.display({
     id: "actions",
-    cell: ({ row, table }) => {
+    cell: ({ row }) => {
       const id = row.original.id;
-      return <UserActions 
-        id={id} 
-        isLastItemOnPage={row.index === table.getRowModel().rows.length - 1}
-        currentPageIndex={table.getState().pagination.pageIndex}
-        onNavigateBack={() => table.previousPage()}
-      />;
+      return <UserActions id={id} />;
     },
   }),
 ];
 
 export function UserDetailTable() { 
-  // TanStack Table pagination state (pageIndex is 0-based, but API uses 1-based)
-  const [pagination, setPagination] = React.useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 10,
-  });
-
   // Search state with debouncing
   const [search, setSearch] = React.useState("");
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
@@ -110,21 +98,51 @@ export function UserDetailTable() {
   React.useEffect(() => {
     const timeoutId = setTimeout(() => {
       setDebouncedSearch(search);
-      // Reset to first page when search changes
-      setPagination((prev) => ({ ...prev, pageIndex: 0 }));
     }, 300);
 
     return () => clearTimeout(timeoutId);
   }, [search]);
 
-  // Convert 0-based pageIndex to 1-based page number for API
-  const page = pagination.pageIndex + 1;
-  const { data: usersData, isFetching: isFetchingUsers } = useUsersQuery(page, debouncedSearch);
+  // Scroll to top when search changes
+  React.useEffect(() => {
+    if (tableContainerRef.current) {
+      tableContainerRef.current.scrollTop = 0;
+    }
+  }, [debouncedSearch]);
 
+  // Use infinite query for users
+  const { 
+    data: usersData, 
+    isFetching: isFetchingUsers,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useUsersInfiniteQuery(debouncedSearch);
+
+  // Flatten all pages into a single array
   const orgUsersData = React.useMemo(
-    () => usersData?.results ?? [],
+    () => usersData?.pages.flatMap((page) => page.results) ?? [],
     [usersData],
   );
+
+  // Scroll detection for infinite scroll
+  const tableContainerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const container = tableContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      // Load more when scrolled within 100px of the bottom
+      if (scrollHeight - scrollTop - clientHeight < 100 && hasNextPage && !isFetchingNextPage && !isFetchingUsers) {
+        fetchNextPage();
+      }
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [hasNextPage, isFetchingNextPage, isFetchingUsers, fetchNextPage]);
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] =
@@ -134,17 +152,13 @@ export function UserDetailTable() {
   const table = useReactTable({
     data: orgUsersData,
     columns: createColumns(),
-    manualPagination: true, // Server-side pagination
     manualFiltering: true, // Server-side filtering/search
-    rowCount: usersData?.count ?? 10,
-    onPaginationChange: setPagination,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
-      pagination,
       sorting,
       columnVisibility,
       rowSelection,
@@ -155,14 +169,14 @@ export function UserDetailTable() {
     <div className="w-full">
       <UserInviteForm search={search} onSearchChange={setSearch} />
 
-      <div className="rounded-md border">
+      <div className="rounded-md border" ref={tableContainerRef} style={{ maxHeight: "600px", overflowY: "auto" }}>
         <Table>
-          <TableHeader>
+          <TableHeader className="h-12">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="font-bold">
+              <TableRow key={headerGroup.id} className="font-bold h-16 hover:bg-transparent">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="p-1">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -188,23 +202,38 @@ export function UserDetailTable() {
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
+              <>
+                {table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className="h-16 hover:bg-transparent"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="p-1">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+                {isFetchingNextPage && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={table.getAllColumns().length}
+                      className="h-16 text-center"
+                    >
+                      <div className="flex items-center justify-center">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      </div>
                     </TableCell>
-                  ))}
-                </TableRow>
-              ))
+                  </TableRow>
+                )}
+              </>
             ) : (
-              <TableRow>
+              <TableRow className="hover:bg-transparent">
                 <TableCell
                   colSpan={table.getAllColumns().length}
                   className="h-24 text-center"
@@ -216,44 +245,16 @@ export function UserDetailTable() {
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage() || isFetchingUsers}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-14"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage() || isFetchingUsers}
-          >
-            {isFetchingUsers ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              "Next"
-            )}
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }
 
 type UserActionProps = {
   id: string;
-  isLastItemOnPage: boolean;
-  currentPageIndex: number;
-  onNavigateBack: () => void;
 };
 
 function UserActions(props: UserActionProps) {
-  const { id, isLastItemOnPage, currentPageIndex, onNavigateBack } = props;
+  const { id } = props;
 
   const [open, setOpen] = React.useState(false);
 
@@ -265,10 +266,6 @@ function UserActions(props: UserActionProps) {
       onSuccess: () => {
         setOpen(false);
         toast.success("User deleted");
-        // If this was the last item on the page and we're not on the first page, go back
-        if (isLastItemOnPage && currentPageIndex > 0) {
-          onNavigateBack();
-        }
       },
       onError: (error) => {
         toast.error((error as any)?.message ?? "Error deleting user");
@@ -288,7 +285,7 @@ function UserActions(props: UserActionProps) {
           {deleteUserMutation.isPending ? (
             <Loader2 size={20} className="mr-2 animate-spin" />
           ) : (
-            <Trash2 size={20} className="text-neutral-500" />
+            <Trash size={20} className="text-black" />
           )}
         </Button>
       </DialogTrigger>

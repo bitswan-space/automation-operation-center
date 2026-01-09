@@ -75,10 +75,9 @@ export function GroupComboBoxSelector(props: GroupComboBoxSelectorProps) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button>
+        <button className="hover:bg-transparent shadow-none">
           <Badge
-            variant={"outline"}
-            className="border-dashed border-neutral-900 bg-neutral-100"
+            className="bg-blue-50 text-blue-700 hover:bg-blue-300 shadow-none"
           >
             Add <Plus className="ml-2 h-4 w-4" />
           </Badge>
