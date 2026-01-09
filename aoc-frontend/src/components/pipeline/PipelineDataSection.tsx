@@ -17,7 +17,7 @@ export function PipelineDataSection() {
       <div className="hidden py-4 lg:block">
         <Card
           className={
-            "h-full w-full rounded-md border border-slate-300 shadow-sm"
+            "h-full w-full border-0 shadow-none"
           }
         >
           <CardContent className="p-3">

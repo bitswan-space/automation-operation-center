@@ -89,6 +89,19 @@ const createColumns = (deploymentIdToProcessName: Map<string, string>) => {
         const processName = deploymentIdToProcessName.get(deploymentId);
         return <div className="text-xs">{processName ?? "—"}</div>;
       },
+      filterFn: (
+        row: Row<PipelineWithStats>,
+        columnId: string,
+        filterValue: string[]
+      ) => {
+        if (!filterValue || filterValue.length === 0) return true;
+        const deploymentId = row.original.properties["deployment-id"];
+        if (!deploymentId) {
+          return filterValue.includes("—");
+        }
+        const processName = deploymentIdToProcessName.get(deploymentId) ?? "—";
+        return filterValue.includes(processName);
+      },
     }),
   columnHelper.accessor("properties.automation-url", {
     header: "URL",
@@ -173,12 +186,12 @@ const createColumns = (deploymentIdToProcessName: Map<string, string>) => {
       const getStatusBadge = (status: string) => {
         switch (status) {
           case "running":
-            return <Badge className="bg-green-100 text-green-600 shadow-none">Running</Badge>;
+            return <Badge className="bg-green-100 text-green-600 shadow-none hover:bg-green-100">Running</Badge>;
           case "stopped":
-            return <Badge className="bg-red-100 text-red-600 shadow-none">Stopped</Badge>;
+            return <Badge className="bg-red-100 text-red-600 shadow-none hover:bg-red-100">Stopped</Badge>;
           default:
             return (
-              <Badge className="bg-yellow-100 text-yellow-600 shadow-none">{status}</Badge>
+              <Badge className="bg-yellow-100 text-yellow-600 shadow-none hover:bg-yellow-100">{status}</Badge>
             );
         }
       };
@@ -309,6 +322,27 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
     [data]
   );
 
+  const processNames = React.useMemo(
+    () => {
+      const names = new Set<string>();
+      data.forEach((row) => {
+        const deploymentId = row.properties["deployment-id"];
+        if (!deploymentId) {
+          names.add("—");
+        } else {
+          const processName = deploymentIdToProcessName.get(deploymentId);
+          if (processName) {
+            names.add(processName);
+          } else {
+            names.add("—");
+          }
+        }
+      });
+      return Array.from(names);
+    },
+    [data, deploymentIdToProcessName]
+  );
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -366,9 +400,9 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
       </div>
       <div className="rounded-md border">
         <Table>
-          <TableHeader>
+          <TableHeader className="h-12">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="bg-stone-100/70">
+              <TableRow key={headerGroup.id} className="hover:bg-transparent">
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead key={header.id} className="font-semibold text-sm pl-2">
@@ -411,6 +445,10 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
                                   options={["running", "stopped", "restarting"]} 
                                   table={table} />
                               ) : null}
+
+                              {header.id === "process" ? (
+                                <SelectFilter header_id={header.id} options={processNames} table={table} />
+                              ) : null}
                             </span>
                           )
                       }
@@ -427,7 +465,7 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className="rounded font-mono"
+                    className="rounded h-16 hover:bg-transparent"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
@@ -453,7 +491,7 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
                 )}
               </>
             ) : (
-              <TableRow>
+              <TableRow className="hover:bg-transparent">
                 <TableCell
                   colSpan={columns.length}
                   className="h-32 text-center"
