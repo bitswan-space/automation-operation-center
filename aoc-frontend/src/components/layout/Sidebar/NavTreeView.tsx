@@ -1,4 +1,4 @@
-import { ChevronRight, GripVertical } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import {
   type DropOptions,
   MultiBackend,
