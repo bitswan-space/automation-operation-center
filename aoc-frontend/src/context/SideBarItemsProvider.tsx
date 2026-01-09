@@ -40,6 +40,11 @@ export function SidebarItemsProvider({
   const [activeProfile, setActiveProfile] = React.useState<Profile | undefined>(undefined);
   const queryClient = useQueryClient();
   const { data: profilesData } = useProfilesQuery();
+  // Track if we're updating due to a profile switch (not user modification)
+  const isProfileSwitchRef = React.useRef(false);
+  // Track if sidebar items were modified by user
+  const userModifiedRef = React.useRef(false);
+  
   // Flatten all pages from infinite query into a single array
   const profiles = React.useMemo(() => {
     if (!profilesData?.pages) return [];
@@ -49,6 +54,8 @@ export function SidebarItemsProvider({
   // Set active profile when profiles are loaded
   useEffect(() => {
     if (profiles.length > 0 && !activeProfile) {
+      // Initial profile load - mark as profile switch to prevent update
+      isProfileSwitchRef.current = true;
       setActiveProfile(profiles[0]);
     }
   }, [profiles, activeProfile]);
@@ -62,6 +69,12 @@ export function SidebarItemsProvider({
   >(() => sourceItems);
 
   React.useEffect(() => {
+    // If this is a profile switch, mark it and reset user modification flag
+    if (isProfileSwitchRef.current) {
+      userModifiedRef.current = false;
+      isProfileSwitchRef.current = false;
+    }
+    
     setSidebarItemsState((prevItems) => {
       // Simple length check first
       if (prevItems.length !== sourceItems.length) {
@@ -87,12 +100,24 @@ export function SidebarItemsProvider({
   );
 
   const setSidebarItems = React.useCallback((items: NodeModel<NavItem>[]) => {
+    // Mark that user has modified the items
+    userModifiedRef.current = true;
     setSidebarItemsState(items);
+  }, []);
+
+  // Wrapper for setActiveProfile that marks profile switch
+  const handleSetActiveProfile = React.useCallback((profile: Profile | undefined) => {
+    isProfileSwitchRef.current = true;
+    setActiveProfile(profile);
   }, []);
 
   React.useEffect(() => {
     // Don't update the user merged profile
     if (activeProfile?.id === "merged") return;
+    
+    // Only update if user has modified the sidebar items
+    // Skip updates when switching profiles
+    if (!userModifiedRef.current) return;
 
     const updateNavItems = async () => {
       // Only update if we have a valid activeProfile with an ID
@@ -105,21 +130,23 @@ export function SidebarItemsProvider({
 
         // Invalidate profiles query to refresh data
         queryClient.invalidateQueries({ queryKey: PROFILES_QUERY_KEY });
+        // Reset the flag after successful update
+        userModifiedRef.current = false;
       }
     }
     updateNavItems();
-  }, [deserializedNavItems, activeProfile?.id, activeProfile?.name]);
+  }, [deserializedNavItems, activeProfile?.id, activeProfile?.name, queryClient]);
 
   const contextValue = React.useMemo(
     () => ({
       profiles,
       activeProfile,
-      setActiveProfile,
+      setActiveProfile: handleSetActiveProfile,
       sidebarItems: sidebarItemsState,
       setSidebarItems,
       deserializedNavItems,
     }),
-    [sidebarItemsState, setSidebarItems, deserializedNavItems, activeProfile, setActiveProfile, profiles],
+    [sidebarItemsState, setSidebarItems, deserializedNavItems, activeProfile, handleSetActiveProfile, profiles],
   );
 
   return (
