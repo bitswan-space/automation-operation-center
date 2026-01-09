@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { 
   createOrgGroup, 
   updateOrgGroup, 
@@ -24,6 +24,33 @@ export function useGroupsQuery(page: number = 1, search?: string) {
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1,
     placeholderData: keepPreviousData, // Keep previous page data while fetching new page
+  });
+}
+
+export function useGroupsInfiniteQuery(search?: string) {
+  const { isAuthenticated } = useAuth();
+  
+  return useInfiniteQuery<UserGroupsListResponse>({
+    queryKey: [...USER_GROUPS_QUERY_KEY, "infinite", search || ""],
+    queryFn: ({ pageParam = 1 }) => fetchOrgGroups(pageParam as number, search),
+    getNextPageParam: (lastPage) => {
+      // If there's a next URL, extract the page number from it
+      if (lastPage.next) {
+        try {
+          const url = new URL(lastPage.next);
+          const page = url.searchParams.get("page");
+          return page ? parseInt(page, 10) : undefined;
+        } catch (error) {
+          console.error("Error parsing next URL:", error);
+          return undefined;
+        }
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
+    enabled: isAuthenticated, // Only fetch when user is authenticated
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1,
   });
 }
 

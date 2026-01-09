@@ -39,7 +39,7 @@ export function SettingTabs() {
       className="w-full"
     >
       <TabsList>
-        <TabsTrigger value="users" className="px-16">
+        <TabsTrigger value="users" className="px-20">
           <Users size={16} className="mr-2" /> Users
         </TabsTrigger>
         <TabsTrigger value="groups" className="px-16">
