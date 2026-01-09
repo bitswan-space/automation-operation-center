@@ -162,15 +162,7 @@ export const SideNavTreeItem = (props: SideNavTreeItemProps) => {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <SidebarMenuButton title={node.text}>
-                  {isAdmin && open && (
-                    <div className="my-auto cursor-grab">
-                      <GripVertical
-                        size={16}
-                        className="my-auto text-neutral-500"
-                      />
-                    </div>
-                  )}
+                <SidebarMenuButton title={node.text} className="overflow-hidden w-[200px]">
                   {node.data?.icon}
                   {node.text}
                 </SidebarMenuButton>

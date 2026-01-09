@@ -187,7 +187,7 @@ function CreateNavItemForm(props: CreateNavItemFormProps) {
     <Form {...form}>
       <form
         onSubmit={(event) => void form.handleSubmit(handleSubmit)(event)}
-        className="space-y-4"
+        className="space-y-4 max-h-[80vh] overflow-y-auto"
       >
         <FormField
           control={form.control}
