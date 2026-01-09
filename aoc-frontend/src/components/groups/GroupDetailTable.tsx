@@ -30,10 +30,52 @@ import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { type UserGroup } from "@/data/groups";
 import { toast } from "sonner";
 import { useDeleteGroup, useGroupsInfiniteQuery } from "@/hooks/useGroupQuery";
+import { useWorkspacesQuery } from "@/hooks/useWorkspacesQuery";
+import { type Workspace } from "@/data/workspaces";
+import { useQueries } from "@tanstack/react-query";
+import { getWorkspaceGroups } from "@/data/workspaces";
 
 const columnHelper = createColumnHelper<UserGroup>();
 
-const createColumns = (): ColumnDef<UserGroup>[] => [
+function GroupWorkspacesCell({ 
+  groupId,
+  groupName,
+  groupWorkspacesMap 
+}: { 
+  groupId: string;
+  groupName: string;
+  groupWorkspacesMap: Record<string, Workspace[]>;
+}) {
+  // Admin group has access to all workspaces
+  if (groupName === "admin") {
+    return <div className="px-3 text-sm text-muted-foreground">All workspaces</div>;
+  }
+
+  const workspaces = groupWorkspacesMap[groupId] ?? [];
+
+  if (workspaces.length === 0) {
+    return <div className="px-3 text-muted-foreground text-sm">—</div>;
+  }
+
+  return (
+    <div className="px-3">
+      <div className="flex flex-wrap gap-1">
+        {workspaces.map((workspace) => (
+          <span
+            key={workspace.id}
+            className="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700"
+          >
+            {workspace.name}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const createColumns = (
+  groupWorkspacesMap: Record<string, Workspace[]>
+): ColumnDef<UserGroup>[] => [
   {
     accessorKey: "name",
     header: () => <div className="px-3 text-left font-bold">Name</div>,
@@ -51,6 +93,13 @@ const createColumns = (): ColumnDef<UserGroup>[] => [
       ></div>
     ),
   },
+  columnHelper.display({
+    id: "workspaces",
+    header: () => <div className="font-bold">Workspaces</div>,
+    cell: ({ row }) => {
+      return <GroupWorkspacesCell groupId={row.original.id} groupName={row.original.name} groupWorkspacesMap={groupWorkspacesMap} />;
+    },
+  }),
   columnHelper.display({
     id: "actions",
     cell: ({ row }) => {
@@ -130,6 +179,42 @@ export function GroupDetailTable() {
     return () => container.removeEventListener("scroll", handleScroll);
   }, [hasNextPage, isFetchingNextPage, isFetchingGroups, fetchNextPage]);
 
+  // Fetch all workspaces to build group-workspace map
+  const { data: workspacesData } = useWorkspacesQuery();
+  const allWorkspaces = React.useMemo(
+    () => workspacesData?.pages.flatMap((page) => page.results) ?? [],
+    [workspacesData],
+  );
+
+  // Fetch groups for each workspace using useQueries
+  const workspaceGroupQueries = useQueries({
+    queries: allWorkspaces.map((workspace) => ({
+      queryKey: ["workspace-groups", workspace.id],
+      queryFn: () => getWorkspaceGroups(workspace.id),
+      enabled: !!workspace.id,
+      staleTime: 5 * 60 * 1000,
+    })),
+  });
+
+  // Build map of groupId -> array of workspaces
+  const groupWorkspacesMap = React.useMemo(() => {
+    const map: Record<string, Workspace[]> = {};
+    
+    workspaceGroupQueries.forEach((query, index) => {
+      const workspace = allWorkspaces[index];
+      if (!workspace || !query.data) return;
+      
+      query.data.forEach((group) => {
+        if (!map[group.id]) {
+          map[group.id] = [];
+        }
+        map[group.id].push(workspace);
+      });
+    });
+    
+    return map;
+  }, [workspaceGroupQueries, allWorkspaces]);
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -137,7 +222,7 @@ export function GroupDetailTable() {
 
   const table = useReactTable({
     data: userGroupsData,
-    columns: createColumns(),
+    columns: createColumns(groupWorkspacesMap),
     manualFiltering: true, // Server-side filtering/search
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
