@@ -1,23 +1,19 @@
-import { 
-  ArrowDownNarrowWide, 
-  ArrowDownUp, 
-  ArrowDownWideNarrow, 
-  Check, 
-  ChevronDownIcon, 
-  ChevronRight, 
-  ExternalLink, 
-  FileCog, 
-  Filter,
-  Loader2
+import {
+    ArrowDownNarrowWide,
+    ArrowDownUp,
+    ArrowDownWideNarrow,
+    Check,
+    Code,
+    ExternalLink,
+    Filter,
+    Loader2, Search
 } from "lucide-react";
 import {
   type ColumnFiltersState,
-  type ExpandedState,
   type SortingState,
   type VisibilityState,
   flexRender,
   getCoreRowModel,
-  getExpandedRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
@@ -40,66 +36,111 @@ import { Checkbox } from "@radix-ui/react-checkbox";
 import { Input } from "../ui/input";
 import React from "react";
 import { Badge } from "../ui/badge";
-import { type PipelineStat, type PipelineWithStats } from "@/types";
+import { type PipelineStat, type PipelineWithStats, type Process } from "@/types";
 
 import { Area, AreaChart, XAxis } from "recharts";
-import { Link } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const columnHelper = createColumnHelper<PipelineWithStats>();
 
-export const columns = [
-  columnHelper.display({
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected()}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  }),
-  columnHelper.accessor("properties.name", {
-    header: "Name",
-    cell: ({ row }) => {
-      const { properties } = row.original;
+const createColumns = (deploymentIdToProcessName: Map<string, string>) => {
 
-      return (
-        <Link
-          to={`/automation-servers/${row.original.automationServerId}/workspaces/${row.original.workspaceId}/automations/${row.original.properties["deployment-id"]}`}
-          className="text-xs text-blue-700 underline"
-        >
-          {properties.name}
-        </Link>
-      );
-    },
-  }),
+  return [
+    columnHelper.display({
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    }),
+    columnHelper.accessor("properties.name", {
+      header: "Automation name",
+      cell: ({ row }) => {
+        const { properties } = row.original;
+        return <div className="text-xs">{properties.name}</div>;
+      },
+    }),
+    columnHelper.accessor((row) => {
+      const deploymentId = row.properties["deployment-id"];
+      if (!deploymentId) {
+        return "—";
+      }
+      return deploymentIdToProcessName.get(deploymentId) ?? "—";
+    }, {
+      id: "process",
+      header: "Process",
+      cell: ({ row }) => {
+        const deploymentId = row.original.properties["deployment-id"];
+        if (!deploymentId) {
+          return <div className="text-xs">—</div>;
+        }
+        const processName = deploymentIdToProcessName.get(deploymentId);
+        return <div className="text-xs">{processName ?? "—"}</div>;
+      },
+      filterFn: (
+        row: Row<PipelineWithStats>,
+        columnId: string,
+        filterValue: string[]
+      ) => {
+        if (!filterValue || filterValue.length === 0) return true;
+        const deploymentId = row.original.properties["deployment-id"];
+        if (!deploymentId) {
+          return filterValue.includes("—");
+        }
+        const processName = deploymentIdToProcessName.get(deploymentId) ?? "—";
+        return filterValue.includes(processName);
+      },
+    }),
   columnHelper.accessor("properties.automation-url", {
     header: "URL",
     cell: ({row}) => {
+      const url = row.original.properties["automation-url"];
+      if (!url) {
+        return <div className="text-xs">—</div>;
+      }
       return (
-        row.original.properties["automation-url"] &&
-        <a
-          href={row.original.properties["automation-url"]}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <ExternalLink size={18} />
-        </a>
-      )
+        <div className="text-xs">
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex"
+          >
+            <ExternalLink size={18} />
+          </a>
+        </div>
+      );
     }
   }),
+    columnHelper.accessor("properties.endpoint-name", {
+        header: "Workspace",
+        cell: ({ row }) => {
+            const machineName = row.original.properties["endpoint-name"];
+            return <div className="text-xs">{machineName}</div>;
+        },
+        filterFn: (
+            row: Row<PipelineWithStats>,
+            columnId: string,
+            filterValue: string[]
+        ) => {
+            if (!filterValue || filterValue.length === 0) return true;
+            return filterValue.includes(row.getValue(columnId));
+        },
+    }),
   columnHelper.accessor("automationServerName", {
-    header: "Automation Server",
+    header: "Server",
     cell: ({ row }) => {
       return <div className="text-xs">{row.original.automationServerName}</div>;
     },
@@ -112,21 +153,31 @@ export const columns = [
       return filterValue.includes(row.getValue(columnId));
     },
   }),
-  columnHelper.accessor("properties.endpoint-name", {
-    header: "Workspace Name",
-    cell: ({ row }) => {
-      const machineName = row.original.properties["endpoint-name"];
-      return <div className="text-xs">{machineName}</div>;
-    },
-    filterFn: (
-      row: Row<PipelineWithStats>,
-      columnId: string,
-      filterValue: string[]
-    ) => {
-      if (!filterValue || filterValue.length === 0) return true;
-      return filterValue.includes(row.getValue(columnId));
-    },
-  }),
+    columnHelper.accessor("properties.created-at", {
+        header: "Created",
+        cell: ({ row }) => {
+            const date = new Date(row.original.properties["created-at"]);
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const month = monthNames[date.getMonth()];
+            const day = date.getDate();
+            const year = date.getFullYear();
+            const hours = date.getHours().toString().padStart(2, "0");
+            const minutes = date.getMinutes().toString().padStart(2, "0");
+            const createdAt = `${month} ${day}, ${year}; ${hours}:${minutes}`;
+
+            return <div className="text-xs">{createdAt}</div>;
+        },
+    }),
+
+    columnHelper.accessor("properties.status", {
+        header: "Uptime",
+        cell: ({ row }) => {
+            const uptime = row.original.properties.status;
+
+            return <div className="text-xs capitalize">{uptime}</div>;
+        },
+    }),
+
   columnHelper.accessor("properties.state", {
     header: "Status",
     cell: ({ row }) => {
@@ -135,12 +186,12 @@ export const columns = [
       const getStatusBadge = (status: string) => {
         switch (status) {
           case "running":
-            return <Badge className="bg-green-600 shadow-none">Running</Badge>;
+            return <Badge className="bg-green-100 text-green-600 shadow-none hover:bg-green-100">Running</Badge>;
           case "stopped":
-            return <Badge className="bg-red-600 shadow-none">Stopped</Badge>;
+            return <Badge className="bg-red-100 text-red-600 shadow-none hover:bg-red-100">Stopped</Badge>;
           default:
             return (
-              <Badge className="bg-yellow-600 shadow-none">{status}</Badge>
+              <Badge className="bg-yellow-100 text-yellow-600 shadow-none hover:bg-yellow-100">{status}</Badge>
             );
         }
       };
@@ -156,106 +207,98 @@ export const columns = [
       return filterValue.includes(row.getValue(columnId));
     },
   }),
-  columnHelper.accessor("properties.created-at", {
-    header: "Date Created",
-    cell: ({ row }) => {
-      const createdAt = new Date(row.original.properties["created-at"])
-        .toISOString()
-        .slice(0, 16)
-        .replace("T", ", ");
 
-      return <div className="text-xs capitalize">{createdAt}</div>;
-    },
-  }),
+    // COMMENTED OUT UNTIL AOC MONITOR IS SET UP
 
-  // COMMENTED OUT UNTIL AOC MONITOR IS SET UP
+    // columnHelper.display({
+    //   id: "pipelineStatEpsIn",
+    //   header: "eps.in",
+    //   cell: ({ row }) => {
+    //     const epsInStat = row.original.pipelineStat?.filter(
+    //       (stat) => stat._field === "eps.in",
+    //     );
+    //     const latestEpsIn = epsInStat?.[epsInStat.length - 1]?._value;
+    //     return (
+    //       <div className="text-start">
+    //         <EpsTinyLineChart data={row.original.pipelineStat} type="in" />
+    //         <div className="text-xs font-semibold">: {latestEpsIn}</div>
+    //       </div>
+    //     );
+    //   },
+    // }),
+    // columnHelper.display({
+    //   id: "pipelineStatEpsOut",
+    //   header: "eps.out",
+    //   cell: ({ row }) => {
+    //     const epsOutStat = row.original.pipelineStat?.filter(
+    //       (stat) => stat._field === "eps.out",
+    //     );
+    //     const latestEpsOut = epsOutStat?.[epsOutStat.length - 1]?._value;
+    //     return (
+    //       <div>
+    //         <EpsTinyLineChart data={row.original.pipelineStat} type="out" />
+    //         <div className="text-xs font-semibold" title="Latest value">
+    //           : {latestEpsOut}
+    //         </div>
+    //       </div>
+    //     );
+    //   },
+    // }),
 
-  // columnHelper.display({
-  //   id: "pipelineStatEpsIn",
-  //   header: "eps.in",
-  //   cell: ({ row }) => {
-  //     const epsInStat = row.original.pipelineStat?.filter(
-  //       (stat) => stat._field === "eps.in",
-  //     );
-  //     const latestEpsIn = epsInStat?.[epsInStat.length - 1]?._value;
-  //     return (
-  //       <div className="text-start">
-  //         <EpsTinyLineChart data={row.original.pipelineStat} type="in" />
-  //         <div className="text-xs font-semibold">: {latestEpsIn}</div>
-  //       </div>
-  //     );
-  //   },
-  // }),
-  // columnHelper.display({
-  //   id: "pipelineStatEpsOut",
-  //   header: "eps.out",
-  //   cell: ({ row }) => {
-  //     const epsOutStat = row.original.pipelineStat?.filter(
-  //       (stat) => stat._field === "eps.out",
-  //     );
-  //     const latestEpsOut = epsOutStat?.[epsOutStat.length - 1]?._value;
-  //     return (
-  //       <div>
-  //         <EpsTinyLineChart data={row.original.pipelineStat} type="out" />
-  //         <div className="text-xs font-semibold" title="Latest value">
-  //           : {latestEpsOut}
-  //         </div>
-  //       </div>
-  //     );
-  //   },
-  // }),
-  
-  columnHelper.accessor("properties.status", {
-    header: "Uptime",
-    cell: ({ row }) => {
-      const uptime = row.original.properties.status;
-
-      return <div className="text-xs capitalize">{uptime}</div>;
-    },
-  }),
   columnHelper.display({
-    id: "launchPipelineEditor",
-    cell: ({ row }) => {
-      return (
-        <Link
-          to={`/automations/launch-automation-editor/${row.original._key}`}
-          title="Launch automation editor"
-          className="hidden"
-        >
-          <Button variant={"outline"}>
-            <FileCog size={20} />
-          </Button>
-        </Link>
-      );
-    },
-  }),
-  columnHelper.display({
-    id: "expand",
+    id: "edit",
+    header: "",
     enableHiding: false,
     cell: ({ row }) => {
+      const vscodeLink = row.original.vscodeLink;
+      if (!vscodeLink) {
+        return <div className="text-xs text-gray-400">—</div>;
+      }
       return (
-        <div>
-          <Button onClick={() => row.toggleExpanded()} variant={"ghost"}>
-            {row.getIsExpanded() ? (
-              <ChevronDownIcon size={20} />
-            ) : (
-              <ChevronRight size={20} />
-            )}
-          </Button>
-        </div>
+        <Button
+          size="sm"
+          asChild
+        >
+          <a
+            href={vscodeLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Open in Editor"
+          >
+            <Code className="h-4 w-4" />
+            Edit
+          </a>
+        </Button>
       );
     },
   }),
-];
+  ];
+};
 
 type PipelineDataTableProps = {
   pipelines: PipelineWithStats[];
+  processes?: Record<string, Process>;
   isLoading: boolean;
 };
 
 export function PipelineDataTable(props: PipelineDataTableProps) {
-  const { isLoading } = props;
+  const { isLoading, processes } = props;
   const data = React.useMemo(() => props.pipelines, [props.pipelines]);
+  
+  // Create a mapping of deployment Id to process name
+  const deploymentIdToProcessName = React.useMemo(() => {
+    const map = new Map<string, string>();
+    if (processes) {
+      Object.values(processes).forEach((process) => {
+        process.automation_sources.forEach((deploymentId) => {
+          map.set(deploymentId, process.name);
+        });
+      });
+    }
+    return map;
+  }, [processes]);
+  
+  const columns = React.useMemo(() => createColumns(deploymentIdToProcessName), [deploymentIdToProcessName]);
 
   // Get unique workspace IDs for the filter dropdown
   const workspaceIds = React.useMemo(
@@ -279,6 +322,27 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
     [data]
   );
 
+  const processNames = React.useMemo(
+    () => {
+      const names = new Set<string>();
+      data.forEach((row) => {
+        const deploymentId = row.properties["deployment-id"];
+        if (!deploymentId) {
+          names.add("—");
+        } else {
+          const processName = deploymentIdToProcessName.get(deploymentId);
+          if (processName) {
+            names.add(processName);
+          } else {
+            names.add("—");
+          }
+        }
+      });
+      return Array.from(names);
+    },
+    [data, deploymentIdToProcessName]
+  );
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -286,19 +350,16 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
-  const [expanded, setExpanded] = React.useState<ExpandedState>({});
 
   const table = useReactTable({
     data,
     columns,
-    onExpandedChange: setExpanded,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getExpandedRowModel: getExpandedRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
@@ -306,12 +367,12 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
       columnFilters,
       columnVisibility,
       rowSelection,
-      expanded,
     },
   });
 
   const isSortable = [
     "properties_name", 
+    "process",
     "automationServerName", 
     "properties_endpoint-name", 
     "properties_created-at", 
@@ -321,33 +382,34 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
 
   return (
     <div className="w-full">
-      <div className="flex items-center pb-4">
-        <Input
-          placeholder="Find automations..."
-          value={
-            (table.getColumn("properties_name")?.getFilterValue() as string) ??
-            ""
-          }
-          onChange={(event) => {
-            table
-              .getColumn("properties_name")
-              ?.setFilterValue(event.target.value);
-          }}
-          className="max-w-sm"
-        />
+      <div className="relative flex items-center pb-4">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+          <Input
+              placeholder="Search automations..."
+              value={
+                (table.getColumn("properties_name")?.getFilterValue() as string) ??
+                ""
+              }
+              onChange={(event) => {
+                table
+                  .getColumn("properties_name")
+                  ?.setFilterValue(event.target.value);
+              }}
+              className="max-w-sm pl-8"
+          />
       </div>
       <div className="rounded-md border">
         <Table>
-          <TableHeader>
+          <TableHeader className="h-12">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="bg-stone-100/70">
+              <TableRow key={headerGroup.id} className="hover:bg-transparent">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="font-semibold">
+                    <TableHead key={header.id} className="font-semibold text-sm pl-2">
                       {header.isPlaceholder
                         ? null
                         : (
-                            <span className="inline-flex items-center gap-2">
+                            <span className="inline-flex items-center gap-0.5">
                               {flexRender(
                                 header.column.columnDef.header,
                                 header.getContext(),
@@ -383,6 +445,10 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
                                   options={["running", "stopped", "restarting"]} 
                                   table={table} />
                               ) : null}
+
+                              {header.id === "process" ? (
+                                <SelectFilter header_id={header.id} options={processNames} table={table} />
+                              ) : null}
                             </span>
                           )
                       }
@@ -396,43 +462,20 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
             {table.getRowModel().rows?.length || isLoading ? (
               <>
                 {table.getRowModel().rows.map((row) => (
-                  <React.Fragment key={`dt_fragment_${row.id}`}>
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && "selected"}
-                      className="rounded font-mono"
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                    {row.getIsExpanded() && (
-                      <TableRow
-                        className="bg-blue-100/20 hover:bg-blue-50/50"
-                        key={`expandable-${row.id}`}
-                      >
-                        <TableCell colSpan={columns.length}>
-                          <Table>
-                            <TableBody>
-                              <TableRow>
-                                <TableCell
-                                  colSpan={columns.length}
-                                  className="h-24 text-center"
-                                >
-                                  No displayable data.
-                                </TableCell>
-                              </TableRow>
-                            </TableBody>
-                          </Table>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </React.Fragment>
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className="rounded h-16 hover:bg-transparent"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
                 ))}
                 {isLoading && (
                   <TableRow>
@@ -448,7 +491,7 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
                 )}
               </>
             ) : (
-              <TableRow>
+              <TableRow className="hover:bg-transparent">
                 <TableCell
                   colSpan={columns.length}
                   className="h-32 text-center"
@@ -468,10 +511,6 @@ export function PipelineDataTable(props: PipelineDataTableProps) {
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-muted-foreground flex-1 text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
         <div className="space-x-2">
           <Button
             variant="outline"
